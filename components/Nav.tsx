@@ -30,9 +30,9 @@ export default function Nav() {
       <nav className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
-          <span className="w-2 h-2 rounded-full bg-accent animate-[glowPulse_2s_ease-in-out_infinite]" />
-          <span className="font-heading text-2xl tracking-widest text-white group-hover:text-accent transition-colors">
-            MANTIS TECH
+          <span className="w-2 h-2 rounded-full bg-accent" />
+          <span className="font-heading text-2xl text-white group-hover:text-accent transition-colors">
+            Mantis Tech
           </span>
         </Link>
 
@@ -49,7 +49,7 @@ export default function Nav() {
           ))}
           <Link
             href="/intake"
-            className="font-mono text-sm bg-accent text-bg px-5 py-2 rounded hover:bg-white transition-colors glow-accent-hover font-medium tracking-wider"
+            className="font-mono text-sm bg-accent text-bg px-5 py-2 rounded hover:bg-white transition-colors font-medium tracking-wider"
           >
             Get Started
           </Link>

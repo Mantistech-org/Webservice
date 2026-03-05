@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --font-bebas: 'Bebas Neue', sans-serif;
+  --font-playfair: 'Playfair Display', Georgia, serif;
   --font-dm-mono: 'DM Mono', monospace;
   --font-inter: 'Inter', system-ui, sans-serif;
 }
@@ -19,15 +19,15 @@ html {
 }
 
 body {
-  background-color: #080c10;
-  color: #e0e8f0;
+  background-color: #111111;
+  color: #f5f0e8;
   font-family: var(--font-inter);
   -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: rgba(0, 255, 136, 0.25);
-  color: #ffffff;
+  background: rgba(232, 220, 200, 0.25);
+  color: #f5f0e8;
 }
 
 /* Scrollbar */
@@ -35,14 +35,14 @@ body {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #080c10;
+  background: #111111;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1a2332;
+  background: #2e2820;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #00ff88;
+  background: #a89880;
 }
 
 /* Ticker */
@@ -60,15 +60,6 @@ body {
   100% { transform: translateX(-50%); }
 }
 
-/* Accent glow utilities */
-.glow-accent {
-  box-shadow: 0 0 24px rgba(0, 255, 136, 0.3);
-}
-.glow-accent-hover:hover {
-  box-shadow: 0 0 32px rgba(0, 255, 136, 0.5);
-  transition: box-shadow 0.3s ease;
-}
-
 /* Form inputs */
 .form-input {
   @apply w-full bg-card border border-border text-white rounded px-4 py-3 font-mono text-sm
@@ -76,6 +67,6 @@ body {
 }
 
 select.form-input option {
-  background-color: #0d1117;
-  color: #e0e8f0;
+  background-color: #181614;
+  color: #f5f0e8;
 }

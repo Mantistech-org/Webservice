@@ -11,11 +11,11 @@ export default function Footer() {
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <span className="w-2 h-2 rounded-full bg-accent" />
-              <span className="font-heading text-2xl tracking-widest text-white">MANTIS TECH</span>
+              <span className="font-heading text-2xl text-white">Mantis Tech</span>
             </div>
             <p className="text-sm text-muted leading-relaxed max-w-xs">
-              High-end web agency delivering intelligent websites powered by AI. Built for businesses
-              that refuse to settle.
+              High-end boutique web agency delivering premium websites and digital services for
+              businesses that refuse to settle.
             </p>
           </div>
 

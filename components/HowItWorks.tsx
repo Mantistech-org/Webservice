@@ -7,9 +7,9 @@ const steps = [
   },
   {
     number: '02',
-    title: 'AI Generates Your Site',
+    title: 'We Build Your Website',
     description:
-      'Our AI builds a fully custom website tailored to your business. No templates, no drag-and-drop limitations.',
+      'Our team crafts a fully custom website tailored to your business. No templates, no cookie-cutter designs.',
   },
   {
     number: '03',
@@ -32,12 +32,10 @@ export default function HowItWorks() {
         {/* Header */}
         <div className="mb-16">
           <div className="font-mono text-xs text-accent tracking-widest uppercase mb-4">
-            // The Process
+            The Process
           </div>
-          <h2 className="font-heading text-[clamp(3rem,7vw,5.5rem)] leading-none text-white">
-            HOW IT
-            <br />
-            <span className="text-teal">WORKS</span>
+          <h2 className="font-heading text-[clamp(2.5rem,6vw,4.5rem)] leading-tight text-white">
+            How It Works
           </h2>
         </div>
 

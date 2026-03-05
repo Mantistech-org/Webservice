@@ -17,11 +17,11 @@ export default function Ticker() {
             key={`${service}-${i}`}
             className="flex items-center gap-6 px-6 whitespace-nowrap"
           >
-            <span className="font-heading text-xl tracking-widest text-white uppercase">
+            <span className="font-heading text-xl text-white">
               {service}
             </span>
             <span className="text-accent text-xl font-heading" aria-hidden>
-              //
+              ·
             </span>
           </div>
         ))}

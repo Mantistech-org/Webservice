@@ -9,12 +9,12 @@ export default function Pricing() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-16 text-center">
           <div className="font-mono text-xs text-accent tracking-widest uppercase mb-4">
-            // Transparent Pricing
+            Transparent Pricing
           </div>
-          <h2 className="font-heading text-[clamp(3rem,7vw,5.5rem)] leading-none text-white">
-            PLANS THAT
+          <h2 className="font-heading text-[clamp(2.5rem,6vw,4.5rem)] leading-tight text-white">
+            Plans That
             <br />
-            <span className="text-teal">SCALE WITH YOU</span>
+            <span className="text-teal">Scale With You</span>
           </h2>
           <p className="mt-6 text-teal max-w-xl mx-auto text-base leading-relaxed">
             One upfront build fee. One monthly subscription. No hidden costs. Cancel any time.
@@ -30,7 +30,7 @@ export default function Pricing() {
                 key={key}
                 className={`relative rounded border flex flex-col ${
                   isHighlight
-                    ? 'border-accent bg-card glow-accent'
+                    ? 'border-accent bg-card'
                     : 'border-border bg-card'
                 }`}
               >
@@ -77,9 +77,9 @@ export default function Pricing() {
                     href={`/intake?plan=${key}`}
                     className={`mt-8 block text-center font-mono text-sm py-3 px-6 rounded tracking-wider transition-all duration-300 ${
                       isHighlight
-                        ? 'bg-accent text-bg hover:bg-white glow-accent-hover'
+                        ? 'bg-accent text-bg hover:bg-white'
                         : 'border border-border text-teal hover:border-accent hover:text-accent'
-                    }`}
+                  }`}
                   >
                     Get Started
                   </Link>
@@ -90,7 +90,7 @@ export default function Pricing() {
         </div>
 
         <p className="text-center font-mono text-xs text-muted mt-8 tracking-wider">
-          All plans include a custom AI-generated website, SSL, and managed hosting. Add-ons available separately.
+          All plans include a custom-built website, SSL, and managed hosting. Add-ons available separately.
         </p>
       </div>
     </section>

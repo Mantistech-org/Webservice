@@ -3,39 +3,29 @@ import Link from 'next/link'
 export default function Hero() {
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-      {/* Background layers */}
+      {/* Background */}
       <div className="absolute inset-0 bg-bg" />
-      <div className="absolute inset-0 bg-grid-pattern bg-grid opacity-100" />
-      <div className="absolute inset-0 bg-hero-glow" />
 
-      {/* Accent lines */}
-      <div className="absolute left-0 top-1/3 w-px h-64 bg-gradient-to-b from-transparent via-accent/30 to-transparent" />
-      <div className="absolute right-0 top-1/2 w-px h-48 bg-gradient-to-b from-transparent via-accent/20 to-transparent" />
+      {/* Subtle warm vignette */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(232,220,200,0.04)_0%,transparent_70%)]" />
 
       {/* Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-        <div className="inline-flex items-center gap-2 mb-8 px-4 py-1.5 border border-border rounded-full">
-          <span className="w-1.5 h-1.5 rounded-full bg-accent animate-[glowPulse_2s_ease-in-out_infinite]" />
-          <span className="font-mono text-xs text-teal tracking-widest uppercase">
-            AI-Powered Web Agency
-          </span>
-        </div>
-
-        <h1 className="font-heading text-[clamp(4rem,12vw,9rem)] leading-none tracking-wide text-white mb-6">
-          WEBSITES THAT
+        <h1 className="font-heading text-[clamp(3rem,9vw,7rem)] leading-tight text-white mb-6">
+          Your Business,
           <br />
-          <span className="text-accent">WORK FOR YOU</span>
+          <span className="text-accent italic">Running at Its Best.</span>
         </h1>
 
         <p className="text-lg md:text-xl text-teal max-w-2xl mx-auto mb-12 leading-relaxed">
-          Intelligent websites built for modern businesses. AI powered advertising, booking systems,
-          social automation, and more. All in one place.
+          We build and manage everything your business needs online. You focus on your customers.
+          We handle the rest.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             href="/intake"
-            className="group relative font-mono text-base bg-accent text-bg px-8 py-4 rounded font-medium tracking-wider glow-accent hover:bg-white transition-all duration-300"
+            className="group font-mono text-base bg-accent text-bg px-8 py-4 rounded font-medium tracking-wider hover:bg-white transition-all duration-300"
           >
             Start Your Project
             <span className="ml-2 inline-block group-hover:translate-x-1 transition-transform">
@@ -55,7 +45,7 @@ export default function Hero() {
           {[
             { value: '48H', label: 'Delivery Time' },
             { value: '100%', label: 'Custom Built' },
-            { value: '24/7', label: 'AI Powered' },
+            { value: '24/7', label: 'Ongoing Support' },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
               <div className="font-heading text-4xl text-accent">{stat.value}</div>

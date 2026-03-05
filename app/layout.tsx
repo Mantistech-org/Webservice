@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
-import { Bebas_Neue, DM_Mono, Inter } from 'next/font/google'
+import { Playfair_Display, DM_Mono, Inter } from 'next/font/google'
 import './globals.css'
 
-const bebasNeue = Bebas_Neue({
-  weight: '400',
+const playfairDisplay = Playfair_Display({
+  weight: ['400', '600', '700'],
   subsets: ['latin'],
-  variable: '--font-bebas',
+  variable: '--font-playfair',
   display: 'swap',
 })
 
@@ -23,14 +23,14 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Mantis Tech | Websites That Work For You',
+  title: 'Mantis Tech | Your Business, Running at Its Best',
   description:
-    'Mantis Tech builds high-performance websites with AI-powered features for growing businesses. AI ads, social automation, e-commerce, and more.',
-  keywords: ['web design', 'web development', 'AI', 'digital agency', 'Mantis Tech'],
+    'Mantis Tech builds and manages everything your business needs online. Custom websites, marketing automation, SEO, and more.',
+  keywords: ['web design', 'web development', 'digital agency', 'Mantis Tech', 'business website'],
   openGraph: {
-    title: 'Mantis Tech | Websites That Work For You',
+    title: 'Mantis Tech | Your Business, Running at Its Best',
     description:
-      'High-end web agency delivering intelligent websites powered by AI.',
+      'High-end boutique web agency delivering premium websites and digital services for growing businesses.',
     type: 'website',
   },
 }
@@ -41,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${bebasNeue.variable} ${dmMono.variable} ${inter.variable}`}>
+    <html lang="en" className={`${playfairDisplay.variable} ${dmMono.variable} ${inter.variable}`}>
       <body className="bg-bg text-white antialiased">{children}</body>
     </html>
   )

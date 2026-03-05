@@ -18,12 +18,12 @@ export default function ServicesGrid() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-16">
           <div className="font-mono text-xs text-accent tracking-widest uppercase mb-4">
-            // What We Automate
+            Our Services
           </div>
-          <h2 className="font-heading text-[clamp(3rem,7vw,5.5rem)] leading-none text-white">
-            EVERYTHING YOUR
+          <h2 className="font-heading text-[clamp(2.5rem,6vw,4.5rem)] leading-tight text-white">
+            Everything Your
             <br />
-            <span className="text-teal">BUSINESS NEEDS</span>
+            <span className="text-teal">Business Needs</span>
           </h2>
         </div>
 
@@ -36,7 +36,7 @@ export default function ServicesGrid() {
               <div className="text-4xl mb-5 group-hover:scale-110 transition-transform duration-300 origin-left">
                 {ICONS[service.id] ?? '✦'}
               </div>
-              <h3 className="font-heading text-2xl tracking-wide text-white mb-3 group-hover:text-accent transition-colors">
+              <h3 className="font-heading text-2xl text-white mb-3 group-hover:text-accent transition-colors">
                 {service.label}
               </h3>
               <p className="text-sm text-muted leading-relaxed">{service.description}</p>
