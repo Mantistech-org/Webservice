@@ -28,13 +28,14 @@ function MoonIcon() {
 
 export default function ThemeToggle() {
   const [mounted, setMounted] = useState(false)
-  const [isDark, setIsDark] = useState(true)
+  // Light mode is default — isDark starts false
+  const [isDark, setIsDark] = useState(false)
 
   useEffect(() => {
     const saved = localStorage.getItem('theme')
-    if (saved === 'light') {
-      setIsDark(false)
-      document.documentElement.classList.add('light-mode')
+    if (saved === 'dark') {
+      setIsDark(true)
+      document.documentElement.classList.add('dark-mode')
     }
     setMounted(true)
   }, [])
@@ -42,17 +43,16 @@ export default function ThemeToggle() {
   const toggle = () => {
     const html = document.documentElement
     if (isDark) {
-      html.classList.add('light-mode')
+      html.classList.remove('dark-mode')
       localStorage.setItem('theme', 'light')
       setIsDark(false)
     } else {
-      html.classList.remove('light-mode')
+      html.classList.add('dark-mode')
       localStorage.setItem('theme', 'dark')
       setIsDark(true)
     }
   }
 
-  // Placeholder during SSR / before mount to avoid layout shift
   if (!mounted) {
     return <div className="w-8 h-8" />
   }
@@ -60,10 +60,12 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="text-muted hover:text-primary transition-colors p-1 rounded"
+      // Icon is green when dark mode is active (serves as the "active" indicator)
+      className={`p-1 rounded transition-colors ${isDark ? 'text-accent' : 'text-muted hover:text-primary'}`}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
-      {isDark ? <MoonIcon /> : <SunIcon />}
+      {/* Show sun when dark (click to go light), moon when light (click to go dark) */}
+      {isDark ? <SunIcon /> : <MoonIcon />}
     </button>
   )
 }

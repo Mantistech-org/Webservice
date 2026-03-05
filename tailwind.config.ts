@@ -9,12 +9,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Fixed brand color — same in both modes
+        accent: '#00ff88',
+        // Theme-adaptive colors via CSS variables
         bg: 'rgb(var(--color-bg) / <alpha-value>)',
         card: 'rgb(var(--color-card) / <alpha-value>)',
         'card-hover': 'rgb(var(--color-card-hover) / <alpha-value>)',
         border: 'rgb(var(--color-border) / <alpha-value>)',
         'border-light': 'rgb(var(--color-border-light) / <alpha-value>)',
-        accent: 'rgb(var(--color-accent) / <alpha-value>)',
         teal: 'rgb(var(--color-teal) / <alpha-value>)',
         muted: 'rgb(var(--color-muted) / <alpha-value>)',
         dim: 'rgb(var(--color-dim) / <alpha-value>)',

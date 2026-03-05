@@ -26,9 +26,9 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
           <div className="font-mono text-xs text-accent tracking-widest uppercase">
             Live Quote
           </div>
-          <div className="font-heading text-xl text-white mt-0.5">Your Estimate</div>
+          <div className="font-heading text-xl text-primary mt-0.5">Your Estimate</div>
         </div>
-        <div className="w-2 h-2 rounded-full bg-accent animate-[glowPulse_2s_ease-in-out_infinite]" />
+        <div className="w-2 h-2 rounded-full bg-accent" />
       </div>
 
       <div className="p-6 space-y-5">
@@ -39,7 +39,7 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
           </div>
           <div className="flex items-center justify-between">
             <span className="font-heading text-xl text-teal tracking-wide">{plan.name}</span>
-            <span className="font-heading text-2xl text-white">
+            <span className="font-heading text-2xl text-primary">
               ${plan.upfront}
               <span className="font-mono text-sm text-muted font-normal ml-1">upfront</span>
             </span>
@@ -57,7 +57,7 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-teal">{plan.name} plan</span>
-              <span className="font-mono text-white">${plan.monthly}/mo</span>
+              <span className="font-mono text-primary">${plan.monthly}/mo</span>
             </div>
 
             {extraAddons.map((addon) => (
@@ -66,7 +66,7 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
                   <span className="text-accent text-xs">+</span>
                   {addon.label}
                 </span>
-                <span className="font-mono text-white">${addon.price}/mo</span>
+                <span className="font-mono text-primary">${addon.price}/mo</span>
               </div>
             ))}
 
@@ -93,7 +93,7 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
             <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">
               Due Today
             </div>
-            <div className="font-heading text-3xl text-white leading-none">
+            <div className="font-heading text-3xl text-primary leading-none">
               ${plan.upfront}
             </div>
           </div>

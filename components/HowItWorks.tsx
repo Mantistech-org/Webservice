@@ -30,7 +30,7 @@ export default function HowItWorks() {
     <section id="how-it-works" className="py-24 px-6 border-t border-border">
       <div className="max-w-7xl mx-auto">
         <div className="mb-14">
-          <p className="font-mono text-xs text-muted tracking-widest uppercase mb-3">
+          <p className="font-mono text-xs text-accent tracking-widest uppercase mb-3">
             The Process
           </p>
           <h2 className="font-heading text-[clamp(2rem,5vw,3.5rem)] leading-tight text-primary">
@@ -40,10 +40,7 @@ export default function HowItWorks() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {steps.map((step) => (
-            <div
-              key={step.number}
-              className="bg-card border border-border rounded p-8"
-            >
+            <div key={step.number} className="bg-card border border-border rounded p-8">
               <div className="font-mono text-xs text-muted tracking-widest mb-4">
                 STEP {step.number}
               </div>

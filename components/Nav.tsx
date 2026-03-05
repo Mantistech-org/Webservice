@@ -43,7 +43,7 @@ export default function Nav() {
             <a
               key={link.href}
               href={link.href}
-              className="font-mono text-sm text-muted hover:text-primary transition-colors tracking-wider"
+              className="font-mono text-sm text-muted hover:text-primary hover:underline decoration-[#00ff88] underline-offset-4 tracking-wider transition-colors"
             >
               {link.label}
             </a>
@@ -51,7 +51,7 @@ export default function Nav() {
           <ThemeToggle />
           <Link
             href="/intake"
-            className="font-mono text-sm bg-accent text-bg px-5 py-2 rounded hover:opacity-90 transition-opacity font-medium tracking-wider"
+            className="font-mono text-sm bg-accent text-black px-5 py-2 rounded hover:opacity-90 transition-opacity font-medium tracking-wider"
           >
             Get Started
           </Link>
@@ -65,15 +65,9 @@ export default function Nav() {
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Toggle menu"
           >
-            <span
-              className={`block w-6 h-0.5 bg-primary transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`}
-            />
-            <span
-              className={`block w-6 h-0.5 bg-primary transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`}
-            />
-            <span
-              className={`block w-6 h-0.5 bg-primary transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`}
-            />
+            <span className={`block w-6 h-0.5 bg-primary transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+            <span className={`block w-6 h-0.5 bg-primary transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
+            <span className={`block w-6 h-0.5 bg-primary transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
           </button>
         </div>
       </nav>
@@ -93,7 +87,7 @@ export default function Nav() {
           ))}
           <Link
             href="/intake"
-            className="font-mono text-sm bg-accent text-bg px-5 py-2 rounded text-center font-medium tracking-wider"
+            className="font-mono text-sm bg-accent text-black px-5 py-2 rounded text-center font-medium tracking-wider"
             onClick={() => setMenuOpen(false)}
           >
             Get Started

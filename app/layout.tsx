@@ -36,10 +36,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${dmMono.variable}`} suppressHydrationWarning>
       <head>
-        {/* Prevent flash of wrong theme */}
+        {/* Restore saved theme — light is default, only apply class if dark was saved */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{if(localStorage.getItem('theme')==='light'){document.documentElement.classList.add('light-mode');}}catch(e){}})();`,
+            __html: `(function(){try{if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark-mode');}}catch(e){}})();`,
           }}
         />
       </head>

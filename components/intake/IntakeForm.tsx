@@ -198,7 +198,7 @@ export default function IntakeForm() {
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
-          <h2 className="font-heading text-5xl text-white mb-4">Submission Received</h2>
+          <h2 className="font-heading text-5xl text-primary mb-4">Submission Received</h2>
           <p className="text-teal leading-relaxed mb-2">
             We are generating your custom website now. Our team will review it and send you a preview link within 24 hours.
           </p>
@@ -222,10 +222,10 @@ export default function IntakeForm() {
         <div className="font-mono text-xs text-accent tracking-widest uppercase mb-3">
           // Start Your Project
         </div>
-        <h1 className="font-heading text-[clamp(3rem,6vw,5rem)] leading-none text-white">
-          TELL US ABOUT
+        <h1 className="font-heading text-[clamp(3rem,6vw,5rem)] leading-none text-primary">
+          Tell Us About
           <br />
-          <span className="text-teal">YOUR BUSINESS</span>
+          <span className="text-teal">Your Business</span>
         </h1>
         <p className="mt-4 text-muted max-w-xl leading-relaxed">
           Fill out the form below and our AI will generate a fully custom website for your business.
@@ -438,7 +438,7 @@ export default function IntakeForm() {
                     )}
                     <span className={form.plan === id ? 'text-accent' : 'text-muted'}>{plan.name}</span>
                   </div>
-                  <div className="font-heading text-3xl text-white leading-none">
+                  <div className="font-heading text-3xl text-primary leading-none">
                     ${plan.upfront}
                     <span className="font-mono text-xs text-muted font-normal"> upfront</span>
                   </div>
@@ -495,7 +495,7 @@ export default function IntakeForm() {
                       onChange={() => toggleAddon(addon.id)}
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm text-white font-medium">{addon.label}</div>
+                      <div className="text-sm text-primary font-medium">{addon.label}</div>
                       <div className="text-xs text-muted mt-0.5">{addon.description}</div>
                     </div>
                     <div className="font-mono text-sm shrink-0">
@@ -539,7 +539,7 @@ export default function IntakeForm() {
                   height="36"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke={isDragging ? '#00ff88' : '#3a4a5a'}
+                  stroke={isDragging ? '#00ff88' : 'rgb(var(--color-dim))'}
                   strokeWidth="1.5"
                 >
                   <path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
@@ -595,7 +595,7 @@ export default function IntakeForm() {
           <button
             type="submit"
             disabled={submitState === 'submitting'}
-            className="w-full bg-accent text-bg font-mono font-medium text-base py-4 rounded tracking-wider hover:bg-white transition-all duration-300 glow-accent disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+            className="w-full bg-accent text-black font-mono font-medium text-base py-4 rounded tracking-wider hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3"
           >
             {submitState === 'submitting' ? (
               <>

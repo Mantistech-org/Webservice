@@ -5,7 +5,7 @@ export default function ServicesGrid() {
     <section id="services" className="py-24 px-6 bg-card border-t border-border">
       <div className="max-w-7xl mx-auto">
         <div className="mb-14">
-          <p className="font-mono text-xs text-muted tracking-widest uppercase mb-3">
+          <p className="font-mono text-xs text-accent tracking-widest uppercase mb-3">
             Our Services
           </p>
           <h2 className="font-heading text-[clamp(2rem,5vw,3.5rem)] leading-tight text-primary">

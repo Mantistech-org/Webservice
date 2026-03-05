@@ -8,7 +8,7 @@ export default function Pricing() {
     <section id="pricing" className="py-24 px-6 bg-card border-t border-border">
       <div className="max-w-7xl mx-auto">
         <div className="mb-14 text-center">
-          <p className="font-mono text-xs text-muted tracking-widest uppercase mb-3">
+          <p className="font-mono text-xs text-accent tracking-widest uppercase mb-3">
             Transparent Pricing
           </p>
           <h2 className="font-heading text-[clamp(2rem,5vw,3.5rem)] leading-tight text-primary">
@@ -33,7 +33,7 @@ export default function Pricing() {
                 }`}
               >
                 {isHighlight && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-accent text-bg font-mono text-xs tracking-widest rounded-full">
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-accent text-black font-mono text-xs tracking-widest rounded-full">
                     MOST POPULAR
                   </div>
                 )}
@@ -72,7 +72,7 @@ export default function Pricing() {
                     href={`/intake?plan=${key}`}
                     className={`mt-8 block text-center font-mono text-sm py-3 px-6 rounded tracking-wider transition-opacity duration-200 ${
                       isHighlight
-                        ? 'bg-accent text-bg hover:opacity-90'
+                        ? 'bg-accent text-black hover:opacity-90'
                         : 'border border-border text-teal hover:border-accent hover:text-accent'
                     }`}
                   >
