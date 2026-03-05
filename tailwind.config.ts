@@ -9,30 +9,25 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: '#111111',
-        accent: '#e8dcc8',
-        teal: '#c4b49e',
-        card: '#181614',
-        'card-hover': '#201c18',
-        border: '#2e2820',
-        'border-light': '#3a3028',
-        dim: '#6b5f54',
-        muted: '#a89880',
+        bg: '#0f0f0f',
+        accent: '#ffffff',
+        teal: '#aaaaaa',
+        card: '#161616',
+        'card-hover': '#1e1e1e',
+        border: '#282828',
+        'border-light': '#333333',
+        dim: '#444444',
+        muted: '#777777',
       },
       fontFamily: {
-        heading: ['var(--font-playfair)', 'Georgia', 'serif'],
+        heading: ['var(--font-inter)', 'system-ui', 'sans-serif'],
         mono: ['var(--font-dm-mono)', 'monospace'],
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
       },
       animation: {
-        ticker: 'ticker 35s linear infinite',
         'fade-up': 'fadeUp 0.6s ease forwards',
       },
       keyframes: {
-        ticker: {
-          '0%': { transform: 'translateX(0)' },
-          '100%': { transform: 'translateX(-50%)' },
-        },
         fadeUp: {
           '0%': { opacity: '0', transform: 'translateY(24px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },

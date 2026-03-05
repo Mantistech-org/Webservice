@@ -5,18 +5,16 @@ const planKeys: Plan[] = ['starter', 'mid', 'pro']
 
 export default function Pricing() {
   return (
-    <section id="pricing" className="py-28 px-6">
+    <section id="pricing" className="py-24 px-6 bg-card border-t border-border">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-16 text-center">
-          <div className="font-mono text-xs text-accent tracking-widest uppercase mb-4">
+        <div className="mb-14 text-center">
+          <p className="font-mono text-xs text-muted tracking-widest uppercase mb-3">
             Transparent Pricing
-          </div>
-          <h2 className="font-heading text-[clamp(2.5rem,6vw,4.5rem)] leading-tight text-white">
-            Plans That
-            <br />
-            <span className="text-teal">Scale With You</span>
+          </p>
+          <h2 className="font-heading text-[clamp(2rem,5vw,3.5rem)] leading-tight text-white">
+            Plans That Scale With You
           </h2>
-          <p className="mt-6 text-teal max-w-xl mx-auto text-base leading-relaxed">
+          <p className="mt-4 text-teal max-w-xl mx-auto text-base leading-relaxed">
             One upfront build fee. One monthly subscription. No hidden costs. Cancel any time.
           </p>
         </div>
@@ -30,13 +28,10 @@ export default function Pricing() {
                 key={key}
                 className={`relative rounded border flex flex-col ${
                   isHighlight
-                    ? 'border-accent bg-card'
-                    : 'border-border bg-card'
+                    ? 'border-accent bg-bg'
+                    : 'border-border bg-bg'
                 }`}
               >
-                {isHighlight && (
-                  <div className="absolute -top-px left-8 right-8 h-px bg-accent" />
-                )}
                 {isHighlight && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-accent text-bg font-mono text-xs tracking-widest rounded-full">
                     MOST POPULAR
@@ -44,16 +39,16 @@ export default function Pricing() {
                 )}
 
                 <div className="p-8 flex-1 flex flex-col">
-                  <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">
+                  <div className="font-mono text-xs text-muted tracking-widest uppercase mb-3">
                     {plan.name} Plan
                   </div>
 
-                  <div className="font-heading text-6xl text-white leading-none mb-1">
+                  <div className="font-heading text-5xl text-white leading-none mb-1">
                     ${plan.upfront}
-                    <span className="font-mono text-base text-muted ml-2 font-normal">upfront</span>
+                    <span className="font-mono text-sm text-muted ml-2 font-normal">upfront</span>
                   </div>
 
-                  <div className="font-heading text-3xl text-teal leading-none mb-2">
+                  <div className="font-heading text-2xl text-teal leading-none mb-2">
                     ${plan.monthly}
                     <span className="font-mono text-sm text-muted ml-2 font-normal">/month</span>
                   </div>
@@ -75,11 +70,11 @@ export default function Pricing() {
 
                   <Link
                     href={`/intake?plan=${key}`}
-                    className={`mt-8 block text-center font-mono text-sm py-3 px-6 rounded tracking-wider transition-all duration-300 ${
+                    className={`mt-8 block text-center font-mono text-sm py-3 px-6 rounded tracking-wider transition-colors duration-200 ${
                       isHighlight
-                        ? 'bg-accent text-bg hover:bg-white'
+                        ? 'bg-accent text-bg hover:bg-gray-200'
                         : 'border border-border text-teal hover:border-accent hover:text-accent'
-                  }`}
+                    }`}
                   >
                     Get Started
                   </Link>

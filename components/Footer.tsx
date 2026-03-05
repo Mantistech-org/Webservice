@@ -11,17 +11,17 @@ export default function Footer() {
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <span className="w-2 h-2 rounded-full bg-accent" />
-              <span className="font-heading text-2xl text-white">Mantis Tech</span>
+              <span className="font-heading text-xl text-white">Mantis Tech</span>
             </div>
             <p className="text-sm text-muted leading-relaxed max-w-xs">
-              High-end boutique web agency delivering premium websites and digital services for
-              businesses that refuse to settle.
+              Boutique web agency delivering premium websites and digital services for businesses
+              that refuse to settle.
             </p>
           </div>
 
           {/* Services */}
           <div>
-            <h4 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">
+            <h4 className="font-mono text-xs text-muted tracking-widest uppercase mb-4">
               Services
             </h4>
             <ul className="space-y-2 text-sm text-muted">
@@ -34,7 +34,7 @@ export default function Footer() {
                 'Automated Email Marketing',
               ].map((s) => (
                 <li key={s}>
-                  <a href="#services" className="hover:text-accent transition-colors">
+                  <a href="#services" className="hover:text-white transition-colors">
                     {s}
                   </a>
                 </li>
@@ -44,22 +44,22 @@ export default function Footer() {
 
           {/* Company */}
           <div>
-            <h4 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">
+            <h4 className="font-mono text-xs text-muted tracking-widest uppercase mb-4">
               Company
             </h4>
             <ul className="space-y-2 text-sm text-muted">
               <li>
-                <a href="#how-it-works" className="hover:text-accent transition-colors">
+                <a href="#how-it-works" className="hover:text-white transition-colors">
                   How It Works
                 </a>
               </li>
               <li>
-                <a href="#pricing" className="hover:text-accent transition-colors">
+                <a href="#pricing" className="hover:text-white transition-colors">
                   Pricing
                 </a>
               </li>
               <li>
-                <Link href="/intake" className="hover:text-accent transition-colors">
+                <Link href="/intake" className="hover:text-white transition-colors">
                   Start a Project
                 </Link>
               </li>
@@ -73,7 +73,7 @@ export default function Footer() {
             &copy; {year} Mantis Tech. All rights reserved.
           </p>
           <p className="font-mono text-xs text-dim tracking-wider">
-            Built with intelligence.
+            Built with care.
           </p>
         </div>
       </div>

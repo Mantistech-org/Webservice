@@ -31,7 +31,7 @@ export default function Nav() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <span className="w-2 h-2 rounded-full bg-accent" />
-          <span className="font-heading text-2xl text-white group-hover:text-accent transition-colors">
+          <span className="font-heading text-xl text-white group-hover:text-gray-300 transition-colors">
             Mantis Tech
           </span>
         </Link>
@@ -42,14 +42,14 @@ export default function Nav() {
             <a
               key={link.href}
               href={link.href}
-              className="font-mono text-sm text-muted hover:text-accent transition-colors tracking-wider"
+              className="font-mono text-sm text-muted hover:text-white transition-colors tracking-wider"
             >
               {link.label}
             </a>
           ))}
           <Link
             href="/intake"
-            className="font-mono text-sm bg-accent text-bg px-5 py-2 rounded hover:bg-white transition-colors font-medium tracking-wider"
+            className="font-mono text-sm bg-accent text-bg px-5 py-2 rounded hover:bg-gray-200 transition-colors font-medium tracking-wider"
           >
             Get Started
           </Link>
@@ -80,7 +80,7 @@ export default function Nav() {
             <a
               key={link.href}
               href={link.href}
-              className="font-mono text-sm text-muted hover:text-accent transition-colors tracking-wider"
+              className="font-mono text-sm text-muted hover:text-white transition-colors tracking-wider"
               onClick={() => setMenuOpen(false)}
             >
               {link.label}
