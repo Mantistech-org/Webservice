@@ -28,8 +28,8 @@ export default function Pricing() {
                 key={key}
                 className={`relative rounded border flex flex-col ${
                   isHighlight
-                    ? 'border-accent bg-bg'
-                    : 'border-border bg-bg'
+                    ? 'border-accent bg-[#e8e8e8]'
+                    : 'border-border bg-[#e8e8e8]'
                 }`}
               >
                 {isHighlight && (

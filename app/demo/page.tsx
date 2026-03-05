@@ -1,6 +1,4 @@
 import type { Metadata } from 'next'
-import Nav from '@/components/Nav'
-import Footer from '@/components/Footer'
 import DemoPage from '@/components/demo/DemoPage'
 
 export const metadata: Metadata = {
@@ -10,13 +8,5 @@ export const metadata: Metadata = {
 }
 
 export default function Demo() {
-  return (
-    <>
-      <Nav />
-      <main className="pt-16">
-        <DemoPage />
-      </main>
-      <Footer />
-    </>
-  )
+  return <DemoPage />
 }
