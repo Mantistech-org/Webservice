@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import QuoteCalculator from './QuoteCalculator'
-import { ADDONS, PLANS, Plan } from '@/types'
+import { ADDONS, PLANS, PLAN_INCLUDED_ADDONS, PLAN_PAGE_LIMITS, Plan } from '@/types'
 
 const BUSINESS_TYPES = [
   'Restaurant / Cafe',
@@ -49,6 +49,7 @@ interface FormData {
   additionalNotes: string
   addons: string[]
   plan: Plan
+  requestedPages: string
 }
 
 const DEFAULT_FORM: FormData = {
@@ -67,6 +68,7 @@ const DEFAULT_FORM: FormData = {
   additionalNotes: '',
   addons: [],
   plan: 'starter',
+  requestedPages: '',
 }
 
 type SubmitState = 'idle' | 'submitting' | 'success' | 'error'
@@ -86,7 +88,6 @@ export default function IntakeForm() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const dropRef = useRef<HTMLDivElement>(null)
 
-  // Sync plan from URL param
   useEffect(() => {
     const planParam = searchParams.get('plan') as Plan | null
     if (planParam && planParam in PLANS) {
@@ -98,7 +99,19 @@ export default function IntakeForm() {
     setForm((f) => ({ ...f, [key]: value }))
   }
 
+  const setPlan = (newPlan: Plan) => {
+    const nowIncluded = PLAN_INCLUDED_ADDONS[newPlan]
+    setForm((f) => ({
+      ...f,
+      plan: newPlan,
+      // Remove from extra addons any that are now included in the new plan
+      addons: f.addons.filter((id) => !nowIncluded.includes(id)),
+    }))
+  }
+
   const toggleAddon = (id: string) => {
+    // Don't allow toggling plan-included addons
+    if (PLAN_INCLUDED_ADDONS[form.plan].includes(id)) return
     setForm((f) => ({
       ...f,
       addons: f.addons.includes(id) ? f.addons.filter((a) => a !== id) : [...f.addons, id],
@@ -137,7 +150,6 @@ export default function IntakeForm() {
     setSubmitState('submitting')
     setErrorMsg('')
 
-    // Convert files to base64
     const photoData: string[] = []
     for (const file of files) {
       await new Promise<void>((resolve) => {
@@ -154,7 +166,11 @@ export default function IntakeForm() {
       const res = await fetch('/api/intake', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, photos: photoData }),
+        body: JSON.stringify({
+          ...form,
+          requestedPages: form.requestedPages ? parseInt(form.requestedPages) : undefined,
+          photos: photoData,
+        }),
       })
 
       if (!res.ok) {
@@ -168,6 +184,10 @@ export default function IntakeForm() {
       setErrorMsg(err instanceof Error ? err.message : 'An unexpected error occurred.')
     }
   }
+
+  const pageLimit = PLAN_PAGE_LIMITS[form.plan]
+  const requestedPagesNum = parseInt(form.requestedPages) || 0
+  const showPageWarning = requestedPagesNum > pageLimit
 
   if (submitState === 'success') {
     return (
@@ -214,7 +234,6 @@ export default function IntakeForm() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        {/* Form fields — takes 2 columns */}
         <div className="lg:col-span-2 space-y-10">
 
           {/* Business Info */}
@@ -353,6 +372,23 @@ export default function IntakeForm() {
                   </select>
                 </FormField>
               </div>
+              <FormField label="Number of Pages Requested">
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={form.requestedPages}
+                  onChange={(e) => setField('requestedPages', e.target.value)}
+                  placeholder={`Up to ${pageLimit} pages on ${PLANS[form.plan].name}`}
+                  className="form-input"
+                />
+                {showPageWarning && (
+                  <div className="mt-2 p-3 bg-yellow-950/40 border border-yellow-600/40 rounded text-xs text-yellow-400 font-mono">
+                    Your {PLANS[form.plan].name} plan includes up to {pageLimit} pages. You requested {requestedPagesNum}.
+                    Consider upgrading to {form.plan === 'starter' ? 'Mid (up to 6 pages)' : 'Pro (up to 9 pages)'} to fit your needs.
+                  </div>
+                )}
+              </FormField>
               <FormField label="Specific Features or Requests">
                 <textarea
                   rows={3}
@@ -385,14 +421,14 @@ export default function IntakeForm() {
                 <button
                   key={id}
                   type="button"
-                  onClick={() => setField('plan', id)}
+                  onClick={() => setPlan(id)}
                   className={`text-left p-5 rounded border transition-all duration-200 ${
                     form.plan === id
                       ? 'border-accent bg-accent/5'
                       : 'border-border bg-card hover:border-border-light'
                   }`}
                 >
-                  <div className="font-mono text-xs tracking-widest uppercase mb-2 ${form.plan === id ? 'text-accent' : 'text-muted'}">
+                  <div className="font-mono text-xs tracking-widest uppercase mb-2">
                     {form.plan === id && (
                       <span className="text-accent">
                         <svg className="inline w-3 h-3 mr-1 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
@@ -400,7 +436,7 @@ export default function IntakeForm() {
                         </svg>
                       </span>
                     )}
-                    {plan.name}
+                    <span className={form.plan === id ? 'text-accent' : 'text-muted'}>{plan.name}</span>
                   </div>
                   <div className="font-heading text-3xl text-white leading-none">
                     ${plan.upfront}
@@ -410,6 +446,7 @@ export default function IntakeForm() {
                     ${plan.monthly}
                     <span className="font-mono text-xs text-muted font-normal">/mo</span>
                   </div>
+                  <div className="font-mono text-xs text-dim mt-1">Up to {plan.pages} pages</div>
                 </button>
               ))}
             </div>
@@ -422,18 +459,21 @@ export default function IntakeForm() {
               Add-Ons
             </h2>
             <p className="text-sm text-muted mb-6">
-              Enhance your website with powerful features. Each add-on is billed monthly.
+              Add-ons included in your plan are shown below. Select extras to add to your monthly rate.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {ADDONS.map((addon) => {
-                const checked = form.addons.includes(addon.id)
+                const isIncluded = PLAN_INCLUDED_ADDONS[form.plan].includes(addon.id)
+                const checked = isIncluded || form.addons.includes(addon.id)
                 return (
                   <label
                     key={addon.id}
-                    className={`flex items-center gap-4 p-4 rounded border cursor-pointer transition-all duration-200 ${
-                      checked
-                        ? 'border-accent bg-accent/5'
-                        : 'border-border bg-card hover:border-border-light'
+                    className={`flex items-center gap-4 p-4 rounded border transition-all duration-200 ${
+                      isIncluded
+                        ? 'border-accent/30 bg-accent/5 cursor-default'
+                        : checked
+                        ? 'border-accent bg-accent/5 cursor-pointer'
+                        : 'border-border bg-card hover:border-border-light cursor-pointer'
                     }`}
                   >
                     <div
@@ -451,13 +491,19 @@ export default function IntakeForm() {
                       type="checkbox"
                       className="sr-only"
                       checked={checked}
+                      disabled={isIncluded}
                       onChange={() => toggleAddon(addon.id)}
                     />
                     <div className="flex-1 min-w-0">
                       <div className="text-sm text-white font-medium">{addon.label}</div>
+                      <div className="text-xs text-muted mt-0.5">{addon.description}</div>
                     </div>
-                    <div className="font-mono text-sm text-accent shrink-0">
-                      +${addon.price}/mo
+                    <div className="font-mono text-sm shrink-0">
+                      {isIncluded ? (
+                        <span className="text-accent">Included</span>
+                      ) : (
+                        <span className="text-accent">+${addon.price}/mo</span>
+                      )}
                     </div>
                   </label>
                 )
@@ -503,7 +549,7 @@ export default function IntakeForm() {
                     {isDragging ? 'Drop files here' : 'Drag and drop photos here'}
                   </p>
                   <p className="font-mono text-xs text-dim mt-1">
-                    or click to browse — PNG, JPG, WEBP up to 5MB each
+                    or click to browse. PNG, JPG, WEBP up to 5MB each
                   </p>
                 </div>
               </div>
@@ -517,7 +563,6 @@ export default function IntakeForm() {
               />
             </div>
 
-            {/* Previews */}
             {filePreviews.length > 0 && (
               <div className="mt-4 grid grid-cols-4 gap-3">
                 {filePreviews.map((src, i) => (
@@ -541,14 +586,12 @@ export default function IntakeForm() {
             )}
           </section>
 
-          {/* Error message */}
           {submitState === 'error' && (
             <div className="p-4 bg-red-950/40 border border-red-800/60 rounded text-sm text-red-400 font-mono">
               {errorMsg}
             </div>
           )}
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={submitState === 'submitting'}
@@ -575,7 +618,6 @@ export default function IntakeForm() {
           </p>
         </div>
 
-        {/* Quote Calculator — sticky sidebar */}
         <div className="lg:col-span-1">
           <QuoteCalculator selectedAddons={form.addons} selectedPlan={form.plan} />
         </div>

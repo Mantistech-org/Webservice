@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Project, ProjectStatus, PLANS, ADDONS } from '@/types'
+import { Project, ProjectStatus, PLANS, ADDONS, ADDONS as ALL_ADDONS } from '@/types'
 
 const STATUS_LABELS: Record<ProjectStatus, string> = {
   admin_review: 'Awaiting Review',
@@ -25,23 +25,26 @@ export default function AdminProjectPage() {
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
   const [approving, setApproving] = useState(false)
   const [requestingChanges, setRequestingChanges] = useState(false)
   const [changesNotes, setChangesNotes] = useState('')
   const [showChangesInput, setShowChangesInput] = useState(false)
   const [actionMsg, setActionMsg] = useState('')
 
+  const [respondingToId, setRespondingToId] = useState<string | null>(null)
+  const [responseText, setResponseText] = useState('')
+  const [sendingResponse, setSendingResponse] = useState(false)
+
+  const [notifMessage, setNotifMessage] = useState('')
+  const [sendingNotif, setSendingNotif] = useState(false)
+  const [notifMsg, setNotifMsg] = useState('')
+
   const fetchProject = useCallback(async () => {
     try {
       const res = await fetch(`/api/admin/projects/${id}`)
-      if (res.status === 401) {
-        router.push('/admin')
-        return
-      }
-      if (!res.ok) {
-        setError('Project not found.')
-        return
-      }
+      if (res.status === 401) { router.push('/admin'); return }
+      if (!res.ok) { setError('Project not found.'); return }
       const data = await res.json()
       setProject(data.project)
     } catch {
@@ -51,9 +54,7 @@ export default function AdminProjectPage() {
     }
   }, [id, router])
 
-  useEffect(() => {
-    fetchProject()
-  }, [fetchProject])
+  useEffect(() => { fetchProject() }, [fetchProject])
 
   const handleApprove = async () => {
     setApproving(true)
@@ -86,6 +87,41 @@ export default function AdminProjectPage() {
     setRequestingChanges(false)
   }
 
+  const handleRespondToChange = async (changeRequestId: string) => {
+    setSendingResponse(true)
+    const res = await fetch(`/api/admin/projects/${id}/respond-change`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ changeRequestId, response: responseText }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      setProject(data.project)
+      setRespondingToId(null)
+      setResponseText('')
+    }
+    setSendingResponse(false)
+  }
+
+  const handleSendNotification = async () => {
+    if (!notifMessage.trim()) return
+    setSendingNotif(true)
+    const res = await fetch(`/api/admin/projects/${id}/notify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: notifMessage }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      setProject((p) => p ? { ...p, notifications: [...(p.notifications ?? []), data.notification] } : p)
+      setNotifMessage('')
+      setNotifMsg('Notification sent to client.')
+    } else {
+      setNotifMsg('Failed to send notification.')
+    }
+    setSendingNotif(false)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center">
@@ -112,7 +148,6 @@ export default function AdminProjectPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      {/* Header */}
       <header className="border-b border-border bg-card px-6 py-4 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <Link href="/admin" className="font-mono text-xs text-muted hover:text-accent transition-colors">
@@ -120,21 +155,17 @@ export default function AdminProjectPage() {
           </Link>
           <span className="text-border">/</span>
           <span className="font-heading text-lg text-white truncate max-w-xs">{project.businessName}</span>
-          <span
-            className={`font-mono text-xs border px-2 py-0.5 rounded-full ${STATUS_COLORS[project.status]}`}
-          >
+          <span className={`font-mono text-xs border px-2 py-0.5 rounded-full ${STATUS_COLORS[project.status]}`}>
             {STATUS_LABELS[project.status]}
           </span>
         </div>
-        <div className="font-mono text-xs text-dim hidden sm:block">
-          ID: {project.id}
-        </div>
+        <div className="font-mono text-xs text-dim hidden sm:block">ID: {project.id}</div>
       </header>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
 
-          {/* Preview iframe — takes 2 columns */}
+          {/* Preview */}
           <div className="xl:col-span-2 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h2 className="font-heading text-3xl text-white">Website Preview</h2>
@@ -156,7 +187,6 @@ export default function AdminProjectPage() {
               />
             </div>
 
-            {/* Action buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
               {project.status === 'admin_review' || project.status === 'changes_requested' ? (
                 <>
@@ -219,13 +249,11 @@ export default function AdminProjectPage() {
             )}
           </div>
 
-          {/* Project details sidebar */}
+          {/* Sidebar */}
           <div className="space-y-6">
             {/* Client info */}
             <div className="bg-card border border-border rounded p-6">
-              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">
-                Client Information
-              </h3>
+              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Client Information</h3>
               <dl className="space-y-3">
                 {[
                   ['Business', project.businessName],
@@ -239,9 +267,7 @@ export default function AdminProjectPage() {
                   ['Style', project.stylePreference],
                 ].map(([label, value]) => (
                   <div key={label}>
-                    <dt className="font-mono text-xs text-muted uppercase tracking-wider mb-0.5">
-                      {label}
-                    </dt>
+                    <dt className="font-mono text-xs text-muted uppercase tracking-wider mb-0.5">{label}</dt>
                     <dd className="text-sm text-white break-words">{value}</dd>
                   </div>
                 ))}
@@ -250,9 +276,7 @@ export default function AdminProjectPage() {
 
             {/* Plan and Add-ons */}
             <div className="bg-card border border-border rounded p-6">
-              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">
-                Plan and Add-ons
-              </h3>
+              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Plan and Add-ons</h3>
               <div className="mb-4">
                 <div className="font-mono text-xs text-muted uppercase mb-1">Plan</div>
                 <div className="font-heading text-2xl text-white capitalize">
@@ -279,36 +303,25 @@ export default function AdminProjectPage() {
               )}
             </div>
 
-            {/* Description */}
+            {/* Business Description */}
             <div className="bg-card border border-border rounded p-6">
-              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">
-                Business Description
-              </h3>
+              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Business Description</h3>
               <p className="text-sm text-teal leading-relaxed">{project.businessDescription}</p>
-
               {project.primaryGoal && (
                 <>
-                  <div className="font-mono text-xs text-muted uppercase tracking-wider mt-4 mb-1">
-                    Primary Goal
-                  </div>
+                  <div className="font-mono text-xs text-muted uppercase tracking-wider mt-4 mb-1">Primary Goal</div>
                   <p className="text-sm text-teal">{project.primaryGoal}</p>
                 </>
               )}
-
               {project.specificFeatures && (
                 <>
-                  <div className="font-mono text-xs text-muted uppercase tracking-wider mt-4 mb-1">
-                    Specific Features
-                  </div>
+                  <div className="font-mono text-xs text-muted uppercase tracking-wider mt-4 mb-1">Specific Features</div>
                   <p className="text-sm text-teal">{project.specificFeatures}</p>
                 </>
               )}
-
               {project.additionalNotes && (
                 <>
-                  <div className="font-mono text-xs text-muted uppercase tracking-wider mt-4 mb-1">
-                    Additional Notes
-                  </div>
+                  <div className="font-mono text-xs text-muted uppercase tracking-wider mt-4 mb-1">Additional Notes</div>
                   <p className="text-sm text-teal">{project.additionalNotes}</p>
                 </>
               )}
@@ -317,36 +330,139 @@ export default function AdminProjectPage() {
             {/* Uploaded files */}
             {project.uploadedFiles?.length > 0 && (
               <div className="bg-card border border-border rounded p-6">
-                <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">
-                  Uploaded Photos
-                </h3>
+                <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Uploaded Photos</h3>
                 <div className="grid grid-cols-3 gap-2">
                   {project.uploadedFiles.map((file, i) => (
-                    <a
-                      key={i}
-                      href={file}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="aspect-square block rounded overflow-hidden border border-border hover:border-accent transition-colors"
-                    >
+                    <a key={i} href={file} target="_blank" rel="noopener noreferrer"
+                      className="aspect-square block rounded overflow-hidden border border-border hover:border-accent transition-colors">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={file}
-                        alt={`Photo ${i + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={file} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
                     </a>
                   ))}
                 </div>
               </div>
             )}
 
+            {/* Change Requests */}
+            <div className="bg-card border border-border rounded p-6">
+              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">
+                Change Requests {(project.changeRequests?.length ?? 0) > 0 && `(${project.changeRequests!.length})`}
+              </h3>
+              {project.changeRequests && project.changeRequests.length > 0 ? (
+                <div className="space-y-4">
+                  {project.changeRequests.map((req) => (
+                    <div key={req.id} className="border border-border rounded p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className={`font-mono text-xs border px-2 py-0.5 rounded-full ${req.status === 'resolved' ? 'text-accent border-accent/30' : 'text-yellow-400 border-yellow-400/30'}`}>
+                          {req.status === 'resolved' ? 'Resolved' : 'Pending'}
+                        </span>
+                        <span className="font-mono text-xs text-dim">{new Date(req.createdAt).toLocaleString()}</span>
+                      </div>
+                      <p className="text-sm text-teal">{req.message}</p>
+                      {req.adminResponse && (
+                        <div className="bg-bg border border-border rounded p-3">
+                          <div className="font-mono text-xs text-accent mb-1">Your Response</div>
+                          <p className="text-sm text-white">{req.adminResponse}</p>
+                        </div>
+                      )}
+                      {req.status === 'pending' && (
+                        <>
+                          {respondingToId === req.id ? (
+                            <div className="space-y-2">
+                              <textarea
+                                value={responseText}
+                                onChange={(e) => setResponseText(e.target.value)}
+                                placeholder="Type your response..."
+                                rows={3}
+                                className="form-input resize-none text-xs w-full"
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleRespondToChange(req.id)}
+                                  disabled={sendingResponse || !responseText.trim()}
+                                  className="flex-1 font-mono text-xs bg-accent text-bg py-2 rounded hover:bg-white transition-all disabled:opacity-60"
+                                >
+                                  {sendingResponse ? 'Sending...' : 'Send and Resolve'}
+                                </button>
+                                <button
+                                  onClick={() => { setRespondingToId(null); setResponseText('') }}
+                                  className="font-mono text-xs text-muted px-3 py-2 border border-border rounded hover:border-border-light transition-all"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setRespondingToId(req.id)}
+                              className="font-mono text-xs text-accent border border-accent/30 px-3 py-1.5 rounded hover:bg-accent/5 transition-all"
+                            >
+                              Respond
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-dim font-mono">No change requests yet.</p>
+              )}
+            </div>
+
+            {/* Upsell Activity */}
+            <div className="bg-card border border-border rounded p-6">
+              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Upsell Activity</h3>
+              {project.upsellClicks && project.upsellClicks.length > 0 ? (
+                <div className="space-y-1.5">
+                  {project.upsellClicks.map((click, i) => {
+                    const [type, value] = click.split(':')
+                    const addonLabel = type === 'addon'
+                      ? ALL_ADDONS.find((a) => a.id === value)?.label ?? value
+                      : null
+                    return (
+                      <div key={i} className="flex items-center gap-2 text-xs font-mono">
+                        <span className={`px-1.5 py-0.5 rounded text-xs ${type === 'upgrade' ? 'bg-blue-400/10 text-blue-400' : 'bg-accent/10 text-accent'}`}>
+                          {type}
+                        </span>
+                        <span className="text-teal">{addonLabel ?? value}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-dim font-mono">No upsell activity yet.</p>
+              )}
+            </div>
+
+            {/* Send Notification */}
+            <div className="bg-card border border-border rounded p-6">
+              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Send Notification</h3>
+              <div className="space-y-3">
+                <textarea
+                  value={notifMessage}
+                  onChange={(e) => setNotifMessage(e.target.value)}
+                  placeholder="Type a message to send to the client dashboard..."
+                  rows={3}
+                  className="form-input resize-none text-xs w-full"
+                />
+                <button
+                  onClick={handleSendNotification}
+                  disabled={sendingNotif || !notifMessage.trim()}
+                  className="w-full font-mono text-xs bg-accent text-bg py-2.5 rounded hover:bg-white transition-all disabled:opacity-60"
+                >
+                  {sendingNotif ? 'Sending...' : 'Send to Client'}
+                </button>
+                {notifMsg && (
+                  <p className="font-mono text-xs text-accent">{notifMsg}</p>
+                )}
+              </div>
+            </div>
+
             {/* Admin notes */}
             {project.adminNotes && (
               <div className="bg-orange-950/20 border border-orange-400/20 rounded p-6">
-                <h3 className="font-mono text-xs text-orange-400 tracking-widest uppercase mb-3">
-                  Admin Notes
-                </h3>
+                <h3 className="font-mono text-xs text-orange-400 tracking-widest uppercase mb-3">Admin Notes</h3>
                 <p className="text-sm text-orange-300 leading-relaxed">{project.adminNotes}</p>
               </div>
             )}

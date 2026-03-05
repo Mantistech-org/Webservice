@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { Project } from '@/types'
+import { Project, PLAN_PAGE_LIMITS } from '@/types'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -8,6 +8,7 @@ const client = new Anthropic({
 export async function generateWebsite(project: Project): Promise<string> {
   const addonsList =
     project.addons.length > 0 ? project.addons.join(', ') : 'None selected'
+  const pageLimit = PLAN_PAGE_LIMITS[project.plan]
 
   const prompt = `You are an elite web designer and developer. Create a complete, modern, responsive single-page HTML website for the following business. The website must be production-ready with all CSS and JavaScript embedded inline — no external stylesheets or scripts except Google Fonts.
 
@@ -23,6 +24,8 @@ BUSINESS PROFILE:
 - Specific Features Requested: ${project.specificFeatures}
 - Active Add-ons: ${addonsList}
 - Additional Notes: ${project.additionalNotes}
+
+PAGE LIMIT: This is a ${project.plan} plan. Generate a maximum of ${pageLimit} pages. Keep the site focused within this limit.
 
 DESIGN REQUIREMENTS:
 1. Match the style preference exactly: "${project.stylePreference}"

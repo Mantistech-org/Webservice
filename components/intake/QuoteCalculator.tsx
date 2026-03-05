@@ -1,6 +1,6 @@
 'use client'
 
-import { ADDONS, PLANS, Plan, BASE_MONTHLY } from '@/types'
+import { ADDONS, PLANS, PLAN_INCLUDED_ADDONS, Plan } from '@/types'
 
 interface QuoteCalculatorProps {
   selectedAddons: string[]
@@ -8,14 +8,15 @@ interface QuoteCalculatorProps {
 }
 
 export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteCalculatorProps) {
-  const addonTotal = ADDONS.filter((a) => selectedAddons.includes(a.id)).reduce(
-    (sum, a) => sum + a.price,
-    0
-  )
-  const monthlyTotal = BASE_MONTHLY + addonTotal
   const plan = PLANS[selectedPlan]
+  const includedAddonIds = PLAN_INCLUDED_ADDONS[selectedPlan]
 
-  const activeAddons = ADDONS.filter((a) => selectedAddons.includes(a.id))
+  // Only extra add-ons beyond what the plan includes cost extra
+  const extraAddons = ADDONS.filter(
+    (a) => selectedAddons.includes(a.id) && !includedAddonIds.includes(a.id)
+  )
+  const extraAddonTotal = extraAddons.reduce((sum, a) => sum + a.price, 0)
+  const monthlyTotal = plan.monthly + extraAddonTotal
 
   return (
     <div className="sticky top-20 bg-card border border-border rounded overflow-hidden">
@@ -55,11 +56,11 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
 
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-teal">Base website</span>
-              <span className="font-mono text-white">${BASE_MONTHLY}/mo</span>
+              <span className="text-teal">{plan.name} plan</span>
+              <span className="font-mono text-white">${plan.monthly}/mo</span>
             </div>
 
-            {activeAddons.map((addon) => (
+            {extraAddons.map((addon) => (
               <div key={addon.id} className="flex items-center justify-between text-sm">
                 <span className="text-teal flex items-center gap-2">
                   <span className="text-accent text-xs">+</span>
@@ -69,8 +70,8 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
               </div>
             ))}
 
-            {activeAddons.length === 0 && (
-              <p className="text-xs text-dim font-mono">No add-ons selected yet.</p>
+            {extraAddons.length === 0 && (
+              <p className="text-xs text-dim font-mono">No extra add-ons selected.</p>
             )}
           </div>
         </div>
@@ -98,11 +99,10 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
           </div>
         </div>
 
-        {activeAddons.length > 0 && (
+        {extraAddons.length > 0 && (
           <div className="bg-bg rounded border border-border/50 p-3">
             <div className="font-mono text-xs text-dim">
-              {activeAddons.length} add-on{activeAddons.length > 1 ? 's' : ''} selected
-              &mdash; saving you time and resources from day one.
+              {extraAddons.length} extra add-on{extraAddons.length > 1 ? 's' : ''} selected on top of your plan.
             </div>
           </div>
         )}

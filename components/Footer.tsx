@@ -26,12 +26,12 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-muted">
               {[
-                'AI Ad Generation',
+                'Review Management',
                 'Social Media Automation',
-                'Online Booking',
-                'E-Commerce',
                 'SEO Optimization',
-                'AI Chatbot',
+                'E-Commerce Automation',
+                'Website Chatbot',
+                'Automated Email Marketing',
               ].map((s) => (
                 <li key={s}>
                   <a href="#services" className="hover:text-accent transition-colors">

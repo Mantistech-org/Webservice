@@ -1,20 +1,8 @@
-const SERVICES = [
-  'AI Ad Generation',
-  'Social Media Automation',
-  'Online Booking',
-  'E-Commerce',
-  'SEO Optimization',
-  'AI Chatbot',
-  'Monthly Analytics',
-  'AI Review Management',
-  'Email Marketing',
-  'Customer Loyalty Programs',
-  'Domain Hosting',
-  'Custom Web Design',
-]
+import { ADDONS } from '@/types'
 
 export default function Ticker() {
-  const doubled = [...SERVICES, ...SERVICES]
+  const services = ADDONS.map((a) => a.label)
+  const doubled = [...services, ...services]
 
   return (
     <div className="relative border-y border-border bg-card overflow-hidden py-4">

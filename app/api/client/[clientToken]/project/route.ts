@@ -14,6 +14,7 @@ export async function GET(
 
   return NextResponse.json({
     project: {
+      id: project.id,
       businessName: project.businessName,
       ownerName: project.ownerName,
       email: project.email,
@@ -21,6 +22,11 @@ export async function GET(
       status: project.status,
       addons: project.addons,
       clientToken: project.clientToken,
+      hasGeneratedHtml: !!project.generatedHtml,
+      changeRequests: project.changeRequests ?? [],
+      notifications: project.notifications ?? [],
+      upsellClicks: project.upsellClicks ?? [],
+      stripeAddonSubscriptions: project.stripeAddonSubscriptions ?? [],
     },
   })
 }

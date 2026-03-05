@@ -28,8 +28,8 @@ export default function Hero() {
         </h1>
 
         <p className="text-lg md:text-xl text-teal max-w-2xl mx-auto mb-12 leading-relaxed">
-          Intelligent websites built for modern businesses. AI-driven advertising, booking systems,
-          social automation, and more — all in one place.
+          Intelligent websites built for modern businesses. AI powered advertising, booking systems,
+          social automation, and more. All in one place.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

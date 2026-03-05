@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
       addons,
       plan,
       photos,
+      requestedPages,
     } = body
 
     // Validate required fields
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const validPlans: Plan[] = ['starter', 'growth', 'pro']
+    const validPlans: Plan[] = ['starter', 'mid', 'pro']
     if (!validPlans.includes(plan)) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
@@ -90,6 +91,7 @@ export async function POST(req: NextRequest) {
       additionalNotes: additionalNotes ?? '',
       addons: Array.isArray(addons) ? addons : [],
       plan,
+      requestedPages: typeof requestedPages === 'number' ? requestedPages : undefined,
       generatedHtml: '',
       adminNotes: '',
       uploadedFiles,

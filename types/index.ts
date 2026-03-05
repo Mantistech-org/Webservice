@@ -4,7 +4,23 @@ export type ProjectStatus =
   | 'changes_requested'
   | 'active'
 
-export type Plan = 'starter' | 'growth' | 'pro'
+export type Plan = 'starter' | 'mid' | 'pro'
+
+export interface ChangeRequest {
+  id: string
+  message: string
+  createdAt: string
+  adminResponse?: string
+  resolvedAt?: string
+  status: 'pending' | 'resolved'
+}
+
+export interface ClientNotification {
+  id: string
+  message: string
+  createdAt: string
+  read: boolean
+}
 
 export interface Project {
   id: string
@@ -30,6 +46,7 @@ export interface Project {
   additionalNotes: string
   addons: string[]
   plan: Plan
+  requestedPages?: number
 
   // Generated website
   generatedHtml: string
@@ -41,34 +58,95 @@ export interface Project {
   stripeSessionId?: string
   stripeCustomerId?: string
   stripeSubscriptionId?: string
+  stripeAddonSubscriptions?: string[]
 
-  // Uploaded files (relative paths under /uploads)
+  // Uploaded files
   uploadedFiles: string[]
+
+  // Client engagement
+  changeRequests?: ChangeRequest[]
+  notifications?: ClientNotification[]
+  upsellClicks?: string[]
 }
 
 export interface Addon {
   id: string
   label: string
   price: number
+  description: string
 }
 
 export const ADDONS: Addon[] = [
-  { id: 'online-booking', label: 'Online Booking', price: 49 },
-  { id: 'ai-ads', label: 'AI Ad Generation', price: 79 },
-  { id: 'social-automation', label: 'Social Media Automation', price: 69 },
-  { id: 'ecommerce', label: 'E-Commerce', price: 99 },
-  { id: 'seo', label: 'SEO Optimization', price: 59 },
-  { id: 'ai-chatbot', label: 'AI Chatbot', price: 49 },
-  { id: 'analytics', label: 'Monthly Analytics', price: 39 },
-  { id: 'review-management', label: 'AI Review Management', price: 49 },
-  { id: 'email-marketing', label: 'Email Marketing', price: 29 },
-  { id: 'loyalty-program', label: 'Customer Loyalty Program', price: 39 },
+  { id: 'review-management', label: 'Review Management', price: 19, description: 'Auto filters and posts 5 star reviews to Google.' },
+  { id: 'social-media-automation', label: 'Social Media Automation', price: 24, description: 'Upload a photo and it posts to all your socials as an ad.' },
+  { id: 'lead-generation', label: 'Automated Lead Generation and Outreach', price: 30, description: 'Finds businesses matching your criteria and sends emails automatically.' },
+  { id: 'seo-optimization', label: 'SEO Optimization', price: 25, description: 'Keeps your site ranking without you touching it.' },
+  { id: 'ecommerce-automation', label: 'E-Commerce Automation', price: 34, description: 'Handles inventory updates, order fulfillment and email marketing automatically.' },
+  { id: 'ad-creative-generation', label: 'Ad Creative Generation', price: 19, description: 'Turns your photos into polished ads automatically.' },
+  { id: 'website-chatbot', label: 'Website Chatbot', price: 15, description: 'Answers customer questions and captures leads 24/7.' },
+  { id: 'email-marketing', label: 'Automated Email Marketing', price: 15, description: 'Scheduled campaigns that run without you.' },
+  { id: 'email-with-domain', label: 'Email with Domain', price: 12, description: 'Professional email address at your business domain.' },
 ]
 
-export const PLANS = {
-  starter: { name: 'Starter', upfront: 100, monthly: 50 },
-  growth: { name: 'Growth', upfront: 200, monthly: 100 },
-  pro: { name: 'Pro', upfront: 300, monthly: 150 },
-} as const
+export const PLAN_INCLUDED_ADDONS: Record<Plan, string[]> = {
+  starter: [],
+  mid: ['review-management', 'social-media-automation', 'seo-optimization', 'ad-creative-generation'],
+  pro: ['review-management', 'social-media-automation', 'lead-generation', 'seo-optimization', 'ecommerce-automation', 'ad-creative-generation', 'website-chatbot', 'email-marketing'],
+}
 
-export const BASE_MONTHLY = 50
+export const PLAN_PAGE_LIMITS: Record<Plan, number> = {
+  starter: 4,
+  mid: 6,
+  pro: 9,
+}
+
+export const PLANS = {
+  starter: {
+    name: 'Starter',
+    upfront: 100,
+    monthly: 40,
+    pages: 4,
+    features: [
+      'Custom website up to 4 pages',
+      'Hosting and domain',
+      'Monthly performance report',
+      'Automated booking calendar',
+    ],
+  },
+  mid: {
+    name: 'Mid',
+    upfront: 150,
+    monthly: 70,
+    pages: 6,
+    features: [
+      'Custom website up to 6 pages',
+      'Hosting and domain',
+      'Monthly performance report',
+      'Automated booking calendar',
+      'Social Media Automation',
+      'Review Management',
+      'SEO Optimization',
+      'Ad Creative Generation',
+    ],
+  },
+  pro: {
+    name: 'Pro',
+    upfront: 250,
+    monthly: 120,
+    pages: 9,
+    features: [
+      'Custom website up to 9 pages',
+      'Hosting and domain',
+      'Monthly performance report',
+      'Automated booking calendar',
+      'Social Media Automation',
+      'Review Management',
+      'SEO Optimization',
+      'Ad Creative Generation',
+      'E-Commerce Automation',
+      'Automated Lead Generation and Outreach',
+      'Website Chatbot',
+      'Automated Email Marketing',
+    ],
+  },
+} as const
