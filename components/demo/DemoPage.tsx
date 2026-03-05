@@ -1,0 +1,116 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
+import ReviewManagement from './tabs/ReviewManagement'
+import SocialMedia from './tabs/SocialMedia'
+import LeadGeneration from './tabs/LeadGeneration'
+import SEOOptimization from './tabs/SEOOptimization'
+import ECommerceAutomation from './tabs/ECommerceAutomation'
+import AdCreative from './tabs/AdCreative'
+import WebsiteChatbot from './tabs/WebsiteChatbot'
+import EmailMarketing from './tabs/EmailMarketing'
+
+const TABS = [
+  { id: 'review', label: 'Review Management' },
+  { id: 'social', label: 'Social Media' },
+  { id: 'leads', label: 'Lead Generation' },
+  { id: 'seo', label: 'SEO Optimization' },
+  { id: 'ecommerce', label: 'E-Commerce' },
+  { id: 'ads', label: 'Ad Creative' },
+  { id: 'chatbot', label: 'Website Chatbot' },
+  { id: 'email', label: 'Email Marketing' },
+]
+
+export default function DemoPage() {
+  const [activeTab, setActiveTab] = useState('review')
+  const [sessionId, setSessionId] = useState('')
+  const tabBarRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem('demo-session-id')
+    if (stored) {
+      setSessionId(stored)
+    } else {
+      const id = crypto.randomUUID()
+      sessionStorage.setItem('demo-session-id', id)
+      setSessionId(id)
+    }
+  }, [])
+
+  const handleTabChange = (id: string) => {
+    setActiveTab(id)
+    // Scroll tab into view on mobile
+    const el = tabBarRef.current?.querySelector(`[data-tab="${id}"]`) as HTMLElement | null
+    el?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+  }
+
+  const renderTab = () => {
+    switch (activeTab) {
+      case 'review':    return <ReviewManagement sessionId={sessionId} />
+      case 'social':    return <SocialMedia sessionId={sessionId} />
+      case 'leads':     return <LeadGeneration sessionId={sessionId} />
+      case 'seo':       return <SEOOptimization sessionId={sessionId} />
+      case 'ecommerce': return <ECommerceAutomation sessionId={sessionId} />
+      case 'ads':       return <AdCreative sessionId={sessionId} />
+      case 'chatbot':   return <WebsiteChatbot sessionId={sessionId} />
+      case 'email':     return <EmailMarketing sessionId={sessionId} />
+      default:          return null
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-bg">
+      {/* Banner */}
+      <div className="bg-accent">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div>
+            <p className="font-mono text-xs tracking-widest uppercase text-black/60 mb-0.5">
+              Free Trial
+            </p>
+            <p className="font-heading text-lg text-black leading-tight">
+              You are trying all Mantis Tech tools at no cost. No sign-up required.
+            </p>
+          </div>
+          <Link
+            href="/intake"
+            className="shrink-0 font-mono text-sm bg-black text-accent px-6 py-3 rounded tracking-wider hover:opacity-80 transition-opacity whitespace-nowrap"
+          >
+            Get Your Business Set Up Today
+          </Link>
+        </div>
+      </div>
+
+      {/* Tab navigation */}
+      <div className="border-b border-border bg-card sticky top-16 z-40">
+        <div className="max-w-7xl mx-auto px-6">
+          <div
+            ref={tabBarRef}
+            className="flex gap-1 overflow-x-auto scrollbar-hide py-1"
+            style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
+          >
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                data-tab={tab.id}
+                onClick={() => handleTabChange(tab.id)}
+                className={`shrink-0 font-mono text-xs tracking-wider px-4 py-3 border-b-2 transition-all duration-150 whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'border-accent text-accent'
+                    : 'border-transparent text-muted hover:text-primary'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Tab content */}
+      <div className="max-w-7xl mx-auto px-6 py-10">
+        {renderTab()}
+      </div>
+    </div>
+  )
+}

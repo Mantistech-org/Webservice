@@ -4,6 +4,14 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ProjectStatus, Plan } from '@/types'
 
+interface DemoSession {
+  id: string
+  createdAt: string
+  lastActiveAt: string
+  tabsUsed: string[]
+  submissions: Record<string, number>
+}
+
 interface ProjectSummary {
   id: string
   businessName: string
@@ -38,6 +46,8 @@ export default function AdminPage() {
   const [projects, setProjects] = useState<ProjectSummary[]>([])
   const [loading, setLoading] = useState(false)
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | 'all'>('all')
+  const [demoSessions, setDemoSessions] = useState<DemoSession[]>([])
+  const [demoLoading, setDemoLoading] = useState(false)
 
   // Check auth on mount
   useEffect(() => {
@@ -52,7 +62,10 @@ export default function AdminPage() {
         }
       })
       .then((data) => {
-        if (data) setProjects(data.projects)
+        if (data) {
+          setProjects(data.projects)
+          loadDemoSessions()
+        }
       })
       .catch(() => setAuthed(false))
   }, [])
@@ -63,6 +76,14 @@ export default function AdminPage() {
       .then((r) => r.json())
       .then((data) => setProjects(data.projects ?? []))
       .finally(() => setLoading(false))
+  }
+
+  const loadDemoSessions = () => {
+    setDemoLoading(true)
+    fetch('/api/admin/demo-sessions')
+      .then((r) => r.json())
+      .then((data) => setDemoSessions(data.sessions ?? []))
+      .finally(() => setDemoLoading(false))
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -77,6 +98,7 @@ export default function AdminPage() {
     if (res.ok) {
       setAuthed(true)
       loadProjects()
+      loadDemoSessions()
     } else {
       setLoginError('Incorrect password.')
     }
@@ -266,6 +288,75 @@ export default function AdminPage() {
             ))}
           </div>
         )}
+
+        {/* Demo Visitors */}
+        <div className="mt-16 pt-10 border-t border-border">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="font-heading text-3xl text-white mb-1">Demo Visitors</h2>
+              <p className="font-mono text-sm text-muted">
+                {demoSessions.length} session{demoSessions.length !== 1 ? 's' : ''} recorded
+              </p>
+            </div>
+            <button
+              onClick={loadDemoSessions}
+              disabled={demoLoading}
+              className="font-mono text-xs text-muted hover:text-accent transition-colors tracking-wider"
+            >
+              {demoLoading ? 'Loading...' : 'Refresh'}
+            </button>
+          </div>
+
+          {demoSessions.length === 0 ? (
+            <div className="text-center py-12 font-mono text-sm text-muted">
+              No demo sessions yet. Share /demo to start tracking visitors.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {demoSessions.map((session) => {
+                const totalSubmissions = Object.values(session.submissions).reduce((a, b) => a + b, 0)
+                return (
+                  <div key={session.id} className="bg-card border border-border rounded p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="font-mono text-xs text-muted">Session {session.id.slice(0, 8)}</span>
+                          <span className="font-mono text-xs text-accent border border-accent/30 bg-accent/5 px-2 py-0.5 rounded-full">
+                            {totalSubmissions} submission{totalSubmissions !== 1 ? 's' : ''}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {session.tabsUsed.map((tab) => (
+                            <span key={tab} className="font-mono text-xs bg-bg border border-border text-teal px-2 py-0.5 rounded capitalize">
+                              {tab.replace(/-/g, ' ')}
+                              {session.submissions[tab] > 1 && (
+                                <span className="ml-1 text-muted">x{session.submissions[tab]}</span>
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="font-mono text-xs text-muted">
+                          {new Date(session.createdAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </div>
+                        <div className="font-mono text-xs text-dim mt-0.5">
+                          Last active {new Date(session.lastActiveAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   )
