@@ -88,11 +88,11 @@ body {
 
 /* Form inputs */
 .form-input {
-  @apply w-full bg-card border border-border text-primary rounded px-4 py-3 font-mono text-sm
-    placeholder:text-dim focus:outline-none focus:border-accent transition-colors duration-200;
+  @apply w-full bg-[#e8e8e8] border border-border text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm
+    placeholder:text-[#aaaaaa] focus:outline-none focus:border-accent transition-colors duration-200;
 }
 
 select.form-input option {
-  background-color: rgb(var(--color-card));
-  color: rgb(var(--color-primary));
+  background-color: #e8e8e8;
+  color: #1a1a1a;
 }

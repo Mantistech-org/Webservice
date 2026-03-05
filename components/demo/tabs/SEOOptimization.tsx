@@ -200,7 +200,7 @@ export default function SEOOptimization({ sessionId }: Props) {
                   {result.pageTitles.map((title, i) => (
                     <div key={i} className="bg-[#efefef] border border-[#d0d0d0] rounded p-4">
                       <div className="text-blue-400 text-sm font-medium mb-1">{title}</div>
-                      <div className="font-mono text-xs text-muted mb-1">{businessName} — {location}</div>
+                      <div className="font-mono text-xs text-muted mb-1">{businessName} · {location}</div>
                       {result.metaDescriptions[i] && (
                         <div className="font-mono text-xs text-teal leading-relaxed">{result.metaDescriptions[i]}</div>
                       )}

@@ -283,7 +283,6 @@ export default function ClientDashboard() {
             <div className="bg-card border border-border rounded p-6">
               <h2 className="font-heading text-xl text-white mb-1">Monthly Performance Report</h2>
               <div className="mt-4 bg-bg border border-border rounded p-8 text-center">
-                <div className="text-5xl mb-4">📊</div>
                 <p className="font-mono text-sm text-muted">
                   Your first report will arrive within 30 days of your site going live.
                 </p>
@@ -330,7 +329,7 @@ export default function ClientDashboard() {
                   >
                     {creatingCheckout === `upgrade:${nextPlan}`
                       ? 'Loading...'
-                      : `Upgrade to ${PLANS[nextPlan].name} — $${PLANS[nextPlan].monthly}/mo`}
+                      : `Upgrade to ${PLANS[nextPlan].name} for $${PLANS[nextPlan].monthly}/mo`}
                   </button>
                 </>
               )}

@@ -93,9 +93,9 @@ export default function DemoPage() {
       <div style={{ backgroundColor: '#000000' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div>
-            <p className="font-mono text-xs tracking-widest uppercase mb-0.5" style={{ color: '#3a6a8a' }}>
+            <span className="inline-block font-mono text-xs tracking-widest uppercase px-2 py-0.5 rounded mb-1" style={{ backgroundColor: '#00ff88', color: '#000000' }}>
               Free Trial
-            </p>
+            </span>
             <p className="font-heading text-lg leading-tight" style={{ color: '#f0f0f0' }}>
               You are trying all Mantis Tech tools at no cost. No sign-up required.
             </p>
