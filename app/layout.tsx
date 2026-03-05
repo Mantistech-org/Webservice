@@ -1,23 +1,11 @@
 import type { Metadata } from 'next'
-import { Playfair_Display, DM_Sans, DM_Mono } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
 
-const playfair = Playfair_Display({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-playfair',
-  display: 'swap',
-})
-
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  variable: '--font-dm-sans',
-  display: 'swap',
-})
-
-const dmMono = DM_Mono({
-  weight: ['300', '400', '500'],
-  subsets: ['latin'],
-  variable: '--font-dm-mono',
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-inter',
   display: 'swap',
 })
 
@@ -40,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${playfair.variable} ${dmSans.variable} ${dmMono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
         {/* Restore saved theme — light is default, only apply class if dark was saved */}
         <script
