@@ -5,7 +5,7 @@ import IntakeForm from '@/components/intake/IntakeForm'
 
 export const metadata = {
   title: 'Start Your Project | Mantis Tech',
-  description: 'Tell us about your business and get a fully custom AI-generated website.',
+  description: 'Tell us about your business and get a fully custom website built by our team.',
 }
 
 export default function IntakePage() {

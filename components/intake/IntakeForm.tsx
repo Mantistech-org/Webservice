@@ -228,7 +228,7 @@ export default function IntakeForm() {
           <span className="text-teal">Your Business</span>
         </h1>
         <p className="mt-4 text-muted max-w-xl leading-relaxed">
-          Fill out the form below and our AI will generate a fully custom website for your business.
+          Fill out the form below and we will build a fully custom website for your business.
           Your quote updates live as you select add-ons.
         </p>
       </div>

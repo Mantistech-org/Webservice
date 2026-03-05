@@ -23,9 +23,9 @@ const config: Config = {
         primary: 'rgb(var(--color-primary) / <alpha-value>)',
       },
       fontFamily: {
-        heading: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        heading: ['var(--font-playfair)', 'Georgia', 'serif'],
         mono: ['var(--font-dm-mono)', 'monospace'],
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
       },
       animation: {
         'fade-up': 'fadeUp 0.6s ease forwards',
