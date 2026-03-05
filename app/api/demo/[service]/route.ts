@@ -8,9 +8,31 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 function parseClaudeJson(text: string): unknown {
   let cleaned = text.trim()
-  if (cleaned.startsWith('```')) {
+
+  // Strip markdown code fences
+  const fenceMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/)
+  if (fenceMatch) {
+    cleaned = fenceMatch[1].trim()
+  } else if (cleaned.startsWith('```')) {
     cleaned = cleaned.replace(/^```[a-z]*\n?/i, '').replace(/\n?```$/, '').trim()
   }
+
+  // Find the outermost JSON structure
+  const firstBrace = cleaned.indexOf('{')
+  const firstBracket = cleaned.indexOf('[')
+  let start = -1
+  if (firstBrace >= 0 && (firstBracket < 0 || firstBrace <= firstBracket)) {
+    start = firstBrace
+  } else if (firstBracket >= 0) {
+    start = firstBracket
+  }
+  if (start > 0) cleaned = cleaned.slice(start)
+
+  const lastBrace = cleaned.lastIndexOf('}')
+  const lastBracket = cleaned.lastIndexOf(']')
+  const end = Math.max(lastBrace, lastBracket)
+  if (end >= 0 && end < cleaned.length - 1) cleaned = cleaned.slice(0, end + 1)
+
   return JSON.parse(cleaned)
 }
 
@@ -49,22 +71,27 @@ Return ONLY a valid JSON object with no explanation:
 
     case 'social-media':
       return {
-        maxTokens: 1000,
+        maxTokens: 1200,
         prompt: `You are a professional social media manager. Create platform-specific posts for this business.
 
 Business Description: ${body.businessDescription}
+Post Topic or Direction: ${body.topic || 'General business update'}
 Photo uploaded: ${body.hasPhoto ? 'Yes' : 'No'}
 
-Create:
+Create posts for all five platforms:
 1. Instagram: engaging caption with 5 to 8 relevant hashtags
 2. Facebook: conversational post under 300 words
 3. Google Business: professional business update under 200 words
+4. Twitter/X: punchy post under 280 characters, no hashtags
+5. LinkedIn: professional post with business insight, under 400 words
 
-Return ONLY a valid JSON object:
+Return ONLY a valid JSON object with no explanation or markdown:
 {
   "instagram": { "caption": "...", "hashtags": ["...", "..."] },
   "facebook": { "post": "..." },
-  "google_business": { "post": "..." }
+  "google_business": { "post": "..." },
+  "twitter": { "tweet": "..." },
+  "linkedin": { "post": "..." }
 }`,
       }
 
@@ -79,7 +106,7 @@ Ideal Client Description: ${body.clientDescription}
 
 For each lead, provide a realistic local business name, specific city and state, industry subcategory, plausible professional email, a personalized outreach email subject line, and a personalized outreach email body (3 to 4 paragraphs, professional, specific to their business type).
 
-Return ONLY a valid JSON object:
+Return ONLY a valid JSON object with no explanation or markdown:
 {
   "leads": [
     {
@@ -107,10 +134,10 @@ Generate:
 - 8 target keywords with realistic monthly search volume (numbers between 50 and 22000), difficulty (Low/Medium/High), and opportunity score (Low/Medium/High)
 - 4 optimized page title suggestions (under 60 characters each)
 - 4 meta description suggestions (under 155 characters each)
-- 8 local search terms
+- 8 local search terms people nearby are using
 - 6 ranking tracker entries with current position (10 to 80) and position change (positive or negative integer)
 
-Return ONLY a valid JSON object:
+Return ONLY a valid JSON object with no explanation or markdown:
 {
   "keywords": [
     { "term": "...", "monthlyVolume": 1200, "difficulty": "Medium", "opportunity": "High" }
@@ -137,9 +164,9 @@ Create:
 2. Post-Purchase Follow-up: 3 emails (delays: immediately, 7 days, 30 days)
 3. Restock Alert: 2 emails (delays: immediately, 48 hours)
 
-Each email needs a compelling subject line, preview text (50 characters), and full body copy (150 to 250 words, professional, personalized to the store).
+Each email needs a compelling subject line, preview text (50 characters), and full body copy (150 to 250 words).
 
-Return ONLY a valid JSON object:
+Return ONLY a valid JSON object with no explanation or markdown:
 {
   "abandonedCart": {
     "emails": [
@@ -161,16 +188,17 @@ Return ONLY a valid JSON object:
 
     case 'ad-creative':
       return {
-        maxTokens: 1200,
+        maxTokens: 1400,
         prompt: `You are a digital advertising expert. Create compelling ad copy for multiple platforms.
 
 Business Name: ${body.businessName}
 Promotion: ${body.promotion}
 Target Audience: ${body.targetAudience}
+Direction: ${body.description || 'General brand awareness'}
 
 Create platform-specific ad copy optimized for each format.
 
-Return ONLY a valid JSON object:
+Return ONLY a valid JSON object with no explanation or markdown:
 {
   "facebook": {
     "headline": "...",
@@ -189,14 +217,18 @@ Return ONLY a valid JSON object:
     "headline3": "...",
     "description1": "...",
     "description2": "..."
+  },
+  "linkedin": {
+    "headline": "...",
+    "post": "...",
+    "cta": "Learn More"
   }
 }
 
-Constraints: Facebook headline under 40 chars, primaryText under 125 chars. Instagram caption under 150 chars. Google headlines under 30 chars each, descriptions under 90 chars each.`,
+Constraints: Facebook headline under 40 chars, primaryText under 125 chars. Instagram caption under 150 chars. Google headlines under 30 chars each, descriptions under 90 chars each. LinkedIn headline under 50 chars.`,
       }
 
     case 'chatbot': {
-      // Chatbot uses conversation history format
       const messages = body.messages as Array<{ role: string; content: string }>
       const ctx = body.businessContext as Record<string, string>
       const systemContext = `You are a friendly, helpful customer service assistant for ${ctx.businessName}. Business hours: ${ctx.hours}. Services: ${ctx.services}. FAQs: ${ctx.faqs}. Answer questions about this business accurately. Be concise (2 to 4 sentences). If you do not have specific information, suggest they call or visit.`
@@ -227,9 +259,9 @@ Create:
 2. Monthly Newsletter: 1 template
 3. Re-Engagement Campaign: 3 emails
 
-Each email needs a compelling subject line, preview text (50 characters), and full body copy (150 to 300 words, professional and engaging).
+Each email needs a compelling subject line, preview text (50 characters), and full body copy (150 to 300 words).
 
-Return ONLY a valid JSON object:
+Return ONLY a valid JSON object with no explanation or markdown:
 {
   "welcomeSequence": [
     { "day": 0, "subject": "...", "preview": "...", "body": "..." }
@@ -255,14 +287,11 @@ export async function POST(
     const body = (await req.json()) as Record<string, unknown>
     const sessionId = (body.sessionId as string) || 'anonymous'
 
-    // Log activity (non-blocking)
     logDemoActivity(sessionId, service)
 
     const { prompt, maxTokens } = buildPrompt(service, body)
-
     const rawText = await callClaude(prompt, maxTokens)
 
-    // For chatbot, return plain text reply
     if (service === 'chatbot') {
       return NextResponse.json({ result: { reply: rawText.trim() } })
     }

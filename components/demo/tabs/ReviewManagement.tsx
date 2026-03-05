@@ -3,7 +3,6 @@
 import { useState } from 'react'
 
 interface Props { sessionId: string }
-
 interface ReviewResult { response: string }
 
 const MOCK_REVIEWS = {
@@ -29,7 +28,7 @@ function Stars({ n }: { n: number }) {
   return (
     <span className="flex gap-0.5">
       {Array.from({ length: 5 }).map((_, i) => (
-        <svg key={i} width="12" height="12" viewBox="0 0 24 24" fill={i < n ? '#facc15' : 'none'} stroke={i < n ? '#facc15' : 'rgb(var(--color-border))'} strokeWidth="1.5">
+        <svg key={i} width="12" height="12" viewBox="0 0 24 24" fill={i < n ? '#facc15' : 'none'} stroke={i < n ? '#facc15' : '#2d4052'} strokeWidth="1.5">
           <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
         </svg>
       ))}
@@ -47,14 +46,10 @@ export default function ReviewManagement({ sessionId }: Props) {
   const [platform, setPlatform] = useState<'google' | 'yelp' | 'facebook'>('google')
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-    setResult(null)
+    e.preventDefault(); setLoading(true); setError(''); setResult(null)
     try {
       const res = await fetch('/api/demo/review-management', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, businessName, review }),
       })
       const data = await res.json()
@@ -62,81 +57,48 @@ export default function ReviewManagement({ sessionId }: Props) {
       setResult(data.result as ReviewResult)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
-    } finally {
-      setLoading(false)
-    }
+    } finally { setLoading(false) }
   }
 
-  const copy = () => {
-    if (!result) return
-    navigator.clipboard.writeText(result.response)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+  const copy = () => { if (!result) return; navigator.clipboard.writeText(result.response); setCopied(true); setTimeout(() => setCopied(false), 2000) }
 
-  const reviews = MOCK_REVIEWS[platform]
+  const inputClass = 'w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors'
 
   return (
     <div className="space-y-8">
-      {/* Generator */}
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border">
-          <p className="font-mono text-xs text-accent tracking-widest uppercase mb-1">AI Response Generator</p>
+          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Response Generator</p>
           <h2 className="font-heading text-2xl text-primary">Generate a Review Response</h2>
         </div>
         <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Business Name</label>
-              <input
-                type="text"
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                placeholder="Your Business Name"
-                required
-                className="form-input"
-              />
+              <input type="text" value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="Your Business Name" required className={inputClass} />
             </div>
             <div>
               <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Paste the Negative Review</label>
-              <textarea
-                value={review}
-                onChange={(e) => setReview(e.target.value)}
-                placeholder="The service was slow and the staff were not helpful. I waited 30 minutes and never got assistance..."
-                required
-                rows={4}
-                className="form-input resize-none"
-              />
+              <textarea value={review} onChange={(e) => setReview(e.target.value)} placeholder="The service was slow and the staff were not helpful. I waited 30 minutes and never got assistance..." required rows={4} className={`${inputClass} resize-none`} />
             </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-accent text-black font-mono text-sm px-6 py-3 rounded tracking-wider hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
+            <button type="submit" disabled={loading} className="font-mono text-sm px-6 py-3 rounded tracking-wider transition-opacity disabled:opacity-40" style={{ backgroundColor: '#000000', color: '#f0f0f0' }}>
               {loading ? 'Generating response...' : 'Generate Professional Response'}
             </button>
           </form>
 
           {loading && (
             <div className="mt-6 flex items-center gap-3 text-muted font-mono text-sm">
-              <span className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-[#f0f0f0] border-t-transparent rounded-full animate-spin" />
               Crafting a professional response...
             </div>
           )}
-
-          {error && (
-            <div className="mt-6 bg-red-500/10 border border-red-500/20 rounded p-4 font-mono text-sm text-red-400">
-              {error}
-            </div>
-          )}
+          {error && <div className="mt-6 bg-red-900/20 border border-red-500/30 rounded p-4 font-mono text-sm text-red-300">{error}</div>}
 
           {result && (
-            <div className="mt-6 bg-bg border border-border rounded p-5">
+            <div className="mt-6 bg-[#0e2030] border border-[#2d4052] rounded p-5">
               <div className="flex items-center justify-between mb-3">
-                <span className="font-mono text-xs text-accent tracking-widest uppercase">Generated Response</span>
-                <button onClick={copy} className="font-mono text-xs text-muted hover:text-accent transition-colors tracking-wider">
-                  {copied ? 'Copied' : 'Copy'}
-                </button>
+                <span className="font-mono text-xs tracking-widest uppercase" style={{ color: '#8ab4cc' }}>Generated Response</span>
+                <button onClick={copy} className="font-mono text-xs text-muted hover:text-primary transition-colors tracking-wider">{copied ? 'Copied' : 'Copy'}</button>
               </div>
               <p className="text-sm text-primary leading-relaxed">{result.response}</p>
             </div>
@@ -147,11 +109,10 @@ export default function ReviewManagement({ sessionId }: Props) {
       {/* Dashboard */}
       <div>
         <div className="mb-4">
-          <p className="font-mono text-xs text-accent tracking-widest uppercase mb-1">Review Dashboard</p>
+          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Review Dashboard</p>
           <h2 className="font-heading text-2xl text-primary">Platform Overview</h2>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
             { label: 'Average Rating', value: '4.2', sub: 'across all platforms' },
@@ -167,14 +128,13 @@ export default function ReviewManagement({ sessionId }: Props) {
           ))}
         </div>
 
-        {/* Platform toggle */}
         <div className="flex gap-2 mb-4">
           {(['google', 'yelp', 'facebook'] as const).map((p) => (
             <button
               key={p}
               onClick={() => setPlatform(p)}
               className={`font-mono text-xs px-4 py-2 rounded border tracking-wider transition-all capitalize ${
-                platform === p ? 'border-accent text-accent bg-accent/5' : 'border-border text-muted hover:border-border-light'
+                platform === p ? 'border-[#f0f0f0] text-[#f0f0f0]' : 'border-[#2d4052] text-muted hover:border-[#4a6070] hover:text-primary'
               }`}
             >
               {p === 'google' ? 'Google' : p === 'yelp' ? 'Yelp' : 'Facebook'}
@@ -182,14 +142,13 @@ export default function ReviewManagement({ sessionId }: Props) {
           ))}
         </div>
 
-        {/* Review list */}
         <div className="space-y-3">
-          {reviews.map((r, i) => (
+          {MOCK_REVIEWS[platform].map((r, i) => (
             <div key={i} className="bg-card border border-border rounded p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-8 h-8 rounded-full bg-border flex items-center justify-center font-mono text-xs text-muted">
+                    <div className="w-8 h-8 rounded-full bg-[#0e2030] flex items-center justify-center font-mono text-xs text-muted">
                       {r.author[0]}
                     </div>
                     <div>
@@ -200,11 +159,7 @@ export default function ReviewManagement({ sessionId }: Props) {
                   </div>
                   <p className="text-sm text-teal leading-relaxed">{r.text}</p>
                 </div>
-                <span className={`shrink-0 font-mono text-xs px-2 py-1 rounded border ${
-                  r.responded
-                    ? 'border-accent/30 text-accent bg-accent/5'
-                    : 'border-border text-dim'
-                }`}>
+                <span className={`shrink-0 font-mono text-xs px-2 py-1 rounded border ${r.responded ? 'border-[#4ade80]/30 text-[#4ade80]' : 'border-[#2d4052] text-dim'}`}>
                   {r.responded ? 'Responded' : 'Pending'}
                 </span>
               </div>
@@ -214,7 +169,7 @@ export default function ReviewManagement({ sessionId }: Props) {
       </div>
 
       <p className="font-mono text-xs text-dim text-center">
-        This demo is powered by real AI tools. The full version connects directly to your Google, Yelp, and Facebook accounts for automated monitoring and response posting.
+        The full version connects directly to your Google, Yelp, and Facebook accounts for automated monitoring and response posting.
       </p>
     </div>
   )

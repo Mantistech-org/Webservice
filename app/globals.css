@@ -68,6 +68,19 @@ body {
   background: rgb(var(--color-muted));
 }
 
+/* ── Demo page theme (dark slate, standalone palette) ─── */
+.demo-page {
+  --color-bg:           30 42 58;
+  --color-card:         20 33 50;
+  --color-card-hover:   36 53 74;
+  --color-border:       42 62 85;
+  --color-border-light: 58 82 110;
+  --color-teal:         155 175 200;
+  --color-muted:        110 138 162;
+  --color-dim:          64 88 112;
+  --color-primary:      240 240 240;
+}
+
 /* Heading weight */
 .font-heading {
   font-weight: 700;
