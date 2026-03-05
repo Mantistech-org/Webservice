@@ -80,7 +80,7 @@ export default function LeadGeneration({ sessionId, onImportContacts }: Props) {
     <div className="space-y-8">
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border">
-          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Lead Finder</p>
+          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Lead Finder</p>
           <h2 className="font-heading text-2xl text-primary">Generate Targeted Leads</h2>
         </div>
         <div className="p-6">
@@ -88,16 +88,16 @@ export default function LeadGeneration({ sessionId, onImportContacts }: Props) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Target Industry</label>
-                <input type="text" value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="Restaurants, Dental Practices, Law Firms..." required className="w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors" />
+                <input type="text" value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="Restaurants, Dental Practices, Law Firms..." required className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors" />
               </div>
               <div>
                 <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Location</label>
-                <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Austin, TX or Greater Chicago Area" required className="w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors" />
+                <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Austin, TX or Greater Chicago Area" required className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors" />
               </div>
             </div>
             <div>
               <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Ideal Client Description</label>
-              <textarea value={clientDescription} onChange={(e) => setClientDescription(e.target.value)} placeholder="Small to mid-size businesses with 5 to 50 employees, established for at least 2 years, looking to grow their online presence..." required rows={3} className="w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors resize-none" />
+              <textarea value={clientDescription} onChange={(e) => setClientDescription(e.target.value)} placeholder="Small to mid-size businesses with 5 to 50 employees, established for at least 2 years, looking to grow their online presence..." required rows={3} className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors resize-none" />
             </div>
             <button type="submit" disabled={loading} className="font-mono text-sm px-6 py-3 rounded tracking-wider transition-opacity disabled:opacity-40" style={{ backgroundColor: '#000000', color: '#f0f0f0' }}>
               {loading ? 'Finding leads...' : 'Generate 10 Leads with Outreach Emails'}
@@ -106,7 +106,7 @@ export default function LeadGeneration({ sessionId, onImportContacts }: Props) {
 
           {loading && (
             <div className="mt-6 flex items-center gap-3 text-muted font-mono text-sm">
-              <span className="w-4 h-4 border-2 border-[#f0f0f0] border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
               Researching leads and writing personalized emails...
             </div>
           )}
@@ -121,7 +121,7 @@ export default function LeadGeneration({ sessionId, onImportContacts }: Props) {
         <div>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Results</p>
+              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Results</p>
               <h3 className="font-heading text-xl text-primary">{result.leads.length} Leads Found</h3>
             </div>
             <span className="font-mono text-xs text-dim">{industry} in {location}</span>
@@ -133,7 +133,7 @@ export default function LeadGeneration({ sessionId, onImportContacts }: Props) {
                 <div className="p-5 flex flex-col sm:flex-row sm:items-center gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded bg-[#0e2030] border border-[#2d4052] flex items-center justify-center font-mono text-xs shrink-0 mt-0.5" style={{ color: '#8ab4cc' }}>
+                      <div className="w-8 h-8 rounded bg-[#efefef] border border-[#d0d0d0] flex items-center justify-center font-mono text-xs shrink-0 mt-0.5" style={{ color: '#3a6a8a' }}>
                         {i + 1}
                       </div>
                       <div className="min-w-0">
@@ -147,11 +147,11 @@ export default function LeadGeneration({ sessionId, onImportContacts }: Props) {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <button onClick={() => setExpanded(expanded === i ? null : i)} className="font-mono text-xs border border-[#2d4052] text-muted px-3 py-1.5 rounded hover:border-[#4a6070] hover:text-primary transition-all">
+                    <button onClick={() => setExpanded(expanded === i ? null : i)} className="font-mono text-xs border border-[#d0d0d0] text-muted px-3 py-1.5 rounded hover:border-[#b0b0b0] hover:text-primary transition-all">
                       {expanded === i ? 'Hide' : 'View Email'}
                     </button>
                     {sent.has(i) ? (
-                      <span className="font-mono text-xs border border-[#2d4052] text-muted px-3 py-1.5 rounded">Sent</span>
+                      <span className="font-mono text-xs border border-[#d0d0d0] text-muted px-3 py-1.5 rounded">Sent</span>
                     ) : (
                       <button onClick={() => sendOne(i)} className="font-mono text-xs px-3 py-1.5 rounded hover:opacity-80 transition-opacity" style={{ backgroundColor: '#000000', color: '#f0f0f0' }}>
                         Send
@@ -161,7 +161,7 @@ export default function LeadGeneration({ sessionId, onImportContacts }: Props) {
                 </div>
 
                 {expanded === i && (
-                  <div className="border-t border-border bg-[#0e2030] p-5">
+                  <div className="border-t border-border bg-[#efefef] p-5">
                     <div className="flex items-center justify-between mb-3">
                       <div>
                         <span className="font-mono text-xs text-muted tracking-widest uppercase block mb-1">Subject</span>
@@ -171,7 +171,7 @@ export default function LeadGeneration({ sessionId, onImportContacts }: Props) {
                         {copied === i ? 'Copied' : 'Copy Email'}
                       </button>
                     </div>
-                    <div className="mt-3 pt-3 border-t border-[#2d4052]">
+                    <div className="mt-3 pt-3 border-t border-[#d0d0d0]">
                       <span className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Body</span>
                       <p className="text-sm text-teal leading-relaxed whitespace-pre-line">{lead.outreachBody}</p>
                     </div>
@@ -197,8 +197,8 @@ export default function LeadGeneration({ sessionId, onImportContacts }: Props) {
               disabled={imported}
               className="font-mono text-sm px-6 py-3 rounded tracking-wider border transition-all flex-1 sm:flex-none"
               style={imported
-                ? { borderColor: '#2d4052', color: '#8ab4cc' }
-                : { borderColor: '#4a6a80', color: '#c0d8e8', backgroundColor: 'transparent' }
+                ? { borderColor: '#d0d0d0', color: '#3a6a8a' }
+                : { borderColor: '#b0b0b0', color: '#333333', backgroundColor: 'transparent' }
               }
             >
               {imported ? 'Imported to Email Marketing' : 'Import to Email Marketing'}

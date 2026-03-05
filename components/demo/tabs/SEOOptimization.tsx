@@ -87,13 +87,13 @@ export default function SEOOptimization({ sessionId }: Props) {
 
   const maxVol = result ? Math.max(...result.keywords.map((k) => k.monthlyVolume)) : 1
 
-  const inputClass = 'w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors'
+  const inputClass = 'w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors'
 
   return (
     <div className="space-y-8">
       {/* How SEO works info box */}
-      <div className="bg-[#0e2030] border border-[#2d4052] rounded p-5">
-        <p className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: '#8ab4cc' }}>How This Works</p>
+      <div className="bg-[#efefef] border border-[#d0d0d0] rounded p-5">
+        <p className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: '#3a6a8a' }}>How This Works</p>
         <p className="text-sm text-teal leading-relaxed">
           When someone searches for a business like yours on Google, your website either shows up or it does not. SEO is the process of making sure you show up as high as possible for the searches that matter to your business. Mantis Tech analyzes what people are actually searching for near you, then makes targeted updates to your website so Google understands exactly what you do and who you serve. The higher you rank, the more people find you instead of your competitors.
         </p>
@@ -102,7 +102,7 @@ export default function SEOOptimization({ sessionId }: Props) {
       {/* Input form */}
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border">
-          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>SEO Report</p>
+          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>SEO Report</p>
           <h2 className="font-heading text-2xl text-primary">Get Your SEO Analysis</h2>
         </div>
         <div className="p-6">
@@ -128,7 +128,7 @@ export default function SEOOptimization({ sessionId }: Props) {
 
           {loading && (
             <div className="mt-6 flex items-center gap-3 text-muted font-mono text-sm">
-              <span className="w-4 h-4 border-2 border-[#f0f0f0] border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
               Analyzing your local search landscape...
             </div>
           )}
@@ -145,7 +145,7 @@ export default function SEOOptimization({ sessionId }: Props) {
                 key={id}
                 onClick={() => setActiveSubTab(id)}
                 className={`font-mono text-xs px-5 py-3 border-b-2 -mb-px tracking-wider transition-all ${
-                  activeSubTab === id ? 'border-[#f0f0f0] text-[#f0f0f0]' : 'border-transparent text-muted hover:text-primary'
+                  activeSubTab === id ? 'border-[#1a1a1a] text-[#1a1a1a]' : 'border-transparent text-muted hover:text-primary'
                 }`}
               >
                 {label}
@@ -158,7 +158,7 @@ export default function SEOOptimization({ sessionId }: Props) {
               {/* What are people searching for */}
               <div className="bg-card border border-border rounded">
                 <div className="px-6 py-4 border-b border-border">
-                  <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>What Are People Searching For</p>
+                  <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>What Are People Searching For</p>
                   <h3 className="font-heading text-xl text-primary">Best Search Terms For Your Business</h3>
                   <p className="font-mono text-xs text-muted mt-1">Each of these is a real phrase people type into Google. Showing up for them means more customers finding you.</p>
                 </div>
@@ -178,7 +178,7 @@ export default function SEOOptimization({ sessionId }: Props) {
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <div className="flex-1 h-1.5 bg-[#0e2030] rounded-full overflow-hidden">
+                        <div className="flex-1 h-1.5 bg-[#e0e0e0] rounded-full overflow-hidden">
                           <div className="h-full rounded-full" style={{ width: `${(kw.monthlyVolume / maxVol) * 100}%`, backgroundColor: '#8ab4cc' }} />
                         </div>
                         <span className="font-mono text-xs rounded px-2 py-0.5" style={{ color: DIFF_COLORS[kw.difficulty] }}>
@@ -193,12 +193,12 @@ export default function SEOOptimization({ sessionId }: Props) {
               {/* What people see on Google */}
               <div className="bg-card border border-border rounded">
                 <div className="px-6 py-4 border-b border-border">
-                  <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>What People See When You Show Up On Google</p>
+                  <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>What People See When You Show Up On Google</p>
                   <h3 className="font-heading text-xl text-primary">Suggested Page Titles and Descriptions</h3>
                 </div>
                 <div className="p-6 space-y-4">
                   {result.pageTitles.map((title, i) => (
-                    <div key={i} className="bg-[#0e2030] border border-[#2d4052] rounded p-4">
+                    <div key={i} className="bg-[#efefef] border border-[#d0d0d0] rounded p-4">
                       <div className="text-blue-400 text-sm font-medium mb-1">{title}</div>
                       <div className="font-mono text-xs text-muted mb-1">{businessName} — {location}</div>
                       {result.metaDescriptions[i] && (
@@ -211,14 +211,14 @@ export default function SEOOptimization({ sessionId }: Props) {
 
               {/* Searches happening near you */}
               <div className="bg-card border border-border rounded p-6">
-                <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Searches Happening Near You</p>
+                <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Searches Happening Near You</p>
                 <h3 className="font-heading text-xl text-primary mb-2">Local Searches You Should Own</h3>
                 <p className="font-mono text-xs text-teal leading-relaxed mb-4">
                   These are searches people in your area are doing right now. Showing up for these means more local customers finding you instead of your competitors.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {result.localTerms.map((term, i) => (
-                    <span key={i} className="font-mono text-xs bg-[#0e2030] border border-[#2d4052] text-primary px-3 py-1.5 rounded">
+                    <span key={i} className="font-mono text-xs bg-[#efefef] border border-[#d0d0d0] text-primary px-3 py-1.5 rounded">
                       {term}
                     </span>
                   ))}
@@ -228,14 +228,14 @@ export default function SEOOptimization({ sessionId }: Props) {
               {/* Ranking tracker */}
               <div className="bg-card border border-border rounded">
                 <div className="px-6 py-4 border-b border-border">
-                  <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Where You Stand Right Now</p>
+                  <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Where You Stand Right Now</p>
                   <h3 className="font-heading text-xl text-primary">Current Google Positions</h3>
                   <p className="font-mono text-xs text-muted mt-1">Position 1 means you are the first result. Lower numbers are better.</p>
                 </div>
                 <div className="divide-y divide-border">
                   {result.rankings.map((r, i) => (
                     <div key={i} className="px-6 py-4 flex items-center gap-4">
-                      <div className="w-12 h-10 rounded bg-[#0e2030] flex items-center justify-center font-mono text-sm text-primary shrink-0">
+                      <div className="w-12 h-10 rounded bg-[#efefef] border border-[#d0d0d0] flex items-center justify-center font-mono text-sm text-primary shrink-0">
                         #{r.position}
                       </div>
                       <span className="font-mono text-sm text-primary flex-1">"{r.term}"</span>
@@ -251,15 +251,15 @@ export default function SEOOptimization({ sessionId }: Props) {
 
           {activeSubTab === 'apply' && (
             <div className="space-y-6">
-              <div className="bg-[#0e2030] border border-[#2d4052] rounded p-5">
-                <p className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: '#8ab4cc' }}>Recommended Updates</p>
+              <div className="bg-[#efefef] border border-[#d0d0d0] rounded p-5">
+                <p className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: '#3a6a8a' }}>Recommended Updates</p>
                 <p className="text-sm text-teal leading-relaxed">
                   Select the changes you want to apply to your website. You can edit each one before saving. Uncheck anything you want to skip.
                 </p>
               </div>
 
               {applyStatus === 'saved' ? (
-                <div className="bg-[#0e2030] border border-[#4ade80]/30 rounded p-6 text-center">
+                <div className="bg-[#efefef] border border-[#4ade80]/50 rounded p-6 text-center">
                   <div className="font-heading text-2xl text-primary mb-2">Changes Saved</div>
                   <p className="font-mono text-sm text-teal">
                     {checkedChanges.size} update{checkedChanges.size !== 1 ? 's' : ''} have been applied to your website.
@@ -277,7 +277,7 @@ export default function SEOOptimization({ sessionId }: Props) {
                           type="checkbox"
                           checked={checkedChanges.has(change.id)}
                           onChange={() => toggleChange(change.id)}
-                          className="mt-1 w-4 h-4 rounded border-[#2d4052] accent-white shrink-0"
+                          className="mt-1 w-4 h-4 rounded border-[#d0d0d0] accent-black shrink-0"
                         />
                         <div className="flex-1">
                           <div className="font-mono text-xs text-muted uppercase tracking-widest mb-1">
@@ -296,7 +296,7 @@ export default function SEOOptimization({ sessionId }: Props) {
                         onChange={(e) => setEditedChanges((prev) => ({ ...prev, [change.id]: e.target.value }))}
                         rows={change.type === 'keyword' ? 2 : 1}
                         disabled={!checkedChanges.has(change.id)}
-                        className="w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-3 py-2 font-mono text-xs focus:outline-none focus:border-[#5a7a9a] transition-colors resize-none disabled:opacity-40"
+                        className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-3 py-2 font-mono text-xs focus:outline-none focus:border-[#888888] transition-colors resize-none disabled:opacity-40"
                       />
                     </div>
                   ))}

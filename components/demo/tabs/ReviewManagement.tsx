@@ -28,7 +28,7 @@ function Stars({ n }: { n: number }) {
   return (
     <span className="flex gap-0.5">
       {Array.from({ length: 5 }).map((_, i) => (
-        <svg key={i} width="12" height="12" viewBox="0 0 24 24" fill={i < n ? '#facc15' : 'none'} stroke={i < n ? '#facc15' : '#2d4052'} strokeWidth="1.5">
+        <svg key={i} width="12" height="12" viewBox="0 0 24 24" fill={i < n ? '#facc15' : 'none'} stroke={i < n ? '#facc15' : '#d0d0d0'} strokeWidth="1.5">
           <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
         </svg>
       ))}
@@ -62,13 +62,13 @@ export default function ReviewManagement({ sessionId }: Props) {
 
   const copy = () => { if (!result) return; navigator.clipboard.writeText(result.response); setCopied(true); setTimeout(() => setCopied(false), 2000) }
 
-  const inputClass = 'w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors'
+  const inputClass = 'w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors'
 
   return (
     <div className="space-y-8">
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border">
-          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Response Generator</p>
+          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Response Generator</p>
           <h2 className="font-heading text-2xl text-primary">Generate a Review Response</h2>
         </div>
         <div className="p-6">
@@ -88,16 +88,16 @@ export default function ReviewManagement({ sessionId }: Props) {
 
           {loading && (
             <div className="mt-6 flex items-center gap-3 text-muted font-mono text-sm">
-              <span className="w-4 h-4 border-2 border-[#f0f0f0] border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
               Crafting a professional response...
             </div>
           )}
           {error && <div className="mt-6 bg-red-900/20 border border-red-500/30 rounded p-4 font-mono text-sm text-red-300">{error}</div>}
 
           {result && (
-            <div className="mt-6 bg-[#0e2030] border border-[#2d4052] rounded p-5">
+            <div className="mt-6 bg-[#efefef] border border-[#d0d0d0] rounded p-5">
               <div className="flex items-center justify-between mb-3">
-                <span className="font-mono text-xs tracking-widest uppercase" style={{ color: '#8ab4cc' }}>Generated Response</span>
+                <span className="font-mono text-xs tracking-widest uppercase" style={{ color: '#3a6a8a' }}>Generated Response</span>
                 <button onClick={copy} className="font-mono text-xs text-muted hover:text-primary transition-colors tracking-wider">{copied ? 'Copied' : 'Copy'}</button>
               </div>
               <p className="text-sm text-primary leading-relaxed">{result.response}</p>
@@ -109,7 +109,7 @@ export default function ReviewManagement({ sessionId }: Props) {
       {/* Dashboard */}
       <div>
         <div className="mb-4">
-          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Review Dashboard</p>
+          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Review Dashboard</p>
           <h2 className="font-heading text-2xl text-primary">Platform Overview</h2>
         </div>
 
@@ -134,7 +134,7 @@ export default function ReviewManagement({ sessionId }: Props) {
               key={p}
               onClick={() => setPlatform(p)}
               className={`font-mono text-xs px-4 py-2 rounded border tracking-wider transition-all capitalize ${
-                platform === p ? 'border-[#f0f0f0] text-[#f0f0f0]' : 'border-[#2d4052] text-muted hover:border-[#4a6070] hover:text-primary'
+                platform === p ? 'border-[#1a1a1a] text-[#1a1a1a]' : 'border-[#d0d0d0] text-muted hover:border-[#b0b0b0] hover:text-primary'
               }`}
             >
               {p === 'google' ? 'Google' : p === 'yelp' ? 'Yelp' : 'Facebook'}
@@ -148,7 +148,7 @@ export default function ReviewManagement({ sessionId }: Props) {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-8 h-8 rounded-full bg-[#0e2030] flex items-center justify-center font-mono text-xs text-muted">
+                    <div className="w-8 h-8 rounded-full bg-[#efefef] border border-[#d0d0d0] flex items-center justify-center font-mono text-xs text-muted">
                       {r.author[0]}
                     </div>
                     <div>
@@ -159,7 +159,7 @@ export default function ReviewManagement({ sessionId }: Props) {
                   </div>
                   <p className="text-sm text-teal leading-relaxed">{r.text}</p>
                 </div>
-                <span className={`shrink-0 font-mono text-xs px-2 py-1 rounded border ${r.responded ? 'border-[#4ade80]/30 text-[#4ade80]' : 'border-[#2d4052] text-dim'}`}>
+                <span className={`shrink-0 font-mono text-xs px-2 py-1 rounded border ${r.responded ? 'border-[#4ade80]/50 text-[#16a34a]' : 'border-[#d0d0d0] text-dim'}`}>
                   {r.responded ? 'Responded' : 'Pending'}
                 </span>
               </div>

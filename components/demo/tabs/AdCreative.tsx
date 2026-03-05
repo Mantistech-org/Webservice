@@ -76,38 +76,38 @@ export default function AdCreative({ sessionId }: Props) {
 
   const platforms = (['facebook', 'instagram', 'google', 'linkedin'] as Platform[]).filter((p) => selectedPlatforms.has(p))
 
-  const inputClass = 'w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#5a7a9a] transition-colors'
+  const inputClass = 'w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#888888] transition-colors'
 
   return (
     <div className="space-y-8">
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border">
-          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Ad Creative Studio</p>
+          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Ad Creative Studio</p>
           <h2 className="font-heading text-2xl text-primary">Generate Ad Creatives</h2>
         </div>
         <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Direction and Goal</label>
-              <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="We want to promote our summer sale with 20% off all services. Targeting people who have already visited our site and have not converted yet." rows={2} className="w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors resize-none" />
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="We want to promote our summer sale with 20% off all services. Targeting people who have already visited our site and have not converted yet." rows={2} className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors resize-none" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Business Name</label>
-                <input type="text" value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="Peak Fitness Studio" required className="w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors" />
+                <input type="text" value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="Peak Fitness Studio" required className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors" />
               </div>
               <div>
                 <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Promotion Details</label>
-                <input type="text" value={promotion} onChange={(e) => setPromotion(e.target.value)} placeholder="First month free, no commitment" required className="w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors" />
+                <input type="text" value={promotion} onChange={(e) => setPromotion(e.target.value)} placeholder="First month free, no commitment" required className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors" />
               </div>
             </div>
             <div>
               <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Target Audience</label>
-              <input type="text" value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)} placeholder="Adults 25 to 45, health-conscious, within 10 miles" required className="w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors" />
+              <input type="text" value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)} placeholder="Adults 25 to 45, health-conscious, within 10 miles" required className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors" />
             </div>
             <div>
               <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Creative Asset (Optional)</label>
-              <div onClick={() => fileRef.current?.click()} className="border border-dashed border-[#2d4052] rounded p-5 text-center cursor-pointer hover:border-[#4a6070] transition-colors">
+              <div onClick={() => fileRef.current?.click()} className="border border-dashed border-[#d0d0d0] rounded p-5 text-center cursor-pointer hover:border-[#b0b0b0] transition-colors">
                 {photoPreview ? <img src={photoPreview} alt="Creative" className="max-h-24 mx-auto rounded object-cover" /> : <p className="font-mono text-sm text-muted">Click to upload a photo or graphic</p>}
               </div>
               <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
@@ -119,7 +119,7 @@ export default function AdCreative({ sessionId }: Props) {
               <div className="flex flex-wrap gap-4">
                 {(['facebook', 'instagram', 'google', 'linkedin'] as Platform[]).map((p) => (
                   <label key={p} className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={selectedPlatforms.has(p)} onChange={() => togglePlatform(p)} className="w-4 h-4 rounded border-[#2d4052] accent-white" />
+                    <input type="checkbox" checked={selectedPlatforms.has(p)} onChange={() => togglePlatform(p)} className="w-4 h-4 rounded border-[#d0d0d0] accent-black" />
                     <span className="font-mono text-xs text-primary">{PLATFORM_CONFIG[p].label}</span>
                   </label>
                 ))}
@@ -133,7 +133,7 @@ export default function AdCreative({ sessionId }: Props) {
 
           {loading && (
             <div className="mt-6 flex items-center gap-3 text-muted font-mono text-sm">
-              <span className="w-4 h-4 border-2 border-[#f0f0f0] border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
               Creating platform-optimized ad copy...
             </div>
           )}
@@ -145,7 +145,7 @@ export default function AdCreative({ sessionId }: Props) {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Ads Ready</p>
+              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Ads Ready</p>
               <p className="font-mono text-xs text-muted">Click any ad to edit before posting.</p>
             </div>
             <div className="flex items-center gap-3">
@@ -184,7 +184,7 @@ export default function AdCreative({ sessionId }: Props) {
                     </div>
                   )}
                   {!photoPreview && p !== 'google' && (
-                    <div className={`${p === 'instagram' ? 'aspect-square' : 'aspect-video'} bg-[#0e2030] flex items-center justify-center`}>
+                    <div className={`${p === 'instagram' ? 'aspect-square' : 'aspect-video'} bg-[#efefef] border border-[#d0d0d0] flex items-center justify-center`}>
                       <span className="font-mono text-xs text-dim">{cfg.size}</span>
                     </div>
                   )}
@@ -220,7 +220,7 @@ export default function AdCreative({ sessionId }: Props) {
                         <>
                           <div className="font-heading text-base text-primary">{editState.instagram.headline}</div>
                           <p className="font-mono text-xs text-teal leading-relaxed">{editState.instagram.caption}</p>
-                          <span className="inline-block font-mono text-xs border border-[#2d4052] text-muted px-3 py-1 rounded">{editState.instagram.cta}</span>
+                          <span className="inline-block font-mono text-xs border border-[#d0d0d0] text-muted px-3 py-1 rounded">{editState.instagram.cta}</span>
                         </>
                       )
                     )}
@@ -236,7 +236,7 @@ export default function AdCreative({ sessionId }: Props) {
                           ))}
                         </div>
                       ) : (
-                        <div className="bg-[#0e2030] border border-[#2d4052] rounded p-4">
+                        <div className="bg-[#efefef] border border-[#d0d0d0] rounded p-4">
                           <div className="font-mono text-xs text-dim mb-1">Sponsored</div>
                           <div className="text-blue-400 text-sm font-medium mb-1">{editState.google.headline1} | {editState.google.headline2} | {editState.google.headline3}</div>
                           <p className="font-mono text-xs text-muted">{editState.google.description1} {editState.google.description2}</p>

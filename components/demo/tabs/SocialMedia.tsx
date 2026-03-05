@@ -44,19 +44,19 @@ function SchedulePicker() {
   const [scheduled, setScheduled] = useState(false)
   if (scheduled) {
     return (
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#2d4052]">
-        <span className="font-mono text-xs" style={{ color: '#8ab4cc' }}>Scheduled: {day} at {time}</span>
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#d0d0d0]">
+        <span className="font-mono text-xs" style={{ color: '#3a6a8a' }}>Scheduled: {day} at {time}</span>
         <button onClick={() => setScheduled(false)} className="font-mono text-xs text-muted hover:text-primary transition-colors">Cancel</button>
       </div>
     )
   }
   return (
-    <div className="flex items-center gap-2 flex-wrap mt-3 pt-3 border-t border-[#2d4052]">
-      <select value={day} onChange={(e) => setDay(e.target.value)} className="font-mono text-xs bg-[#162334] border border-[#2d4052] text-[#f0f0f0] rounded px-2 py-1.5 focus:outline-none">
+    <div className="flex items-center gap-2 flex-wrap mt-3 pt-3 border-t border-[#d0d0d0]">
+      <select value={day} onChange={(e) => setDay(e.target.value)} className="font-mono text-xs bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-2 py-1.5 focus:outline-none">
         <option>Today</option><option>Tomorrow</option><option>In 2 days</option><option>Next week</option>
       </select>
-      <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="font-mono text-xs bg-[#162334] border border-[#2d4052] text-[#f0f0f0] rounded px-2 py-1.5 focus:outline-none" />
-      <button onClick={() => setScheduled(true)} className="font-mono text-xs border border-[#2d4052] text-muted px-3 py-1.5 rounded hover:border-[#4a6070] hover:text-[#f0f0f0] transition-all">
+      <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="font-mono text-xs bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-2 py-1.5 focus:outline-none" />
+      <button onClick={() => setScheduled(true)} className="font-mono text-xs border border-[#d0d0d0] text-muted px-3 py-1.5 rounded hover:border-[#b0b0b0] hover:text-primary transition-all">
         Schedule Post
       </button>
     </div>
@@ -139,7 +139,7 @@ export default function SocialMedia({ sessionId }: Props) {
     <div className="space-y-8">
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border">
-          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Post Generator</p>
+          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Post Generator</p>
           <h2 className="font-heading text-2xl text-primary">Create Social Media Posts</h2>
         </div>
         <div className="p-6">
@@ -152,7 +152,7 @@ export default function SocialMedia({ sessionId }: Props) {
                 placeholder="We are a family-owned Italian restaurant in downtown Austin. Known for handmade pasta, wood-fired pizza, and a warm neighborhood atmosphere..."
                 required
                 rows={3}
-                className="w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors resize-none"
+                className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors resize-none"
               />
             </div>
             <div>
@@ -162,14 +162,14 @@ export default function SocialMedia({ sessionId }: Props) {
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="Our new weekend brunch menu launching next Saturday. We want to build excitement and drive reservations..."
                 rows={2}
-                className="w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors resize-none"
+                className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors resize-none"
               />
             </div>
             <div>
               <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Photo (Optional)</label>
               <div
                 onClick={() => fileRef.current?.click()}
-                className="border border-dashed border-[#2d4052] rounded p-6 text-center cursor-pointer hover:border-[#4a6070] transition-colors"
+                className="border border-dashed border-[#d0d0d0] rounded p-6 text-center cursor-pointer hover:border-[#b0b0b0] transition-colors"
               >
                 {photoPreview
                   ? <img src={photoPreview} alt="Upload preview" className="max-h-32 mx-auto rounded object-cover" />
@@ -189,7 +189,7 @@ export default function SocialMedia({ sessionId }: Props) {
                       type="checkbox"
                       checked={selectedPlatforms.has(p)}
                       onChange={() => togglePlatform(p)}
-                      className="w-4 h-4 rounded border-[#2d4052] accent-black"
+                      className="w-4 h-4 rounded border-[#d0d0d0] accent-black"
                     />
                     <span className="font-mono text-xs text-primary">{PLATFORM_LABELS[p]}</span>
                   </label>
@@ -209,7 +209,7 @@ export default function SocialMedia({ sessionId }: Props) {
 
           {loading && (
             <div className="mt-6 flex items-center gap-3 text-muted font-mono text-sm">
-              <span className="w-4 h-4 border-2 border-[#f0f0f0] border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
               Writing platform-specific posts...
             </div>
           )}
@@ -227,7 +227,7 @@ export default function SocialMedia({ sessionId }: Props) {
           {/* Post to All + confirmation */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Posts Ready</p>
+              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Posts Ready</p>
               <h3 className="font-heading text-xl text-primary">Edit and Post</h3>
             </div>
             <div className="flex items-center gap-3">
@@ -267,7 +267,7 @@ export default function SocialMedia({ sessionId }: Props) {
                   </div>
                 )}
                 {!photoPreview && (
-                  <div className={`${p === 'instagram' ? 'aspect-square' : 'aspect-video'} bg-[#0e2030] flex items-center justify-center`}>
+                  <div className={`${p === 'instagram' ? 'aspect-square' : 'aspect-video'} bg-[#efefef] border border-[#d0d0d0] flex items-center justify-center`}>
                     <span className="font-mono text-xs text-dim">{p === 'instagram' ? '1080 x 1080' : '1200 x 630'}</span>
                   </div>
                 )}
@@ -277,7 +277,7 @@ export default function SocialMedia({ sessionId }: Props) {
                     value={editedPosts[p] ?? ''}
                     onChange={(e) => setEditedPosts((prev) => ({ ...prev, [p]: e.target.value }))}
                     rows={5}
-                    className="flex-1 w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-3 py-2 font-mono text-xs focus:outline-none focus:border-[#5a7a9a] transition-colors resize-none"
+                    className="flex-1 w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-3 py-2 font-mono text-xs focus:outline-none focus:border-[#888888] transition-colors resize-none"
                   />
                   <SchedulePicker />
                 </div>

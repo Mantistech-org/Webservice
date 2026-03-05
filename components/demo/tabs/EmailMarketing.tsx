@@ -32,7 +32,7 @@ function CopyButton({ text }: { text: string }) {
 function EmailCard({ email, badge, badgeColor }: { email: EmailItem; badge: string; badgeColor: string }) {
   const [open, setOpen] = useState(false)
   return (
-    <div className="bg-[#0e2030] border border-[#2d4052] rounded overflow-hidden">
+    <div className="bg-[#efefef] border border-[#d0d0d0] rounded overflow-hidden">
       <div className="p-4 flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
           <span className="font-mono text-xs px-2 py-0.5 rounded shrink-0 mt-0.5 border" style={{ color: badgeColor, borderColor: `${badgeColor}30`, backgroundColor: `${badgeColor}08` }}>
@@ -49,7 +49,7 @@ function EmailCard({ email, badge, badgeColor }: { email: EmailItem; badge: stri
         </div>
       </div>
       {open && (
-        <div className="border-t border-[#2d4052] px-4 py-4 bg-card">
+        <div className="border-t border-[#d0d0d0] px-4 py-4 bg-card">
           <p className="text-sm text-teal leading-relaxed whitespace-pre-line">{email.body}</p>
         </div>
       )}
@@ -59,10 +59,10 @@ function EmailCard({ email, badge, badgeColor }: { email: EmailItem; badge: stri
 
 const CALENDAR_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const CALENDAR_EVENTS: Record<number, { label: string; color: string }> = {
-  1: { label: 'Welcome 1', color: '#8ab4cc' }, 2: { label: 'Welcome 2', color: '#8ab4cc' },
-  4: { label: 'Welcome 3', color: '#8ab4cc' }, 8: { label: 'Welcome 4', color: '#8ab4cc' },
-  15: { label: 'Welcome 5', color: '#8ab4cc' }, 18: { label: 'Newsletter', color: '#3b82f6' },
-  25: { label: 'Re-engage 1', color: '#f97316' }, 30: { label: 'Welcome 6', color: '#8ab4cc' },
+  1: { label: 'Welcome 1', color: '#3a6a8a' }, 2: { label: 'Welcome 2', color: '#3a6a8a' },
+  4: { label: 'Welcome 3', color: '#3a6a8a' }, 8: { label: 'Welcome 4', color: '#3a6a8a' },
+  15: { label: 'Welcome 5', color: '#3a6a8a' }, 18: { label: 'Newsletter', color: '#3b82f6' },
+  25: { label: 'Re-engage 1', color: '#f97316' }, 30: { label: 'Welcome 6', color: '#3a6a8a' },
   32: { label: 'Re-engage 2', color: '#f97316' },
 }
 
@@ -122,7 +122,7 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts }: P
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border flex items-center justify-between gap-4">
           <div>
-            <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Contact List</p>
+            <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Contact List</p>
             <h2 className="font-heading text-2xl text-primary">
               {contacts.length > 0 ? `${contacts.length} Contact${contacts.length !== 1 ? 's' : ''}` : 'No Contacts Yet'}
             </h2>
@@ -131,7 +131,7 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts }: P
             <button
               onClick={() => fileRef.current?.click()}
               disabled={uploadStatus !== 'idle'}
-              className="font-mono text-xs border border-[#2d4052] text-muted px-4 py-2 rounded hover:border-[#4a6070] hover:text-primary transition-all disabled:opacity-50"
+              className="font-mono text-xs border border-[#d0d0d0] text-muted px-4 py-2 rounded hover:border-[#b0b0b0] hover:text-primary transition-all disabled:opacity-50"
             >
               {uploadStatus === 'parsing' ? 'Parsing file...' : uploadStatus === 'done' ? 'Contacts added' : 'Upload Contact List'}
             </button>
@@ -176,7 +176,7 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts }: P
       {/* Campaign generator */}
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border">
-          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Campaign Builder</p>
+          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Campaign Builder</p>
           <h2 className="font-heading text-2xl text-primary">Generate Email Campaigns</h2>
           {contacts.length > 0 && (
             <p className="font-mono text-xs text-muted mt-1">Campaigns will be sent to {contacts.length} contact{contacts.length !== 1 ? 's' : ''} in your list.</p>
@@ -187,16 +187,16 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts }: P
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Business Name</label>
-                <input type="text" value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="Northside Wellness Center" required className="w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors" />
+                <input type="text" value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="Northside Wellness Center" required className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors" />
               </div>
               <div>
                 <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Industry</label>
-                <input type="text" value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="Health and Wellness" required className="w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors" />
+                <input type="text" value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="Health and Wellness" required className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors" />
               </div>
             </div>
             <div>
               <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Who Are Your Customers?</label>
-              <textarea value={customerDescription} onChange={(e) => setCustomerDescription(e.target.value)} placeholder="Adults 30 to 60 looking to improve their health. They value quality, expertise, and personal attention." required rows={3} className="w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors resize-none" />
+              <textarea value={customerDescription} onChange={(e) => setCustomerDescription(e.target.value)} placeholder="Adults 30 to 60 looking to improve their health. They value quality, expertise, and personal attention." required rows={3} className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors resize-none" />
             </div>
             <button type="submit" disabled={loading} className="font-mono text-sm px-6 py-3 rounded tracking-wider transition-opacity disabled:opacity-40" style={{ backgroundColor: '#000000', color: '#f0f0f0' }}>
               {loading ? 'Writing campaigns...' : 'Generate Email Marketing Package'}
@@ -205,7 +205,7 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts }: P
 
           {loading && (
             <div className="mt-6 flex items-center gap-3 text-muted font-mono text-sm">
-              <span className="w-4 h-4 border-2 border-[#f0f0f0] border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
               Writing your complete email marketing package...
             </div>
           )}
@@ -217,7 +217,7 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts }: P
         <div className="space-y-6">
           {/* Campaign calendar */}
           <div className="bg-card border border-border rounded p-6">
-            <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Send Schedule</p>
+            <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Send Schedule</p>
             <h3 className="font-heading text-xl text-primary mb-4">30-Day Campaign Calendar</h3>
             <div className="grid grid-cols-7 gap-1">
               {CALENDAR_DAYS.map((d) => <div key={d} className="font-mono text-xs text-dim text-center py-1">{d}</div>)}
@@ -226,7 +226,7 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts }: P
                   const day = week * 7 + dayIdx + 1
                   const event = CALENDAR_EVENTS[day]
                   return (
-                    <div key={day} className={`aspect-square rounded flex flex-col items-center justify-center p-0.5 bg-[#0e2030] ${day > 31 ? 'opacity-0 pointer-events-none' : ''}`}>
+                    <div key={day} className={`aspect-square rounded flex flex-col items-center justify-center p-0.5 bg-[#efefef] border border-[#d8d8d8] ${day > 31 ? 'opacity-0 pointer-events-none' : ''}`}>
                       <span className="font-mono text-xs text-dim">{day <= 31 ? day : ''}</span>
                       {event && <span className="font-mono text-center leading-none mt-0.5 px-0.5" style={{ fontSize: '9px', color: event.color }}>{event.label}</span>}
                     </div>
@@ -235,7 +235,7 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts }: P
               )}
             </div>
             <div className="flex flex-wrap gap-4 mt-4">
-              {[{ color: '#8ab4cc', label: 'Welcome Sequence' }, { color: '#3b82f6', label: 'Newsletter' }, { color: '#f97316', label: 'Re-engagement' }].map((item) => (
+              {[{ color: '#3a6a8a', label: 'Welcome Sequence' }, { color: '#3b82f6', label: 'Newsletter' }, { color: '#f97316', label: 'Re-engagement' }].map((item) => (
                 <div key={item.label} className="flex items-center gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
                   <span className="font-mono text-xs text-muted">{item.label}</span>
@@ -247,7 +247,7 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts }: P
           {/* Welcome sequence */}
           <div className="bg-card border border-border rounded">
             <div className="px-6 py-4 border-b border-border">
-              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Welcome Sequence</p>
+              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Welcome Sequence</p>
               <h3 className="font-heading text-xl text-primary">{result.welcomeSequence.length} Emails</h3>
               <p className="font-mono text-xs text-muted mt-1">Sent automatically when a contact joins your list</p>
             </div>

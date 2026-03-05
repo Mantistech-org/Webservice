@@ -93,7 +93,7 @@ export default function DemoPage() {
       <div style={{ backgroundColor: '#000000' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div>
-            <p className="font-mono text-xs tracking-widest uppercase mb-0.5" style={{ color: '#8ab4cc' }}>
+            <p className="font-mono text-xs tracking-widest uppercase mb-0.5" style={{ color: '#3a6a8a' }}>
               Free Trial
             </p>
             <p className="font-heading text-lg leading-tight" style={{ color: '#f0f0f0' }}>
@@ -125,7 +125,7 @@ export default function DemoPage() {
                 onClick={() => handleTabChange(tab.id)}
                 className={`shrink-0 font-mono text-xs tracking-wider px-4 py-3 border-b-2 transition-all duration-150 whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'border-[#f0f0f0] text-[#f0f0f0]'
+                    ? 'border-[#1a1a1a] text-[#1a1a1a]'
                     : 'border-transparent text-muted hover:text-primary'
                 }`}
               >

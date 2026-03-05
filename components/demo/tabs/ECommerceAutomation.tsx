@@ -48,7 +48,7 @@ function EmailCard({ email, index, color }: { email: EmailItem; index: number; c
   const [copied, setCopied] = useState(false)
   const copy = () => { navigator.clipboard.writeText(`Subject: ${email.subject}\n\n${email.body}`); setCopied(true); setTimeout(() => setCopied(false), 2000) }
   return (
-    <div className="bg-[#0e2030] border border-[#2d4052] rounded overflow-hidden">
+    <div className="bg-[#efefef] border border-[#d0d0d0] rounded overflow-hidden">
       <div className="p-4 flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
           <div className="w-7 h-7 rounded shrink-0 flex items-center justify-center font-mono text-xs font-bold text-black mt-0.5" style={{ backgroundColor: color }}>{index + 1}</div>
@@ -64,7 +64,7 @@ function EmailCard({ email, index, color }: { email: EmailItem; index: number; c
         </div>
       </div>
       {open && (
-        <div className="border-t border-[#2d4052] px-4 py-4 bg-card">
+        <div className="border-t border-[#d0d0d0] px-4 py-4 bg-card">
           <p className="text-sm text-teal leading-relaxed whitespace-pre-line">{email.body}</p>
         </div>
       )}
@@ -96,7 +96,7 @@ function AutomatedEmails() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-1">
                 <span className="font-heading text-base text-primary">{a.name}</span>
-                <span className={`font-mono text-xs px-2 py-0.5 rounded-full border ${a.active ? 'text-[#4ade80] border-[#4ade80]/30' : 'text-dim border-[#2d4052]'}`}>
+                <span className={`font-mono text-xs px-2 py-0.5 rounded-full border ${a.active ? 'text-[#16a34a] border-[#4ade80]/50' : 'text-dim border-[#d0d0d0]'}`}>
                   {a.active ? 'Active' : 'Paused'}
                 </span>
               </div>
@@ -104,30 +104,30 @@ function AutomatedEmails() {
               <div className="font-mono text-xs text-dim mt-0.5">Last sent: {a.lastSent}</div>
             </div>
             <div className="flex items-center gap-3 shrink-0">
-              <button onClick={() => startEdit(a)} className="font-mono text-xs border border-[#2d4052] text-muted px-3 py-1.5 rounded hover:border-[#4a6070] hover:text-primary transition-all">
+              <button onClick={() => startEdit(a)} className="font-mono text-xs border border-[#d0d0d0] text-muted px-3 py-1.5 rounded hover:border-[#b0b0b0] hover:text-primary transition-all">
                 Customize
               </button>
               <button
                 onClick={() => toggle(a.id)}
-                className={`relative w-11 h-6 rounded-full transition-colors ${a.active ? 'bg-[#4ade80]/30' : 'bg-[#2d4052]'}`}
+                className={`relative w-11 h-6 rounded-full transition-colors ${a.active ? 'bg-[#4ade80]/40' : 'bg-[#d0d0d0]'}`}
               >
                 <span className={`absolute top-1 w-4 h-4 rounded-full transition-transform ${a.active ? 'translate-x-6 bg-[#4ade80]' : 'translate-x-1 bg-muted'}`} />
               </button>
             </div>
           </div>
           {editing === a.id && (
-            <div className="border-t border-border bg-[#0e2030] p-5 space-y-3">
+            <div className="border-t border-border bg-[#efefef] p-5 space-y-3">
               <div>
                 <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Subject Line</label>
-                <input value={editSubject} onChange={(e) => setEditSubject(e.target.value)} className="w-full bg-card border border-[#2d4052] text-[#f0f0f0] rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#5a7a9a] transition-colors" />
+                <input value={editSubject} onChange={(e) => setEditSubject(e.target.value)} className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#888888] transition-colors" />
               </div>
               <div>
                 <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Email Body</label>
-                <textarea value={editBody} onChange={(e) => setEditBody(e.target.value)} rows={3} className="w-full bg-card border border-[#2d4052] text-[#f0f0f0] rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#5a7a9a] transition-colors resize-none" />
+                <textarea value={editBody} onChange={(e) => setEditBody(e.target.value)} rows={3} className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#888888] transition-colors resize-none" />
               </div>
               <div className="flex gap-3">
                 <button onClick={() => saveEdit(a.id)} className="font-mono text-xs px-4 py-2 rounded tracking-wider transition-opacity hover:opacity-80" style={{ backgroundColor: '#000000', color: '#f0f0f0' }}>Save Changes</button>
-                <button onClick={() => setEditing(null)} className="font-mono text-xs border border-[#2d4052] text-muted px-4 py-2 rounded hover:text-primary transition-colors">Cancel</button>
+                <button onClick={() => setEditing(null)} className="font-mono text-xs border border-[#d0d0d0] text-muted px-4 py-2 rounded hover:text-primary transition-colors">Cancel</button>
               </div>
             </div>
           )}
@@ -166,7 +166,7 @@ function Inventory() {
         <button
           onClick={handleBulkUpload}
           disabled={bulkStatus !== 'idle'}
-          className="font-mono text-xs border border-[#2d4052] text-muted px-4 py-2 rounded hover:border-[#4a6070] hover:text-primary transition-all disabled:opacity-50 shrink-0"
+          className="font-mono text-xs border border-[#d0d0d0] text-muted px-4 py-2 rounded hover:border-[#b0b0b0] hover:text-primary transition-all disabled:opacity-50 shrink-0"
         >
           {bulkStatus === 'uploading' ? 'Uploading...' : bulkStatus === 'done' ? 'Imported' : 'Bulk Upload CSV'}
         </button>
@@ -199,7 +199,7 @@ function Inventory() {
                         {item.restockDate
                           ? <span className="font-mono text-xs text-muted">Restock: {item.restockDate}</span>
                           : (
-                            <button onClick={() => setSchedulingId(schedulingId === item.id ? null : item.id)} className="font-mono text-xs border border-[#2d4052] text-muted px-2 py-1 rounded hover:text-primary transition-colors">
+                            <button onClick={() => setSchedulingId(schedulingId === item.id ? null : item.id)} className="font-mono text-xs border border-[#d0d0d0] text-muted px-2 py-1 rounded hover:text-primary transition-colors">
                               Schedule Restock
                             </button>
                           )
@@ -209,19 +209,19 @@ function Inventory() {
                   </tr>
                   {schedulingId === item.id && (
                     <tr>
-                      <td colSpan={5} className="px-4 py-3 bg-[#0e2030] border-t border-[#2d4052]">
+                      <td colSpan={5} className="px-4 py-3 bg-[#efefef] border-t border-[#d0d0d0]">
                         <div className="flex items-center gap-3 flex-wrap">
                           <div>
                             <label className="font-mono text-xs text-muted block mb-1">Expected Arrival Date</label>
-                            <input type="date" value={restockDate} onChange={(e) => setRestockDate(e.target.value)} className="bg-card border border-[#2d4052] text-[#f0f0f0] rounded px-3 py-1.5 font-mono text-xs focus:outline-none" />
+                            <input type="date" value={restockDate} onChange={(e) => setRestockDate(e.target.value)} className="bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-3 py-1.5 font-mono text-xs focus:outline-none" />
                           </div>
                           <div>
                             <label className="font-mono text-xs text-muted block mb-1">Quantity Coming In</label>
-                            <input type="number" value={restockQty} onChange={(e) => setRestockQty(e.target.value)} placeholder="100" className="w-24 bg-card border border-[#2d4052] text-[#f0f0f0] rounded px-3 py-1.5 font-mono text-xs focus:outline-none" />
+                            <input type="number" value={restockQty} onChange={(e) => setRestockQty(e.target.value)} placeholder="100" className="w-24 bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-3 py-1.5 font-mono text-xs focus:outline-none" />
                           </div>
                           <div className="flex gap-2 mt-4">
                             <button onClick={() => saveRestock(item.id)} className="font-mono text-xs px-4 py-1.5 rounded hover:opacity-80 transition-opacity" style={{ backgroundColor: '#000000', color: '#f0f0f0' }}>Save</button>
-                            <button onClick={() => setSchedulingId(null)} className="font-mono text-xs border border-[#2d4052] text-muted px-4 py-1.5 rounded hover:text-primary transition-colors">Cancel</button>
+                            <button onClick={() => setSchedulingId(null)} className="font-mono text-xs border border-[#d0d0d0] text-muted px-4 py-1.5 rounded hover:text-primary transition-colors">Cancel</button>
                           </div>
                         </div>
                       </td>
@@ -277,7 +277,7 @@ function EmailSequences({ sessionId }: { sessionId: string }) {
     <div className="space-y-6">
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border">
-          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Sequence Builder</p>
+          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Sequence Builder</p>
           <h3 className="font-heading text-xl text-primary">Generate Email Sequences</h3>
         </div>
         <div className="p-6">
@@ -285,11 +285,11 @@ function EmailSequences({ sessionId }: { sessionId: string }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Store Name</label>
-                <input type="text" value={storeName} onChange={(e) => setStoreName(e.target.value)} placeholder="Summit Supply Co." required className="w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors" />
+                <input type="text" value={storeName} onChange={(e) => setStoreName(e.target.value)} placeholder="Summit Supply Co." required className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors" />
               </div>
               <div>
                 <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Product Types</label>
-                <input type="text" value={productTypes} onChange={(e) => setProductTypes(e.target.value)} placeholder="Outdoor gear, hiking equipment, apparel" required className="w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors" />
+                <input type="text" value={productTypes} onChange={(e) => setProductTypes(e.target.value)} placeholder="Outdoor gear, hiking equipment, apparel" required className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors" />
               </div>
             </div>
             <button type="submit" disabled={loading} className="font-mono text-sm px-6 py-3 rounded tracking-wider transition-opacity disabled:opacity-40" style={{ backgroundColor: '#000000', color: '#f0f0f0' }}>
@@ -298,7 +298,7 @@ function EmailSequences({ sessionId }: { sessionId: string }) {
           </form>
           {loading && (
             <div className="mt-6 flex items-center gap-3 text-muted font-mono text-sm">
-              <span className="w-4 h-4 border-2 border-[#f0f0f0] border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
               Writing your automated email sequences...
             </div>
           )}
@@ -315,7 +315,7 @@ function EmailSequences({ sessionId }: { sessionId: string }) {
             <div className="flex items-center gap-2 mt-3 flex-wrap">
               {result[key].emails.map((e, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <div className="bg-[#0e2030] border border-[#2d4052] rounded px-2 py-1">
+                  <div className="bg-[#efefef] border border-[#d0d0d0] rounded px-2 py-1">
                     <div className="font-mono text-xs text-muted">Email {i + 1}</div>
                     <div className="font-mono text-xs text-primary">{e.delayLabel}</div>
                   </div>
@@ -347,7 +347,7 @@ export default function ECommerceAutomation({ sessionId }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>E-Commerce Automation</p>
+        <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>E-Commerce Automation</p>
         <h2 className="font-heading text-2xl text-primary">Store Management</h2>
       </div>
 
@@ -358,7 +358,7 @@ export default function ECommerceAutomation({ sessionId }: Props) {
             key={tab.id}
             onClick={() => setActiveSubTab(tab.id)}
             className={`font-mono text-xs px-5 py-3 border-b-2 -mb-px tracking-wider transition-all ${
-              activeSubTab === tab.id ? 'border-[#f0f0f0] text-[#f0f0f0]' : 'border-transparent text-muted hover:text-primary'
+              activeSubTab === tab.id ? 'border-[#1a1a1a] text-[#1a1a1a]' : 'border-transparent text-muted hover:text-primary'
             }`}
           >
             {tab.label}

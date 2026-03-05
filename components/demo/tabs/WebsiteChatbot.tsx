@@ -50,14 +50,14 @@ export default function WebsiteChatbot({ sessionId }: Props) {
     } finally { setSending(false) }
   }
 
-  const inputClass = 'w-full bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-4 py-3 font-mono text-sm placeholder:text-[#3a5570] focus:outline-none focus:border-[#5a7a9a] transition-colors'
+  const inputClass = 'w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors'
 
   return (
     <div className="space-y-8">
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border flex items-center justify-between">
           <div>
-            <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#8ab4cc' }}>Chatbot Setup</p>
+            <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Chatbot Setup</p>
             <h2 className="font-heading text-2xl text-primary">Configure Your Chatbot</h2>
           </div>
           {configured && <span className="font-mono text-xs border border-[#4ade80]/30 text-[#4ade80] px-3 py-1 rounded">Live</span>}
@@ -87,7 +87,7 @@ export default function WebsiteChatbot({ sessionId }: Props) {
                 Configure and Launch Chatbot
               </button>
             ) : (
-              <button type="button" onClick={() => { setConfigured(false); setMessages([]) }} className="font-mono text-xs border border-[#2d4052] text-muted px-4 py-2 rounded hover:border-[#4a6070] hover:text-primary transition-all">
+              <button type="button" onClick={() => { setConfigured(false); setMessages([]) }} className="font-mono text-xs border border-[#d0d0d0] text-muted px-4 py-2 rounded hover:border-[#b0b0b0] hover:text-primary transition-all">
                 Reconfigure
               </button>
             )}
@@ -99,9 +99,9 @@ export default function WebsiteChatbot({ sessionId }: Props) {
         <div className="flex justify-center">
           <div className="w-full max-w-md">
             <div className="bg-card border border-border rounded overflow-hidden shadow-lg">
-              <div className="px-4 py-3 bg-[#0e2030] border-b border-border flex items-center gap-3">
+              <div className="px-4 py-3 bg-[#efefef] border-b border-border flex items-center gap-3">
                 <div className="relative">
-                  <div className="w-9 h-9 rounded-full bg-[#162334] border border-[#2d4052] flex items-center justify-center font-heading text-sm text-primary">
+                  <div className="w-9 h-9 rounded-full bg-[#e0e0e0] border border-[#d0d0d0] flex items-center justify-center font-heading text-sm text-primary">
                     {context.businessName[0]}
                   </div>
                   <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#4ade80] border-2 border-card" />
@@ -112,12 +112,12 @@ export default function WebsiteChatbot({ sessionId }: Props) {
                 </div>
               </div>
 
-              <div className="h-80 overflow-y-auto p-4 space-y-3 bg-[#0e2030]">
+              <div className="h-80 overflow-y-auto p-4 space-y-3 bg-[#fafaf8]">
                 {messages.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[80%] px-3 py-2 rounded-lg text-sm leading-relaxed ${
                       msg.role === 'user'
-                        ? 'rounded-br-none text-[#f0f0f0]'
+                        ? 'rounded-br-none text-[#ffffff]'
                         : 'bg-card border border-border text-primary rounded-bl-none'
                     }`} style={msg.role === 'user' ? { backgroundColor: '#000000' } : {}}>
                       {msg.content}
@@ -143,7 +143,7 @@ export default function WebsiteChatbot({ sessionId }: Props) {
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask something..."
                   disabled={sending}
-                  className="flex-1 bg-[#0e2030] border border-[#2d4052] text-[#f0f0f0] rounded px-3 py-2 font-mono text-sm placeholder:text-dim focus:outline-none focus:border-[#5a7a9a] transition-colors"
+                  className="flex-1 bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-3 py-2 font-mono text-sm placeholder:text-dim focus:outline-none focus:border-[#888888] transition-colors"
                 />
                 <button type="submit" disabled={sending || !input.trim()} className="px-4 py-2 rounded font-mono text-sm transition-opacity disabled:opacity-40 hover:opacity-80" style={{ backgroundColor: '#000000', color: '#f0f0f0' }}>
                   Send
