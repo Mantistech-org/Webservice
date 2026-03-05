@@ -23,7 +23,7 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
       {/* Header */}
       <div className="bg-bg border-b border-border px-6 py-4 flex items-center justify-between">
         <div>
-          <div className="font-mono text-xs text-accent tracking-widest uppercase">
+          <div className="font-mono text-xs text-muted tracking-widest uppercase">
             Live Quote
           </div>
           <div className="font-heading text-xl text-primary mt-0.5">Your Estimate</div>
@@ -63,7 +63,7 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
             {extraAddons.map((addon) => (
               <div key={addon.id} className="flex items-center justify-between text-sm">
                 <span className="text-teal flex items-center gap-2">
-                  <span className="text-accent text-xs">+</span>
+                  <span className="text-muted text-xs">+</span>
                   {addon.label}
                 </span>
                 <span className="font-mono text-primary">${addon.price}/mo</span>
@@ -84,7 +84,7 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
             <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">
               Monthly Total
             </div>
-            <div className="font-heading text-5xl text-accent leading-none">
+            <div className="font-heading text-5xl text-primary leading-none">
               ${monthlyTotal}
               <span className="font-mono text-base text-muted font-normal ml-1">/mo</span>
             </div>

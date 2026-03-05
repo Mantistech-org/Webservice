@@ -238,7 +238,7 @@ export default function IntakeForm() {
 
           {/* Business Info */}
           <section>
-            <h2 className="font-mono text-xs text-accent tracking-widest uppercase mb-6 flex items-center gap-3">
+            <h2 className="font-mono text-xs text-primary tracking-widest uppercase mb-6 flex items-center gap-3">
               <span className="w-4 h-px bg-accent" />
               Business Information
             </h2>
@@ -319,7 +319,7 @@ export default function IntakeForm() {
 
           {/* Project Details */}
           <section>
-            <h2 className="font-mono text-xs text-accent tracking-widest uppercase mb-6 flex items-center gap-3">
+            <h2 className="font-mono text-xs text-primary tracking-widest uppercase mb-6 flex items-center gap-3">
               <span className="w-4 h-px bg-accent" />
               Project Details
             </h2>
@@ -412,7 +412,7 @@ export default function IntakeForm() {
 
           {/* Plan Selection */}
           <section>
-            <h2 className="font-mono text-xs text-accent tracking-widest uppercase mb-6 flex items-center gap-3">
+            <h2 className="font-mono text-xs text-primary tracking-widest uppercase mb-6 flex items-center gap-3">
               <span className="w-4 h-px bg-accent" />
               Select Your Plan
             </h2>
@@ -424,19 +424,19 @@ export default function IntakeForm() {
                   onClick={() => setPlan(id)}
                   className={`text-left p-5 rounded border transition-all duration-200 ${
                     form.plan === id
-                      ? 'border-accent bg-accent/5'
+                      ? 'border-primary bg-card'
                       : 'border-border bg-card hover:border-border-light'
                   }`}
                 >
                   <div className="font-mono text-xs tracking-widest uppercase mb-2">
                     {form.plan === id && (
-                      <span className="text-accent">
+                      <span className="text-primary">
                         <svg className="inline w-3 h-3 mr-1 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       </span>
                     )}
-                    <span className={form.plan === id ? 'text-accent' : 'text-muted'}>{plan.name}</span>
+                    <span className={form.plan === id ? 'text-primary' : 'text-muted'}>{plan.name}</span>
                   </div>
                   <div className="font-heading text-3xl text-primary leading-none">
                     ${plan.upfront}
@@ -454,7 +454,7 @@ export default function IntakeForm() {
 
           {/* Add-ons */}
           <section>
-            <h2 className="font-mono text-xs text-accent tracking-widest uppercase mb-2 flex items-center gap-3">
+            <h2 className="font-mono text-xs text-primary tracking-widest uppercase mb-2 flex items-center gap-3">
               <span className="w-4 h-px bg-accent" />
               Add-Ons
             </h2>
@@ -470,19 +470,19 @@ export default function IntakeForm() {
                     key={addon.id}
                     className={`flex items-center gap-4 p-4 rounded border transition-all duration-200 ${
                       isIncluded
-                        ? 'border-accent/30 bg-accent/5 cursor-default'
+                        ? 'border-primary/30 bg-card cursor-default'
                         : checked
-                        ? 'border-accent bg-accent/5 cursor-pointer'
+                        ? 'border-primary bg-card cursor-pointer'
                         : 'border-border bg-card hover:border-border-light cursor-pointer'
                     }`}
                   >
                     <div
-                      className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 transition-all ${
-                        checked ? 'border-accent bg-accent' : 'border-dim'
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all ${
+                        checked ? 'border-primary' : 'border-dim'
                       }`}
                     >
                       {checked && (
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#080c10" strokeWidth="3">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" className="text-primary">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       )}
@@ -500,9 +500,9 @@ export default function IntakeForm() {
                     </div>
                     <div className="font-mono text-sm shrink-0">
                       {isIncluded ? (
-                        <span className="text-accent">Included</span>
+                        <span className="text-muted">Included</span>
                       ) : (
-                        <span className="text-accent">+${addon.price}/mo</span>
+                        <span className="text-primary">+${addon.price}/mo</span>
                       )}
                     </div>
                   </label>
@@ -513,7 +513,7 @@ export default function IntakeForm() {
 
           {/* Photo Upload */}
           <section>
-            <h2 className="font-mono text-xs text-accent tracking-widest uppercase mb-2 flex items-center gap-3">
+            <h2 className="font-mono text-xs text-primary tracking-widest uppercase mb-2 flex items-center gap-3">
               <span className="w-4 h-px bg-accent" />
               Reference Photos
             </h2>
@@ -641,7 +641,7 @@ function FormField({
     <div className={className}>
       <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">
         {label}
-        {required && <span className="text-accent ml-1">*</span>}
+        {required && <span className="text-red-600 ml-1">*</span>}
       </label>
       {children}
     </div>
