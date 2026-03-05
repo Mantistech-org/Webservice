@@ -11,7 +11,7 @@ export default function Footer() {
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <span className="w-2 h-2 rounded-full bg-accent" />
-              <span className="font-heading text-xl text-white">Mantis Tech</span>
+              <span className="font-heading text-xl text-primary">Mantis Tech</span>
             </div>
             <p className="text-sm text-muted leading-relaxed max-w-xs">
               Boutique web agency delivering premium websites and digital services for businesses
@@ -34,7 +34,7 @@ export default function Footer() {
                 'Automated Email Marketing',
               ].map((s) => (
                 <li key={s}>
-                  <a href="#services" className="hover:text-white transition-colors">
+                  <a href="#services" className="hover:text-primary transition-colors">
                     {s}
                   </a>
                 </li>
@@ -49,17 +49,17 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-muted">
               <li>
-                <a href="#how-it-works" className="hover:text-white transition-colors">
+                <a href="#how-it-works" className="hover:text-primary transition-colors">
                   How It Works
                 </a>
               </li>
               <li>
-                <a href="#pricing" className="hover:text-white transition-colors">
+                <a href="#pricing" className="hover:text-primary transition-colors">
                   Pricing
                 </a>
               </li>
               <li>
-                <Link href="/intake" className="hover:text-white transition-colors">
+                <Link href="/intake" className="hover:text-primary transition-colors">
                   Start a Project
                 </Link>
               </li>

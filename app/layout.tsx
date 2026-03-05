@@ -34,8 +34,16 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${dmMono.variable}`}>
-      <body className="bg-bg text-white antialiased">{children}</body>
+    <html lang="en" className={`${inter.variable} ${dmMono.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Prevent flash of wrong theme */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{if(localStorage.getItem('theme')==='light'){document.documentElement.classList.add('light-mode');}}catch(e){}})();`,
+          }}
+        />
+      </head>
+      <body className="antialiased">{children}</body>
     </html>
   )
 }

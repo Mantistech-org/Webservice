@@ -11,7 +11,7 @@ export default function Pricing() {
           <p className="font-mono text-xs text-muted tracking-widest uppercase mb-3">
             Transparent Pricing
           </p>
-          <h2 className="font-heading text-[clamp(2rem,5vw,3.5rem)] leading-tight text-white">
+          <h2 className="font-heading text-[clamp(2rem,5vw,3.5rem)] leading-tight text-primary">
             Plans That Scale With You
           </h2>
           <p className="mt-4 text-teal max-w-xl mx-auto text-base leading-relaxed">
@@ -43,7 +43,7 @@ export default function Pricing() {
                     {plan.name} Plan
                   </div>
 
-                  <div className="font-heading text-5xl text-white leading-none mb-1">
+                  <div className="font-heading text-5xl text-primary leading-none mb-1">
                     ${plan.upfront}
                     <span className="font-mono text-sm text-muted ml-2 font-normal">upfront</span>
                   </div>
@@ -70,9 +70,9 @@ export default function Pricing() {
 
                   <Link
                     href={`/intake?plan=${key}`}
-                    className={`mt-8 block text-center font-mono text-sm py-3 px-6 rounded tracking-wider transition-colors duration-200 ${
+                    className={`mt-8 block text-center font-mono text-sm py-3 px-6 rounded tracking-wider transition-opacity duration-200 ${
                       isHighlight
-                        ? 'bg-accent text-bg hover:bg-gray-200'
+                        ? 'bg-accent text-bg hover:opacity-90'
                         : 'border border-border text-teal hover:border-accent hover:text-accent'
                     }`}
                   >

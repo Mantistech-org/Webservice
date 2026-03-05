@@ -33,7 +33,7 @@ export default function HowItWorks() {
           <p className="font-mono text-xs text-muted tracking-widest uppercase mb-3">
             The Process
           </p>
-          <h2 className="font-heading text-[clamp(2rem,5vw,3.5rem)] leading-tight text-white">
+          <h2 className="font-heading text-[clamp(2rem,5vw,3.5rem)] leading-tight text-primary">
             How It Works
           </h2>
         </div>
@@ -47,7 +47,7 @@ export default function HowItWorks() {
               <div className="font-mono text-xs text-muted tracking-widest mb-4">
                 STEP {step.number}
               </div>
-              <h3 className="font-heading text-lg text-white mb-3">{step.title}</h3>
+              <h3 className="font-heading text-lg text-primary mb-3">{step.title}</h3>
               <p className="text-sm text-teal leading-relaxed">{step.description}</p>
             </div>
           ))}

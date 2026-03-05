@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import ThemeToggle from './ThemeToggle'
 
 const links = [
   { label: 'Services', href: '#services' },
@@ -31,46 +32,50 @@ export default function Nav() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <span className="w-2 h-2 rounded-full bg-accent" />
-          <span className="font-heading text-xl text-white group-hover:text-gray-300 transition-colors">
+          <span className="font-heading text-xl text-primary group-hover:text-muted transition-colors">
             Mantis Tech
           </span>
         </Link>
 
         {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-6">
           {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="font-mono text-sm text-muted hover:text-white transition-colors tracking-wider"
+              className="font-mono text-sm text-muted hover:text-primary transition-colors tracking-wider"
             >
               {link.label}
             </a>
           ))}
+          <ThemeToggle />
           <Link
             href="/intake"
-            className="font-mono text-sm bg-accent text-bg px-5 py-2 rounded hover:bg-gray-200 transition-colors font-medium tracking-wider"
+            className="font-mono text-sm bg-accent text-bg px-5 py-2 rounded hover:opacity-90 transition-opacity font-medium tracking-wider"
           >
             Get Started
           </Link>
         </div>
 
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden flex flex-col gap-1.5 p-1"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
-        >
-          <span
-            className={`block w-6 h-0.5 bg-white transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`}
-          />
-          <span
-            className={`block w-6 h-0.5 bg-white transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`}
-          />
-          <span
-            className={`block w-6 h-0.5 bg-white transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`}
-          />
-        </button>
+        {/* Mobile right side */}
+        <div className="md:hidden flex items-center gap-3">
+          <ThemeToggle />
+          <button
+            className="flex flex-col gap-1.5 p-1"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span
+              className={`block w-6 h-0.5 bg-primary transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`}
+            />
+            <span
+              className={`block w-6 h-0.5 bg-primary transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`}
+            />
+            <span
+              className={`block w-6 h-0.5 bg-primary transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`}
+            />
+          </button>
+        </div>
       </nav>
 
       {/* Mobile menu */}
@@ -80,7 +85,7 @@ export default function Nav() {
             <a
               key={link.href}
               href={link.href}
-              className="font-mono text-sm text-muted hover:text-white transition-colors tracking-wider"
+              className="font-mono text-sm text-muted hover:text-primary transition-colors tracking-wider"
               onClick={() => setMenuOpen(false)}
             >
               {link.label}

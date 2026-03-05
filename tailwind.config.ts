@@ -9,15 +9,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: '#0f0f0f',
-        accent: '#ffffff',
-        teal: '#aaaaaa',
-        card: '#161616',
-        'card-hover': '#1e1e1e',
-        border: '#282828',
-        'border-light': '#333333',
-        dim: '#444444',
-        muted: '#777777',
+        bg: 'rgb(var(--color-bg) / <alpha-value>)',
+        card: 'rgb(var(--color-card) / <alpha-value>)',
+        'card-hover': 'rgb(var(--color-card-hover) / <alpha-value>)',
+        border: 'rgb(var(--color-border) / <alpha-value>)',
+        'border-light': 'rgb(var(--color-border-light) / <alpha-value>)',
+        accent: 'rgb(var(--color-accent) / <alpha-value>)',
+        teal: 'rgb(var(--color-teal) / <alpha-value>)',
+        muted: 'rgb(var(--color-muted) / <alpha-value>)',
+        dim: 'rgb(var(--color-dim) / <alpha-value>)',
+        primary: 'rgb(var(--color-primary) / <alpha-value>)',
       },
       fontFamily: {
         heading: ['var(--font-inter)', 'system-ui', 'sans-serif'],

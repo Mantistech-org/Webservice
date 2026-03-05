@@ -8,7 +8,7 @@ export default function ServicesGrid() {
           <p className="font-mono text-xs text-muted tracking-widest uppercase mb-3">
             Our Services
           </p>
-          <h2 className="font-heading text-[clamp(2rem,5vw,3.5rem)] leading-tight text-white">
+          <h2 className="font-heading text-[clamp(2rem,5vw,3.5rem)] leading-tight text-primary">
             Everything Your Business Needs
           </h2>
         </div>
@@ -19,7 +19,7 @@ export default function ServicesGrid() {
               key={service.id}
               className="bg-bg border border-border rounded p-8 hover:border-border-light transition-colors duration-200"
             >
-              <h3 className="font-heading text-lg text-white mb-3">{service.label}</h3>
+              <h3 className="font-heading text-lg text-primary mb-3">{service.label}</h3>
               <p className="text-sm text-teal leading-relaxed">{service.description}</p>
             </div>
           ))}
