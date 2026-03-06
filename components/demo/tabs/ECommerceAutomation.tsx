@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 
 interface Props { sessionId: string; initialSubTab?: 'automations' | 'inventory' | 'sequences' }
 
@@ -195,8 +195,8 @@ function Inventory() {
             </thead>
             <tbody className="divide-y divide-border">
               {items.map((item) => (
-                <>
-                  <tr key={item.id}>
+                <React.Fragment key={item.id}>
+                  <tr>
                     <td className="px-4 py-3 font-mono text-sm text-primary">{item.name}</td>
                     <td className="px-4 py-3 font-mono text-xs text-muted">{item.sku}</td>
                     <td className="px-4 py-3 font-mono text-sm text-primary">{item.quantity}</td>
@@ -236,7 +236,7 @@ function Inventory() {
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
