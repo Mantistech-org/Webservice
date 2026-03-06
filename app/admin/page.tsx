@@ -22,6 +22,9 @@ interface ProjectSummary {
   createdAt: string
   updatedAt: string
   addons: string[]
+  clientToken: string
+  referredBy?: string
+  referralRewardGranted?: boolean
 }
 
 const STATUS_LABELS: Record<ProjectStatus, string> = {
@@ -74,6 +77,12 @@ export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
   const [loggingIn, setLoggingIn] = useState(false)
+  const [mfaPending, setMfaPending] = useState(false)
+  const [mfaCode, setMfaCode] = useState('')
+  const [mfaError, setMfaError] = useState('')
+  const [verifying, setVerifying] = useState(false)
+  const [resending, setResending] = useState(false)
+  const [resent, setResent] = useState(false)
   const [projects, setProjects] = useState<ProjectSummary[]>([])
   const [loading, setLoading] = useState(false)
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | 'all'>('all')
@@ -130,7 +139,10 @@ export default function AdminPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password }),
     })
-    if (res.ok) {
+    const data = await res.json()
+    if (res.ok && data.mfaRequired) {
+      setMfaPending(true)
+    } else if (res.ok) {
       setAuthed(true)
       loadProjects()
       loadDemoSessions()
@@ -138,6 +150,35 @@ export default function AdminPage() {
       setLoginError('Incorrect password.')
     }
     setLoggingIn(false)
+  }
+
+  const handleVerifyMfa = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setVerifying(true)
+    setMfaError('')
+    const res = await fetch('/api/admin/verify-mfa', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: mfaCode }),
+    })
+    const data = await res.json()
+    if (res.ok) {
+      setAuthed(true)
+      loadProjects()
+      loadDemoSessions()
+    } else {
+      setMfaError(data.error ?? 'Verification failed.')
+    }
+    setVerifying(false)
+  }
+
+  const handleResendMfa = async () => {
+    setResending(true)
+    setResent(false)
+    await fetch('/api/admin/resend-mfa', { method: 'POST' })
+    setResent(true)
+    setResending(false)
+    setTimeout(() => setResent(false), 4000)
   }
 
   const handleLogout = async () => {
@@ -179,6 +220,70 @@ export default function AdminPage() {
   }
 
   if (!authed) {
+    if (mfaPending) {
+      return (
+        <div className="min-h-screen bg-bg flex items-center justify-center px-6">
+          <div className="w-full max-w-sm">
+            <div className="flex items-center gap-2 mb-8 justify-center">
+              <span className="w-2 h-2 rounded-full bg-accent" />
+              <span className="font-heading text-2xl tracking-widest text-white">MANTIS TECH</span>
+            </div>
+            <div className="bg-card border border-border rounded p-8">
+              <div className="font-mono text-xs text-accent tracking-widest uppercase mb-2">Admin</div>
+              <h1 className="font-heading text-3xl text-white mb-2">Check Your Email</h1>
+              <p className="font-mono text-xs text-muted mb-6">
+                A 6-digit code was sent to your admin email. Enter it below to complete login.
+              </p>
+              <form onSubmit={handleVerifyMfa} className="space-y-4">
+                <div>
+                  <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">
+                    Verification Code
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={mfaCode}
+                    onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ''))}
+                    autoFocus
+                    required
+                    className="form-input tracking-[0.5em] text-center text-lg"
+                    placeholder="000000"
+                  />
+                </div>
+                {mfaError && <p className="font-mono text-xs text-red-400">{mfaError}</p>}
+                {resent && <p className="font-mono text-xs text-accent">Code resent to your email.</p>}
+                <button
+                  type="submit"
+                  disabled={verifying || mfaCode.length !== 6}
+                  className="w-full bg-accent text-bg font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60"
+                >
+                  {verifying ? 'Verifying...' : 'Verify and Log In'}
+                </button>
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => { setMfaPending(false); setMfaCode(''); setMfaError('') }}
+                    className="font-mono text-xs text-dim hover:text-muted transition-colors"
+                  >
+                    Back to login
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResendMfa}
+                    disabled={resending}
+                    className="font-mono text-xs text-muted hover:text-accent transition-colors disabled:opacity-60"
+                  >
+                    {resending ? 'Sending...' : 'Resend code'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center px-6">
         <div className="w-full max-w-sm">
@@ -460,6 +565,52 @@ export default function AdminPage() {
               })}
             </div>
           )}
+        </div>
+
+        {/* Referrals */}
+        <div className="mt-16 pt-10 border-t border-border">
+          <div className="mb-6">
+            <h2 className="font-heading text-3xl text-white mb-1">Referrals</h2>
+            <p className="font-mono text-sm text-muted">Clients who referred new signups and reward status.</p>
+          </div>
+          {(() => {
+            const referredProjects = projects.filter((p) => (p as any).referredBy)
+            if (referredProjects.length === 0) {
+              return (
+                <div className="text-center py-12 font-mono text-sm text-muted">
+                  No referrals yet. Each client has a unique referral link on their dashboard.
+                </div>
+              )
+            }
+            return (
+              <div className="space-y-3">
+                {referredProjects.map((p) => {
+                  const referrer = projects.find((r) => r.clientToken === (p as any).referredBy)
+                  return (
+                    <div key={p.id} className="bg-card border border-border rounded p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-heading text-lg text-white mb-1">{p.businessName}</div>
+                        <div className="font-mono text-xs text-muted">
+                          Referred by: <span className="text-teal">{referrer?.businessName ?? 'Unknown'}</span>
+                        </div>
+                        <div className="font-mono text-xs text-dim mt-0.5">
+                          {new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className={`font-mono text-xs border px-2 py-0.5 rounded-full ${(p as any).referralRewardGranted ? 'text-accent border-accent/30 bg-accent/5' : 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5'}`}>
+                          {(p as any).referralRewardGranted ? 'Reward Granted' : 'Reward Pending'}
+                        </span>
+                        <Link href={`/admin/projects/${p.id}`} className="font-mono text-xs text-muted hover:text-accent transition-colors">
+                          View &rarr;
+                        </Link>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })()}
         </div>
       </main>
 

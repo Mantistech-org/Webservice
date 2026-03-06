@@ -85,6 +85,12 @@ export default function IntakeForm() {
   const [isDragging, setIsDragging] = useState(false)
   const [submitState, setSubmitState] = useState<SubmitState>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const [showCustomAddonModal, setShowCustomAddonModal] = useState(false)
+  const [customAddonName, setCustomAddonName] = useState('')
+  const [customAddonDesc, setCustomAddonDesc] = useState('')
+  const [customAddonBudget, setCustomAddonBudget] = useState('')
+  const [customAddons, setCustomAddons] = useState<Array<{ name: string; description: string; budget: string }>>([])
+  const [referralToken, setReferralToken] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const dropRef = useRef<HTMLDivElement>(null)
 
@@ -94,6 +100,11 @@ export default function IntakeForm() {
       setForm((f) => ({ ...f, plan: planParam }))
     }
   }, [searchParams])
+
+  useEffect(() => {
+    const match = document.cookie.match(/(?:^|;\s*)referral_token=([^;]*)/)
+    if (match) setReferralToken(decodeURIComponent(match[1]))
+  }, [])
 
   const setField = <K extends keyof FormData>(key: K, value: FormData[K]) => {
     setForm((f) => ({ ...f, [key]: value }))
@@ -170,6 +181,8 @@ export default function IntakeForm() {
           ...form,
           requestedPages: form.requestedPages ? parseInt(form.requestedPages) : undefined,
           photos: photoData,
+          customAddons: customAddons,
+          referredBy: referralToken || undefined,
         }),
       })
 
@@ -508,6 +521,46 @@ export default function IntakeForm() {
                   </label>
                 )
               })}
+
+              {/* Custom add-on card */}
+              <button
+                type="button"
+                onClick={() => setShowCustomAddonModal(true)}
+                className="flex items-center gap-4 p-4 rounded border border-dashed border-border bg-card hover:border-border-light cursor-pointer transition-all duration-200 text-left w-full"
+              >
+                <div className="w-5 h-5 rounded border-2 border-dim flex items-center justify-center shrink-0">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-dim">
+                    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm text-primary font-medium">Custom Add-On</div>
+                  <div className="text-xs text-muted mt-0.5">Have something specific in mind? Describe it and we will provide a custom quote.</div>
+                </div>
+                {customAddons.length > 0 && (
+                  <div className="font-mono text-xs text-accent shrink-0">{customAddons.length} added</div>
+                )}
+              </button>
+              {customAddons.length > 0 && (
+                <div className="sm:col-span-2 space-y-2">
+                  {customAddons.map((ca, i) => (
+                    <div key={i} className="flex items-start justify-between gap-3 p-3 rounded border border-accent/30 bg-accent/5">
+                      <div className="min-w-0">
+                        <div className="text-sm text-primary font-medium">{ca.name}</div>
+                        <div className="text-xs text-muted mt-0.5">{ca.description}</div>
+                        <div className="font-mono text-xs text-dim mt-0.5">Budget: {ca.budget}</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setCustomAddons(prev => prev.filter((_, idx) => idx !== i))}
+                        className="font-mono text-xs text-muted hover:text-red-400 transition-colors shrink-0"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
 
@@ -622,6 +675,73 @@ export default function IntakeForm() {
           <QuoteCalculator selectedAddons={form.addons} selectedPlan={form.plan} />
         </div>
       </div>
+
+      {showCustomAddonModal && (
+        <div className="fixed inset-0 bg-bg/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+          <div className="bg-card border border-border rounded w-full max-w-md">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <h3 className="font-heading text-xl text-primary">Custom Add-On Request</h3>
+              <button
+                type="button"
+                onClick={() => { setShowCustomAddonModal(false); setCustomAddonName(''); setCustomAddonDesc(''); setCustomAddonBudget('') }}
+                className="font-mono text-xs text-muted hover:text-primary transition-colors"
+              >
+                Close
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Service Name</label>
+                <input
+                  type="text"
+                  value={customAddonName}
+                  onChange={(e) => setCustomAddonName(e.target.value)}
+                  placeholder="e.g. Custom Appointment Reminder System"
+                  className="form-input"
+                />
+              </div>
+              <div>
+                <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">What Do You Need?</label>
+                <textarea
+                  rows={3}
+                  value={customAddonDesc}
+                  onChange={(e) => setCustomAddonDesc(e.target.value)}
+                  placeholder="Describe the service you are looking for..."
+                  className="form-input resize-none w-full"
+                />
+              </div>
+              <div>
+                <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Proposed Monthly Budget</label>
+                <input
+                  type="text"
+                  value={customAddonBudget}
+                  onChange={(e) => setCustomAddonBudget(e.target.value)}
+                  placeholder="e.g. $20 to $50 per month"
+                  className="form-input"
+                />
+              </div>
+              <button
+                type="button"
+                disabled={!customAddonName.trim() || !customAddonDesc.trim()}
+                onClick={() => {
+                  setCustomAddons(prev => [...prev, {
+                    name: customAddonName.trim(),
+                    description: customAddonDesc.trim(),
+                    budget: customAddonBudget.trim() || 'Open to discussion'
+                  }])
+                  setShowCustomAddonModal(false)
+                  setCustomAddonName('')
+                  setCustomAddonDesc('')
+                  setCustomAddonBudget('')
+                }}
+                className="w-full bg-accent text-black font-mono text-sm py-3 rounded tracking-wider hover:opacity-90 transition-opacity disabled:opacity-60"
+              >
+                Add to Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   )
 }

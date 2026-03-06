@@ -67,6 +67,20 @@ export interface Project {
   changeRequests?: ChangeRequest[]
   notifications?: ClientNotification[]
   upsellClicks?: string[]
+  customAddons?: CustomAddon[]
+  referredBy?: string
+  referralRewardGranted?: boolean
+}
+
+export interface CustomAddon {
+  id: string
+  name: string
+  description: string
+  budget: string
+  status: 'pending' | 'priced' | 'accepted' | 'declined'
+  monthlyPrice?: number
+  createdAt: string
+  respondedAt?: string
 }
 
 export interface Addon {

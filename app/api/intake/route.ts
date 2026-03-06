@@ -31,6 +31,8 @@ export async function POST(req: NextRequest) {
       plan,
       photos,
       requestedPages,
+      customAddons,
+      referredBy,
     } = body
 
     // Validate required fields
@@ -90,6 +92,15 @@ export async function POST(req: NextRequest) {
       specificFeatures: specificFeatures ?? '',
       additionalNotes: additionalNotes ?? '',
       addons: Array.isArray(addons) ? addons : [],
+      customAddons: Array.isArray(customAddons) ? (customAddons as Array<{ name: string; description: string; budget: string }>).map((ca) => ({
+        id: uuidv4(),
+        name: ca.name,
+        description: ca.description,
+        budget: ca.budget,
+        status: 'pending' as const,
+        createdAt: new Date().toISOString(),
+      })) : [],
+      referredBy: typeof referredBy === 'string' && referredBy ? referredBy : undefined,
       plan,
       requestedPages: typeof requestedPages === 'number' ? requestedPages : undefined,
       generatedHtml: '',

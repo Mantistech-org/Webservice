@@ -39,6 +39,12 @@ export default function AdminProjectPage() {
   const [notifMessage, setNotifMessage] = useState('')
   const [sendingNotif, setSendingNotif] = useState(false)
   const [notifMsg, setNotifMsg] = useState('')
+  const [pricingAddonId, setPricingAddonId] = useState<string | null>(null)
+  const [addonPrice, setAddonPrice] = useState('')
+  const [settingPrice, setSettingPrice] = useState(false)
+  const [priceMsg, setPriceMsg] = useState('')
+  const [grantingReferral, setGrantingReferral] = useState(false)
+  const [referralMsg, setReferralMsg] = useState('')
 
   const fetchProject = useCallback(async () => {
     try {
@@ -120,6 +126,40 @@ export default function AdminProjectPage() {
       setNotifMsg('Failed to send notification.')
     }
     setSendingNotif(false)
+  }
+
+  const handleSetAddonPrice = async (addonId: string) => {
+    const price = parseFloat(addonPrice)
+    if (isNaN(price) || price <= 0) return
+    setSettingPrice(true)
+    const res = await fetch(`/api/admin/projects/${id}/price-custom-addon`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ addonId, monthlyPrice: price }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      setProject(data.project)
+      setPricingAddonId(null)
+      setAddonPrice('')
+      setPriceMsg('Price set and client notified.')
+    } else {
+      setPriceMsg('Failed to set price.')
+    }
+    setSettingPrice(false)
+  }
+
+  const handleGrantReferral = async () => {
+    setGrantingReferral(true)
+    const res = await fetch(`/api/admin/projects/${id}/grant-referral`, { method: 'POST' })
+    if (res.ok) {
+      const data = await res.json()
+      setProject(data.project)
+      setReferralMsg('Free month granted and referrer notified.')
+    } else {
+      setReferralMsg('Failed to grant reward.')
+    }
+    setGrantingReferral(false)
   }
 
   if (loading) {
@@ -434,6 +474,98 @@ export default function AdminProjectPage() {
                 <p className="text-xs text-dim font-mono">No upsell activity yet.</p>
               )}
             </div>
+
+            {/* Custom Add-On Requests */}
+            {project.customAddons && project.customAddons.length > 0 && (
+              <div className="bg-orange-950/20 border border-orange-400/30 rounded p-6">
+                <h3 className="font-mono text-xs text-orange-400 tracking-widest uppercase mb-4">
+                  Custom Add-On Requests
+                </h3>
+                {priceMsg && <p className="font-mono text-xs text-accent mb-3">{priceMsg}</p>}
+                <div className="space-y-4">
+                  {project.customAddons.map((addon) => (
+                    <div key={addon.id} className="border border-orange-400/20 rounded p-4 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm text-white font-medium">{addon.name}</span>
+                        <span className={`font-mono text-xs border px-2 py-0.5 rounded-full shrink-0 ${
+                          addon.status === 'accepted' ? 'text-accent border-accent/30' :
+                          addon.status === 'declined' ? 'text-red-400 border-red-400/30' :
+                          addon.status === 'priced' ? 'text-blue-400 border-blue-400/30' :
+                          'text-orange-400 border-orange-400/30'
+                        }`}>
+                          {addon.status === 'pending' ? 'Needs Pricing' :
+                           addon.status === 'priced' ? 'Awaiting Client' :
+                           addon.status === 'accepted' ? 'Accepted' : 'Declined'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted">{addon.description}</p>
+                      <div className="font-mono text-xs text-dim">Client budget: {addon.budget}</div>
+                      {addon.monthlyPrice && (
+                        <div className="font-mono text-xs text-accent">Quoted: ${addon.monthlyPrice}/mo</div>
+                      )}
+                      {addon.status === 'pending' && (
+                        pricingAddonId === addon.id ? (
+                          <div className="flex items-center gap-2 mt-2">
+                            <input
+                              type="number"
+                              min="1"
+                              value={addonPrice}
+                              onChange={(e) => setAddonPrice(e.target.value)}
+                              placeholder="$/mo"
+                              className="form-input text-xs w-24"
+                            />
+                            <button
+                              onClick={() => handleSetAddonPrice(addon.id)}
+                              disabled={settingPrice || !addonPrice}
+                              className="font-mono text-xs bg-accent text-bg px-3 py-1.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60"
+                            >
+                              {settingPrice ? 'Saving...' : 'Set Price'}
+                            </button>
+                            <button
+                              onClick={() => { setPricingAddonId(null); setAddonPrice('') }}
+                              className="font-mono text-xs text-muted hover:text-white transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setPricingAddonId(addon.id)}
+                            className="font-mono text-xs border border-orange-400/50 text-orange-400 px-3 py-1.5 rounded hover:bg-orange-400/10 transition-all"
+                          >
+                            Set Price
+                          </button>
+                        )
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Referral */}
+            {project.referredBy && (
+              <div className="bg-card border border-border rounded p-6">
+                <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Referral</h3>
+                {referralMsg && <p className="font-mono text-xs text-accent mb-3">{referralMsg}</p>}
+                <div className="font-mono text-xs text-muted mb-3">
+                  Referred by client: <span className="text-teal break-all">{project.referredBy.slice(0, 16)}...</span>
+                </div>
+                {project.referralRewardGranted ? (
+                  <span className="font-mono text-xs text-accent border border-accent/30 px-2 py-1 rounded">
+                    Free month granted
+                  </span>
+                ) : (
+                  <button
+                    onClick={handleGrantReferral}
+                    disabled={grantingReferral}
+                    className="font-mono text-xs bg-accent text-bg px-4 py-2 rounded hover:opacity-90 transition-opacity disabled:opacity-60"
+                  >
+                    {grantingReferral ? 'Processing...' : 'Grant Free Month'}
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Send Notification */}
             <div className="bg-card border border-border rounded p-6">

@@ -20,6 +20,15 @@ interface ProjectData {
   upsellClicks: string[]
   stripeAddonSubscriptions: string[]
   stripeCustomerId?: string
+  customAddons?: Array<{
+    id: string
+    name: string
+    description: string
+    budget: string
+    status: 'pending' | 'priced' | 'accepted' | 'declined'
+    monthlyPrice?: number
+  }>
+  convertedReferrals?: Array<{ businessName: string; date: string }>
 }
 
 export default function ClientDashboard() {
@@ -40,6 +49,7 @@ export default function ClientDashboard() {
   const [savingContact, setSavingContact] = useState(false)
   const [contactSaved, setContactSaved] = useState(false)
   const [openingPortal, setOpeningPortal] = useState(false)
+  const [referralCopied, setReferralCopied] = useState(false)
 
   const successMsg =
     searchParams.get('payment') === 'success'
@@ -445,6 +455,113 @@ export default function ClientDashboard() {
                 </div>
               )}
             </div>
+
+            {/* Referral Program */}
+            <div className="bg-card border border-border rounded p-6">
+              <h2 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Referral Program</h2>
+              <p className="font-mono text-xs text-muted mb-4">
+                Share your referral link. When someone signs up through it, you earn a free month.
+              </p>
+              {(() => {
+                const BASE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://mantistech.io'
+                const referralUrl = `${BASE_URL}/ref/${project.clientToken}`
+                return (
+                  <>
+                    <div className="bg-bg border border-border rounded px-3 py-2 font-mono text-xs text-teal break-all mb-3">
+                      {referralUrl}
+                    </div>
+                    <div className="flex gap-2 mb-5">
+                      <button
+                        onClick={() => {
+                          const BASE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://mantistech.io'
+                          navigator.clipboard.writeText(`${BASE_URL}/ref/${project.clientToken}`)
+                          setReferralCopied(true)
+                          setTimeout(() => setReferralCopied(false), 2000)
+                        }}
+                        className="flex-1 font-mono text-xs border border-border text-muted py-2 rounded hover:border-accent hover:text-accent transition-all"
+                      >
+                        {referralCopied ? 'Copied' : 'Copy Link'}
+                      </button>
+                      <a
+                        href={`mailto:?subject=Try Mantis Tech&body=I use Mantis Tech for my business website. Check them out: ${encodeURIComponent(referralUrl)}`}
+                        className="flex-1 font-mono text-xs border border-border text-muted py-2 rounded hover:border-accent hover:text-accent transition-all text-center"
+                      >
+                        Share via Email
+                      </a>
+                    </div>
+                    <div className="pt-4 border-t border-border">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <div className="font-mono text-xs text-muted uppercase tracking-widest mb-2">Pending</div>
+                          <div className="font-mono text-xs text-dim">Link clicks are not tracked. Sign-ups appear under Converted.</div>
+                        </div>
+                        <div>
+                          <div className="font-mono text-xs text-muted uppercase tracking-widest mb-2">Converted</div>
+                          {(project as any).convertedReferrals?.length > 0 ? (
+                            <div className="space-y-2">
+                              {((project as any).convertedReferrals as Array<{ businessName: string; date: string }>).map((r, i) => (
+                                <div key={i} className="font-mono text-xs">
+                                  <div className="text-white">{r.businessName}</div>
+                                  <div className="text-dim">{new Date(r.date).toLocaleDateString()}</div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="font-mono text-xs text-dim">No conversions yet.</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
+
+            {/* Custom Add-On Responses */}
+            {project.customAddons && project.customAddons.filter(a => a.status === 'priced').length > 0 && (
+              <div className="bg-card border border-border rounded p-6">
+                <h2 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Custom Add-On Pricing</h2>
+                <div className="space-y-4">
+                  {project.customAddons.filter(a => a.status === 'priced').map((addon) => (
+                    <div key={addon.id} className="border border-border rounded p-4 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm text-white font-medium">{addon.name}</span>
+                        <span className="font-mono text-sm text-accent shrink-0">${addon.monthlyPrice}/mo</span>
+                      </div>
+                      <p className="text-xs text-muted">{addon.description}</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={async () => {
+                            await fetch(`/api/client/${project.clientToken}/custom-addon-response`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ addonId: addon.id, response: 'accept' }),
+                            })
+                            fetchProject()
+                          }}
+                          className="flex-1 font-mono text-xs bg-accent text-bg py-2 rounded hover:opacity-90 transition-opacity"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={async () => {
+                            await fetch(`/api/client/${project.clientToken}/custom-addon-response`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ addonId: addon.id, response: 'decline' }),
+                            })
+                            fetchProject()
+                          }}
+                          className="flex-1 font-mono text-xs border border-border text-muted py-2 rounded hover:border-red-400 hover:text-red-400 transition-all"
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Upsell Add-ons */}
             {upsellAddons.length > 0 && (

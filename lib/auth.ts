@@ -1,10 +1,27 @@
 import { cookies } from 'next/headers'
+import fs from 'fs'
+import path from 'path'
 
-const COOKIE_NAME = 'mt_admin_session'
+export const COOKIE_NAME = 'mt_admin_session'
+
+const CONFIG_FILE = path.join(process.cwd(), 'data', 'admin-config.json')
+
+function readAdminConfig(): Record<string, string> {
+  try {
+    if (fs.existsSync(CONFIG_FILE)) {
+      return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'))
+    }
+  } catch { /* ignore */ }
+  return {}
+}
+
+export function getEffectiveAdminPassword(): string {
+  const config = readAdminConfig()
+  return config.password ?? process.env.ADMIN_PASSWORD ?? ''
+}
 
 export function getAdminToken(): string {
-  const password = process.env.ADMIN_PASSWORD ?? ''
-  return Buffer.from(password).toString('base64')
+  return Buffer.from(getEffectiveAdminPassword()).toString('base64')
 }
 
 export async function isAdminAuthenticated(): Promise<boolean> {
@@ -12,5 +29,3 @@ export async function isAdminAuthenticated(): Promise<boolean> {
   const token = cookieStore.get(COOKIE_NAME)?.value
   return token === getAdminToken()
 }
-
-export { COOKIE_NAME }

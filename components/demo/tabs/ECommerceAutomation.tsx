@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 
-interface Props { sessionId: string; initialSubTab?: 'automations' | 'inventory' }
+interface Props { sessionId: string; initialSubTab?: 'automations' | 'inventory' | 'sales' }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -16,7 +16,31 @@ interface ECommerceResult {
 }
 interface EditableEmail { subject: string; body: string; delay: string; active: boolean }
 
+interface SaleTransaction {
+  orderId: string
+  product: string
+  quantity: number
+  price: number
+  date: string
+  status: 'Completed' | 'Processing' | 'Refunded'
+}
+
 // ── Mock data ──────────────────────────────────────────────────────────────────
+
+const MOCK_SALES: SaleTransaction[] = [
+  { orderId: 'ORD-4821', product: 'Classic Crew Neck Tee', quantity: 3, price: 89.97, date: '2025-02-28', status: 'Completed' },
+  { orderId: 'ORD-4820', product: 'Wool Blend Sweater', quantity: 1, price: 74.99, date: '2025-02-28', status: 'Completed' },
+  { orderId: 'ORD-4819', product: 'Canvas Sneakers', quantity: 2, price: 119.98, date: '2025-02-27', status: 'Processing' },
+  { orderId: 'ORD-4818', product: 'Slim Fit Chinos', quantity: 1, price: 59.99, date: '2025-02-27', status: 'Completed' },
+  { orderId: 'ORD-4817', product: 'Leather Belt', quantity: 4, price: 99.96, date: '2025-02-26', status: 'Completed' },
+  { orderId: 'ORD-4816', product: 'Bucket Hat', quantity: 2, price: 49.98, date: '2025-02-26', status: 'Refunded' },
+  { orderId: 'ORD-4815', product: 'Classic Crew Neck Tee', quantity: 5, price: 149.95, date: '2025-02-25', status: 'Completed' },
+  { orderId: 'ORD-4814', product: 'Wool Blend Sweater', quantity: 2, price: 149.98, date: '2025-02-25', status: 'Completed' },
+  { orderId: 'ORD-4813', product: 'Canvas Sneakers', quantity: 1, price: 59.99, date: '2025-02-24', status: 'Completed' },
+  { orderId: 'ORD-4812', product: 'Slim Fit Chinos', quantity: 3, price: 179.97, date: '2025-02-24', status: 'Processing' },
+  { orderId: 'ORD-4811', product: 'Leather Belt', quantity: 1, price: 24.99, date: '2025-02-23', status: 'Completed' },
+  { orderId: 'ORD-4810', product: 'Bucket Hat', quantity: 3, price: 74.97, date: '2025-02-23', status: 'Completed' },
+]
 
 const INITIAL_AUTOMATIONS: AutomationEmail[] = [
   { id: 1, name: 'Welcome Email', trigger: 'New customer account created', lastSent: '2 hours ago', active: true, subject: 'Welcome to our store!', body: 'Thanks for joining us. Here is a 10% discount on your first order.' },
@@ -346,17 +370,38 @@ function Inventory() {
     setTimeout(() => setBulkStatus('idle'), 3500)
   }
 
+  const downloadInventoryCSV = () => {
+    const headers = ['Product Name', 'SKU', 'Quantity In Stock', 'Status', 'Restock Date']
+    const rows = items.map(item => [item.name, item.sku, item.quantity, item.status, item.restockDate ?? 'N/A'])
+    const csv = [headers, ...rows].map(r => r.join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'inventory.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-2">
         <p className="font-mono text-xs text-muted">Live inventory across all products. New orders automatically subtract from quantities.</p>
-        <button
-          onClick={handleBulkUpload}
-          disabled={bulkStatus !== 'idle'}
-          className="font-mono text-xs border border-[#d0d0d0] text-muted px-4 py-2 rounded hover:border-[#b0b0b0] hover:text-primary transition-all disabled:opacity-50 shrink-0"
-        >
-          {bulkStatus === 'uploading' ? 'Uploading...' : bulkStatus === 'done' ? 'Imported' : 'Bulk Upload CSV'}
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={downloadInventoryCSV}
+            className="font-mono text-xs border border-[#d0d0d0] text-muted px-4 py-2 rounded hover:border-[#b0b0b0] hover:text-primary transition-all"
+          >
+            Download CSV
+          </button>
+          <button
+            onClick={handleBulkUpload}
+            disabled={bulkStatus !== 'idle'}
+            className="font-mono text-xs border border-[#d0d0d0] text-muted px-4 py-2 rounded hover:border-[#b0b0b0] hover:text-primary transition-all disabled:opacity-50"
+          >
+            {bulkStatus === 'uploading' ? 'Uploading...' : bulkStatus === 'done' ? 'Imported' : 'Bulk Upload CSV'}
+          </button>
+        </div>
       </div>
 
       <div className="bg-card border border-border rounded overflow-hidden">
@@ -424,17 +469,108 @@ function Inventory() {
   )
 }
 
+// ── Sales sub-tab ──────────────────────────────────────────────────────────────
+
+function Sales() {
+  const totalRevenue = MOCK_SALES.filter(s => s.status !== 'Refunded').reduce((sum, s) => sum + s.price, 0)
+  const totalOrders = MOCK_SALES.filter(s => s.status !== 'Refunded').length
+  const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
+
+  const downloadCSV = () => {
+    const headers = ['Order ID', 'Product', 'Quantity', 'Sale Price', 'Date', 'Status']
+    const rows = MOCK_SALES.map(s => [s.orderId, s.product, s.quantity, `$${s.price.toFixed(2)}`, s.date, s.status])
+    const csv = [headers, ...rows].map(r => r.join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'sales-report.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const STATUS_SALE_COLORS: Record<string, string> = {
+    'Completed': '#4ade80',
+    'Processing': '#facc15',
+    'Refunded': '#f87171',
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Summary cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-card border border-border rounded p-4">
+          <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">Total Sales This Month</div>
+          <div className="font-heading text-3xl text-primary">{totalOrders}</div>
+        </div>
+        <div className="bg-card border border-border rounded p-4">
+          <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">Total Revenue This Month</div>
+          <div className="font-heading text-3xl text-primary">${totalRevenue.toFixed(2)}</div>
+        </div>
+        <div className="bg-card border border-border rounded p-4">
+          <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">Average Order Value</div>
+          <div className="font-heading text-3xl text-primary">${avgOrderValue.toFixed(2)}</div>
+        </div>
+      </div>
+
+      {/* Download button */}
+      <div className="flex items-center justify-between">
+        <p className="font-mono text-xs text-muted">All transactions for the current period.</p>
+        <button
+          onClick={downloadCSV}
+          className="font-mono text-xs border border-[#d0d0d0] text-muted px-4 py-2 rounded hover:border-[#b0b0b0] hover:text-primary transition-all shrink-0"
+        >
+          Download CSV
+        </button>
+      </div>
+
+      {/* Sales table */}
+      <div className="bg-card border border-border rounded overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="px-4 py-3 text-left font-mono text-xs text-muted tracking-widest uppercase">Order ID</th>
+                <th className="px-4 py-3 text-left font-mono text-xs text-muted tracking-widest uppercase">Product</th>
+                <th className="px-4 py-3 text-left font-mono text-xs text-muted tracking-widest uppercase">Qty</th>
+                <th className="px-4 py-3 text-left font-mono text-xs text-muted tracking-widest uppercase">Price</th>
+                <th className="px-4 py-3 text-left font-mono text-xs text-muted tracking-widest uppercase">Date</th>
+                <th className="px-4 py-3 text-left font-mono text-xs text-muted tracking-widest uppercase">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {MOCK_SALES.map(sale => (
+                <tr key={sale.orderId}>
+                  <td className="px-4 py-3 font-mono text-xs text-muted">{sale.orderId}</td>
+                  <td className="px-4 py-3 font-mono text-sm text-primary">{sale.product}</td>
+                  <td className="px-4 py-3 font-mono text-sm text-primary">{sale.quantity}</td>
+                  <td className="px-4 py-3 font-mono text-sm text-primary">${sale.price.toFixed(2)}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-muted">{sale.date}</td>
+                  <td className="px-4 py-3">
+                    <span className="font-mono text-xs" style={{ color: STATUS_SALE_COLORS[sale.status] }}>{sale.status}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function ECommerceAutomation({ sessionId, initialSubTab = 'automations' }: Props) {
-  const [activeSubTab, setActiveSubTab] = useState<'automations' | 'inventory'>(initialSubTab)
+  const [activeSubTab, setActiveSubTab] = useState<'automations' | 'inventory' | 'sales'>(initialSubTab)
 
   useEffect(() => {
     setActiveSubTab(initialSubTab)
   }, [initialSubTab])
 
-  const subTabs: { id: typeof activeSubTab; label: string }[] = [
+  const subTabs: { id: 'automations' | 'inventory' | 'sales'; label: string }[] = [
     { id: 'inventory',   label: 'Inventory' },
+    { id: 'sales',       label: 'Sales' },
     { id: 'automations', label: 'Automated Emails' },
   ]
 
@@ -461,6 +597,7 @@ export default function ECommerceAutomation({ sessionId, initialSubTab = 'automa
 
       {activeSubTab === 'automations' && <AutomatedEmails sessionId={sessionId} />}
       {activeSubTab === 'inventory'   && <Inventory />}
+      {activeSubTab === 'sales'       && <Sales />}
 
       <p className="font-mono text-xs text-dim text-center">
         The full version connects directly to your Shopify, WooCommerce, or custom store.

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getProjectByClientToken } from '@/lib/db'
+import { getProjectByClientToken, readProjects } from '@/lib/db'
 
 export async function GET(
   req: NextRequest,
@@ -11,6 +11,11 @@ export async function GET(
   if (!project) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
+
+  const allProjects = readProjects()
+  const convertedReferrals = allProjects
+    .filter((p) => p.referredBy === project.clientToken)
+    .map((p) => ({ businessName: p.businessName, date: p.createdAt }))
 
   return NextResponse.json({
     project: {
@@ -27,6 +32,8 @@ export async function GET(
       notifications: project.notifications ?? [],
       upsellClicks: project.upsellClicks ?? [],
       stripeAddonSubscriptions: project.stripeAddonSubscriptions ?? [],
+      customAddons: project.customAddons ?? [],
+      convertedReferrals,
     },
   })
 }
