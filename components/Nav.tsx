@@ -61,10 +61,10 @@ export default function Nav() {
             )
           )}
           <a
-            href="tel:5016990488"
+            href="tel:+15016690488"
             className="font-mono text-sm text-muted hover:text-primary transition-colors tracking-wider"
           >
-            501-699-0488
+            (501) 669-0488
           </a>
           <ThemeToggle />
           <Link
@@ -115,11 +115,11 @@ export default function Nav() {
             )
           )}
           <a
-            href="tel:5016990488"
+            href="tel:+15016690488"
             className="font-mono text-sm text-muted hover:text-primary transition-colors tracking-wider"
             onClick={() => setMenuOpen(false)}
           >
-            501-699-0488
+            (501) 669-0488
           </a>
           <Link
             href="/intake"

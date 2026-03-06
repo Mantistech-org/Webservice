@@ -18,10 +18,10 @@ export default function Footer() {
               that refuse to settle.
             </p>
             <a
-              href="tel:5016990488"
+              href="tel:+15016690488"
               className="inline-block mt-4 font-mono text-sm text-primary hover:text-accent transition-colors tracking-wider"
             >
-              501-699-0488
+              (501) 669-0488
             </a>
           </div>
 
