@@ -17,6 +17,9 @@
     "stripe": "^14.25.0",
     "uuid": "^9.0.1"
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
