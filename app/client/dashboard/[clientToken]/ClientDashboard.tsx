@@ -9,6 +9,7 @@ interface ProjectData {
   businessName: string
   ownerName: string
   email: string
+  phone: string
   plan: Plan
   status: string
   addons: string[]
@@ -18,6 +19,7 @@ interface ProjectData {
   notifications: ClientNotification[]
   upsellClicks: string[]
   stripeAddonSubscriptions: string[]
+  stripeCustomerId?: string
 }
 
 export default function ClientDashboard() {
@@ -31,6 +33,13 @@ export default function ClientDashboard() {
   const [submittingChange, setSubmittingChange] = useState(false)
   const [changeSuccess, setChangeSuccess] = useState(false)
   const [creatingCheckout, setCreatingCheckout] = useState('')
+  const [editContactOpen, setEditContactOpen] = useState(false)
+  const [editOwnerName, setEditOwnerName] = useState('')
+  const [editEmail, setEditEmail] = useState('')
+  const [editPhone, setEditPhone] = useState('')
+  const [savingContact, setSavingContact] = useState(false)
+  const [contactSaved, setContactSaved] = useState(false)
+  const [openingPortal, setOpeningPortal] = useState(false)
 
   const successMsg =
     searchParams.get('payment') === 'success'
@@ -96,6 +105,44 @@ export default function ClientDashboard() {
       setProject((prev) => prev ? { ...prev, notifications: prev.notifications.map((n) => ({ ...n, read: true })) } : prev)
     } catch {
       // noop
+    }
+  }
+
+  const handleOpenEditContact = () => {
+    setEditOwnerName(project?.ownerName ?? '')
+    setEditEmail(project?.email ?? '')
+    setEditPhone(project?.phone ?? '')
+    setEditContactOpen(true)
+    setContactSaved(false)
+  }
+
+  const handleSaveContact = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSavingContact(true)
+    try {
+      const res = await fetch(`/api/client/${clientToken}/update-contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ownerName: editOwnerName, email: editEmail, phone: editPhone }),
+      })
+      if (res.ok) {
+        setContactSaved(true)
+        setEditContactOpen(false)
+        await fetchProject()
+      }
+    } finally {
+      setSavingContact(false)
+    }
+  }
+
+  const handleManageBilling = async () => {
+    setOpeningPortal(true)
+    try {
+      const res = await fetch(`/api/client/${clientToken}/billing-portal`, { method: 'POST' })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+    } finally {
+      setOpeningPortal(false)
     }
   }
 
@@ -325,7 +372,7 @@ export default function ClientDashboard() {
                 </div>
               </div>
 
-              {nextPlan && (
+              {nextPlan ? (
                 <>
                   <div className="h-px bg-border mb-4" />
                   <p className="font-mono text-xs text-muted mb-3">
@@ -341,6 +388,61 @@ export default function ClientDashboard() {
                       : `Upgrade to ${PLANS[nextPlan].name} for $${PLANS[nextPlan].monthly}/mo`}
                   </button>
                 </>
+              ) : project.stripeCustomerId ? (
+                <>
+                  <div className="h-px bg-border mb-4" />
+                  <button
+                    onClick={handleManageBilling}
+                    disabled={openingPortal}
+                    className="w-full font-mono text-sm border border-border text-muted py-2.5 rounded hover:border-accent hover:text-accent transition-all disabled:opacity-60"
+                  >
+                    {openingPortal ? 'Loading...' : 'Manage Billing'}
+                  </button>
+                </>
+              ) : null}
+            </div>
+
+            {/* Edit Contact Info */}
+            <div className="bg-card border border-border rounded p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-mono text-xs text-accent tracking-widest uppercase">Contact Info</h2>
+                <button
+                  onClick={handleOpenEditContact}
+                  className="font-mono text-xs text-muted hover:text-accent transition-colors"
+                >
+                  Edit
+                </button>
+              </div>
+              {editContactOpen ? (
+                <form onSubmit={handleSaveContact} className="space-y-3">
+                  <div>
+                    <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-1">Name</label>
+                    <input type="text" required value={editOwnerName} onChange={(e) => setEditOwnerName(e.target.value)} className="form-input text-sm" />
+                  </div>
+                  <div>
+                    <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-1">Email</label>
+                    <input type="email" required value={editEmail} onChange={(e) => setEditEmail(e.target.value)} className="form-input text-sm" />
+                  </div>
+                  <div>
+                    <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-1">Phone</label>
+                    <input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="form-input text-sm" />
+                  </div>
+                  <div className="flex gap-2">
+                    <button type="submit" disabled={savingContact} className="font-mono text-xs bg-accent text-bg px-4 py-2 rounded hover:opacity-90 transition-opacity disabled:opacity-60">
+                      {savingContact ? 'Saving...' : 'Save'}
+                    </button>
+                    <button type="button" onClick={() => setEditContactOpen(false)} className="font-mono text-xs border border-border text-muted px-4 py-2 rounded hover:border-border-light transition-colors">
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="space-y-2 text-sm font-mono">
+                  <div className="text-white">{project.ownerName}</div>
+                  <div className="text-muted">{project.email}</div>
+                  {project.phone && <div className="text-muted">{project.phone}</div>}
+                  {contactSaved && <p className="text-xs text-accent">Contact info updated.</p>}
+                </div>
               )}
             </div>
 

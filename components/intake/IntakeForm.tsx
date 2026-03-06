@@ -200,7 +200,7 @@ export default function IntakeForm() {
           </div>
           <h2 className="font-heading text-5xl text-primary mb-4">Submission Received</h2>
           <p className="text-teal leading-relaxed mb-2">
-            We are generating your custom website now. Our team will review it and send you a preview link within 24 hours.
+            We are generating your custom website now. Our team will review it and reach out within 48 hours.
           </p>
           <p className="font-mono text-sm text-muted">
             Check your inbox at <span className="text-accent">{form.email}</span>

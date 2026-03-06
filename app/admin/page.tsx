@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ProjectStatus, Plan } from '@/types'
+import { ProjectStatus, Plan, PLANS } from '@/types'
 
 interface DemoSession {
   id: string
@@ -38,6 +38,37 @@ const STATUS_COLORS: Record<ProjectStatus, string> = {
   active: 'text-accent border-accent/30 bg-accent/5',
 }
 
+const BUSINESS_TYPES = [
+  'Restaurant / Cafe', 'Retail Store', 'Health and Wellness', 'Professional Services',
+  'Real Estate', 'Beauty and Salon', 'Fitness and Gym', 'Automotive',
+  'Construction and Trades', 'Technology', 'Education', 'Non-Profit', 'Entertainment', 'Other',
+]
+const TIMELINES = ['As soon as possible', '1 to 2 weeks', '1 month', 'Flexible']
+const STYLE_PREFERENCES = [
+  'Modern and Minimal', 'Bold and Vibrant', 'Professional and Corporate',
+  'Warm and Friendly', 'Dark and Luxury', 'Clean and Bright',
+]
+
+interface AddClientForm {
+  businessName: string
+  ownerName: string
+  email: string
+  phone: string
+  businessType: string
+  location: string
+  plan: Plan
+  businessDescription: string
+  primaryGoal: string
+  timeline: string
+  stylePreference: string
+}
+
+const DEFAULT_ADD_FORM: AddClientForm = {
+  businessName: '', ownerName: '', email: '', phone: '', businessType: '',
+  location: '', plan: 'starter', businessDescription: '', primaryGoal: '',
+  timeline: '', stylePreference: '',
+}
+
 export default function AdminPage() {
   const [authed, setAuthed] = useState<boolean | null>(null)
   const [password, setPassword] = useState('')
@@ -46,10 +77,14 @@ export default function AdminPage() {
   const [projects, setProjects] = useState<ProjectSummary[]>([])
   const [loading, setLoading] = useState(false)
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | 'all'>('all')
+  const [searchQuery, setSearchQuery] = useState('')
   const [demoSessions, setDemoSessions] = useState<DemoSession[]>([])
   const [demoLoading, setDemoLoading] = useState(false)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [addForm, setAddForm] = useState<AddClientForm>(DEFAULT_ADD_FORM)
+  const [addingClient, setAddingClient] = useState(false)
+  const [addError, setAddError] = useState('')
 
-  // Check auth on mount
   useEffect(() => {
     fetch('/api/admin/projects')
       .then((r) => {
@@ -111,6 +146,30 @@ export default function AdminPage() {
     setProjects([])
   }
 
+  const handleAddClient = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAddingClient(true)
+    setAddError('')
+    try {
+      const res = await fetch('/api/admin/add-client', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(addForm),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error ?? 'Failed to add client.')
+      }
+      setShowAddModal(false)
+      setAddForm(DEFAULT_ADD_FORM)
+      loadProjects()
+    } catch (err) {
+      setAddError(err instanceof Error ? err.message : 'An error occurred.')
+    } finally {
+      setAddingClient(false)
+    }
+  }
+
   if (authed === null) {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center">
@@ -155,6 +214,11 @@ export default function AdminPage() {
               >
                 {loggingIn ? 'Authenticating...' : 'Enter Dashboard'}
               </button>
+              <div className="text-center">
+                <Link href="/admin/reset-password" className="font-mono text-xs text-dim hover:text-muted transition-colors">
+                  Forgot password?
+                </Link>
+              </div>
             </form>
           </div>
         </div>
@@ -162,10 +226,17 @@ export default function AdminPage() {
     )
   }
 
-  const filtered =
-    statusFilter === 'all'
-      ? projects
-      : projects.filter((p) => p.status === statusFilter)
+  const activeProjects = projects.filter((p) => p.status === 'active')
+  const estimatedMRR = activeProjects.reduce((sum, p) => sum + PLANS[p.plan].monthly, 0)
+  const pendingCount = projects.filter((p) => p.status === 'admin_review').length
+
+  const filtered = projects
+    .filter((p) => statusFilter === 'all' || p.status === statusFilter)
+    .filter((p) => {
+      if (!searchQuery.trim()) return true
+      const q = searchQuery.toLowerCase()
+      return p.businessName.toLowerCase().includes(q) || p.email.toLowerCase().includes(q)
+    })
 
   const counts = {
     all: projects.length,
@@ -177,7 +248,6 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      {/* Top bar */}
       <header className="border-b border-border bg-card px-6 py-4 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <span className="w-2 h-2 rounded-full bg-accent" />
@@ -185,6 +255,12 @@ export default function AdminPage() {
           <span className="font-mono text-xs text-muted ml-2">/ Admin</span>
         </div>
         <div className="flex items-center gap-4">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="font-mono text-xs bg-accent text-bg px-4 py-1.5 rounded hover:opacity-90 transition-opacity tracking-wider"
+          >
+            Add Client
+          </button>
           <button
             onClick={loadProjects}
             className="font-mono text-xs text-muted hover:text-accent transition-colors tracking-wider"
@@ -207,6 +283,34 @@ export default function AdminPage() {
           <p className="font-mono text-sm text-muted">
             {projects.length} total project{projects.length !== 1 ? 's' : ''}
           </p>
+        </div>
+
+        {/* Revenue Overview */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+          <div className="bg-card border border-border rounded p-5">
+            <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Active Clients</div>
+            <div className="font-heading text-4xl text-white">{activeProjects.length}</div>
+          </div>
+          <div className="bg-card border border-border rounded p-5">
+            <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Estimated MRR</div>
+            <div className="font-heading text-4xl text-accent">${estimatedMRR}</div>
+            <div className="font-mono text-xs text-dim mt-1">base plans only</div>
+          </div>
+          <div className="bg-card border border-border rounded p-5">
+            <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Pending Review</div>
+            <div className="font-heading text-4xl text-yellow-400">{pendingCount}</div>
+          </div>
+        </div>
+
+        {/* Search + Filter */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by name or email..."
+            className="form-input sm:max-w-xs text-sm"
+          />
         </div>
 
         {/* Status filter tabs */}
@@ -358,6 +462,88 @@ export default function AdminPage() {
           )}
         </div>
       </main>
+
+      {/* Add Client Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-bg/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+          <div className="bg-card border border-border rounded w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <h2 className="font-heading text-2xl text-white">Add Client</h2>
+              <button
+                onClick={() => { setShowAddModal(false); setAddError(''); setAddForm(DEFAULT_ADD_FORM) }}
+                className="font-mono text-xs text-muted hover:text-white transition-colors"
+              >
+                Close
+              </button>
+            </div>
+            <form onSubmit={handleAddClient} className="p-6 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Business Name *</label>
+                  <input type="text" required value={addForm.businessName} onChange={(e) => setAddForm(f => ({ ...f, businessName: e.target.value }))} className="form-input" placeholder="Acme Corp" />
+                </div>
+                <div>
+                  <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Owner Name *</label>
+                  <input type="text" required value={addForm.ownerName} onChange={(e) => setAddForm(f => ({ ...f, ownerName: e.target.value }))} className="form-input" placeholder="Jane Smith" />
+                </div>
+                <div>
+                  <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Email *</label>
+                  <input type="email" required value={addForm.email} onChange={(e) => setAddForm(f => ({ ...f, email: e.target.value }))} className="form-input" placeholder="jane@acmecorp.com" />
+                </div>
+                <div>
+                  <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Phone</label>
+                  <input type="tel" value={addForm.phone} onChange={(e) => setAddForm(f => ({ ...f, phone: e.target.value }))} className="form-input" placeholder="+1 555 000 0000" />
+                </div>
+                <div>
+                  <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Business Type *</label>
+                  <select required value={addForm.businessType} onChange={(e) => setAddForm(f => ({ ...f, businessType: e.target.value }))} className="form-input">
+                    <option value="">Select a type</option>
+                    {BUSINESS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Location *</label>
+                  <input type="text" required value={addForm.location} onChange={(e) => setAddForm(f => ({ ...f, location: e.target.value }))} className="form-input" placeholder="Austin, TX" />
+                </div>
+                <div>
+                  <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Plan *</label>
+                  <select required value={addForm.plan} onChange={(e) => setAddForm(f => ({ ...f, plan: e.target.value as Plan }))} className="form-input">
+                    <option value="starter">Starter</option>
+                    <option value="mid">Mid</option>
+                    <option value="pro">Pro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Timeline *</label>
+                  <select required value={addForm.timeline} onChange={(e) => setAddForm(f => ({ ...f, timeline: e.target.value }))} className="form-input">
+                    <option value="">Select timeline</option>
+                    {TIMELINES.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Style Preference *</label>
+                  <select required value={addForm.stylePreference} onChange={(e) => setAddForm(f => ({ ...f, stylePreference: e.target.value }))} className="form-input">
+                    <option value="">Select a style</option>
+                    {STYLE_PREFERENCES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Business Description *</label>
+                <textarea required rows={3} value={addForm.businessDescription} onChange={(e) => setAddForm(f => ({ ...f, businessDescription: e.target.value }))} className="form-input resize-none w-full" placeholder="Tell us what the business does..." />
+              </div>
+              <div>
+                <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Primary Goal *</label>
+                <input type="text" required value={addForm.primaryGoal} onChange={(e) => setAddForm(f => ({ ...f, primaryGoal: e.target.value }))} className="form-input" placeholder="Generate leads, sell products, book appointments..." />
+              </div>
+              {addError && <p className="font-mono text-xs text-red-400">{addError}</p>}
+              <button type="submit" disabled={addingClient} className="w-full bg-accent text-bg font-mono text-sm py-3 rounded tracking-wider hover:opacity-90 transition-opacity disabled:opacity-60">
+                {addingClient ? 'Creating...' : 'Create Client Project'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

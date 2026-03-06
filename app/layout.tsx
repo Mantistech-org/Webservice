@@ -10,15 +10,19 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Mantis Tech | Your Business, Running at Its Best',
+  title: {
+    default: 'Mantis Tech | Premium Websites and Digital Services',
+    template: '%s | Mantis Tech',
+  },
   description:
     'Mantis Tech builds and manages everything your business needs online. Custom websites, marketing automation, SEO, and more.',
-  keywords: ['web design', 'web development', 'digital agency', 'Mantis Tech', 'business website'],
+  keywords: ['web design', 'web development', 'digital agency', 'Mantis Tech', 'business website', 'marketing automation'],
   openGraph: {
-    title: 'Mantis Tech | Your Business, Running at Its Best',
+    title: 'Mantis Tech | Premium Websites and Digital Services',
     description:
       'Boutique web agency delivering premium websites and digital services for growing businesses.',
     type: 'website',
+    siteName: 'Mantis Tech',
   },
 }
 
@@ -30,6 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         {/* Restore saved theme — light is default, only apply class if dark was saved */}
         <script
           dangerouslySetInnerHTML={{

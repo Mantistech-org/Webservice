@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /client/
+
+Sitemap: https://mantistech.io/sitemap.xml

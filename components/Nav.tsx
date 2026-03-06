@@ -9,6 +9,7 @@ const links = [
   { label: 'How It Works', href: '#how-it-works' },
   { label: 'Pricing', href: '#pricing' },
   { label: 'Try Demo', href: '/demo', isLink: true },
+  { label: 'Contact', href: '/contact', isLink: true },
 ]
 
 export default function Nav() {

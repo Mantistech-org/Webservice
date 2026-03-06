@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import TopBar from './TopBar'
 import Sidebar from './Sidebar'
@@ -29,6 +29,12 @@ export default function DemoView() {
   const [activePage, setActivePage] = useState<DemoView>('dashboard')
   const [sessionId, setSessionId] = useState('')
   const [contacts, setContacts] = useState<DemoContact[]>([])
+  const [businessName, setBusinessName] = useState('')
+  const [businessType, setBusinessType] = useState('')
+  const [gateInput, setGateInput] = useState('')
+  const [gateType, setGateType] = useState('')
+  const [gateSubmitted, setGateSubmitted] = useState(false)
+  const mountedPages = useRef<Set<DemoView>>(new Set())
 
   useEffect(() => {
     const stored = sessionStorage.getItem('demo-session-id')
@@ -39,7 +45,26 @@ export default function DemoView() {
       sessionStorage.setItem('demo-session-id', id)
       setSessionId(id)
     }
+    const storedBiz = sessionStorage.getItem('demo-business-name')
+    const storedType = sessionStorage.getItem('demo-business-type')
+    if (storedBiz) {
+      setBusinessName(storedBiz)
+      setGateSubmitted(true)
+    }
+    if (storedType) setBusinessType(storedType)
   }, [])
+
+  const handleGateSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!gateInput.trim()) return
+    const biz = gateInput.trim()
+    const type = gateType.trim()
+    setBusinessName(biz)
+    setBusinessType(type)
+    sessionStorage.setItem('demo-business-name', biz)
+    sessionStorage.setItem('demo-business-type', type)
+    setGateSubmitted(true)
+  }
 
   const handleImportFromLeads = (leads: { businessName: string; email: string }[]) => {
     const incoming: DemoContact[] = leads.map((l) => ({
@@ -65,9 +90,14 @@ export default function DemoView() {
 
   const sidebarWidth = sidebarExpanded ? 240 : 64
 
-  const renderContent = () => {
-    switch (activePage) {
-      case 'dashboard':  return <DashboardHome />
+  // Track mounted pages for lazy mount persistence
+  if (gateSubmitted) {
+    mountedPages.current.add(activePage)
+  }
+
+  const renderPage = (page: DemoView) => {
+    switch (page) {
+      case 'dashboard':  return <DashboardHome businessName={businessName} />
       case 'website':    return <WebsitePage />
       case 'review':     return <ReviewManagement sessionId={sessionId} />
       case 'social':     return <SocialMedia sessionId={sessionId} />
@@ -80,15 +110,70 @@ export default function DemoView() {
         return (
           <ECommerceAutomation
             sessionId={sessionId}
-            initialSubTab={activePage === 'ecommerce-inventory' ? 'inventory' : 'automations'}
+            initialSubTab={page === 'ecommerce-inventory' ? 'inventory' : 'automations'}
           />
         )
       case 'ads':        return <AdCreative sessionId={sessionId} />
       case 'chatbot':    return <WebsiteChatbot sessionId={sessionId} />
       case 'calendar':   return <CalendarPage />
       case 'billing':    return <BillingPage />
-      default:           return <DashboardHome />
+      default:           return <DashboardHome businessName={businessName} />
     }
+  }
+
+  if (!gateSubmitted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: '#fafaf8' }}>
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#00ff88' }} />
+              <span className="font-heading text-xl" style={{ color: '#1a1a1a' }}>Mantis Tech Demo</span>
+            </div>
+            <h1 className="font-heading text-4xl mb-3" style={{ color: '#1a1a1a' }}>Welcome to Your Demo</h1>
+            <p className="font-mono text-sm" style={{ color: '#888888' }}>
+              Enter your business name to personalize the experience.
+            </p>
+          </div>
+          <form onSubmit={handleGateSubmit} className="bg-white border rounded-lg p-8 shadow-sm space-y-4" style={{ borderColor: '#e0e0e0' }}>
+            <div>
+              <label className="font-mono text-xs tracking-widest uppercase block mb-2" style={{ color: '#888888' }}>Business Name</label>
+              <input
+                type="text"
+                value={gateInput}
+                onChange={(e) => setGateInput(e.target.value)}
+                placeholder="e.g. Riverside Auto Repair"
+                required
+                autoFocus
+                className="w-full border rounded px-4 py-3 font-mono text-sm focus:outline-none transition-colors"
+                style={{ backgroundColor: '#f5f5f5', borderColor: '#d0d0d0', color: '#1a1a1a' }}
+              />
+            </div>
+            <div>
+              <label className="font-mono text-xs tracking-widest uppercase block mb-2" style={{ color: '#888888' }}>Business Type <span style={{ color: '#aaaaaa' }}>(optional)</span></label>
+              <input
+                type="text"
+                value={gateType}
+                onChange={(e) => setGateType(e.target.value)}
+                placeholder="e.g. Auto Repair, Restaurant, Law Firm"
+                className="w-full border rounded px-4 py-3 font-mono text-sm focus:outline-none transition-colors"
+                style={{ backgroundColor: '#f5f5f5', borderColor: '#d0d0d0', color: '#1a1a1a' }}
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full py-3 rounded font-mono text-sm tracking-wider transition-opacity hover:opacity-80"
+              style={{ backgroundColor: '#000000', color: '#f0f0f0' }}
+            >
+              Enter Demo
+            </button>
+            <p className="font-mono text-xs text-center" style={{ color: '#aaaaaa' }}>
+              No sign-up required. All tools are fully functional.
+            </p>
+          </form>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -100,7 +185,6 @@ export default function DemoView() {
         onNavigate={setActivePage}
       />
 
-      {/* Main content */}
       <main
         className="transition-all duration-200"
         style={{
@@ -133,9 +217,13 @@ export default function DemoView() {
           </div>
         </div>
 
-        {/* Page content */}
+        {/* Page content — lazy mount for persistence */}
         <div className="max-w-5xl mx-auto px-6 py-8">
-          {renderContent()}
+          {Array.from(mountedPages.current).map((page) => (
+            <div key={page} style={{ display: page === activePage ? 'block' : 'none' }}>
+              {renderPage(page)}
+            </div>
+          ))}
         </div>
       </main>
     </div>

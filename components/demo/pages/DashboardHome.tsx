@@ -105,11 +105,11 @@ function LineChart() {
   )
 }
 
-export default function DashboardHome() {
+export default function DashboardHome({ businessName }: { businessName?: string }) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-2xl text-[#1a1a1a]">Dashboard</h1>
+        <h1 className="font-heading text-2xl text-[#1a1a1a]">{businessName ? `${businessName} — Dashboard` : 'Dashboard'}</h1>
         <p className="font-mono text-xs text-[#888888] mt-0.5">Last 30 days overview</p>
       </div>
 
