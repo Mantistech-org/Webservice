@@ -434,8 +434,8 @@ export default function ECommerceAutomation({ sessionId, initialSubTab = 'automa
   }, [initialSubTab])
 
   const subTabs: { id: typeof activeSubTab; label: string }[] = [
-    { id: 'automations', label: 'Automated Emails' },
     { id: 'inventory',   label: 'Inventory' },
+    { id: 'automations', label: 'Automated Emails' },
   ]
 
   return (

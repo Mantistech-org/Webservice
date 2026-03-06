@@ -102,10 +102,11 @@ Return ONLY a valid JSON object with no explanation or markdown:
 }`,
       }
 
-    case 'lead-generation':
+    case 'lead-generation': {
+      const count = Number(body.leadCount) || 10
       return {
-        maxTokens: 3500,
-        prompt: `You are a sales development expert. Generate 10 realistic potential business leads.
+        maxTokens: Math.min(500 + count * 350, 12000),
+        prompt: `You are a sales development expert. Generate exactly ${count} realistic potential business leads.
 
 Target Industry: ${body.industry}
 Location: ${body.location}
@@ -127,6 +128,7 @@ Return ONLY a valid JSON object with no explanation or markdown:
   ]
 }`,
       }
+    }
 
     case 'seo-optimization':
       return {

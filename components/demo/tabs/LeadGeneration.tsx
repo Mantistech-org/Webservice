@@ -22,6 +22,7 @@ export default function LeadGeneration({ sessionId, onImportContacts }: Props) {
   const [industry, setIndustry] = useState('')
   const [location, setLocation] = useState('')
   const [clientDescription, setClientDescription] = useState('')
+  const [leadCount, setLeadCount] = useState(10)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<LeadResult | null>(null)
   const [error, setError] = useState('')
@@ -44,7 +45,7 @@ export default function LeadGeneration({ sessionId, onImportContacts }: Props) {
       const res = await fetch('/api/demo/lead-generation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, industry, location, clientDescription }),
+        body: JSON.stringify({ sessionId, industry, location, clientDescription, leadCount }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed')
@@ -99,9 +100,19 @@ export default function LeadGeneration({ sessionId, onImportContacts }: Props) {
               <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Ideal Client Description</label>
               <textarea value={clientDescription} onChange={(e) => setClientDescription(e.target.value)} placeholder="Small to mid-size businesses with 5 to 50 employees, established for at least 2 years, looking to grow their online presence..." required rows={3} className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors resize-none" />
             </div>
-            <button type="submit" disabled={loading} className="font-mono text-sm px-6 py-3 rounded tracking-wider transition-opacity disabled:opacity-40" style={{ backgroundColor: '#000000', color: '#f0f0f0' }}>
-              {loading ? 'Finding leads...' : 'Generate 10 Leads with Outreach Emails'}
-            </button>
+            <div className="flex items-center gap-4 flex-wrap">
+              <div>
+                <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Number of Leads</label>
+                <select value={leadCount} onChange={(e) => setLeadCount(Number(e.target.value))} className="bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm focus:outline-none focus:border-[#888888] transition-colors">
+                  {[5, 10, 25, 50, 100].map(n => <option key={n} value={n}>{n} leads</option>)}
+                </select>
+              </div>
+              <div className="mt-5">
+                <button type="submit" disabled={loading} className="font-mono text-sm px-6 py-3 rounded tracking-wider transition-opacity disabled:opacity-40" style={{ backgroundColor: '#000000', color: '#f0f0f0' }}>
+                  {loading ? 'Finding leads...' : `Generate ${leadCount} Leads with Outreach Emails`}
+                </button>
+              </div>
+            </div>
           </form>
 
           {loading && (
