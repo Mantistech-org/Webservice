@@ -71,27 +71,34 @@ Return ONLY a valid JSON object with no explanation:
 
     case 'social-media':
       return {
-        maxTokens: 1200,
-        prompt: `You are a professional social media manager. Create platform-specific posts for this business.
+        maxTokens: 6000,
+        prompt: `You are a senior social media strategist. Write platform-native posts that drive real action.
 
 Business Description: ${body.businessDescription}
-Post Topic or Direction: ${body.topic || 'General business update'}
-Photo uploaded: ${body.hasPhoto ? 'Yes' : 'No'}
+Post Topic: ${body.topic || 'General business update'}
+Post Goal: ${body.postGoal || 'Build Brand Awareness'}
+Photo included: ${body.hasPhoto ? 'Yes' : 'No'}
 
-Create posts for all five platforms:
-1. Instagram: engaging caption with 5 to 8 relevant hashtags
-2. Facebook: conversational post under 300 words
-3. Google Business: professional business update under 200 words
-4. Twitter/X: punchy post under 280 characters, no hashtags
-5. LinkedIn: professional post with business insight, under 400 words
+Write 3 distinct variations for each platform. Each variation must take a different angle or tone (e.g., direct offer, story-driven, social proof). Match the post goal throughout. Write like a human, not a content calendar template. No filler phrases like "In today's world" or "We are excited to announce." No dashes as separators. No emojis.
+
+Platform rules:
+- Instagram: hook in first line, caption under 150 characters for feed visibility, 5 to 8 targeted hashtags
+- Facebook: conversational, value-first, under 280 characters for best reach without "See more" cutoff
+- Google Business: professional update, 150 to 300 words, include a clear next step
+- Twitter/X: one punchy sentence under 280 characters, no hashtags
+- LinkedIn: business-focused, lead with insight or result, under 700 characters
 
 Return ONLY a valid JSON object with no explanation or markdown:
 {
-  "instagram": { "caption": "...", "hashtags": ["...", "..."] },
-  "facebook": { "post": "..." },
-  "google_business": { "post": "..." },
-  "twitter": { "tweet": "..." },
-  "linkedin": { "post": "..." }
+  "instagram": { "variations": [
+    { "caption": "...", "hashtags": ["...", "..."] },
+    { "caption": "...", "hashtags": ["...", "..."] },
+    { "caption": "...", "hashtags": ["...", "..."] }
+  ]},
+  "facebook": { "variations": [{ "post": "..." }, { "post": "..." }, { "post": "..." }] },
+  "google_business": { "variations": [{ "post": "..." }, { "post": "..." }, { "post": "..." }] },
+  "twitter": { "variations": [{ "tweet": "..." }, { "tweet": "..." }, { "tweet": "..." }] },
+  "linkedin": { "variations": [{ "post": "..." }, { "post": "..." }, { "post": "..." }] }
 }`,
       }
 
@@ -188,44 +195,53 @@ Return ONLY a valid JSON object with no explanation or markdown:
 
     case 'ad-creative':
       return {
-        maxTokens: 1400,
-        prompt: `You are a digital advertising expert. Create compelling ad copy for multiple platforms.
+        maxTokens: 4000,
+        prompt: `You are a direct response advertising copywriter. Write paid ad copy that converts.
 
-Business Name: ${body.businessName}
+Business: ${body.businessName}
 Promotion: ${body.promotion}
-Target Audience: ${body.targetAudience}
 Direction: ${body.description || 'General brand awareness'}
+Call to Action: ${body.cta || 'Learn More'}
+Target Age Range: ${body.ageRange || 'All ages'}
+Location Radius: ${body.locationRadius || 'Local area'}
+Ideal Customer: ${body.idealCustomer || 'General audience'}
+Creative asset uploaded: ${body.hasPhoto ? 'Yes' : 'No'}
 
-Create platform-specific ad copy optimized for each format.
+Write 3 distinct variations per platform. Each variation must use a different proven direct response framework (PAS: Problem, Agitate, Solution / BAB: Before, After, Bridge / benefit-led). Lead with what the customer gains, not what you offer. Use the specified CTA naturally throughout copy where appropriate. Write tight, punchy, specific copy. No filler. No fluff. No emojis. No dashes as separators. Never mention technology or software tools.
+
+Hard character limits (MUST be respected):
+- Facebook headline: 40 characters max
+- Facebook primaryText: 125 characters max
+- Facebook description: 125 characters max
+- Instagram caption: 150 characters for feed visibility (2200 absolute max)
+- Google headline: 30 characters max each
+- Google description: 90 characters max each
+- LinkedIn headline: 70 characters max
+- LinkedIn post body: 150 characters for feed (flag with "See more" beyond that)
 
 Return ONLY a valid JSON object with no explanation or markdown:
 {
-  "facebook": {
-    "headline": "...",
-    "primaryText": "...",
-    "description": "...",
-    "cta": "Learn More"
-  },
-  "instagram": {
-    "headline": "...",
-    "caption": "...",
-    "cta": "Shop Now"
-  },
-  "google": {
-    "headline1": "...",
-    "headline2": "...",
-    "headline3": "...",
-    "description1": "...",
-    "description2": "..."
-  },
-  "linkedin": {
-    "headline": "...",
-    "post": "...",
-    "cta": "Learn More"
-  }
-}
-
-Constraints: Facebook headline under 40 chars, primaryText under 125 chars. Instagram caption under 150 chars. Google headlines under 30 chars each, descriptions under 90 chars each. LinkedIn headline under 50 chars.`,
+  "facebook": { "variations": [
+    { "headline": "...", "primaryText": "...", "description": "..." },
+    { "headline": "...", "primaryText": "...", "description": "..." },
+    { "headline": "...", "primaryText": "...", "description": "..." }
+  ]},
+  "instagram": { "variations": [
+    { "caption": "..." },
+    { "caption": "..." },
+    { "caption": "..." }
+  ]},
+  "google": { "variations": [
+    { "headline1": "...", "headline2": "...", "headline3": "...", "description1": "...", "description2": "..." },
+    { "headline1": "...", "headline2": "...", "headline3": "...", "description1": "...", "description2": "..." },
+    { "headline1": "...", "headline2": "...", "headline3": "...", "description1": "...", "description2": "..." }
+  ]},
+  "linkedin": { "variations": [
+    { "headline": "...", "post": "..." },
+    { "headline": "...", "post": "..." },
+    { "headline": "...", "post": "..." }
+  ]}
+}`,
       }
 
     case 'chatbot': {
