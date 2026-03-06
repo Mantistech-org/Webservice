@@ -448,6 +448,8 @@ function SettingsPanel({
 
 // ── Main CalendarPage ──────────────────────────────────────────────────────────
 
+interface Popover { dateStr: string; appts: Appointment[] }
+
 export default function CalendarPage() {
   const [today]      = useState(() => new Date())
   const [viewDate,   setViewDate]   = useState(() => new Date())
@@ -456,6 +458,7 @@ export default function CalendarPage() {
   const [selected,   setSelected]   = useState<Appointment | null>(null)
   const [panelMode,  setPanelMode]  = useState<'view' | 'create'>('view')
   const [panelOpen,  setPanelOpen]  = useState(false)
+  const [popover,    setPopover]    = useState<Popover | null>(null)
 
   const [daySettings, setDaySettings] = useState<Record<number, DaySetting>>(() => {
     const r: Record<number, DaySetting> = {}
@@ -576,14 +579,9 @@ export default function CalendarPage() {
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
                 </button>
               </div>
-              <div className="flex items-center gap-2">
-                <button onClick={goToday} className="font-mono text-xs border border-[#d0d0d0] text-muted px-4 py-2 rounded hover:border-[#b0b0b0] hover:text-primary transition-all">
-                  Today
-                </button>
-                <button onClick={openNew} className="font-mono text-xs px-4 py-2 rounded tracking-wider transition-opacity hover:opacity-80" style={{ backgroundColor: '#000000', color: '#f0f0f0' }}>
-                  New Appointment
-                </button>
-              </div>
+              <button onClick={openNew} className="font-mono text-xs px-4 py-2 rounded tracking-wider transition-opacity hover:opacity-80" style={{ backgroundColor: '#000000', color: '#f0f0f0' }}>
+                New Appointment
+              </button>
             </div>
 
             {/* Day of week labels */}
@@ -596,7 +594,7 @@ export default function CalendarPage() {
             </div>
 
             {/* Calendar grid */}
-            <div className="grid grid-cols-7 border-l border-border">
+            <div className="grid grid-cols-7 border-l border-border" onClick={() => setPopover(null)}>
               {grid.map((day, i) => {
                 if (!day) {
                   return <div key={`empty-${i}`} className="border-r border-b border-border min-h-[100px]" />
@@ -640,7 +638,30 @@ export default function CalendarPage() {
                         </button>
                       ))}
                       {overflow > 0 && (
-                        <div className="font-mono text-[10px] text-muted pl-1.5">+{overflow} more</div>
+                        <div className="relative">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setPopover(popover?.dateStr === ds ? null : { dateStr: ds, appts: dayAppts }) }}
+                            className="font-mono text-[10px] text-muted pl-1.5 hover:text-primary transition-colors"
+                          >
+                            +{overflow} more
+                          </button>
+                          {popover?.dateStr === ds && (
+                            <div className="absolute left-0 top-5 z-30 w-52 bg-white border border-[#d0d0d0] rounded shadow-lg p-2 space-y-1">
+                              <div className="font-mono text-[10px] text-muted tracking-widest uppercase pb-1 border-b border-[#e8e8e8] mb-1">
+                                {MONTH_NAMES[viewMonth]} {day.getDate()}
+                              </div>
+                              {dayAppts.map(a => (
+                                <button
+                                  key={a.id}
+                                  onClick={() => { setPopover(null); openAppt(a) }}
+                                  className={`w-full text-left font-mono text-[10px] px-1.5 py-0.5 rounded-full truncate leading-tight transition-opacity hover:opacity-80 ${PILL_COLORS[a.status]}`}
+                                >
+                                  {fmt12(a.time)} {a.customerName}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
