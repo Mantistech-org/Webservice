@@ -546,10 +546,24 @@ export default function IntakeForm() {
                     ${plan.upfront}
                     <span className="font-mono text-xs text-muted font-normal"> upfront</span>
                   </div>
-                  <div className="font-heading text-xl text-teal leading-none mt-1">
-                    ${plan.monthly}
-                    <span className="font-mono text-xs text-muted font-normal">/mo</span>
-                  </div>
+                  {id === 'mid' ? (
+                    <div className="mt-1">
+                      <span className="font-mono text-xs text-muted line-through">${plan.monthly}/mo</span>
+                      <div className="font-heading text-xl text-teal leading-none">$87.50<span className="font-mono text-xs text-muted font-normal">/mo</span></div>
+                      <div className="font-mono text-xs text-accent mt-0.5">Launch Pricing, first 3 months</div>
+                    </div>
+                  ) : id === 'pro' ? (
+                    <div className="mt-1">
+                      <span className="font-mono text-xs text-muted line-through">${plan.monthly}/mo</span>
+                      <div className="font-heading text-xl text-teal leading-none">$175<span className="font-mono text-xs text-muted font-normal">/mo</span></div>
+                      <div className="font-mono text-xs text-accent mt-0.5">Launch Pricing, first 3 months</div>
+                    </div>
+                  ) : (
+                    <div className="font-heading text-xl text-teal leading-none mt-1">
+                      ${plan.monthly}
+                      <span className="font-mono text-xs text-muted font-normal">/mo</span>
+                    </div>
+                  )}
                   <div className="font-mono text-xs text-dim mt-1">Up to {plan.pages} pages</div>
                 </button>
               ))}

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import ThemeToggle from './ThemeToggle'
 
 const links = [
@@ -15,6 +16,14 @@ const links = [
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const pathname = usePathname()
+  const isHome = pathname === '/'
+
+  // Resolve hash links to full-page links when not on the homepage
+  function resolveHref(href: string): string {
+    if (href.startsWith('#') && !isHome) return `/${href}`
+    return href
+  }
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40)
@@ -41,25 +50,15 @@ export default function Nav() {
 
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-6">
-          {links.map((link) =>
-            'isLink' in link && link.isLink ? (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="font-mono text-sm text-muted hover:text-primary hover:underline decoration-[#00ff88] underline-offset-4 tracking-wider transition-colors"
-              >
-                {link.label}
-              </Link>
-            ) : (
-              <a
-                key={link.href}
-                href={link.href}
-                className="font-mono text-sm text-muted hover:text-primary hover:underline decoration-[#00ff88] underline-offset-4 tracking-wider transition-colors"
-              >
-                {link.label}
-              </a>
-            )
-          )}
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={resolveHref(link.href)}
+              className="font-mono text-sm text-muted hover:text-primary hover:underline decoration-[#00ff88] underline-offset-4 tracking-wider transition-colors"
+            >
+              {link.label}
+            </Link>
+          ))}
           <a
             href="tel:+15016690488"
             className="font-mono text-sm text-muted hover:text-primary transition-colors tracking-wider"
@@ -93,27 +92,16 @@ export default function Nav() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-card border-b border-border px-6 py-4 flex flex-col gap-4">
-          {links.map((link) =>
-            'isLink' in link && link.isLink ? (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="font-mono text-sm text-muted hover:text-primary transition-colors tracking-wider"
-                onClick={() => setMenuOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ) : (
-              <a
-                key={link.href}
-                href={link.href}
-                className="font-mono text-sm text-muted hover:text-primary transition-colors tracking-wider"
-                onClick={() => setMenuOpen(false)}
-              >
-                {link.label}
-              </a>
-            )
-          )}
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={resolveHref(link.href)}
+              className="font-mono text-sm text-muted hover:text-primary transition-colors tracking-wider"
+              onClick={() => setMenuOpen(false)}
+            >
+              {link.label}
+            </Link>
+          ))}
           <a
             href="tel:+15016690488"
             className="font-mono text-sm text-muted hover:text-primary transition-colors tracking-wider"
