@@ -76,15 +76,10 @@ export default function DemoView() {
       case 'ecommerce':
       case 'ecommerce-inventory':
       case 'ecommerce-automations':
-      case 'ecommerce-sequences':
         return (
           <ECommerceAutomation
             sessionId={sessionId}
-            initialSubTab={
-              activePage === 'ecommerce-inventory' ? 'inventory'
-              : activePage === 'ecommerce-sequences' ? 'sequences'
-              : 'automations'
-            }
+            initialSubTab={activePage === 'ecommerce-inventory' ? 'inventory' : 'automations'}
           />
         )
       case 'ads':        return <AdCreative sessionId={sessionId} />

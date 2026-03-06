@@ -13,7 +13,6 @@ export type DemoView =
   | 'ecommerce'
   | 'ecommerce-inventory'
   | 'ecommerce-automations'
-  | 'ecommerce-sequences'
   | 'ads'
   | 'chatbot'
   | 'billing'
@@ -143,7 +142,6 @@ const NAV_ITEMS: NavItem[] = [
     children: [
       { id: 'ecommerce-inventory',   label: 'Inventory' },
       { id: 'ecommerce-automations', label: 'Automated Emails' },
-      { id: 'ecommerce-sequences',   label: 'Email Sequences' },
     ],
   },
   { id: 'ads',     label: 'Ad Creative',    icon: <ImageIcon /> },
