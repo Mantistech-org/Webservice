@@ -62,42 +62,61 @@ export default function Hero() {
         {/* SVG centerpiece — centered at the dividing line */}
         <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 flex items-center z-10 pointer-events-none">
           <svg
-            width="72"
-            height="260"
-            viewBox="0 0 72 260"
+            width="120"
+            height="280"
+            viewBox="0 0 120 280"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
-            {/* Vertical spine */}
-            <line x1="36" y1="0" x2="36" y2="90" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.4" />
-            <line x1="36" y1="170" x2="36" y2="260" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.4" />
+            {/* Vertical connector lines */}
+            <line x1="60" y1="0" x2="60" y2="50" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.3" />
+            <line x1="60" y1="230" x2="60" y2="280" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.3" />
 
-            {/* Outer diamond */}
-            <polygon
-              points="36,70 66,130 36,190 6,130"
-              fill="#0a0a0a"
-              stroke="#00ff88"
-              strokeWidth="1.5"
-            />
+            {/* Center hub circle */}
+            <circle cx="60" cy="140" r="18" fill="#0a0a0a" stroke="#00ff88" strokeWidth="1.5" />
+            <circle cx="60" cy="140" r="10" fill="#00ff88" fillOpacity="0.12" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.7" />
+            <circle cx="60" cy="140" r="4" fill="#00ff88" />
 
-            {/* Inner diamond */}
-            <polygon
-              points="36,92 54,130 36,168 18,130"
-              fill="#00ff88"
-              fillOpacity="0.08"
-              stroke="#00ff88"
-              strokeWidth="1"
-              strokeOpacity="0.6"
-            />
+            {/* Node top */}
+            <circle cx="60" cy="70" r="6" fill="#0a0a0a" stroke="#00ff88" strokeWidth="1.2" strokeOpacity="0.8" />
+            <circle cx="60" cy="70" r="2.5" fill="#00ff88" fillOpacity="0.6" />
 
-            {/* Center accent dot */}
-            <circle cx="36" cy="130" r="5" fill="#00ff88" />
+            {/* Node bottom */}
+            <circle cx="60" cy="210" r="6" fill="#0a0a0a" stroke="#00ff88" strokeWidth="1.2" strokeOpacity="0.8" />
+            <circle cx="60" cy="210" r="2.5" fill="#00ff88" fillOpacity="0.6" />
 
-            {/* Corner tick marks */}
-            <line x1="36" y1="70" x2="36" y2="78" stroke="#00ff88" strokeWidth="2" />
-            <line x1="36" y1="182" x2="36" y2="190" stroke="#00ff88" strokeWidth="2" />
-            <line x1="6" y1="130" x2="14" y2="130" stroke="#00ff88" strokeWidth="2" />
-            <line x1="58" y1="130" x2="66" y2="130" stroke="#00ff88" strokeWidth="2" />
+            {/* Left node */}
+            <circle cx="18" cy="140" r="5" fill="#0a0a0a" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.6" />
+            <circle cx="18" cy="140" r="2" fill="#00ff88" fillOpacity="0.5" />
+
+            {/* Right node */}
+            <circle cx="102" cy="140" r="5" fill="#0a0a0a" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.6" />
+            <circle cx="102" cy="140" r="2" fill="#00ff88" fillOpacity="0.5" />
+
+            {/* Upper-left node */}
+            <circle cx="22" cy="95" r="4" fill="#0a0a0a" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.5" />
+
+            {/* Upper-right node */}
+            <circle cx="98" cy="95" r="4" fill="#0a0a0a" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.5" />
+
+            {/* Lower-left node */}
+            <circle cx="22" cy="185" r="4" fill="#0a0a0a" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.5" />
+
+            {/* Lower-right node */}
+            <circle cx="98" cy="185" r="4" fill="#0a0a0a" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.5" />
+
+            {/* Connection lines from center hub to satellite nodes */}
+            <line x1="60" y1="122" x2="60" y2="76" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.4" />
+            <line x1="60" y1="158" x2="60" y2="204" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.4" />
+            <line x1="42" y1="140" x2="23" y2="140" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.4" />
+            <line x1="78" y1="140" x2="97" y2="140" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.4" />
+            <line x1="47" y1="128" x2="25" y2="98" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.3" />
+            <line x1="73" y1="128" x2="95" y2="98" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.3" />
+            <line x1="47" y1="152" x2="25" y2="182" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.3" />
+            <line x1="73" y1="152" x2="95" y2="182" stroke="#00ff88" strokeWidth="1" strokeOpacity="0.3" />
+
+            {/* Subtle orbit ring around center */}
+            <circle cx="60" cy="140" r="32" fill="none" stroke="#00ff88" strokeWidth="0.5" strokeOpacity="0.15" strokeDasharray="4 4" />
           </svg>
         </div>
       </div>

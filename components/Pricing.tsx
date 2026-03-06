@@ -28,8 +28,8 @@ export default function Pricing() {
                 key={key}
                 className={`relative rounded border flex flex-col ${
                   isHighlight
-                    ? 'border-accent bg-[#e8e8e8]'
-                    : 'border-border bg-[#e8e8e8]'
+                    ? 'border-accent bg-card'
+                    : 'border-border bg-card'
                 }`}
               >
                 {isHighlight && (
@@ -48,10 +48,32 @@ export default function Pricing() {
                     <span className="font-mono text-sm text-muted ml-2 font-normal">upfront</span>
                   </div>
 
-                  <div className="font-heading text-2xl text-teal leading-none mb-2">
-                    ${plan.monthly}
-                    <span className="font-mono text-sm text-muted ml-2 font-normal">/month</span>
-                  </div>
+                  {key === 'mid' ? (
+                    <div className="mb-2">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-mono text-base text-muted line-through">${plan.monthly}/mo</span>
+                      </div>
+                      <div className="font-heading text-2xl text-teal leading-none">
+                        $87.50<span className="font-mono text-sm text-muted ml-1 font-normal">/mo</span>
+                      </div>
+                      <div className="font-mono text-xs text-accent tracking-wider mt-1">Launch Pricing — first 3 months</div>
+                    </div>
+                  ) : key === 'pro' ? (
+                    <div className="mb-2">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-mono text-base text-muted line-through">${plan.monthly}/mo</span>
+                      </div>
+                      <div className="font-heading text-2xl text-teal leading-none">
+                        $175<span className="font-mono text-sm text-muted ml-1 font-normal">/mo</span>
+                      </div>
+                      <div className="font-mono text-xs text-accent tracking-wider mt-1">Launch Pricing — first 3 months</div>
+                    </div>
+                  ) : (
+                    <div className="font-heading text-2xl text-teal leading-none mb-2">
+                      ${plan.monthly}
+                      <span className="font-mono text-sm text-muted ml-2 font-normal">/month</span>
+                    </div>
+                  )}
 
                   <div className="font-mono text-xs text-muted mb-6">Up to {plan.pages} pages</div>
 

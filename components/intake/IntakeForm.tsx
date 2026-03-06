@@ -33,11 +33,20 @@ const STYLE_PREFERENCES = [
   'Clean and Bright',
 ]
 
+const EMPLOYEE_COUNTS = [
+  'Just me',
+  '2 to 5',
+  '6 to 15',
+  '16 to 50',
+  '50 plus',
+]
+
 interface FormData {
   businessName: string
   ownerName: string
   email: string
   phone: string
+  employeeCount: string
   businessType: string
   location: string
   currentWebsite: string
@@ -57,6 +66,7 @@ const DEFAULT_FORM: FormData = {
   ownerName: '',
   email: '',
   phone: '',
+  employeeCount: '',
   businessType: '',
   location: '',
   currentWebsite: '',
@@ -71,11 +81,28 @@ const DEFAULT_FORM: FormData = {
   requestedPages: '',
 }
 
+const STORAGE_KEY = 'intake_form_draft'
+
+function getRecommendedPlan(employeeCount: string): Plan | null {
+  if (employeeCount === 'Just me' || employeeCount === '2 to 5') return 'starter'
+  if (employeeCount === '6 to 15') return 'mid'
+  if (employeeCount === '16 to 50' || employeeCount === '50 plus') return 'pro'
+  return null
+}
+
+function getAddonTierStatus(addonId: string, plan: Plan): 'included' | 'available' | 'locked' {
+  if (PLAN_INCLUDED_ADDONS[plan].includes(addonId)) return 'included'
+  if (plan === 'pro') return 'included'
+  if (plan === 'starter' && addonId !== 'email-with-domain') return 'locked'
+  return 'available'
+}
+
 type SubmitState = 'idle' | 'submitting' | 'success' | 'error'
 
 export default function IntakeForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
+
   const [form, setForm] = useState<FormData>(() => {
     const planParam = searchParams.get('plan') as Plan | null
     return { ...DEFAULT_FORM, plan: planParam && planParam in PLANS ? planParam : 'starter' }
@@ -94,6 +121,33 @@ export default function IntakeForm() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const dropRef = useRef<HTMLDivElement>(null)
 
+  // Restore draft from localStorage on mount
+  useEffect(() => {
+    const planParam = searchParams.get('plan') as Plan | null
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        const draft = JSON.parse(saved) as FormData
+        localStorage.removeItem(STORAGE_KEY)
+        if (planParam && planParam in PLANS) {
+          // URL param overrides plan but restores everything else
+          setForm({ ...draft, plan: planParam })
+        } else {
+          setForm(draft)
+        }
+        return
+      }
+    } catch {
+      // ignore parse errors
+    }
+    // No draft — just apply URL param if present
+    if (planParam && planParam in PLANS) {
+      setForm((f) => ({ ...f, plan: planParam }))
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Keep plan in sync when URL param changes after initial mount
   useEffect(() => {
     const planParam = searchParams.get('plan') as Plan | null
     if (planParam && planParam in PLANS) {
@@ -101,10 +155,21 @@ export default function IntakeForm() {
     }
   }, [searchParams])
 
+  // Read referral token from cookie
   useEffect(() => {
     const match = document.cookie.match(/(?:^|;\s*)referral_token=([^;]*)/)
     if (match) setReferralToken(decodeURIComponent(match[1]))
   }, [])
+
+  // Save form draft to localStorage on every change
+  useEffect(() => {
+    if (submitState === 'success') return
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(form))
+    } catch {
+      // ignore storage errors
+    }
+  }, [form, submitState])
 
   const setField = <K extends keyof FormData>(key: K, value: FormData[K]) => {
     setForm((f) => ({ ...f, [key]: value }))
@@ -115,14 +180,20 @@ export default function IntakeForm() {
     setForm((f) => ({
       ...f,
       plan: newPlan,
-      // Remove from extra addons any that are now included in the new plan
-      addons: f.addons.filter((id) => !nowIncluded.includes(id)),
+      // Remove from extra addons any that are now included or locked in the new plan
+      addons: f.addons.filter((id) => {
+        if (nowIncluded.includes(id)) return false
+        if (getAddonTierStatus(id, newPlan) === 'locked') return false
+        if (getAddonTierStatus(id, newPlan) === 'included') return false
+        return true
+      }),
     }))
   }
 
   const toggleAddon = (id: string) => {
-    // Don't allow toggling plan-included addons
     if (PLAN_INCLUDED_ADDONS[form.plan].includes(id)) return
+    if (getAddonTierStatus(id, form.plan) === 'locked') return
+    if (getAddonTierStatus(id, form.plan) === 'included') return
     setForm((f) => ({
       ...f,
       addons: f.addons.includes(id) ? f.addons.filter((a) => a !== id) : [...f.addons, id],
@@ -191,6 +262,8 @@ export default function IntakeForm() {
         throw new Error(data.error ?? 'Submission failed. Please try again.')
       }
 
+      // Clear draft on successful submission
+      try { localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
       setSubmitState('success')
     } catch (err) {
       setSubmitState('error')
@@ -201,6 +274,7 @@ export default function IntakeForm() {
   const pageLimit = PLAN_PAGE_LIMITS[form.plan]
   const requestedPagesNum = parseInt(form.requestedPages) || 0
   const showPageWarning = requestedPagesNum > pageLimit
+  const recommendedPlan = getRecommendedPlan(form.employeeCount)
 
   if (submitState === 'success') {
     return (
@@ -294,6 +368,18 @@ export default function IntakeForm() {
                   placeholder="+1 555 000 0000"
                   className="form-input"
                 />
+              </FormField>
+              <FormField label="How many employees does your business have?">
+                <select
+                  value={form.employeeCount}
+                  onChange={(e) => setField('employeeCount', e.target.value)}
+                  className="form-input"
+                >
+                  <option value="">Select employee count</option>
+                  {EMPLOYEE_COUNTS.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               </FormField>
               <FormField label="Business Type" required>
                 <select
@@ -441,7 +527,7 @@ export default function IntakeForm() {
                       : 'border-border bg-card hover:border-border-light'
                   }`}
                 >
-                  <div className="font-mono text-xs tracking-widest uppercase mb-2">
+                  <div className="font-mono text-xs tracking-widest uppercase mb-2 flex items-center gap-2 flex-wrap">
                     {form.plan === id && (
                       <span className="text-primary">
                         <svg className="inline w-3 h-3 mr-1 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
@@ -450,6 +536,11 @@ export default function IntakeForm() {
                       </span>
                     )}
                     <span className={form.plan === id ? 'text-primary' : 'text-muted'}>{plan.name}</span>
+                    {recommendedPlan === id && (
+                      <span className="bg-accent text-black font-mono text-xs rounded px-2 py-0.5">
+                        Recommended
+                      </span>
+                    )}
                   </div>
                   <div className="font-heading text-3xl text-primary leading-none">
                     ${plan.upfront}
@@ -476,15 +567,58 @@ export default function IntakeForm() {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {ADDONS.map((addon) => {
-                const isIncluded = PLAN_INCLUDED_ADDONS[form.plan].includes(addon.id)
+                const tierStatus = getAddonTierStatus(addon.id, form.plan)
+                const isIncluded = tierStatus === 'included'
+                const isLocked = tierStatus === 'locked'
+                const isAvailable = tierStatus === 'available'
                 const checked = isIncluded || form.addons.includes(addon.id)
+
+                if (isIncluded) {
+                  return (
+                    <div
+                      key={addon.id}
+                      className="flex items-center gap-4 p-4 rounded border border-primary/30 bg-card cursor-default"
+                    >
+                      <div className="w-5 h-5 rounded border-2 border-primary flex items-center justify-center shrink-0">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" className="text-primary">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm text-primary font-medium">{addon.label}</div>
+                        <div className="text-xs text-muted mt-0.5">{addon.description}</div>
+                      </div>
+                      <div className="font-mono text-sm shrink-0 text-accent">
+                        Included in your plan
+                      </div>
+                    </div>
+                  )
+                }
+
+                if (isLocked) {
+                  return (
+                    <div
+                      key={addon.id}
+                      className="flex items-center gap-4 p-4 rounded border border-border bg-card opacity-50 cursor-not-allowed"
+                    >
+                      <div className="w-5 h-5 rounded border-2 border-dim flex items-center justify-center shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm text-primary font-medium">{addon.label}</div>
+                        <div className="text-xs text-muted mt-0.5">{addon.description}</div>
+                      </div>
+                      <div className="font-mono text-sm shrink-0 text-muted">
+                        Upgrade to Mid
+                      </div>
+                    </div>
+                  )
+                }
+
+                // Available
                 return (
                   <label
                     key={addon.id}
                     className={`flex items-center gap-4 p-4 rounded border transition-all duration-200 ${
-                      isIncluded
-                        ? 'border-primary/30 bg-card cursor-default'
-                        : checked
+                      checked
                         ? 'border-primary bg-card cursor-pointer'
                         : 'border-border bg-card hover:border-border-light cursor-pointer'
                     }`}
@@ -504,7 +638,6 @@ export default function IntakeForm() {
                       type="checkbox"
                       className="sr-only"
                       checked={checked}
-                      disabled={isIncluded}
                       onChange={() => toggleAddon(addon.id)}
                     />
                     <div className="flex-1 min-w-0">
@@ -512,11 +645,7 @@ export default function IntakeForm() {
                       <div className="text-xs text-muted mt-0.5">{addon.description}</div>
                     </div>
                     <div className="font-mono text-sm shrink-0">
-                      {isIncluded ? (
-                        <span className="text-muted">Included</span>
-                      ) : (
-                        <span className="text-primary">+${addon.price}/mo</span>
-                      )}
+                      <span className="text-primary">+${addon.price}/mo</span>
                     </div>
                   </label>
                 )

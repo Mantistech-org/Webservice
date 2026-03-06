@@ -88,7 +88,7 @@ export default function ClientLoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="w-full bg-[#f4f4f0] border border-border text-primary rounded px-4 py-3 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
+            className="w-full bg-card border border-border text-primary rounded px-4 py-3 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
           />
         </div>
 

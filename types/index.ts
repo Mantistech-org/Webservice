@@ -93,19 +93,19 @@ export interface Addon {
 export const ADDONS: Addon[] = [
   { id: 'review-management', label: 'Review Management', price: 19, description: 'Most customers check reviews before choosing a business. We automatically filter your best reviews and post them to Google, building your reputation on autopilot while keeping negative feedback private until you can address it.' },
   { id: 'social-media-automation', label: 'Social Media Automation', price: 24, description: 'Staying active on social media is a full time job. Upload a photo and we handle the rest, turning it into a polished ad and posting it across all your platforms automatically.' },
-  { id: 'lead-generation', label: 'Automated Lead Generation and Outreach', price: 30, description: 'Finding new customers takes time you do not have. We identify businesses that match your ideal client profile and send personalized outreach emails automatically, filling your pipeline without lifting a finger.' },
+  { id: 'lead-generation', label: 'Automated Lead Generation and Outreach', price: 30, description: 'We find and compile targeted lists of potential customers that match your ideal client profile, including contact information and business details. Add Automated Email Marketing to enable full automated outreach to these lists.' },
   { id: 'seo-optimization', label: 'SEO Optimization', price: 25, description: 'If customers cannot find you on Google, they are finding your competitors instead. We continuously optimize your site so you rank higher in local search results and stay there.' },
-  { id: 'ecommerce-automation', label: 'E-Commerce Automation', price: 34, description: 'Running an online store manually is exhausting. We automate inventory updates, order fulfillment and customer email follow-ups so your store runs itself around the clock.' },
-  { id: 'ad-creative-generation', label: 'Ad Creative Generation', price: 19, description: 'Great ads start with great visuals. Upload your photos and we turn them into professional ad creatives ready to run on Facebook, Instagram and Google.' },
+  { id: 'ecommerce-automation', label: 'E-Commerce Automation', price: 34, description: 'Fully automates your inventory management including in-store inventory when linked to your point of sale system, plus order fulfillment, tracking updates, and customer notifications.' },
+  { id: 'ad-creative-generation', label: 'Ad Creative Generation', price: 19, description: 'Fully automates creating and running ads across all major platforms including Facebook, Instagram, and Google. Upload a photo or product and ads are created, targeted, and published automatically.' },
   { id: 'website-chatbot', label: 'Website Chatbot', price: 15, description: 'Most visitors leave without contacting you. Our chatbot engages them instantly, answers common questions and captures their information so you never miss a lead, even at 2am.' },
-  { id: 'email-marketing', label: 'Automated Email Marketing', price: 15, description: 'Your existing customers are your best source of revenue. We build and send automated email campaigns that keep your business top of mind and bring customers back without you writing a single email.' },
+  { id: 'email-marketing', label: 'Automated Email Marketing', price: 15, description: 'Sends automated email campaigns to your contact lists, including lead lists generated through the Automated Lead Generation service. When paired with Lead Generation, this enables fully automated prospecting and outreach.' },
   { id: 'email-with-domain', label: 'Email with Domain', price: 12, description: 'A professional email address at your own domain builds trust instantly. We set it up and manage it so you always look established and credible.' },
 ]
 
 export const PLAN_INCLUDED_ADDONS: Record<Plan, string[]> = {
   starter: [],
   mid: ['review-management', 'social-media-automation', 'seo-optimization', 'ad-creative-generation'],
-  pro: ['review-management', 'social-media-automation', 'lead-generation', 'seo-optimization', 'ecommerce-automation', 'ad-creative-generation', 'website-chatbot', 'email-marketing'],
+  pro: ['review-management', 'social-media-automation', 'lead-generation', 'seo-optimization', 'ecommerce-automation', 'ad-creative-generation', 'website-chatbot', 'email-marketing', 'email-with-domain'],
 }
 
 export const PLAN_PAGE_LIMITS: Record<Plan, number> = {
@@ -121,18 +121,19 @@ export const PLANS = {
     monthly: 40,
     pages: 4,
     features: [
+      'Booking Calendar included free',
       'Custom website',
       'Hosting and domain',
       'Monthly performance report',
-      'Booking calendar integration',
     ],
   },
   mid: {
     name: 'Mid',
     upfront: 150,
-    monthly: 70,
+    monthly: 125,
     pages: 6,
     features: [
+      'Booking Calendar included free',
       'Everything in Starter',
       'Social Media Automation',
       'Review Management',
@@ -142,13 +143,14 @@ export const PLANS = {
   },
   pro: {
     name: 'Pro',
-    upfront: 250,
-    monthly: 120,
+    upfront: 200,
+    monthly: 250,
     pages: 9,
     features: [
+      'Booking Calendar included free',
       'Everything in Mid',
       'E-Commerce Automation',
-      'Automated Lead Generation and Outreach',
+      'Automated Lead Generation',
       'Website Chatbot',
       'Automated Email Marketing',
     ],

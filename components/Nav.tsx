@@ -60,6 +60,12 @@ export default function Nav() {
               </a>
             )
           )}
+          <a
+            href="tel:5016990488"
+            className="font-mono text-sm text-muted hover:text-primary transition-colors tracking-wider"
+          >
+            501-699-0488
+          </a>
           <ThemeToggle />
           <Link
             href="/intake"
@@ -108,6 +114,13 @@ export default function Nav() {
               </a>
             )
           )}
+          <a
+            href="tel:5016990488"
+            className="font-mono text-sm text-muted hover:text-primary transition-colors tracking-wider"
+            onClick={() => setMenuOpen(false)}
+          >
+            501-699-0488
+          </a>
           <Link
             href="/intake"
             className="font-mono text-sm bg-accent text-black px-5 py-2 rounded text-center font-medium tracking-wider"

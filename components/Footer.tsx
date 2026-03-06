@@ -17,6 +17,12 @@ export default function Footer() {
               Boutique web agency delivering premium websites and digital services for businesses
               that refuse to settle.
             </p>
+            <a
+              href="tel:5016990488"
+              className="inline-block mt-4 font-mono text-sm text-primary hover:text-accent transition-colors tracking-wider"
+            >
+              501-699-0488
+            </a>
           </div>
 
           {/* Services */}
@@ -34,7 +40,7 @@ export default function Footer() {
                 'Ad Creative Generation',
                 'Website Chatbot',
                 'Automated Email Marketing',
-                'Website Calendar',
+                'Booking Calendar',
               ].map((s) => (
                 <li key={s}>
                   <a href="#services" className="hover:text-primary transition-colors">

@@ -17,7 +17,7 @@ export default function ServicesGrid() {
           {ADDONS.map((service) => (
             <div
               key={service.id}
-              className="bg-[#e8e8e8] border border-border rounded p-8 hover:border-border-light transition-colors duration-200"
+              className="bg-card border border-border rounded p-8 hover:border-border-light transition-colors duration-200"
             >
               <h3 className="font-heading text-lg text-primary mb-3">{service.label}</h3>
               <p className="text-sm text-teal leading-relaxed">{service.description}</p>
