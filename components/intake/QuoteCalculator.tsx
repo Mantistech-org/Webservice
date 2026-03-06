@@ -7,6 +7,11 @@ interface QuoteCalculatorProps {
   selectedPlan: Plan
 }
 
+const LAUNCH_MONTHLY: Partial<Record<Plan, number>> = {
+  mid: 87.50,
+  pro: 175,
+}
+
 export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteCalculatorProps) {
   const plan = PLANS[selectedPlan]
   const includedAddonIds = PLAN_INCLUDED_ADDONS[selectedPlan]
@@ -16,7 +21,9 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
     (a) => selectedAddons.includes(a.id) && !includedAddonIds.includes(a.id)
   )
   const extraAddonTotal = extraAddons.reduce((sum, a) => sum + a.price, 0)
-  const monthlyTotal = plan.monthly + extraAddonTotal
+  const launchMonthly = LAUNCH_MONTHLY[selectedPlan]
+  const baseMonthly = launchMonthly ?? plan.monthly
+  const monthlyTotal = baseMonthly + extraAddonTotal
 
   return (
     <div className="sticky top-20 bg-card border border-border rounded overflow-hidden">
@@ -57,8 +64,20 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-teal">{plan.name} plan</span>
-              <span className="font-mono text-primary">${plan.monthly}/mo</span>
+              <span className="font-mono text-primary">
+                {launchMonthly ? (
+                  <>
+                    <span className="line-through text-muted mr-1">${plan.monthly}</span>
+                    ${launchMonthly}/mo
+                  </>
+                ) : (
+                  <>${plan.monthly}/mo</>
+                )}
+              </span>
             </div>
+            {launchMonthly && (
+              <div className="font-mono text-xs text-accent">Launch Pricing, first 3 months</div>
+            )}
 
             {extraAddons.map((addon) => (
               <div key={addon.id} className="flex items-center justify-between text-sm">

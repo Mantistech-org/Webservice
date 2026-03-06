@@ -56,7 +56,7 @@ export default function Pricing() {
                       <div className="font-heading text-2xl text-teal leading-none">
                         $87.50<span className="font-mono text-sm text-muted ml-1 font-normal">/mo</span>
                       </div>
-                      <div className="font-mono text-xs text-accent tracking-wider mt-1">Launch Pricing — first 3 months</div>
+                      <div className="font-mono text-xs text-accent tracking-wider mt-1">Launch Pricing, first 3 months</div>
                     </div>
                   ) : key === 'pro' ? (
                     <div className="mb-2">
@@ -66,7 +66,7 @@ export default function Pricing() {
                       <div className="font-heading text-2xl text-teal leading-none">
                         $175<span className="font-mono text-sm text-muted ml-1 font-normal">/mo</span>
                       </div>
-                      <div className="font-mono text-xs text-accent tracking-wider mt-1">Launch Pricing — first 3 months</div>
+                      <div className="font-mono text-xs text-accent tracking-wider mt-1">Launch Pricing, first 3 months</div>
                     </div>
                   ) : (
                     <div className="font-heading text-2xl text-teal leading-none mb-2">

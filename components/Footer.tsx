@@ -43,7 +43,7 @@ export default function Footer() {
                 'Booking Calendar',
               ].map((s) => (
                 <li key={s}>
-                  <a href="#services" className="hover:text-primary transition-colors">
+                  <a href="/#services" className="hover:text-primary transition-colors">
                     {s}
                   </a>
                 </li>
@@ -58,12 +58,12 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-muted">
               <li>
-                <a href="#how-it-works" className="hover:text-primary transition-colors">
+                <a href="/#how-it-works" className="hover:text-primary transition-colors">
                   How It Works
                 </a>
               </li>
               <li>
-                <a href="#pricing" className="hover:text-primary transition-colors">
+                <a href="/#pricing" className="hover:text-primary transition-colors">
                   Pricing
                 </a>
               </li>
