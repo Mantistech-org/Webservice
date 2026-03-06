@@ -11,6 +11,9 @@ export type DemoView =
   | 'email'
   | 'seo'
   | 'ecommerce'
+  | 'ecommerce-inventory'
+  | 'ecommerce-automations'
+  | 'ecommerce-sequences'
   | 'ads'
   | 'chatbot'
   | 'billing'
@@ -128,59 +131,24 @@ function ChevronDown({ open }: { open: boolean }) {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: <HomeIcon /> },
-  {
-    id: 'website', label: 'My Website', icon: <GlobeIcon />,
-    children: [
-      { id: 'website', label: 'Preview Site' },
-      { id: 'website', label: 'Request Changes' },
-      { id: 'website', label: 'Site Settings' },
-    ],
-  },
-  { id: 'review', label: 'Review Management', icon: <StarIcon /> },
-  {
-    id: 'social', label: 'Social Media', icon: <ShareIcon />,
-    children: [
-      { id: 'social', label: 'Create Post' },
-      { id: 'social', label: 'Post History' },
-      { id: 'social', label: 'Connected Accounts' },
-    ],
-  },
-  { id: 'leads', label: 'Lead Generation', icon: <TargetIcon /> },
-  {
-    id: 'email', label: 'Email Marketing', icon: <EnvelopeIcon />,
-    children: [
-      { id: 'email', label: 'Campaigns' },
-      { id: 'email', label: 'Contact List' },
-      { id: 'email', label: 'Templates' },
-    ],
-  },
-  {
-    id: 'seo', label: 'SEO', icon: <ChartIcon />,
-    children: [
-      { id: 'seo', label: 'Overview' },
-      { id: 'seo', label: 'Apply Changes' },
-      { id: 'seo', label: 'Keyword Tracker' },
-    ],
-  },
+  { id: 'dashboard',  label: 'Dashboard',         icon: <HomeIcon /> },
+  { id: 'website',    label: 'My Website',         icon: <GlobeIcon /> },
+  { id: 'review',     label: 'Review Management',  icon: <StarIcon /> },
+  { id: 'social',     label: 'Social Media',       icon: <ShareIcon /> },
+  { id: 'leads',      label: 'Lead Generation',    icon: <TargetIcon /> },
+  { id: 'email',      label: 'Email Marketing',    icon: <EnvelopeIcon /> },
+  { id: 'seo',        label: 'SEO',                icon: <ChartIcon /> },
   {
     id: 'ecommerce', label: 'E-Commerce', icon: <BagIcon />,
     children: [
-      { id: 'ecommerce', label: 'Inventory' },
-      { id: 'ecommerce', label: 'Automated Emails' },
-      { id: 'ecommerce', label: 'Email Sequences' },
+      { id: 'ecommerce-inventory',   label: 'Inventory' },
+      { id: 'ecommerce-automations', label: 'Automated Emails' },
+      { id: 'ecommerce-sequences',   label: 'Email Sequences' },
     ],
   },
-  {
-    id: 'ads', label: 'Ad Creative', icon: <ImageIcon />,
-    children: [
-      { id: 'ads', label: 'Create Ad' },
-      { id: 'ads', label: 'Ad History' },
-      { id: 'ads', label: 'Connected Platforms' },
-    ],
-  },
+  { id: 'ads',     label: 'Ad Creative',    icon: <ImageIcon /> },
   { id: 'chatbot', label: 'Website Chatbot', icon: <ChatIcon /> },
-  { id: 'billing', label: 'Billing', icon: <CardIcon /> },
+  { id: 'billing', label: 'Billing',         icon: <CardIcon /> },
 ]
 
 export default function Sidebar({ expanded, activePage, onNavigate }: SidebarProps) {
@@ -202,12 +170,14 @@ export default function Sidebar({ expanded, activePage, onNavigate }: SidebarPro
     >
       <nav className="py-3">
         {NAV_ITEMS.map((item) => {
-          const isActive = activePage === item.id
           const hasChildren = !!item.children?.length
+          // Active if this item is the current page, or if a child of this item is the current page
+          const isActive = activePage === item.id ||
+            (item.children?.some((c) => c.id === activePage) ?? false)
           const isOpen = openGroups.has(item.id)
 
           return (
-            <div key={item.id}>
+            <div key={item.id} className="relative">
               <button
                 onClick={() => {
                   if (hasChildren && expanded) {
@@ -236,7 +206,7 @@ export default function Sidebar({ expanded, activePage, onNavigate }: SidebarPro
                 )}
                 {isActive && (
                   <span
-                    className="absolute left-0 w-0.5 h-8 rounded-r"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-8 rounded-r"
                     style={{ backgroundColor: '#00ff88' }}
                   />
                 )}
@@ -249,7 +219,11 @@ export default function Sidebar({ expanded, activePage, onNavigate }: SidebarPro
                     <button
                       key={child.label}
                       onClick={() => onNavigate(child.id)}
-                      className="w-full flex items-center gap-3 pl-12 pr-4 py-2 font-mono text-xs text-[#666666] hover:text-[#1a1a1a] hover:bg-[#e0e0e0] transition-colors"
+                      className={`w-full flex items-center pl-12 pr-4 py-2 font-mono text-xs transition-colors ${
+                        activePage === child.id
+                          ? 'text-[#1a1a1a] bg-[#dcdcdc]'
+                          : 'text-[#666666] hover:text-[#1a1a1a] hover:bg-[#e0e0e0]'
+                      }`}
                     >
                       {child.label}
                     </button>

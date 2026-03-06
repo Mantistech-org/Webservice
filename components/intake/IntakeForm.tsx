@@ -607,7 +607,7 @@ export default function IntakeForm() {
               </>
             ) : (
               <>
-                Submit and Generate My Website
+                Submit My Project
                 <span>&rarr;</span>
               </>
             )}

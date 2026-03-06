@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-interface Props { sessionId: string }
+interface Props { sessionId: string; initialSubTab?: 'automations' | 'inventory' | 'sequences' }
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -108,10 +108,19 @@ function AutomatedEmails() {
                 Customize
               </button>
               <button
+                type="button"
+                role="switch"
+                aria-checked={a.active}
                 onClick={() => toggle(a.id)}
-                className={`relative w-11 h-6 rounded-full transition-colors ${a.active ? 'bg-[#4ade80]/40' : 'bg-[#d0d0d0]'}`}
+                className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors duration-200 focus:outline-none ${
+                  a.active ? 'bg-[#1a1a1a]' : 'bg-[#d0d0d0]'
+                }`}
               >
-                <span className={`absolute top-1 w-4 h-4 rounded-full transition-transform ${a.active ? 'translate-x-6 bg-[#4ade80]' : 'translate-x-1 bg-muted'}`} />
+                <span
+                  className={`pointer-events-none absolute top-1 left-1 h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${
+                    a.active ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
               </button>
             </div>
           </div>
@@ -335,8 +344,12 @@ function EmailSequences({ sessionId }: { sessionId: string }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function ECommerceAutomation({ sessionId }: Props) {
-  const [activeSubTab, setActiveSubTab] = useState<'automations' | 'inventory' | 'sequences'>('automations')
+export default function ECommerceAutomation({ sessionId, initialSubTab = 'automations' }: Props) {
+  const [activeSubTab, setActiveSubTab] = useState<'automations' | 'inventory' | 'sequences'>(initialSubTab)
+
+  useEffect(() => {
+    setActiveSubTab(initialSubTab)
+  }, [initialSubTab])
 
   const subTabs: { id: typeof activeSubTab; label: string }[] = [
     { id: 'automations', label: 'Automated Emails' },

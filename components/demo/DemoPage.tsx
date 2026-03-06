@@ -73,7 +73,20 @@ export default function DemoView() {
       case 'leads':      return <LeadGeneration sessionId={sessionId} onImportContacts={handleImportFromLeads} />
       case 'email':      return <EmailMarketing sessionId={sessionId} contacts={contacts} onAddContacts={handleAddContacts} />
       case 'seo':        return <SEOOptimization sessionId={sessionId} />
-      case 'ecommerce':  return <ECommerceAutomation sessionId={sessionId} />
+      case 'ecommerce':
+      case 'ecommerce-inventory':
+      case 'ecommerce-automations':
+      case 'ecommerce-sequences':
+        return (
+          <ECommerceAutomation
+            sessionId={sessionId}
+            initialSubTab={
+              activePage === 'ecommerce-inventory' ? 'inventory'
+              : activePage === 'ecommerce-sequences' ? 'sequences'
+              : 'automations'
+            }
+          />
+        )
       case 'ads':        return <AdCreative sessionId={sessionId} />
       case 'chatbot':    return <WebsiteChatbot sessionId={sessionId} />
       case 'billing':    return <BillingPage />
