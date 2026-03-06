@@ -119,7 +119,7 @@ export default function IntakeForm() {
   }
 
   const addFiles = useCallback((newFiles: File[]) => {
-    const images = newFiles.filter((f) => f.type.startsWith('image/'))
+    const images = newFiles.filter((f) => f.type.startsWith('image/') && f.size <= 5 * 1024 * 1024)
     setFiles((prev) => [...prev, ...images].slice(0, 8))
     images.forEach((file) => {
       const reader = new FileReader()
@@ -220,7 +220,7 @@ export default function IntakeForm() {
     <form onSubmit={handleSubmit} className="max-w-7xl mx-auto px-6 py-16">
       <div className="mb-12">
         <div className="font-mono text-xs text-accent tracking-widest uppercase mb-3">
-          // Start Your Project
+          Start Your Project
         </div>
         <h1 className="font-heading text-[clamp(3rem,6vw,5rem)] leading-none text-primary">
           Tell Us About

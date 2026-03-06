@@ -63,7 +63,7 @@ const CALENDAR_EVENTS: Record<number, { label: string; color: string }> = {
   4: { label: 'Welcome 3', color: '#3a6a8a' }, 8: { label: 'Welcome 4', color: '#3a6a8a' },
   15: { label: 'Welcome 5', color: '#3a6a8a' }, 18: { label: 'Newsletter', color: '#3b82f6' },
   25: { label: 'Re-engage 1', color: '#f97316' }, 30: { label: 'Welcome 6', color: '#3a6a8a' },
-  32: { label: 'Re-engage 2', color: '#f97316' },
+  31: { label: 'Re-engage 2', color: '#f97316' },
 }
 
 // Mock contacts for file upload simulation
@@ -219,21 +219,29 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts }: P
           <div className="bg-card border border-border rounded p-6">
             <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Send Schedule</p>
             <h3 className="font-heading text-xl text-primary mb-4">30-Day Campaign Calendar</h3>
-            <div className="grid grid-cols-7 gap-1">
-              {CALENDAR_DAYS.map((d) => <div key={d} className="font-mono text-xs text-dim text-center py-1">{d}</div>)}
-              {Array.from({ length: 5 }).flatMap((_, week) =>
-                CALENDAR_DAYS.map((_, dayIdx) => {
-                  const day = week * 7 + dayIdx + 1
-                  const event = CALENDAR_EVENTS[day]
-                  return (
-                    <div key={day} className={`aspect-square rounded flex flex-col items-center justify-center p-0.5 bg-[#efefef] border border-[#d8d8d8] ${day > 31 ? 'opacity-0 pointer-events-none' : ''}`}>
-                      <span className="font-mono text-xs text-dim">{day <= 31 ? day : ''}</span>
-                      {event && <span className="font-mono text-center leading-none mt-0.5 px-0.5" style={{ fontSize: '9px', color: event.color }}>{event.label}</span>}
-                    </div>
-                  )
-                })
-              )}
-            </div>
+            {(() => {
+              // Offset so day 1 starts on today's day of week (Mon=0 in Mon-indexed grid)
+              const todayDow = new Date().getDay() // 0=Sun
+              const startOffset = todayDow === 0 ? 6 : todayDow - 1
+              const totalCells = startOffset + 31
+              const rows = Math.ceil(totalCells / 7)
+              return (
+                <div className="grid grid-cols-7 gap-1">
+                  {CALENDAR_DAYS.map((d) => <div key={d} className="font-mono text-xs text-dim text-center py-1">{d}</div>)}
+                  {Array.from({ length: rows * 7 }, (_, i) => {
+                    const day = i - startOffset + 1
+                    const event = day >= 1 && day <= 31 ? CALENDAR_EVENTS[day] : undefined
+                    const visible = day >= 1 && day <= 31
+                    return (
+                      <div key={i} className={`aspect-square rounded flex flex-col items-center justify-center p-0.5 ${visible ? 'bg-[#efefef] border border-[#d8d8d8]' : 'opacity-0 pointer-events-none'}`}>
+                        {visible && <span className="font-mono text-xs text-dim">{day}</span>}
+                        {visible && event && <span className="font-mono text-center leading-none mt-0.5 px-0.5" style={{ fontSize: '9px', color: event.color }}>{event.label}</span>}
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })()}
             <div className="flex flex-wrap gap-4 mt-4">
               {[{ color: '#3a6a8a', label: 'Welcome Sequence' }, { color: '#3b82f6', label: 'Newsletter' }, { color: '#f97316', label: 'Re-engagement' }].map((item) => (
                 <div key={item.label} className="flex items-center gap-1.5">

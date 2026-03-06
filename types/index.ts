@@ -110,7 +110,7 @@ export const PLANS = {
       'Custom website',
       'Hosting and domain',
       'Monthly performance report',
-      'Automated booking calendar',
+      'Booking calendar integration',
     ],
   },
   mid: {

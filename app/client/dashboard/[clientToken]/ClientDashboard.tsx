@@ -90,6 +90,15 @@ export default function ClientDashboard() {
     }
   }
 
+  const handleMarkAllRead = async () => {
+    try {
+      await fetch(`/api/client/${clientToken}/mark-read`, { method: 'POST' })
+      setProject((prev) => prev ? { ...prev, notifications: prev.notifications.map((n) => ({ ...n, read: true })) } : prev)
+    } catch {
+      // noop
+    }
+  }
+
   const handleSubmitChange = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!changeMessage.trim()) return
@@ -371,9 +380,12 @@ export default function ClientDashboard() {
                   Notifications
                 </h2>
                 {unreadCount > 0 && (
-                  <span className="font-mono text-xs bg-accent text-bg px-2 py-0.5 rounded-full">
-                    {unreadCount} new
-                  </span>
+                  <button
+                    onClick={handleMarkAllRead}
+                    className="font-mono text-xs bg-accent text-bg px-2 py-0.5 rounded-full hover:opacity-80 transition-opacity"
+                  >
+                    {unreadCount} new — Mark read
+                  </button>
                 )}
               </div>
               {project.notifications.length > 0 ? (

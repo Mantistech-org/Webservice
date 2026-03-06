@@ -8,6 +8,7 @@ const links = [
   { label: 'Services', href: '#services' },
   { label: 'How It Works', href: '#how-it-works' },
   { label: 'Pricing', href: '#pricing' },
+  { label: 'Try Demo', href: '/demo', isLink: true },
 ]
 
 export default function Nav() {
@@ -39,15 +40,25 @@ export default function Nav() {
 
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-6">
-          {links.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="font-mono text-sm text-muted hover:text-primary hover:underline decoration-[#00ff88] underline-offset-4 tracking-wider transition-colors"
-            >
-              {link.label}
-            </a>
-          ))}
+          {links.map((link) =>
+            'isLink' in link && link.isLink ? (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="font-mono text-sm text-muted hover:text-primary hover:underline decoration-[#00ff88] underline-offset-4 tracking-wider transition-colors"
+              >
+                {link.label}
+              </Link>
+            ) : (
+              <a
+                key={link.href}
+                href={link.href}
+                className="font-mono text-sm text-muted hover:text-primary hover:underline decoration-[#00ff88] underline-offset-4 tracking-wider transition-colors"
+              >
+                {link.label}
+              </a>
+            )
+          )}
           <ThemeToggle />
           <Link
             href="/intake"
@@ -75,16 +86,27 @@ export default function Nav() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-card border-b border-border px-6 py-4 flex flex-col gap-4">
-          {links.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="font-mono text-sm text-muted hover:text-primary transition-colors tracking-wider"
-              onClick={() => setMenuOpen(false)}
-            >
-              {link.label}
-            </a>
-          ))}
+          {links.map((link) =>
+            'isLink' in link && link.isLink ? (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="font-mono text-sm text-muted hover:text-primary transition-colors tracking-wider"
+                onClick={() => setMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ) : (
+              <a
+                key={link.href}
+                href={link.href}
+                className="font-mono text-sm text-muted hover:text-primary transition-colors tracking-wider"
+                onClick={() => setMenuOpen(false)}
+              >
+                {link.label}
+              </a>
+            )
+          )}
           <Link
             href="/intake"
             className="font-mono text-sm bg-accent text-black px-5 py-2 rounded text-center font-medium tracking-wider"

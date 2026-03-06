@@ -16,12 +16,20 @@ export default function Hero() {
             We build and manage everything your business needs on the web. You focus on your
             customers. We handle the rest.
           </p>
-          <Link
-            href="/intake"
-            className="inline-block font-mono text-sm bg-accent text-black px-8 py-4 rounded tracking-wider hover:opacity-90 transition-opacity"
-          >
-            Start Your Project
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/intake"
+              className="inline-block font-mono text-sm bg-accent text-black px-8 py-4 rounded tracking-wider hover:opacity-90 transition-opacity"
+            >
+              Start Your Project
+            </Link>
+            <Link
+              href="/demo"
+              className="inline-block font-mono text-sm border border-current text-primary px-8 py-4 rounded tracking-wider hover:border-accent hover:text-accent transition-all"
+            >
+              Try the Demo
+            </Link>
+          </div>
         </div>
       </div>
 

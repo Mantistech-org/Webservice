@@ -91,7 +91,7 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
           </div>
           <div className="text-right">
             <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">
-              Due Today
+              Billed After Approval
             </div>
             <div className="font-heading text-3xl text-primary leading-none">
               ${plan.upfront}

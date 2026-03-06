@@ -28,10 +28,13 @@ export default function Footer() {
               {[
                 'Review Management',
                 'Social Media Automation',
+                'Lead Generation',
                 'SEO Optimization',
                 'E-Commerce Automation',
+                'Ad Creative Generation',
                 'Website Chatbot',
                 'Automated Email Marketing',
+                'Website Calendar',
               ].map((s) => (
                 <li key={s}>
                   <a href="#services" className="hover:text-primary transition-colors">
@@ -57,6 +60,11 @@ export default function Footer() {
                 <a href="#pricing" className="hover:text-primary transition-colors">
                   Pricing
                 </a>
+              </li>
+              <li>
+                <Link href="/demo" className="hover:text-primary transition-colors">
+                  Try the Demo
+                </Link>
               </li>
               <li>
                 <Link href="/intake" className="hover:text-primary transition-colors">

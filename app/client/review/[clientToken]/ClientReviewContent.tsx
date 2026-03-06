@@ -95,7 +95,7 @@ export default function ClientReviewContent() {
 
   const plan = PLANS[project.plan]
   const activeAddons = ADDONS.filter((a) => project.addons.includes(a.id))
-  const monthlyTotal = 50 + activeAddons.reduce((sum, a) => sum + a.price, 0)
+  const monthlyTotal = plan.monthly + activeAddons.reduce((sum, a) => sum + a.price, 0)
 
   if (paymentStatus === 'success' || project.status === 'active') {
     return (
@@ -190,7 +190,7 @@ export default function ClientReviewContent() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-teal">Base website</span>
-                  <span className="font-mono text-white">$50/mo</span>
+                  <span className="font-mono text-white">${plan.monthly}/mo</span>
                 </div>
                 {activeAddons.map((a) => (
                   <div key={a.id} className="flex justify-between">

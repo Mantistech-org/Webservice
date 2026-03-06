@@ -93,7 +93,7 @@ export default function DemoView() {
 
   return (
     <div style={{ backgroundColor: '#fafaf8', minHeight: '100vh' }}>
-      <TopBar onToggleSidebar={() => setSidebarExpanded((v) => !v)} />
+      <TopBar onToggleSidebar={() => setSidebarExpanded((v) => !v)} onNavigate={setActivePage} />
       <Sidebar
         expanded={sidebarExpanded}
         activePage={activePage}

@@ -327,8 +327,8 @@ export default function AdminPage() {
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                           {session.tabsUsed.map((tab) => (
-                            <span key={tab} className="font-mono text-xs bg-bg border border-border text-teal px-2 py-0.5 rounded capitalize">
-                              {tab.replace(/-/g, ' ')}
+                            <span key={tab} className="font-mono text-xs bg-bg border border-border text-teal px-2 py-0.5 rounded">
+                              {tab.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                               {session.submissions[tab] > 1 && (
                                 <span className="ml-1 text-muted">x{session.submissions[tab]}</span>
                               )}
@@ -347,7 +347,7 @@ export default function AdminPage() {
                           })}
                         </div>
                         <div className="font-mono text-xs text-dim mt-0.5">
-                          Last active {new Date(session.lastActiveAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                          Last active {new Date(session.lastActiveAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
                     </div>

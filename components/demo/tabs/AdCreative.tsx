@@ -149,13 +149,11 @@ export default function AdCreative({ sessionId }: Props) {
               <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Summer retargeting campaign for site visitors who did not convert. Focus on urgency and the limited-time offer." rows={2} className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors resize-none" />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Call to Action</label>
-                <select value={cta} onChange={e => setCta(e.target.value)} className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm focus:outline-none focus:border-[#888888] transition-colors">
-                  {CTA_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
+            <div>
+              <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Call to Action</label>
+              <select value={cta} onChange={e => setCta(e.target.value)} className="w-full sm:w-1/2 bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm focus:outline-none focus:border-[#888888] transition-colors">
+                {CTA_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
             </div>
 
             <div>

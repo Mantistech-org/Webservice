@@ -37,36 +37,54 @@ const TIME_SLOTS = Array.from({ length: 20 }, (_, i) => {
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
+// Returns a date string relative to today's month (or an offset month)
+function md(day: number, monthOffset = 0): string {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth() + monthOffset
+  const lastDay = new Date(year, month + 1, 0).getDate()
+  const d = new Date(year, month, Math.min(day, lastDay))
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 const MOCK_APPOINTMENTS: Appointment[] = [
-  { id: '1',  customerName: 'Sarah Mitchell',  email: 'sarah.mitchell@gmail.com',    phone: '(555) 201-3344', service: 'Consultation',    date: '2026-03-02', time: '09:00', notes: 'Referred by a colleague', status: 'confirmed' },
-  { id: '2',  customerName: 'Marcus Webb',     email: 'mwebb@outlook.com',           phone: '(555) 389-2211', service: 'Strategy Session', date: '2026-03-03', time: '10:30', notes: '',                      status: 'confirmed' },
-  { id: '3',  customerName: 'Priya Sharma',    email: 'priya.sharma@yahoo.com',      phone: '(555) 445-6677', service: 'Discovery Call',   date: '2026-03-04', time: '08:00', notes: 'Interested in full package', status: 'confirmed' },
-  { id: '4',  customerName: 'Derek Collins',   email: 'dcollins@email.com',          phone: '(555) 512-0099', service: 'Follow-up',        date: '2026-03-04', time: '14:00', notes: '',                      status: 'confirmed' },
-  { id: '5',  customerName: 'Amanda Torres',   email: 'atorres@gmail.com',           phone: '(555) 623-8877', service: 'Onboarding',       date: '2026-03-05', time: '09:00', notes: 'First session',          status: 'confirmed' },
-  { id: '6',  customerName: 'Ryan Nguyen',     email: 'ryan.nguyen@outlook.com',     phone: '(555) 734-9900', service: 'Consultation',    date: '2026-03-05', time: '11:00', notes: '',                      status: 'pending'   },
-  { id: '7',  customerName: 'Lisa Fernandez',  email: 'lisa.f@gmail.com',            phone: '(555) 845-1122', service: 'Check-in',         date: '2026-03-05', time: '14:30', notes: '',                      status: 'pending'   },
-  { id: '8',  customerName: 'Tom Blackwell',   email: 'tblack@email.com',            phone: '(555) 956-2244', service: 'Review Meeting',   date: '2026-03-06', time: '10:00', notes: '',                      status: 'confirmed' },
-  { id: '9',  customerName: 'Keisha Johnson',  email: 'kjohnson@gmail.com',          phone: '(555) 677-3355', service: 'Strategy Session', date: '2026-03-07', time: '09:30', notes: '',                      status: 'confirmed' },
-  { id: '10', customerName: 'Nathan Cross',    email: 'ncross@yahoo.com',            phone: '(555) 178-4466', service: 'Consultation',    date: '2026-03-09', time: '08:00', notes: 'Budget discussion first', status: 'pending'   },
-  { id: '11', customerName: 'Olivia Park',     email: 'opark@gmail.com',             phone: '(555) 289-5577', service: 'Onboarding',       date: '2026-03-10', time: '11:00', notes: '',                      status: 'confirmed' },
-  { id: '12', customerName: 'Benjamin Holt',   email: 'bholt@outlook.com',           phone: '(555) 390-6688', service: 'Discovery Call',   date: '2026-03-11', time: '13:00', notes: '',                      status: 'confirmed' },
-  { id: '13', customerName: 'Chloe Rivera',    email: 'crivera@gmail.com',           phone: '(555) 401-7799', service: 'Follow-up',        date: '2026-03-12', time: '09:00', notes: '',                      status: 'cancelled' },
-  { id: '14', customerName: 'James Patterson', email: 'jpatterson@email.com',        phone: '(555) 512-8800', service: 'Check-in',         date: '2026-03-13', time: '10:30', notes: '',                      status: 'confirmed' },
-  { id: '15', customerName: 'Sofia Chen',      email: 'sofia.chen@gmail.com',        phone: '(555) 623-9911', service: 'Consultation',    date: '2026-03-14', time: '09:00', notes: 'Referred by Priya',     status: 'pending'   },
-  { id: '16', customerName: 'Tyler Marsh',     email: 'tmarsh@yahoo.com',            phone: '(555) 734-0022', service: 'Review Meeting',   date: '2026-03-16', time: '14:00', notes: '',                      status: 'confirmed' },
-  { id: '17', customerName: 'Dana Reeves',     email: 'dreeves@gmail.com',           phone: '(555) 845-1133', service: 'Strategy Session', date: '2026-03-17', time: '10:00', notes: '',                      status: 'confirmed' },
-  { id: '18', customerName: 'Carlos Mendez',   email: 'cmendez@outlook.com',         phone: '(555) 956-2244', service: 'Onboarding',       date: '2026-03-18', time: '08:30', notes: 'Has multiple locations', status: 'confirmed' },
-  { id: '19', customerName: 'Rachel Kim',      email: 'rkim@gmail.com',              phone: '(555) 067-3355', service: 'Check-in',         date: '2026-03-19', time: '11:30', notes: '',                      status: 'pending'   },
-  { id: '20', customerName: 'Aaron Fields',    email: 'afields@email.com',           phone: '(555) 178-4466', service: 'Follow-up',        date: '2026-03-20', time: '13:00', notes: '',                      status: 'confirmed' },
-  { id: '21', customerName: 'Megan Stone',     email: 'mstone@gmail.com',            phone: '(555) 289-5577', service: 'Discovery Call',   date: '2026-03-21', time: '09:00', notes: '',                      status: 'cancelled' },
-  { id: '22', customerName: 'David Wu',        email: 'dwu@yahoo.com',               phone: '(555) 390-6688', service: 'Consultation',    date: '2026-03-23', time: '10:00', notes: 'Prefers afternoons',    status: 'confirmed' },
-  { id: '23', customerName: 'Emily Grant',     email: 'egrant@gmail.com',            phone: '(555) 401-7799', service: 'Review Meeting',   date: '2026-03-24', time: '14:00', notes: '',                      status: 'pending'   },
-  { id: '24', customerName: 'Chris Lawson',    email: 'clawson@outlook.com',         phone: '(555) 512-8800', service: 'Strategy Session', date: '2026-03-25', time: '09:30', notes: '',                      status: 'confirmed' },
-  { id: '25', customerName: 'Natalie Brooks',  email: 'nbrooks@gmail.com',           phone: '(555) 623-9911', service: 'Onboarding',       date: '2026-03-26', time: '11:00', notes: '',                      status: 'confirmed' },
-  { id: '26', customerName: 'Jason Hall',      email: 'jhall@email.com',             phone: '(555) 734-0022', service: 'Check-in',         date: '2026-03-27', time: '13:30', notes: '',                      status: 'pending'   },
-  { id: '27', customerName: 'Isabel Torres',   email: 'itorres@gmail.com',           phone: '(555) 845-1133', service: 'Consultation',    date: '2026-03-28', time: '09:00', notes: '',                      status: 'confirmed' },
-  { id: '28', customerName: 'Andrew Mills',    email: 'amills@yahoo.com',            phone: '(555) 956-2244', service: 'Follow-up',        date: '2026-03-30', time: '10:00', notes: '',                      status: 'confirmed' },
-  { id: '29', customerName: 'Victoria Lane',   email: 'vlane@gmail.com',             phone: '(555) 067-3355', service: 'Discovery Call',   date: '2026-03-31', time: '14:30', notes: 'Wants long-term partnership', status: 'pending' },
+  // Previous month (for back navigation)
+  { id: 'h1', customerName: 'George Patel',    email: 'gpatel@gmail.com',         phone: '(555) 100-2200', service: 'Consultation',    date: md(8,  -1), time: '09:00', notes: '', status: 'confirmed' },
+  { id: 'h2', customerName: 'Sandra Lin',      email: 'slin@outlook.com',         phone: '(555) 200-3300', service: 'Discovery Call',  date: md(12, -1), time: '10:30', notes: '', status: 'confirmed' },
+  { id: 'h3', customerName: 'Felix Morgan',    email: 'fmorgan@yahoo.com',        phone: '(555) 300-4400', service: 'Strategy Session',date: md(15, -1), time: '13:00', notes: '', status: 'confirmed' },
+  { id: 'h4', customerName: 'Theresa Nguyen',  email: 'tnguyen@email.com',        phone: '(555) 400-5500', service: 'Onboarding',      date: md(20, -1), time: '09:30', notes: '', status: 'confirmed' },
+  { id: 'h5', customerName: 'Paul Rivera',     email: 'privera@gmail.com',        phone: '(555) 500-6600', service: 'Follow-up',       date: md(24, -1), time: '14:00', notes: '', status: 'cancelled' },
+  { id: 'h6', customerName: 'Diana Scott',     email: 'dscott@gmail.com',         phone: '(555) 600-7700', service: 'Check-in',        date: md(28, -1), time: '11:00', notes: '', status: 'confirmed' },
+  // Current month
+  { id: '1',  customerName: 'Sarah Mitchell',  email: 'sarah.mitchell@gmail.com', phone: '(555) 201-3344', service: 'Consultation',    date: md(2),  time: '09:00', notes: 'Referred by a colleague',   status: 'confirmed' },
+  { id: '2',  customerName: 'Marcus Webb',     email: 'mwebb@outlook.com',        phone: '(555) 389-2211', service: 'Strategy Session',date: md(3),  time: '10:30', notes: '',                          status: 'confirmed' },
+  { id: '3',  customerName: 'Priya Sharma',    email: 'priya.sharma@yahoo.com',   phone: '(555) 445-6677', service: 'Discovery Call',  date: md(4),  time: '08:00', notes: 'Interested in full package', status: 'confirmed' },
+  { id: '4',  customerName: 'Derek Collins',   email: 'dcollins@email.com',       phone: '(555) 512-0099', service: 'Follow-up',       date: md(4),  time: '14:00', notes: '',                          status: 'confirmed' },
+  { id: '5',  customerName: 'Amanda Torres',   email: 'atorres@gmail.com',        phone: '(555) 623-8877', service: 'Onboarding',      date: md(5),  time: '09:00', notes: 'First session',             status: 'confirmed' },
+  { id: '6',  customerName: 'Ryan Nguyen',     email: 'ryan.nguyen@outlook.com',  phone: '(555) 734-9900', service: 'Consultation',    date: md(5),  time: '11:00', notes: '',                          status: 'pending'   },
+  { id: '7',  customerName: 'Lisa Fernandez',  email: 'lisa.f@gmail.com',         phone: '(555) 845-1122', service: 'Check-in',        date: md(5),  time: '14:30', notes: '',                          status: 'pending'   },
+  { id: '8',  customerName: 'Tom Blackwell',   email: 'tblack@email.com',         phone: '(555) 956-2244', service: 'Review Meeting',  date: md(6),  time: '10:00', notes: '',                          status: 'confirmed' },
+  { id: '9',  customerName: 'Keisha Johnson',  email: 'kjohnson@gmail.com',       phone: '(555) 677-3355', service: 'Strategy Session',date: md(7),  time: '09:30', notes: '',                          status: 'confirmed' },
+  { id: '10', customerName: 'Nathan Cross',    email: 'ncross@yahoo.com',         phone: '(555) 178-4466', service: 'Consultation',    date: md(9),  time: '08:00', notes: 'Budget discussion first',   status: 'pending'   },
+  { id: '11', customerName: 'Olivia Park',     email: 'opark@gmail.com',          phone: '(555) 289-5577', service: 'Onboarding',      date: md(10), time: '11:00', notes: '',                          status: 'confirmed' },
+  { id: '12', customerName: 'Benjamin Holt',   email: 'bholt@outlook.com',        phone: '(555) 390-6688', service: 'Discovery Call',  date: md(11), time: '13:00', notes: '',                          status: 'confirmed' },
+  { id: '13', customerName: 'Chloe Rivera',    email: 'crivera@gmail.com',        phone: '(555) 401-7799', service: 'Follow-up',       date: md(12), time: '09:00', notes: '',                          status: 'cancelled' },
+  { id: '14', customerName: 'James Patterson', email: 'jpatterson@email.com',     phone: '(555) 512-8800', service: 'Check-in',        date: md(13), time: '10:30', notes: '',                          status: 'confirmed' },
+  { id: '15', customerName: 'Sofia Chen',      email: 'sofia.chen@gmail.com',     phone: '(555) 623-9911', service: 'Consultation',    date: md(14), time: '09:00', notes: 'Referred by Priya',         status: 'pending'   },
+  { id: '16', customerName: 'Tyler Marsh',     email: 'tmarsh@yahoo.com',         phone: '(555) 734-0022', service: 'Review Meeting',  date: md(16), time: '14:00', notes: '',                          status: 'confirmed' },
+  { id: '17', customerName: 'Dana Reeves',     email: 'dreeves@gmail.com',        phone: '(555) 845-1133', service: 'Strategy Session',date: md(17), time: '10:00', notes: '',                          status: 'confirmed' },
+  { id: '18', customerName: 'Carlos Mendez',   email: 'cmendez@outlook.com',      phone: '(555) 956-2244', service: 'Onboarding',      date: md(18), time: '08:30', notes: 'Has multiple locations',    status: 'confirmed' },
+  { id: '19', customerName: 'Rachel Kim',      email: 'rkim@gmail.com',           phone: '(555) 067-3355', service: 'Check-in',        date: md(19), time: '11:30', notes: '',                          status: 'pending'   },
+  { id: '20', customerName: 'Aaron Fields',    email: 'afields@email.com',        phone: '(555) 178-4466', service: 'Follow-up',       date: md(20), time: '13:00', notes: '',                          status: 'confirmed' },
+  { id: '21', customerName: 'Megan Stone',     email: 'mstone@gmail.com',         phone: '(555) 289-5577', service: 'Discovery Call',  date: md(21), time: '09:00', notes: '',                          status: 'cancelled' },
+  { id: '22', customerName: 'David Wu',        email: 'dwu@yahoo.com',            phone: '(555) 390-6688', service: 'Consultation',    date: md(23), time: '10:00', notes: 'Prefers afternoons',        status: 'confirmed' },
+  { id: '23', customerName: 'Emily Grant',     email: 'egrant@gmail.com',         phone: '(555) 401-7799', service: 'Review Meeting',  date: md(24), time: '14:00', notes: '',                          status: 'pending'   },
+  { id: '24', customerName: 'Chris Lawson',    email: 'clawson@outlook.com',      phone: '(555) 512-8800', service: 'Strategy Session',date: md(25), time: '09:30', notes: '',                          status: 'confirmed' },
+  { id: '25', customerName: 'Natalie Brooks',  email: 'nbrooks@gmail.com',        phone: '(555) 623-9911', service: 'Onboarding',      date: md(26), time: '11:00', notes: '',                          status: 'confirmed' },
+  { id: '26', customerName: 'Jason Hall',      email: 'jhall@email.com',          phone: '(555) 734-0022', service: 'Check-in',        date: md(27), time: '13:30', notes: '',                          status: 'pending'   },
+  { id: '27', customerName: 'Isabel Torres',   email: 'itorres@gmail.com',        phone: '(555) 845-1133', service: 'Consultation',    date: md(28), time: '09:00', notes: '',                          status: 'confirmed' },
+  { id: '28', customerName: 'Andrew Mills',    email: 'amills@yahoo.com',         phone: '(555) 956-2244', service: 'Follow-up',       date: md(29), time: '10:00', notes: '',                          status: 'confirmed' },
+  { id: '29', customerName: 'Victoria Lane',   email: 'vlane@gmail.com',          phone: '(555) 067-3355', service: 'Discovery Call',  date: md(30), time: '14:30', notes: 'Wants long-term partnership', status: 'pending' },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

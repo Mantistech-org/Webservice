@@ -1,4 +1,19 @@
+'use client'
+
+import { useState } from 'react'
+
 export default function WebsitePage() {
+  const [request, setRequest] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!request.trim()) return
+    setSubmitted(true)
+    setRequest('')
+    setTimeout(() => setSubmitted(false), 4000)
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -10,7 +25,14 @@ export default function WebsitePage() {
       <div className="bg-[#e8e8e8] border border-[#d0d0d0] rounded overflow-hidden">
         <div className="px-5 py-4 border-b border-[#d0d0d0] flex items-center justify-between">
           <div className="font-mono text-xs text-[#888888] tracking-widest uppercase">Site Preview</div>
-          <span className="font-mono text-xs text-[#aaaaaa]">Full screen</span>
+          <a
+            href="https://mantistech.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono text-xs text-[#888888] hover:text-[#1a1a1a] underline transition-colors"
+          >
+            Full screen
+          </a>
         </div>
         <div className="bg-[#f0f0f0] h-64 flex items-center justify-center">
           <div className="text-center">
@@ -25,14 +47,27 @@ export default function WebsitePage() {
       {/* Request Changes */}
       <div className="bg-[#e8e8e8] border border-[#d0d0d0] rounded p-5">
         <div className="font-mono text-xs text-[#888888] tracking-widest uppercase mb-4">Request Changes</div>
-        <textarea
-          rows={4}
-          placeholder="Describe the change you would like made to your website..."
-          className="form-input resize-none w-full text-sm mb-3"
-        />
-        <button className="font-mono text-xs bg-[#1a1a1a] text-white px-5 py-2.5 rounded tracking-wider hover:bg-[#333333] transition-colors">
-          Submit Request
-        </button>
+        <form onSubmit={handleSubmit}>
+          <textarea
+            rows={4}
+            value={request}
+            onChange={(e) => setRequest(e.target.value)}
+            placeholder="Describe the change you would like made to your website..."
+            className="form-input resize-none w-full text-sm mb-3"
+          />
+          <div className="flex items-center gap-4">
+            <button
+              type="submit"
+              disabled={!request.trim()}
+              className="font-mono text-xs bg-[#1a1a1a] text-white px-5 py-2.5 rounded tracking-wider hover:bg-[#333333] transition-colors disabled:opacity-40"
+            >
+              Submit Request
+            </button>
+            {submitted && (
+              <span className="font-mono text-xs text-[#00aa55]">Request submitted. We will be in touch within 24 hours.</span>
+            )}
+          </div>
+        </form>
       </div>
 
       {/* Site Settings */}

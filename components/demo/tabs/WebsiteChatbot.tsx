@@ -104,11 +104,13 @@ export default function WebsiteChatbot({ sessionId }: Props) {
                   <div className="w-9 h-9 rounded-full bg-[#e0e0e0] border border-[#d0d0d0] flex items-center justify-center font-heading text-sm text-primary">
                     {context.businessName[0]}
                   </div>
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#4ade80] border-2 border-card" />
+                  {messages.length > 1 && (
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#4ade80] border-2 border-card" />
+                  )}
                 </div>
                 <div>
                   <div className="font-mono text-sm text-primary">{context.businessName}</div>
-                  <div className="font-mono text-xs text-[#4ade80]">Online now</div>
+                  <div className="font-mono text-xs text-[#4ade80]">{messages.length > 1 ? 'Online now' : 'Chat with us'}</div>
                 </div>
               </div>
 
