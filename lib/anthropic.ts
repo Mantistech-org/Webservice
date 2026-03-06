@@ -1,9 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { Project, PLAN_PAGE_LIMITS } from '@/types'
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+let _client: Anthropic | null = null
+function getClient(): Anthropic {
+  if (!_client) {
+    _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY ?? '' })
+  }
+  return _client
+}
 
 export async function generateWebsite(project: Project): Promise<string> {
   const addonsList =
@@ -55,8 +59,7 @@ TECHNICAL REQUIREMENTS:
 
 OUTPUT: Respond with ONLY the complete HTML file starting with <!DOCTYPE html> and ending with </html>. No markdown, no explanation, no code blocks.`
 
-  console.log('ANTHROPIC_API_KEY (first 10):', process.env.ANTHROPIC_API_KEY?.slice(0, 10))
-  const message = await client.messages.create({
+  const message = await getClient().messages.create({
     model: 'claude-sonnet-4-5',
     max_tokens: 8192,
     messages: [
