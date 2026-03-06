@@ -16,6 +16,7 @@ import SEOOptimization from './tabs/SEOOptimization'
 import ECommerceAutomation from './tabs/ECommerceAutomation'
 import AdCreative from './tabs/AdCreative'
 import WebsiteChatbot from './tabs/WebsiteChatbot'
+import CalendarPage from './tabs/CalendarPage'
 
 export interface DemoContact {
   name: string
@@ -84,6 +85,7 @@ export default function DemoView() {
         )
       case 'ads':        return <AdCreative sessionId={sessionId} />
       case 'chatbot':    return <WebsiteChatbot sessionId={sessionId} />
+      case 'calendar':   return <CalendarPage />
       case 'billing':    return <BillingPage />
       default:           return <DashboardHome />
     }
