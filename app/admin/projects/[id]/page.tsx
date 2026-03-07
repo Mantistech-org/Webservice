@@ -56,6 +56,7 @@ export default function AdminProjectPage() {
   const [priceMsg, setPriceMsg] = useState('')
   const [grantingReferral, setGrantingReferral] = useState(false)
   const [referralMsg, setReferralMsg] = useState('')
+  const [copiedId, setCopiedId] = useState(false)
 
   const fetchProject = useCallback(async () => {
     try {
@@ -160,6 +161,12 @@ export default function AdminProjectPage() {
       setPriceMsg('Failed to set price.')
     }
     setSettingPrice(false)
+  }
+
+  const handleCopyId = () => {
+    navigator.clipboard.writeText(project?.id ?? '')
+    setCopiedId(true)
+    setTimeout(() => setCopiedId(false), 2000)
   }
 
   const handleGrantReferral = async () => {
@@ -422,7 +429,19 @@ export default function AdminProjectPage() {
           <div className="space-y-6">
             {/* Client info */}
             <div className="bg-card border border-border rounded p-6">
-              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Client Information</h3>
+              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-3">Client Information</h3>
+              <div className="flex items-start gap-2 mb-4 pb-4 border-b border-border">
+                <div className="flex-1 min-w-0">
+                  <div className="font-mono text-xs text-muted uppercase tracking-wider mb-0.5">Project ID</div>
+                  <div className="font-mono text-xs text-primary break-all">{project.id}</div>
+                </div>
+                <button
+                  onClick={handleCopyId}
+                  className="font-mono text-xs text-muted hover:text-accent transition-colors shrink-0 px-2 py-1 border border-border rounded hover:border-accent"
+                >
+                  {copiedId ? 'Copied' : 'Copy'}
+                </button>
+              </div>
               <dl className="space-y-3">
                 {[
                   ['Business', project.businessName],

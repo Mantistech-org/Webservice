@@ -87,8 +87,9 @@ export default function AdminPage() {
   const [resent, setResent] = useState(false)
   const [projects, setProjects] = useState<ProjectSummary[]>([])
   const [loading, setLoading] = useState(false)
-  const [statusFilter, setStatusFilter] = useState<ProjectStatus | 'all'>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set(['with_client', 'active']))
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [demoSessions, setDemoSessions] = useState<DemoSession[]>([])
   const [demoLoading, setDemoLoading] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -387,24 +388,30 @@ export default function AdminPage() {
   const estimatedMRR = activeProjects.reduce((sum, p) => sum + PLANS[p.plan].monthly, 0)
   const pendingCount = projects.filter((p) => p.status === 'admin_review').length
 
-  const filtered = projects
-    .filter((p) => statusFilter === 'all' || p.status === statusFilter)
-    .filter((p) => {
-      if (!searchQuery.trim()) return true
-      const q = searchQuery.toLowerCase()
-      return p.businessName.toLowerCase().includes(q) || p.email.toLowerCase().includes(q)
-    })
+  const searchFiltered = projects.filter((p) => {
+    if (!searchQuery.trim()) return true
+    const q = searchQuery.toLowerCase()
+    return p.businessName.toLowerCase().includes(q) || p.email.toLowerCase().includes(q)
+  })
 
-  const counts = {
-    all: projects.length,
-    admin_review: projects.filter((p) => p.status === 'admin_review').length,
-    client_review: projects.filter((p) => p.status === 'client_review').length,
-    changes_requested: projects.filter((p) => p.status === 'changes_requested').length,
-    active: projects.filter((p) => p.status === 'active').length,
+  const sidebarGroups = [
+    { key: 'attention', label: 'Needs Attention', statuses: ['admin_review', 'changes_requested'] as ProjectStatus[] },
+    { key: 'with_client', label: 'With Client', statuses: ['client_review'] as ProjectStatus[] },
+    { key: 'active_group', label: 'Active', statuses: ['active'] as ProjectStatus[] },
+    { key: 'all', label: 'All Clients', statuses: ['admin_review', 'client_review', 'changes_requested', 'active'] as ProjectStatus[] },
+  ]
+
+  const toggleGroup = (key: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
   }
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-screen bg-bg flex flex-col">
       <header className="border-b border-border bg-card px-6 py-4 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <span className="w-2 h-2 rounded-full bg-accent" />
@@ -435,237 +442,228 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-10">
-        <div className="mb-8">
-          <h1 className="font-heading text-5xl text-primary mb-2">Project Dashboard</h1>
-          <p className="font-mono text-sm text-muted">
-            {projects.length} total project{projects.length !== 1 ? 's' : ''}
-          </p>
-        </div>
-
-        {/* Revenue Overview */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-          <div className="bg-card border border-border rounded p-5">
-            <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Active Clients</div>
-            <div className="font-heading text-4xl text-primary">{activeProjects.length}</div>
+      <div className="flex flex-1 items-start">
+        {/* Left sidebar */}
+        <aside className="w-72 shrink-0 sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto border-r border-border bg-card flex flex-col">
+          {/* Search */}
+          <div className="p-4 border-b border-border">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search clients..."
+              className="form-input text-xs w-full"
+            />
           </div>
-          <div className="bg-card border border-border rounded p-5">
-            <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Estimated MRR</div>
-            <div className="font-heading text-4xl text-accent">${estimatedMRR}</div>
-            <div className="font-mono text-xs text-dim mt-1">base plans only</div>
-          </div>
-          <div className="bg-card border border-border rounded p-5">
-            <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Pending Review</div>
-            <div className="font-heading text-4xl text-yellow-400">{pendingCount}</div>
-          </div>
-        </div>
 
-        {/* Search + Filter */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by name or email..."
-            className="form-input sm:max-w-xs text-sm"
-          />
-        </div>
-
-        {/* Status filter tabs */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {(
-            [
-              ['all', 'All', counts.all],
-              ['admin_review', 'Awaiting Review', counts.admin_review],
-              ['client_review', 'Client Review', counts.client_review],
-              ['changes_requested', 'Changes Requested', counts.changes_requested],
-              ['active', 'Active', counts.active],
-            ] as const
-          ).map(([key, label, count]) => (
-            <button
-              key={key}
-              onClick={() => setStatusFilter(key as ProjectStatus | 'all')}
-              className={`font-mono text-xs px-4 py-2 rounded border tracking-wider transition-all flex items-center gap-2 ${
-                statusFilter === key
-                  ? 'border-accent text-accent bg-accent/5'
-                  : 'border-border text-muted hover:border-border-light'
-              }`}
-            >
-              {label}
-              <span className={`px-1.5 py-0.5 rounded text-xs ${statusFilter === key ? 'bg-accent/20' : 'bg-card'}`}>
-                {count}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        {/* Projects table */}
-        {filtered.length === 0 ? (
-          <div className="text-center py-20 font-mono text-sm text-muted">
-            No projects found.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filtered.map((project) => (
-              <Link
-                key={project.id}
-                href={`/admin/projects/${project.id}`}
-                className="group block bg-card border border-border rounded hover:border-accent/50 transition-all duration-200"
-              >
-                <div className="p-6 flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-1">
-                      <h3 className="font-heading text-xl text-primary group-hover:text-accent transition-colors truncate">
-                        {project.businessName}
-                      </h3>
-                      <span
-                        className={`font-mono text-xs border px-2 py-0.5 rounded-full whitespace-nowrap ${STATUS_COLORS[project.status]}`}
-                      >
-                        {STATUS_LABELS[project.status]}
+          {/* Groups */}
+          <div className="flex-1 overflow-y-auto">
+            {sidebarGroups.map((group) => {
+              const groupItems = searchFiltered.filter((p) => group.statuses.includes(p.status))
+              const isCollapsed = collapsedGroups.has(group.key)
+              return (
+                <div key={group.key} className="border-b border-border last:border-0">
+                  <button
+                    onClick={() => toggleGroup(group.key)}
+                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-bg transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs text-muted tracking-widest uppercase">{group.label}</span>
+                      <span className="font-mono text-xs bg-bg border border-border text-dim px-1.5 py-0.5 rounded">
+                        {groupItems.length}
                       </span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-mono text-muted">
-                      <span>{project.ownerName}</span>
-                      <span className="text-dim">{project.email}</span>
-                      <span className="capitalize text-teal">{project.plan} Plan</span>
-                      {project.addons.length > 0 && (
-                        <span>{project.addons.length} add-on{project.addons.length !== 1 ? 's' : ''}</span>
+                    <svg
+                      className={`w-3 h-3 text-dim transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
+
+                  {!isCollapsed && (
+                    <div className="pb-1">
+                      {groupItems.length === 0 ? (
+                        <div className="px-4 py-3 font-mono text-xs text-dim">None</div>
+                      ) : (
+                        groupItems.map((p) => (
+                          <Link
+                            key={p.id}
+                            href={`/admin/projects/${p.id}`}
+                            onClick={() => setSelectedId(p.id)}
+                            className={`block px-4 py-3 hover:bg-bg transition-colors border-l-2 ${
+                              selectedId === p.id ? 'border-accent bg-accent/5' : 'border-transparent'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <span className="font-mono text-xs text-primary truncate">{p.businessName}</span>
+                              <span className="font-mono text-xs border border-border text-muted px-1.5 py-0.5 rounded capitalize shrink-0">
+                                {p.plan}
+                              </span>
+                            </div>
+                            <div className="font-mono text-xs text-dim">
+                              {new Date(p.createdAt).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })}
+                            </div>
+                          </Link>
+                        ))
                       )}
                     </div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <div className="font-mono text-xs text-muted">
-                      {new Date(project.createdAt).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </div>
-                    <div className="font-mono text-xs text-dim mt-0.5">
-                      ID: {project.id.slice(0, 8)}
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-
-        {/* Demo Visitors */}
-        <div className="mt-16 pt-10 border-t border-border">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="font-heading text-3xl text-primary mb-1">Demo Visitors</h2>
-              <p className="font-mono text-sm text-muted">
-                {demoSessions.length} session{demoSessions.length !== 1 ? 's' : ''} recorded
-              </p>
-            </div>
-            <button
-              onClick={loadDemoSessions}
-              disabled={demoLoading}
-              className="font-mono text-xs text-muted hover:text-accent transition-colors tracking-wider"
-            >
-              {demoLoading ? 'Loading...' : 'Refresh'}
-            </button>
-          </div>
-
-          {demoSessions.length === 0 ? (
-            <div className="text-center py-12 font-mono text-sm text-muted">
-              No demo sessions yet. Share /demo to start tracking visitors.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {demoSessions.map((session) => {
-                const totalSubmissions = Object.values(session.submissions).reduce((a, b) => a + b, 0)
-                return (
-                  <div key={session.id} className="bg-card border border-border rounded p-5">
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="font-mono text-xs text-muted">Session {session.id.slice(0, 8)}</span>
-                          <span className="font-mono text-xs text-accent border border-accent/30 bg-accent/5 px-2 py-0.5 rounded-full">
-                            {totalSubmissions} submission{totalSubmissions !== 1 ? 's' : ''}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {session.tabsUsed.map((tab) => (
-                            <span key={tab} className="font-mono text-xs bg-bg border border-border text-teal px-2 py-0.5 rounded">
-                              {tab.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
-                              {session.submissions[tab] > 1 && (
-                                <span className="ml-1 text-muted">x{session.submissions[tab]}</span>
-                              )}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <div className="font-mono text-xs text-muted">
-                          {new Date(session.createdAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </div>
-                        <div className="font-mono text-xs text-dim mt-0.5">
-                          Last active {new Date(session.lastActiveAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Referrals */}
-        <div className="mt-16 pt-10 border-t border-border">
-          <div className="mb-6">
-            <h2 className="font-heading text-3xl text-primary mb-1">Referrals</h2>
-            <p className="font-mono text-sm text-muted">Clients who referred new signups and reward status.</p>
-          </div>
-          {(() => {
-            const referredProjects = projects.filter((p) => (p as any).referredBy)
-            if (referredProjects.length === 0) {
-              return (
-                <div className="text-center py-12 font-mono text-sm text-muted">
-                  No referrals yet. Each client has a unique referral link on their dashboard.
+                  )}
                 </div>
               )
-            }
-            return (
+            })}
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <main className="flex-1 min-w-0 px-8 py-10">
+          <div className="mb-8">
+            <h1 className="font-heading text-5xl text-primary mb-2">Project Dashboard</h1>
+            <p className="font-mono text-sm text-muted">
+              {projects.length} total project{projects.length !== 1 ? 's' : ''}
+            </p>
+          </div>
+
+          {/* Revenue Overview */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-16">
+            <div className="bg-card border border-border rounded p-5">
+              <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Active Clients</div>
+              <div className="font-heading text-4xl text-primary">{activeProjects.length}</div>
+            </div>
+            <div className="bg-card border border-border rounded p-5">
+              <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Estimated MRR</div>
+              <div className="font-heading text-4xl text-accent">${estimatedMRR}</div>
+              <div className="font-mono text-xs text-dim mt-1">base plans only</div>
+            </div>
+            <div className="bg-card border border-border rounded p-5">
+              <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Pending Review</div>
+              <div className="font-heading text-4xl text-yellow-400">{pendingCount}</div>
+            </div>
+          </div>
+
+          {/* Demo Visitors */}
+          <div className="pt-10 border-t border-border mb-16">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="font-heading text-3xl text-primary mb-1">Demo Visitors</h2>
+                <p className="font-mono text-sm text-muted">
+                  {demoSessions.length} session{demoSessions.length !== 1 ? 's' : ''} recorded
+                </p>
+              </div>
+              <button
+                onClick={loadDemoSessions}
+                disabled={demoLoading}
+                className="font-mono text-xs text-muted hover:text-accent transition-colors tracking-wider"
+              >
+                {demoLoading ? 'Loading...' : 'Refresh'}
+              </button>
+            </div>
+
+            {demoSessions.length === 0 ? (
+              <div className="text-center py-12 font-mono text-sm text-muted">
+                No demo sessions yet. Share /demo to start tracking visitors.
+              </div>
+            ) : (
               <div className="space-y-3">
-                {referredProjects.map((p) => {
-                  const referrer = projects.find((r) => r.clientToken === (p as any).referredBy)
+                {demoSessions.map((session) => {
+                  const totalSubmissions = Object.values(session.submissions).reduce((a, b) => a + b, 0)
                   return (
-                    <div key={p.id} className="bg-card border border-border rounded p-5 flex flex-col sm:flex-row sm:items-center gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="font-heading text-lg text-primary mb-1">{p.businessName}</div>
-                        <div className="font-mono text-xs text-muted">
-                          Referred by: <span className="text-teal">{referrer?.businessName ?? 'Unknown'}</span>
+                    <div key={session.id} className="bg-card border border-border rounded p-5">
+                      <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="font-mono text-xs text-muted">Session {session.id.slice(0, 8)}</span>
+                            <span className="font-mono text-xs text-accent border border-accent/30 bg-accent/5 px-2 py-0.5 rounded-full">
+                              {totalSubmissions} submission{totalSubmissions !== 1 ? 's' : ''}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {session.tabsUsed.map((tab) => (
+                              <span key={tab} className="font-mono text-xs bg-bg border border-border text-teal px-2 py-0.5 rounded">
+                                {tab.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                                {session.submissions[tab] > 1 && (
+                                  <span className="ml-1 text-muted">x{session.submissions[tab]}</span>
+                                )}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                        <div className="font-mono text-xs text-dim mt-0.5">
-                          {new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        <div className="text-right shrink-0">
+                          <div className="font-mono text-xs text-muted">
+                            {new Date(session.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </div>
+                          <div className="font-mono text-xs text-dim mt-0.5">
+                            Last active {new Date(session.lastActiveAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <span className={`font-mono text-xs border px-2 py-0.5 rounded-full ${(p as any).referralRewardGranted ? 'text-accent border-accent/30 bg-accent/5' : 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5'}`}>
-                          {(p as any).referralRewardGranted ? 'Reward Granted' : 'Reward Pending'}
-                        </span>
-                        <Link href={`/admin/projects/${p.id}`} className="font-mono text-xs text-muted hover:text-accent transition-colors">
-                          View &rarr;
-                        </Link>
                       </div>
                     </div>
                   )
                 })}
               </div>
-            )
-          })()}
-        </div>
-      </main>
+            )}
+          </div>
+
+          {/* Referrals */}
+          <div className="pt-10 border-t border-border">
+            <div className="mb-6">
+              <h2 className="font-heading text-3xl text-primary mb-1">Referrals</h2>
+              <p className="font-mono text-sm text-muted">Clients who referred new signups and reward status.</p>
+            </div>
+            {(() => {
+              const referredProjects = projects.filter((p) => (p as any).referredBy)
+              if (referredProjects.length === 0) {
+                return (
+                  <div className="text-center py-12 font-mono text-sm text-muted">
+                    No referrals yet. Each client has a unique referral link on their dashboard.
+                  </div>
+                )
+              }
+              return (
+                <div className="space-y-3">
+                  {referredProjects.map((p) => {
+                    const referrer = projects.find((r) => r.clientToken === (p as any).referredBy)
+                    return (
+                      <div key={p.id} className="bg-card border border-border rounded p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-heading text-lg text-primary mb-1">{p.businessName}</div>
+                          <div className="font-mono text-xs text-muted">
+                            Referred by: <span className="text-teal">{referrer?.businessName ?? 'Unknown'}</span>
+                          </div>
+                          <div className="font-mono text-xs text-dim mt-0.5">
+                            {new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className={`font-mono text-xs border px-2 py-0.5 rounded-full ${(p as any).referralRewardGranted ? 'text-accent border-accent/30 bg-accent/5' : 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5'}`}>
+                            {(p as any).referralRewardGranted ? 'Reward Granted' : 'Reward Pending'}
+                          </span>
+                          <Link href={`/admin/projects/${p.id}`} className="font-mono text-xs text-muted hover:text-accent transition-colors">
+                            View &rarr;
+                          </Link>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })()}
+          </div>
+        </main>
+      </div>
 
       {/* Add Client Modal */}
       {showAddModal && (
