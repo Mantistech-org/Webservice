@@ -246,7 +246,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
       <div className="bg-[#efefef] border border-[#d0d0d0] rounded p-5">
         <p className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: '#3a6a8a' }}>How This Works</p>
         <p className="text-sm text-teal leading-relaxed">
-          When someone searches for a business like yours on Google, your website either shows up or it does not. SEO is the process of making sure you show up as high as possible for the searches that matter to your business. Enter your business details below and run an analysis to see exactly where you stand and what to fix.
+          Search engine optimization determines how visible your business is when potential customers are actively looking for what you offer. A strong SEO presence means your business appears at the top of Google results for the searches that matter most to you, putting you in front of customers at the exact moment they are ready to buy. Enter your business details and run an analysis to see your current visibility score, what is holding you back and exactly what we will fix.
         </p>
       </div>
 
@@ -595,6 +595,10 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
                         </div>
 
                         {/* Preview mockup */}
+                        {/* TODO: Replace mock preview with live iframe or screenshot of client website
+                            showing the specific change applied to their actual site. This ensures
+                            each change card reflects the real before/after state when the live
+                            website build pipeline is implemented. */}
                         <div>
                           <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Preview</div>
                           {change.type === 'title' && (

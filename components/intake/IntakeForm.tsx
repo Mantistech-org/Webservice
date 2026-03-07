@@ -118,7 +118,6 @@ export default function IntakeForm() {
   const [customAddonBudget, setCustomAddonBudget] = useState('')
   const [customAddons, setCustomAddons] = useState<Array<{ name: string; description: string; budget: string }>>([])
   const [referralToken, setReferralToken] = useState('')
-  const [successMsg, setSuccessMsg] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const dropRef = useRef<HTMLDivElement>(null)
 
@@ -279,9 +278,6 @@ export default function IntakeForm() {
       // Clear draft on successful submission
       try { localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
 
-      // If AI generation failed on the server, show the fallback message
-      if (data.message) setSuccessMsg(data.message)
-
       setSubmitState('success')
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
@@ -307,12 +303,16 @@ export default function IntakeForm() {
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
-          <h2 className="font-heading text-5xl text-primary mb-4">Submission Received</h2>
+          <h2 className="font-heading text-5xl text-primary mb-4">Request Received</h2>
+          <p className="text-teal leading-relaxed mb-4">
+            Our team is reviewing your submission and will begin building your website shortly. You will receive an email from us within 24 hours with next steps and a link to review your new site before it goes live.
+          </p>
           <p className="text-teal leading-relaxed mb-2">
-            {successMsg || 'We are generating your custom website now. Our team will review it and reach out within 48 hours.'}
+            If you have any questions in the meantime call us at{' '}
+            <a href="tel:+15016690488" className="text-accent hover:underline">(501) 669-0488</a>.
           </p>
           <p className="font-mono text-sm text-muted">
-            Check your inbox at <span className="text-accent">{form.email}</span>
+            A confirmation will be sent to <span className="text-accent">{form.email}</span>
           </p>
           <button
             onClick={() => router.push('/')}
