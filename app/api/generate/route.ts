@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const { projectId } = body
+  const { projectId, overrideNotes } = body
   if (!projectId || typeof projectId !== 'string') {
     return NextResponse.json({ error: 'Missing projectId' }, { status: 400 })
   }
@@ -22,8 +22,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
+  const notes = typeof overrideNotes === 'string' && overrideNotes.trim() ? overrideNotes.trim() : undefined
+
   try {
-    const html = await generateWebsite(project)
+    const html = await generateWebsite(project, notes)
     project.generatedHtml = html
     project.updatedAt = new Date().toISOString()
     await saveProject(project)

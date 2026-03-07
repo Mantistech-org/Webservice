@@ -33,6 +33,16 @@ export default function AdminProjectPage() {
   const [showChangesInput, setShowChangesInput] = useState(false)
   const [actionMsg, setActionMsg] = useState('')
 
+  const [activeTab, setActiveTab] = useState<'preview' | 'edit'>('preview')
+  const [editedHtml, setEditedHtml] = useState('')
+  const [iframeSrc, setIframeSrc] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saveMsg, setSaveMsg] = useState('')
+  const [showRegenModal, setShowRegenModal] = useState(false)
+  const [regenNotes, setRegenNotes] = useState('')
+  const [regenerating, setRegenerating] = useState(false)
+  const [regenMsg, setRegenMsg] = useState('')
+
   const [respondingToId, setRespondingToId] = useState<string | null>(null)
   const [responseText, setResponseText] = useState('')
   const [sendingResponse, setSendingResponse] = useState(false)
@@ -54,6 +64,8 @@ export default function AdminProjectPage() {
       if (!res.ok) { setError('Project not found.'); return }
       const data = await res.json()
       setProject(data.project)
+      setEditedHtml(data.project.generatedHtml ?? '')
+      setIframeSrc(`/api/preview/${data.project.adminToken}`)
     } catch {
       setError('Failed to load project.')
     } finally {
@@ -163,6 +175,57 @@ export default function AdminProjectPage() {
     setGrantingReferral(false)
   }
 
+  const handleSaveHtml = async () => {
+    setSaving(true)
+    setSaveMsg('')
+    try {
+      const res = await fetch(`/api/admin/projects/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ generatedHtml: editedHtml }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error ?? 'Save failed.')
+      }
+      const data = await res.json()
+      setProject(data.project)
+      setSaveMsg('Changes saved.')
+    } catch (err) {
+      setSaveMsg(err instanceof Error ? err.message : 'Save failed.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handlePreviewChanges = () => {
+    setIframeSrc(`data:text/html;charset=utf-8,${encodeURIComponent(editedHtml)}`)
+  }
+
+  const handleRegenerate = async () => {
+    setRegenerating(true)
+    setRegenMsg('')
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId: id, overrideNotes: regenNotes }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error ?? 'Regeneration failed.')
+      }
+      setShowRegenModal(false)
+      setRegenNotes('')
+      await fetchProject()
+      setActiveTab('preview')
+    } catch (err) {
+      setRegenMsg(err instanceof Error ? err.message : 'Regeneration failed.')
+    } finally {
+      setRegenerating(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center">
@@ -209,34 +272,95 @@ export default function AdminProjectPage() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
 
-          {/* Preview */}
+          {/* Preview / Edit tabs */}
           <div className="xl:col-span-2 flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <h2 className="font-heading text-3xl text-primary">Website Preview</h2>
-              <a
-                href={`/api/preview/${project.adminToken}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-mono text-xs text-muted hover:text-accent transition-colors tracking-wider"
-              >
-                Open in new tab &rarr;
-              </a>
+              <h2 className="font-heading text-3xl text-primary">Website</h2>
+              <div className="flex items-center gap-1 bg-card border border-border rounded p-1">
+                <button
+                  onClick={() => setActiveTab('preview')}
+                  className={`font-mono text-xs px-4 py-1.5 rounded transition-all ${activeTab === 'preview' ? 'bg-accent text-black' : 'text-muted hover:text-primary'}`}
+                >
+                  Preview
+                </button>
+                <button
+                  onClick={() => setActiveTab('edit')}
+                  className={`font-mono text-xs px-4 py-1.5 rounded transition-all ${activeTab === 'edit' ? 'bg-accent text-black' : 'text-muted hover:text-primary'}`}
+                >
+                  Edit HTML
+                </button>
+              </div>
             </div>
-            <div className="bg-card border border-border rounded overflow-hidden" style={{ height: '70vh' }}>
-              <iframe
-                src={`/api/preview/${project.adminToken}`}
-                className="w-full h-full"
-                title={`Preview: ${project.businessName}`}
-                sandbox="allow-scripts allow-same-origin"
-              />
-            </div>
+
+            {activeTab === 'preview' && (
+              <>
+                <div className="flex items-center justify-between">
+                  <a
+                    href={`/api/preview/${project.adminToken}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-xs text-muted hover:text-accent transition-colors tracking-wider"
+                  >
+                    Open in new tab &rarr;
+                  </a>
+                  <button
+                    onClick={() => { setShowRegenModal(true); setRegenMsg('') }}
+                    disabled={regenerating}
+                    className="font-mono text-xs border border-border text-muted px-4 py-1.5 rounded hover:border-accent hover:text-accent transition-all disabled:opacity-60"
+                  >
+                    Regenerate Site
+                  </button>
+                </div>
+                <div className="bg-card border border-border rounded overflow-hidden" style={{ height: '70vh' }}>
+                  <iframe
+                    src={iframeSrc}
+                    className="w-full h-full"
+                    title={`Preview: ${project.businessName}`}
+                    sandbox="allow-scripts allow-same-origin"
+                  />
+                </div>
+              </>
+            )}
+
+            {activeTab === 'edit' && (
+              <>
+                <textarea
+                  value={editedHtml}
+                  onChange={(e) => setEditedHtml(e.target.value)}
+                  className="form-input font-mono text-xs w-full resize-y"
+                  style={{ minHeight: '600px' }}
+                  spellCheck={false}
+                />
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleSaveHtml}
+                    disabled={saving || regenerating}
+                    className="flex-1 bg-accent text-black font-mono text-sm py-2.5 px-6 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60"
+                  >
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </button>
+                  <button
+                    onClick={handlePreviewChanges}
+                    disabled={saving || regenerating}
+                    className="flex-1 border border-border text-muted font-mono text-sm py-2.5 px-6 rounded tracking-wider hover:border-accent hover:text-accent transition-all disabled:opacity-60"
+                  >
+                    Preview Changes
+                  </button>
+                </div>
+                {saveMsg && (
+                  <p className={`font-mono text-xs ${saveMsg === 'Changes saved.' ? 'text-accent' : 'text-red-400'}`}>
+                    {saveMsg}
+                  </p>
+                )}
+              </>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-3">
               {project.status === 'admin_review' || project.status === 'changes_requested' ? (
                 <>
                   <button
                     onClick={handleApprove}
-                    disabled={approving}
+                    disabled={approving || regenerating}
                     className="flex-1 bg-accent text-black font-mono text-sm py-3 px-6 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60 glow-accent"
                   >
                     {approving ? 'Approving...' : 'Approve and Send to Client'}
@@ -244,7 +368,8 @@ export default function AdminProjectPage() {
                   {!showChangesInput ? (
                     <button
                       onClick={() => setShowChangesInput(true)}
-                      className="flex-1 border border-border text-muted font-mono text-sm py-3 px-6 rounded tracking-wider hover:border-orange-400/50 hover:text-orange-400 transition-all"
+                      disabled={regenerating}
+                      className="flex-1 border border-border text-muted font-mono text-sm py-3 px-6 rounded tracking-wider hover:border-orange-400/50 hover:text-orange-400 transition-all disabled:opacity-60"
                     >
                       Request Changes
                     </button>
@@ -673,6 +798,49 @@ export default function AdminProjectPage() {
           </div>
         </div>
       </div>
+
+      {showRegenModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6">
+          <div className="bg-card border border-border rounded p-8 w-full max-w-md">
+            <h2 className="font-heading text-2xl text-primary mb-2">Regenerate Site</h2>
+            <p className="font-mono text-xs text-muted mb-6">
+              The site will be rebuilt using the original intake data. Add any additional instructions below.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">
+                  Additional instructions (optional)
+                </label>
+                <textarea
+                  value={regenNotes}
+                  onChange={(e) => setRegenNotes(e.target.value)}
+                  placeholder="e.g. Use a dark color scheme, add a gallery section..."
+                  rows={4}
+                  className="form-input resize-none text-xs w-full"
+                  disabled={regenerating}
+                />
+              </div>
+              {regenMsg && <p className="font-mono text-xs text-red-400">{regenMsg}</p>}
+              <div className="flex gap-3">
+                <button
+                  onClick={handleRegenerate}
+                  disabled={regenerating}
+                  className="flex-1 bg-accent text-black font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60"
+                >
+                  {regenerating ? 'Generating...' : 'Regenerate'}
+                </button>
+                <button
+                  onClick={() => { setShowRegenModal(false); setRegenNotes(''); setRegenMsg('') }}
+                  disabled={regenerating}
+                  className="flex-1 border border-border text-muted font-mono text-sm py-3 rounded tracking-wider hover:border-border-light transition-all disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

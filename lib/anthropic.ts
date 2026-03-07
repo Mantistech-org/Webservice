@@ -13,7 +13,7 @@ function getClient(): Anthropic {
   return _client
 }
 
-export async function generateWebsite(project: Project): Promise<string> {
+export async function generateWebsite(project: Project, overrideNotes?: string): Promise<string> {
   const addonsList =
     project.addons.length > 0 ? project.addons.join(', ') : 'None selected'
   const pageLimit = PLAN_PAGE_LIMITS[project.plan]
@@ -61,7 +61,7 @@ TECHNICAL REQUIREMENTS:
 - No placeholder Lorem Ipsum — use realistic content for "${project.businessName}"
 - Include a contact form with fields relevant to the business
 
-OUTPUT: Respond with ONLY the complete HTML file starting with <!DOCTYPE html> and ending with </html>. No markdown, no explanation, no code blocks.`
+OUTPUT: Respond with ONLY the complete HTML file starting with <!DOCTYPE html> and ending with </html>. No markdown, no explanation, no code blocks.${overrideNotes ? `\n\nADDITIONAL INSTRUCTIONS FROM ADMIN:\n${overrideNotes}` : ''}`
 
   console.log(`[anthropic] Starting website generation for project ${project.id} (${project.businessName})`)
 
