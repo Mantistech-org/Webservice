@@ -314,6 +314,68 @@ export default function AdminProjectPage() {
               </dl>
             </div>
 
+            {/* Domain — action required, shown prominently */}
+            {project.domainStatus && (
+              <div className={`border rounded p-6 ${
+                project.domainStatus === 'new'
+                  ? 'bg-yellow-950/20 border-yellow-400/40'
+                  : 'bg-blue-950/20 border-blue-400/40'
+              }`}>
+                <h3 className={`font-mono text-xs tracking-widest uppercase mb-4 flex items-center gap-2 ${
+                  project.domainStatus === 'new' ? 'text-yellow-400' : 'text-blue-400'
+                }`}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  Domain
+                  <span className={`ml-auto font-mono text-xs border px-2 py-0.5 rounded-full ${
+                    project.domainStatus === 'new'
+                      ? 'text-yellow-400 border-yellow-400/40'
+                      : 'text-blue-400 border-blue-400/40'
+                  }`}>
+                    {project.domainStatus === 'new' ? 'Register New Domain' : 'Transfer / Point Existing'}
+                  </span>
+                </h3>
+                <dl className="space-y-3">
+                  <div>
+                    <dt className="font-mono text-xs text-muted uppercase tracking-wider mb-0.5">Status</dt>
+                    <dd className="text-sm text-white font-medium">
+                      {project.domainStatus === 'existing' ? 'Client has an existing domain' : 'Client needs a new domain registered'}
+                    </dd>
+                  </div>
+                  {project.domainStatus === 'existing' && project.existingDomain && (
+                    <div>
+                      <dt className="font-mono text-xs text-muted uppercase tracking-wider mb-0.5">Their Domain</dt>
+                      <dd className="text-sm text-white font-mono">{project.existingDomain}</dd>
+                    </div>
+                  )}
+                  {project.domainStatus === 'new' && project.preferredDomain && (
+                    <div>
+                      <dt className="font-mono text-xs text-muted uppercase tracking-wider mb-0.5">Preferred Domain</dt>
+                      <dd className="text-sm text-white font-mono">{project.preferredDomain}</dd>
+                    </div>
+                  )}
+                  {project.wantsProfessionalEmail && (
+                    <div className="flex items-center gap-2 pt-1">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="2.5">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      <span className="font-mono text-xs text-accent">Professional email address requested</span>
+                    </div>
+                  )}
+                </dl>
+                <div className={`mt-4 text-xs font-mono leading-relaxed p-3 rounded border ${
+                  project.domainStatus === 'new'
+                    ? 'text-yellow-300 bg-yellow-400/5 border-yellow-400/20'
+                    : 'text-blue-300 bg-blue-400/5 border-blue-400/20'
+                }`}>
+                  {project.domainStatus === 'new'
+                    ? 'Action needed: Check availability and register this domain before building the site. If unavailable reach out to client with alternatives.'
+                    : 'Action needed: Point this domain to the new hosting after the site is built. No action from client required.'}
+                </div>
+              </div>
+            )}
+
             {/* Plan and Add-ons */}
             <div className="bg-card border border-border rounded p-6">
               <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Plan and Add-ons</h3>

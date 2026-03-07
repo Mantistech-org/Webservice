@@ -60,6 +60,12 @@ export interface Project {
   stripeSubscriptionId?: string
   stripeAddonSubscriptions?: string[]
 
+  // Domain
+  domainStatus?: 'existing' | 'new'
+  existingDomain?: string
+  preferredDomain?: string
+  wantsProfessionalEmail?: boolean
+
   // Uploaded files
   uploadedFiles: string[]
 

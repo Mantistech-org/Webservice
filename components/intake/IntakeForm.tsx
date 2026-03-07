@@ -59,6 +59,11 @@ interface FormData {
   addons: string[]
   plan: Plan
   requestedPages: string
+  // Domain step
+  domainStatus: 'existing' | 'new' | ''
+  existingDomain: string
+  preferredDomain: string
+  wantsProfessionalEmail: boolean
 }
 
 const DEFAULT_FORM: FormData = {
@@ -79,6 +84,10 @@ const DEFAULT_FORM: FormData = {
   addons: [],
   plan: 'starter',
   requestedPages: '',
+  domainStatus: '',
+  existingDomain: '',
+  preferredDomain: '',
+  wantsProfessionalEmail: false,
 }
 
 const STORAGE_KEY = 'intake_form_draft'
@@ -200,6 +209,21 @@ export default function IntakeForm() {
     }))
   }
 
+  // Toggling professional email auto-selects / deselects the email-with-domain add-on
+  // on plans where it is not already included (Pro already includes it).
+  const toggleProfessionalEmail = (checked: boolean) => {
+    const status = getAddonTierStatus('email-with-domain', form.plan)
+    setForm((f) => ({
+      ...f,
+      wantsProfessionalEmail: checked,
+      addons: status === 'available'
+        ? checked
+          ? f.addons.includes('email-with-domain') ? f.addons : [...f.addons, 'email-with-domain']
+          : f.addons.filter((a) => a !== 'email-with-domain')
+        : f.addons,
+    }))
+  }
+
   const addFiles = useCallback((newFiles: File[]) => {
     const images = newFiles.filter((f) => f.type.startsWith('image/') && f.size <= 5 * 1024 * 1024)
     setFiles((prev) => [...prev, ...images].slice(0, 8))
@@ -259,6 +283,10 @@ export default function IntakeForm() {
           body: JSON.stringify({
             ...form,
             requestedPages: form.requestedPages ? parseInt(form.requestedPages) : undefined,
+            domainStatus: form.domainStatus || undefined,
+            existingDomain: form.existingDomain || undefined,
+            preferredDomain: form.preferredDomain || undefined,
+            wantsProfessionalEmail: form.wantsProfessionalEmail || undefined,
             photos: photoData,
             customAddons: customAddons,
             referredBy: referralToken || undefined,
@@ -590,6 +618,134 @@ export default function IntakeForm() {
                 </button>
               ))}
             </div>
+          </section>
+
+          {/* Domain */}
+          <section>
+            <h2 className="font-mono text-xs text-primary tracking-widest uppercase mb-2 flex items-center gap-3">
+              <span className="w-4 h-px bg-accent" />
+              Your Domain
+            </h2>
+            <p className="text-sm text-muted mb-6">
+              Every website needs a domain name. Let us know whether you already have one or need us to register one for you.
+            </p>
+
+            {/* Option picker */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              {([
+                { value: 'existing', label: 'Yes, I have a domain', sub: 'I already own a domain name' },
+                { value: 'new', label: 'No, I need a domain', sub: 'I need one registered for me' },
+              ] as const).map(({ value, label, sub }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setField('domainStatus', value)}
+                  className={`text-left p-5 rounded border transition-all duration-200 ${
+                    form.domainStatus === value
+                      ? 'border-primary bg-card'
+                      : 'border-border bg-card hover:border-border-light'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                      form.domainStatus === value ? 'border-primary' : 'border-dim'
+                    }`}>
+                      {form.domainStatus === value && (
+                        <div className="w-2 h-2 rounded-full bg-primary" />
+                      )}
+                    </div>
+                    <span className={`font-mono text-sm font-medium ${form.domainStatus === value ? 'text-primary' : 'text-muted'}`}>
+                      {label}
+                    </span>
+                  </div>
+                  <div className="font-mono text-xs text-dim ml-6">{sub}</div>
+                </button>
+              ))}
+            </div>
+
+            {/* Existing domain input */}
+            {form.domainStatus === 'existing' && (
+              <div className="space-y-3">
+                <FormField label="Your Current Domain Name">
+                  <input
+                    type="text"
+                    value={form.existingDomain}
+                    onChange={(e) => setField('existingDomain', e.target.value)}
+                    placeholder="mybusiness.com"
+                    className="form-input"
+                  />
+                </FormField>
+                <div className="flex items-start gap-2 p-3 bg-accent/5 border border-accent/20 rounded">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="2" className="shrink-0 mt-0.5">
+                    <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  <p className="font-mono text-xs text-teal leading-relaxed">
+                    We will handle pointing it to your new website. No technical knowledge needed.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* New domain input */}
+            {form.domainStatus === 'new' && (
+              <div className="space-y-3">
+                <FormField label="Preferred Domain Name">
+                  <input
+                    type="text"
+                    value={form.preferredDomain}
+                    onChange={(e) => setField('preferredDomain', e.target.value)}
+                    placeholder="mybusiness.com or mybusiness.net"
+                    className="form-input"
+                  />
+                </FormField>
+                <div className="flex items-start gap-2 p-3 bg-accent/5 border border-accent/20 rounded">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="2" className="shrink-0 mt-0.5">
+                    <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  <p className="font-mono text-xs text-teal leading-relaxed">
+                    We will check availability and register it for you. If your first choice is taken we will reach out with alternatives.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Professional email checkbox — shown once a domain option is selected */}
+            {form.domainStatus !== '' && (
+              <label className={`flex items-start gap-4 p-4 rounded border mt-5 cursor-pointer transition-all duration-200 ${
+                form.wantsProfessionalEmail ? 'border-primary bg-card' : 'border-border bg-card hover:border-border-light'
+              }`}>
+                <div
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${
+                    form.wantsProfessionalEmail ? 'border-primary' : 'border-dim'
+                  }`}
+                >
+                  {form.wantsProfessionalEmail && (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" className="text-primary">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </div>
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={form.wantsProfessionalEmail}
+                  onChange={(e) => toggleProfessionalEmail(e.target.checked)}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm text-primary font-medium">
+                    Add a professional email address at my domain
+                  </div>
+                  <div className="font-mono text-xs text-muted mt-0.5">
+                    For example: hello@{form.existingDomain || form.preferredDomain?.split(' ')[0] || 'yourbusiness.com'}
+                  </div>
+                  <div className="font-mono text-xs text-dim mt-1">
+                    {getAddonTierStatus('email-with-domain', form.plan) === 'included'
+                      ? 'Included in your plan at no extra cost'
+                      : '+$12/mo — added to your add-ons automatically'}
+                  </div>
+                </div>
+              </label>
+            )}
           </section>
 
           {/* Add-ons */}

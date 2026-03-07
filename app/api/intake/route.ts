@@ -43,6 +43,10 @@ export async function POST(req: NextRequest) {
     requestedPages,
     customAddons,
     referredBy,
+    domainStatus,
+    existingDomain,
+    preferredDomain,
+    wantsProfessionalEmail,
   } = body
 
   // ── Validate required fields ────────────────────────────────────────────────
@@ -140,6 +144,10 @@ export async function POST(req: NextRequest) {
         }))
       : [],
     referredBy: typeof referredBy === 'string' && referredBy ? referredBy : undefined,
+    domainStatus: (domainStatus === 'existing' || domainStatus === 'new') ? domainStatus : undefined,
+    existingDomain: typeof existingDomain === 'string' && existingDomain ? existingDomain : undefined,
+    preferredDomain: typeof preferredDomain === 'string' && preferredDomain ? preferredDomain : undefined,
+    wantsProfessionalEmail: wantsProfessionalEmail === true ? true : undefined,
     plan: plan as Plan,
     requestedPages: typeof requestedPages === 'number' ? requestedPages : undefined,
     generatedHtml: '',
