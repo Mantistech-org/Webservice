@@ -426,7 +426,47 @@ export async function sendClientNotificationEmail(params: {
 // ADMIN-FACING EMAILS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// ── 12. New project submitted (admin notification) ───────────────────────────
+// ── 12. New lead captured from client website ─────────────────────────────────
+export async function sendNewLeadEmail(params: {
+  projectId: string
+  businessName: string
+  leadName: string
+  leadEmail: string
+  leadPhone?: string
+  leadMessage?: string
+  source: string
+}) {
+  if (!ADMIN_EMAIL) return
+  const { projectId, businessName, leadName, leadEmail, leadPhone, leadMessage, source } = params
+  const link = `${BASE_URL}/admin/projects/${projectId}`
+
+  await send({
+    from: FROM,
+    to: ADMIN_EMAIL,
+    subject: `New Lead: ${businessName}`,
+    html: emailLayout(`
+      <h1>New Lead Captured</h1>
+      <p>A new lead has been submitted through the website for <strong>${businessName}</strong>.</p>
+      <div class="divider"></div>
+      <table class="data">
+        <tr><td class="key">Name</td><td class="val">${leadName || 'Not provided'}</td></tr>
+        <tr><td class="key">Email</td><td class="val">${leadEmail || 'Not provided'}</td></tr>
+        ${leadPhone ? `<tr><td class="key">Phone</td><td class="val">${leadPhone}</td></tr>` : ''}
+        <tr><td class="key">Source</td><td class="val">${source}</td></tr>
+      </table>
+      ${leadMessage ? `
+      <h2>Message</h2>
+      <div class="note-block">
+        <p>${leadMessage}</p>
+      </div>` : ''}
+      <div class="btn-wrap">
+        <a href="${link}" class="btn">View Project</a>
+      </div>
+    `),
+  })
+}
+
+// ── 13. New project submitted (admin notification) ──────────────────────────
 export async function sendAdminNewProjectEmail(project: Project) {
   const link = `${BASE_URL}/admin/projects/${project.id}`
   const planName = PLANS[project.plan]?.name ?? project.plan

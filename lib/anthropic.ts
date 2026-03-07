@@ -59,7 +59,51 @@ TECHNICAL REQUIREMENTS:
 - Semantic HTML5 elements
 - Accessible (proper aria labels, alt text placeholders)
 - No placeholder Lorem Ipsum — use realistic content for "${project.businessName}"
-- Include a contact form with fields relevant to the business
+- Include a contact form with fields: name, email, phone, message
+
+CONTACT FORM SUBMISSION — CRITICAL:
+Every contact form MUST submit via JavaScript fetch(), never via a plain HTML form action/method POST.
+Use exactly this pattern in the form's submit handler:
+
+  async function submitForm(event) {
+    event.preventDefault();
+    const btn = event.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    try {
+      const res = await fetch('https://www.mantistech.org/api/leads/${project.clientToken}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: event.target.name.value,
+          email: event.target.email.value,
+          phone: event.target.phone ? event.target.phone.value : '',
+          message: event.target.message ? event.target.message.value : '',
+        }),
+      });
+      if (res.ok) {
+        event.target.style.display = 'none';
+        document.getElementById('form-success').style.display = 'block';
+      } else {
+        throw new Error('Request failed');
+      }
+    } catch {
+      document.getElementById('form-error').style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Send Message';
+    }
+  }
+
+Add this hidden success message directly after the form:
+  <div id="form-success" style="display:none; padding: 1.5rem; text-align: center;">
+    <p style="font-size: 1rem; font-weight: 600;">Thank you for reaching out.</p>
+    <p style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.8;">We will be in touch shortly.</p>
+  </div>
+  <p id="form-error" style="display:none; color: #cc0000; font-size: 0.875rem; margin-top: 0.75rem;">
+    Something went wrong. Please try again or call us directly.
+  </p>
+
+Attach the handler: <form onsubmit="submitForm(event)">
 
 OUTPUT: Respond with ONLY the complete HTML file starting with <!DOCTYPE html> and ending with </html>. No markdown, no explanation, no code blocks.${overrideNotes ? `\n\nADDITIONAL INSTRUCTIONS FROM ADMIN:\n${overrideNotes}` : ''}`
 

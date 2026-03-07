@@ -501,103 +501,30 @@ function ClientSidebar({ expanded, activePage, onNavigate, activeAddonIds, darkM
 
 // ── Dashboard Page ─────────────────────────────────────────────────────────────
 
-const STATS = [
-  { label: 'Website Visitors', value: '2,847', change: '+12%', up: true },
-  { label: 'Leads Captured',   value: '134',   change: '+8%',  up: true },
-  { label: 'Reviews This Month', value: '23',  change: '+5',   up: true },
-  { label: 'Email Open Rate',  value: '34.2%', change: '+2.1%', up: true },
-  { label: 'Avg. SEO Position', value: '14.3', change: '-2.1', up: true },
-  { label: 'Ad Impressions',   value: '18,420', change: '+31%', up: true },
-]
+function timeAgo(dateStr: string): string {
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
+  if (seconds < 60) return 'just now'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days < 7) return `${days}d ago`
+  const weeks = Math.floor(days / 7)
+  return `${weeks}wk ago`
+}
 
-const CHART_DATA = [410, 620, 530, 780, 690, 920, 1040, 870, 1120, 980, 1310, 1480]
-const MONTHS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar']
-
-const TOP_PAGES = [
-  { page: '/home',     views: 1204, pct: 100 },
-  { page: '/services', views: 618,  pct: 51 },
-  { page: '/contact',  views: 392,  pct: 33 },
-  { page: '/about',    views: 277,  pct: 23 },
-  { page: '/blog',     views: 144,  pct: 12 },
-]
-
-const ACTIVITY = [
-  {
-    title: 'Recent Leads',
-    items: [
-      { label: 'Sarah Mitchell', sub: 'sarah@example.com',  time: '2h ago' },
-      { label: 'James Okafor',   sub: 'james@example.com',  time: '5h ago' },
-      { label: 'Priya Sharma',   sub: 'priya@example.com',  time: '1d ago' },
-      { label: 'Tom Nguyen',     sub: 'tom@example.com',    time: '2d ago' },
-    ],
-  },
-  {
-    title: 'Recent Reviews',
-    items: [
-      { label: '5 stars — Maria G.', sub: '"Incredible service, highly recommend!"', time: '1h ago' },
-      { label: '5 stars — Ben T.',   sub: '"Fast and professional team."',            time: '8h ago' },
-      { label: '4 stars — Linda K.', sub: '"Great work overall."',                    time: '2d ago' },
-      { label: '5 stars — Carlos M.', sub: '"Will definitely use again."',            time: '3d ago' },
-    ],
-  },
-  {
-    title: 'Recent Campaigns',
-    items: [
-      { label: 'Spring Promo Email',   sub: '62% open rate', time: '3h ago' },
-      { label: 'New Services Blast',   sub: '48% open rate', time: '2d ago' },
-      { label: 'Follow-up Sequence',   sub: '29% open rate', time: '5d ago' },
-      { label: 'Welcome Series',       sub: '71% open rate', time: '1wk ago' },
-    ],
-  },
-]
-
-function LineChart({ darkMode }: { darkMode?: boolean }) {
-  const w = 480, h = 140
-  const pad = { top: 12, right: 12, bottom: 24, left: 36 }
-  const iw = w - pad.left - pad.right
-  const ih = h - pad.top - pad.bottom
-  const max = Math.max(...CHART_DATA)
-  const min = Math.min(...CHART_DATA)
-  const range = max - min || 1
-
-  const points = CHART_DATA.map((v, i) => ({
-    x: pad.left + (i / (CHART_DATA.length - 1)) * iw,
-    y: pad.top + ih - ((v - min) / range) * ih,
-  }))
-
-  const d = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
-  const fill = `${d} L${points[points.length - 1].x},${(pad.top + ih).toFixed(1)} L${points[0].x},${(pad.top + ih).toFixed(1)} Z`
-
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ height: 140 }}>
-      {[0, 0.25, 0.5, 0.75, 1].map((t) => {
-        const y = pad.top + ih * (1 - t)
-        return (
-          <g key={t}>
-            <line x1={pad.left} y1={y} x2={pad.left + iw} y2={y} stroke={darkMode ? '#333333' : '#d0d0d0'} strokeWidth="0.5" />
-            <text x={pad.left - 6} y={y + 4} textAnchor="end" fontSize="8" fill={darkMode ? '#666666' : '#999999'}>
-              {Math.round(min + t * range)}
-            </text>
-          </g>
-        )
-      })}
-      <path d={fill} fill="#00ff88" fillOpacity="0.08" />
-      <path d={d} fill="none" stroke="#00cc66" strokeWidth="2" strokeLinejoin="round" />
-      {MONTHS.map((m, i) => (
-        <text
-          key={m}
-          x={pad.left + (i / (MONTHS.length - 1)) * iw}
-          y={h - 4}
-          textAnchor="middle"
-          fontSize="8"
-          fill={darkMode ? '#666666' : '#999999'}
-        >
-          {m}
-        </text>
-      ))}
-      <circle cx={points[points.length - 1].x} cy={points[points.length - 1].y} r="3" fill="#00cc66" />
-    </svg>
-  )
+interface AnalyticsData {
+  leadsThisMonth: number
+  leadsLastMonth: number
+  recentLeads: Array<{
+    id: string
+    name: string | null
+    email: string | null
+    phone: string | null
+    created_at: string
+  }>
+  totalLeads: number
 }
 
 interface DashboardPageProps {
@@ -605,11 +532,12 @@ interface DashboardPageProps {
   clientToken: string
   darkMode: boolean
   onMarkRead: () => void
+  analytics: AnalyticsData | null
 }
 
-function DashboardPage({ project, clientToken, darkMode, onMarkRead }: DashboardPageProps) {
-  const bg      = darkMode ? '#1e1e1e' : '#e8e8e8'
-  const borderC = darkMode ? '#333333' : '#d0d0d0'
+function DashboardPage({ project, clientToken, darkMode, onMarkRead, analytics }: DashboardPageProps) {
+  const bg          = darkMode ? '#1e1e1e' : '#e8e8e8'
+  const borderC     = darkMode ? '#333333' : '#d0d0d0'
   const textPrimary = darkMode ? '#f0f0f0' : '#1a1a1a'
   const textMuted   = '#888888'
   const textDim     = darkMode ? '#666666' : '#aaaaaa'
@@ -618,10 +546,18 @@ function DashboardPage({ project, clientToken, darkMode, onMarkRead }: Dashboard
 
   const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000
   const pendingRequests = project.changeRequests.filter(r => r.status === 'pending')
-  const recentResolved = project.changeRequests.filter(r =>
+  const recentResolved  = project.changeRequests.filter(r =>
     r.status === 'resolved' && r.resolvedAt && new Date(r.resolvedAt).getTime() > thirtyDaysAgo
   )
   const visibleRequests = [...pendingRequests, ...recentResolved]
+
+  const leadsThisMonth = analytics?.leadsThisMonth ?? 0
+  const leadsLastMonth = analytics?.leadsLastMonth ?? 0
+  const diff = leadsThisMonth - leadsLastMonth
+  const leadsChangeStr = diff === 0
+    ? 'same as last month'
+    : `${diff > 0 ? '+' : ''}${diff} vs last month`
+  const recentLeads = analytics?.recentLeads ?? []
 
   return (
     <div className="space-y-6">
@@ -669,19 +605,26 @@ function DashboardPage({ project, clientToken, darkMode, onMarkRead }: Dashboard
         </p>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        {STATS.map((s) => (
-          <div key={s.label} className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
-            <div className="font-mono text-xs tracking-wider uppercase mb-2" style={{ color: textMuted }}>
-              {s.label}
-            </div>
-            <div className="font-heading text-3xl leading-none mb-1" style={{ color: textPrimary }}>
-              {s.value}
-            </div>
-            <div className="font-mono text-xs text-[#00aa55]">{s.change} vs last month</div>
+      {/* Stat cards — leads (real) + placeholder */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
+          <div className="font-mono text-xs tracking-wider uppercase mb-2" style={{ color: textMuted }}>
+            Leads Captured
           </div>
-        ))}
+          <div className="font-heading text-3xl leading-none mb-1" style={{ color: textPrimary }}>
+            {analytics ? leadsThisMonth : '--'}
+          </div>
+          <div className="font-mono text-xs" style={{ color: diff < 0 ? '#cc4444' : '#00aa55' }}>
+            {analytics ? leadsChangeStr : 'Loading...'}
+          </div>
+        </div>
+        <div className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
+          <div className="font-mono text-xs tracking-wider uppercase mb-2" style={{ color: textMuted }}>
+            Performance Analytics
+          </div>
+          <div className="font-heading text-3xl leading-none mb-1" style={{ color: textPrimary }}>--</div>
+          <div className="font-mono text-xs" style={{ color: textMuted }}>More analytics coming soon</div>
+        </div>
       </div>
 
       {/* Change requests (pending + recently resolved) */}
@@ -720,54 +663,34 @@ function DashboardPage({ project, clientToken, darkMode, onMarkRead }: Dashboard
         </div>
       )}
 
-      {/* Chart + Top Pages */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
-          <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: textMuted }}>
-            Website Traffic (12 months)
-          </div>
-          <LineChart darkMode={darkMode} />
+      {/* Recent Leads */}
+      <div className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
+        <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: textMuted }}>
+          Recent Leads
         </div>
-        <div className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
-          <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: textMuted }}>
-            Top Pages
-          </div>
+        {recentLeads.length > 0 ? (
           <div className="space-y-3">
-            {TOP_PAGES.map((p) => (
-              <div key={p.page}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-mono text-xs" style={{ color: textPrimary }}>{p.page}</span>
-                  <span className="font-mono text-xs" style={{ color: textMuted }}>{p.views.toLocaleString()}</span>
+            {recentLeads.map((lead) => (
+              <div key={lead.id} className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="font-mono text-xs truncate" style={{ color: textPrimary }}>
+                    {lead.name || 'Unknown'}
+                  </div>
+                  <div className="font-mono text-xs truncate mt-0.5" style={{ color: textDim }}>
+                    {lead.email || 'No email'}
+                  </div>
                 </div>
-                <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: borderC }}>
-                  <div className="h-full rounded-full" style={{ width: `${p.pct}%`, backgroundColor: '#00cc66' }} />
-                </div>
+                <span className="font-mono text-xs shrink-0" style={{ color: textDim }}>
+                  {timeAgo(lead.created_at)}
+                </span>
               </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Activity feeds */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {ACTIVITY.map((feed) => (
-          <div key={feed.title} className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
-            <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: textMuted }}>
-              {feed.title}
-            </div>
-            <div className="space-y-3">
-              {feed.items.map((item, i) => (
-                <div key={i} className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="font-mono text-xs truncate" style={{ color: textPrimary }}>{item.label}</div>
-                    <div className="font-mono text-xs truncate mt-0.5" style={{ color: textDim }}>{item.sub}</div>
-                  </div>
-                  <span className="font-mono text-xs shrink-0" style={{ color: textDim }}>{item.time}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+        ) : (
+          <p className="font-mono text-xs" style={{ color: textDim }}>
+            No leads yet. Your first lead will appear here.
+          </p>
+        )}
       </div>
 
       {/* Live Site Preview */}
@@ -1046,9 +969,10 @@ function ClientBillingPage({ project, clientToken, darkMode }: ClientBillingPage
 export default function ClientDashboard() {
   const { clientToken } = useParams<{ clientToken: string }>()
 
-  const [project, setProject]   = useState<ProjectData | null>(null)
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState('')
+  const [project, setProject]     = useState<ProjectData | null>(null)
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
+  const [loading, setLoading]     = useState(true)
+  const [error, setError]         = useState('')
   const [sidebarExpanded, setSidebarExpanded] = useState(true)
   const [activePage, setActivePage] = useState<ClientView>('dashboard')
   const [darkMode, setDarkMode] = useState<boolean>(() => {
@@ -1075,10 +999,17 @@ export default function ClientDashboard() {
 
   const fetchProject = async () => {
     try {
-      const res = await fetch(`/api/client/${clientToken}/project`)
-      const data = await res.json()
-      if (data.error) setError(data.error)
-      else setProject(data.project)
+      const [projectRes, analyticsRes] = await Promise.all([
+        fetch(`/api/client/${clientToken}/project`),
+        fetch(`/api/client/${clientToken}/analytics`),
+      ])
+      const [projectData, analyticsData] = await Promise.all([
+        projectRes.json(),
+        analyticsRes.json(),
+      ])
+      if (projectData.error) setError(projectData.error)
+      else setProject(projectData.project)
+      if (!analyticsData.error) setAnalytics(analyticsData)
     } catch {
       setError('Failed to load your dashboard.')
     } finally {
@@ -1154,6 +1085,7 @@ export default function ClientDashboard() {
             clientToken={clientToken}
             darkMode={darkMode}
             onMarkRead={handleMarkRead}
+            analytics={analytics}
           />
         )
       case 'website':
