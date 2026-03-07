@@ -31,6 +31,7 @@ export async function GET(
       changeRequests: project.changeRequests ?? [],
       notifications: project.notifications ?? [],
       upsellClicks: project.upsellClicks ?? [],
+      stripeSessionId: project.stripeSessionId ?? null,
       stripeAddonSubscriptions: project.stripeAddonSubscriptions ?? [],
       customAddons: project.customAddons ?? [],
       convertedReferrals,

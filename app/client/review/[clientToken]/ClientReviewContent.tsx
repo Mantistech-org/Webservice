@@ -12,6 +12,7 @@ interface ProjectInfo {
   status: ProjectStatus
   addons: string[]
   clientToken: string
+  stripeSessionId: string | null
 }
 
 export default function ClientReviewContent() {
@@ -220,52 +221,70 @@ export default function ClientReviewContent() {
             <div className="h-px bg-border" />
 
             <div>
-              <p className="font-mono text-xs text-muted leading-relaxed mb-4">
-                Review your website above. If everything looks good, click below to approve and
-                proceed to checkout.
-              </p>
-
-              {actionMsg && (
-                <div className="mb-3 font-mono text-xs text-orange-400 bg-orange-400/5 border border-orange-400/20 rounded px-3 py-2">
-                  {actionMsg}
-                </div>
-              )}
-
-              <button
-                onClick={handleApprove}
-                disabled={approving}
-                className="w-full bg-accent text-bg font-mono text-sm py-3 px-6 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60 glow-accent flex items-center justify-center gap-2"
-              >
-                {approving ? (
-                  <>
-                    <svg
-                      className="animate-spin"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        strokeOpacity="0.3"
-                      />
-                      <path d="M21 12a9 9 0 00-9-9" />
+              {project.stripeSessionId ? (
+                <div className="text-center py-4">
+                  <div className="w-10 h-10 rounded-full bg-accent/10 border border-accent flex items-center justify-center mx-auto mb-3">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="2">
+                      <polyline points="20 6 9 17 4 12" />
                     </svg>
-                    Redirecting to Checkout...
-                  </>
-                ) : (
-                  <>
-                    Approve and Proceed to Checkout
-                    <span>&rarr;</span>
-                  </>
-                )}
-              </button>
+                  </div>
+                  <p className="font-mono text-sm text-accent font-semibold">
+                    You have already approved this site.
+                  </p>
+                  <p className="font-mono text-xs text-muted mt-1">
+                    Complete your payment in the checkout tab, or contact us if you need help.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p className="font-mono text-xs text-muted leading-relaxed mb-4">
+                    Review your website above. If everything looks good, click below to approve and
+                    proceed to checkout.
+                  </p>
 
-              <p className="font-mono text-xs text-dim text-center mt-3">
-                Secure payment powered by Stripe
-              </p>
+                  {actionMsg && (
+                    <div className="mb-3 font-mono text-xs text-orange-400 bg-orange-400/5 border border-orange-400/20 rounded px-3 py-2">
+                      {actionMsg}
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleApprove}
+                    disabled={approving}
+                    className="w-full bg-accent text-bg font-mono text-sm py-3 px-6 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60 glow-accent flex items-center justify-center gap-2"
+                  >
+                    {approving ? (
+                      <>
+                        <svg
+                          className="animate-spin"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path
+                            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            strokeOpacity="0.3"
+                          />
+                          <path d="M21 12a9 9 0 00-9-9" />
+                        </svg>
+                        Redirecting to Checkout...
+                      </>
+                    ) : (
+                      <>
+                        Approve and Proceed to Checkout
+                        <span>&rarr;</span>
+                      </>
+                    )}
+                  </button>
+
+                  <p className="font-mono text-xs text-dim text-center mt-3">
+                    Secure payment powered by Stripe
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>
