@@ -69,7 +69,7 @@ OUTPUT: Respond with ONLY the complete HTML file starting with <!DOCTYPE html> a
   const message = await getClient().messages.create(
     {
       model: 'claude-sonnet-4-5',
-      max_tokens: 8192,
+      max_tokens: 16000,
       messages: [{ role: 'user', content: prompt }],
     },
     { timeout: 120_000 }

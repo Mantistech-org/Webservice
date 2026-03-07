@@ -54,3 +54,4 @@ admin_review → client_review → changes_requested ↔ client_review → activ
 - app/api/intake/route.ts: replaced fire-and-forget promise with non-blocking fetch to /api/generate
 - Switched Supabase client from REST API (HTTP) to direct postgres connection via pg pool (Transaction pooler) to bypass Railway Hobby plan DNS restrictions on external HTTP hosts
 - Internal /api/generate fetch uses NEXT_PUBLIC_BASE_URL since Railway private networking does not resolve on Hobby plan
+- max_tokens increased from 8192 to 16000 to prevent HTML generation being cut off mid-output
