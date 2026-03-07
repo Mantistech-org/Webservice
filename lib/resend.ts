@@ -1,15 +1,31 @@
 import { Resend } from 'resend'
 
-const FROM = process.env.EMAIL_FROM ?? 'no-reply@mantistech.io'
+const FROM = process.env.EMAIL_FROM ?? 'onboarding@resend.dev'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? ''
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
 
 function getResend() {
   const key = process.env.RESEND_API_KEY
   if (!key) {
-    console.error('[resend] RESEND_API_KEY is not set — emails will fail')
+    console.error('[resend] FATAL: RESEND_API_KEY is not set — all email sends will fail')
   }
   return new Resend(key ?? 'missing-key')
+}
+
+// ── Wrapper that turns Resend's { data, error } return into a real throw ──────
+// The Resend SDK v2 NEVER rejects its promise — it always resolves with
+// { data, error }. Without this wrapper, .catch() handlers never fire and
+// errors disappear silently.
+async function send(payload: Parameters<Resend['emails']['send']>[0]): Promise<string> {
+  console.log(`[resend] send() from="${payload.from}" to="${Array.isArray(payload.to) ? payload.to.join(',') : payload.to}" subject="${payload.subject}"`)
+  const { data, error } = await getResend().emails.send(payload)
+  if (error) {
+    // Log the full Resend error object so Railway logs capture it
+    console.error('[resend] Resend API error:', JSON.stringify(error))
+    throw new Error(`[resend] ${error.name}: ${error.message}`)
+  }
+  console.log('[resend] Send success — message id:', data?.id)
+  return data?.id ?? ''
 }
 
 export async function sendAdminNewProjectEmail(params: {
@@ -22,14 +38,14 @@ export async function sendAdminNewProjectEmail(params: {
   const { projectId, businessName, ownerName, plan } = params
   const link = `${BASE_URL}/admin/projects/${projectId}`
 
-  await getResend().emails.send({
+  await send({
     from: FROM,
     to: ADMIN_EMAIL,
     subject: `New Project Submitted: ${businessName}`,
     html: `
       <div style="font-family: monospace; background: #080c10; color: #e0e0e0; padding: 32px; border-radius: 8px; max-width: 600px;">
         <h1 style="color: #00ff88; font-size: 24px; margin-bottom: 8px;">New Project Ready for Review</h1>
-        <p style="color: #8ab8b5; margin-bottom: 24px;">A new intake submission has been processed and a website has been generated.</p>
+        <p style="color: #8ab8b5; margin-bottom: 24px;">A new intake submission has been received and saved.</p>
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
           <tr><td style="padding: 8px 0; color: #5a6a7a; width: 140px;">Business</td><td style="color: #e0e0e0;">${businessName}</td></tr>
           <tr><td style="padding: 8px 0; color: #5a6a7a;">Owner</td><td style="color: #e0e0e0;">${ownerName}</td></tr>
@@ -50,7 +66,7 @@ export async function sendClientReviewEmail(params: {
   const { clientToken, businessName, ownerName, email } = params
   const link = `${BASE_URL}/client/review/${clientToken}`
 
-  await getResend().emails.send({
+  await send({
     from: FROM,
     to: email,
     subject: `Your Website is Ready to Review: ${businessName}`,
@@ -77,10 +93,9 @@ export async function sendConfirmationEmail(params: {
   clientToken?: string
 }) {
   const { businessName, ownerName, email, plan, clientToken } = params
-  const resend = getResend()
   const dashboardLink = clientToken ? `${BASE_URL}/client/dashboard/${clientToken}` : BASE_URL
 
-  await resend.emails.send({
+  await send({
     from: FROM,
     to: email,
     subject: `Welcome to Mantis Tech: ${businessName} is Live`,
@@ -98,7 +113,7 @@ export async function sendConfirmationEmail(params: {
     `,
   })
 
-  await resend.emails.send({
+  await send({
     from: FROM,
     to: ADMIN_EMAIL,
     subject: `Payment Received: ${businessName} (${plan} plan)`,
@@ -125,7 +140,7 @@ export async function sendChangesRequestedEmail(params: {
 }) {
   const { businessName, ownerName, email, adminNotes } = params
 
-  await getResend().emails.send({
+  await send({
     from: FROM,
     to: email,
     subject: `Update on Your Website: ${businessName}`,
@@ -150,7 +165,7 @@ export async function sendAdminChangeRequestEmail(params: {
   const { projectId, businessName, ownerName, message } = params
   const link = `${BASE_URL}/admin/projects/${projectId}`
 
-  await getResend().emails.send({
+  await send({
     from: FROM,
     to: ADMIN_EMAIL,
     subject: `Change Request from ${businessName}`,
@@ -177,7 +192,7 @@ export async function sendClientChangeResponseEmail(params: {
   const { businessName, ownerName, email, adminResponse, clientToken } = params
   const link = `${BASE_URL}/client/dashboard/${clientToken}`
 
-  await getResend().emails.send({
+  await send({
     from: FROM,
     to: email,
     subject: `Your Change Request Has Been Resolved: ${businessName}`,
@@ -204,11 +219,7 @@ export async function sendIntakeConfirmationEmail(params: {
 }) {
   const { businessName, ownerName, email, plan } = params
 
-  console.log(`[resend] sendIntakeConfirmationEmail — to: ${email}, business: ${businessName}`)
-  console.log('[resend] EMAIL_FROM:', process.env.EMAIL_FROM ?? '(not set, using default)')
-  console.log('[resend] RESEND_API_KEY present:', !!process.env.RESEND_API_KEY)
-
-  const result = await getResend().emails.send({
+  await send({
     from: FROM,
     to: email,
     subject: `We Received Your Request: ${businessName}`,
@@ -232,9 +243,6 @@ export async function sendIntakeConfirmationEmail(params: {
       </div>
     `,
   })
-
-  console.log('[resend] sendIntakeConfirmationEmail result:', JSON.stringify(result))
-  return result
 }
 
 export async function sendClientNotificationEmail(params: {
@@ -247,7 +255,7 @@ export async function sendClientNotificationEmail(params: {
   const { businessName, ownerName, email, message, clientToken } = params
   const link = `${BASE_URL}/client/dashboard/${clientToken}`
 
-  await getResend().emails.send({
+  await send({
     from: FROM,
     to: email,
     subject: `Message from Mantis Tech: ${businessName}`,
