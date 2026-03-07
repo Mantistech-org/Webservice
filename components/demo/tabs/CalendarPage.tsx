@@ -450,7 +450,7 @@ function SettingsPanel({
 
 interface Popover { dateStr: string; appts: Appointment[] }
 
-export default function CalendarPage() {
+export default function CalendarPage({ darkMode }: { darkMode?: boolean }) {
   const [today]      = useState(() => new Date())
   const [viewDate,   setViewDate]   = useState(() => new Date())
   const [appointments, setAppointments] = useState<Appointment[]>(MOCK_APPOINTMENTS)

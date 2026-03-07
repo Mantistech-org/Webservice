@@ -7,6 +7,7 @@ interface Props {
   sessionId: string
   contacts: DemoContact[]
   onAddContacts: (contacts: DemoContact[]) => void
+  darkMode?: boolean
 }
 
 interface EmailItem {
@@ -77,7 +78,7 @@ const MOCK_UPLOADED: DemoContact[][] = [
   ],
 ]
 
-export default function EmailMarketing({ sessionId, contacts, onAddContacts }: Props) {
+export default function EmailMarketing({ sessionId, contacts, onAddContacts, darkMode }: Props) {
   const [businessName, setBusinessName] = useState('')
   const [industry, setIndustry] = useState('')
   const [customerDescription, setCustomerDescription] = useState('')
@@ -205,7 +206,7 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts }: P
 
           {loading && (
             <div className="mt-6 flex items-center gap-3 text-muted font-mono text-sm">
-              <span className="w-4 h-4 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: darkMode ? '#f0f0f0 transparent transparent transparent' : '#1a1a1a transparent transparent transparent' }} />
               Writing your complete email marketing package...
             </div>
           )}

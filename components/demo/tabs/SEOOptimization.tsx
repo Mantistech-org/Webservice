@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 
-interface Props { sessionId: string }
+interface Props { sessionId: string; darkMode?: boolean }
 
 interface Keyword { term: string; monthlyVolume: number; difficulty: 'Low' | 'Medium' | 'High'; opportunity: 'Low' | 'Medium' | 'High' }
 interface Ranking { term: string; position: number; change: number }
@@ -27,7 +27,7 @@ const DIFF_COLORS: Record<string, string> = {
   High: '#f87171',
 }
 
-export default function SEOOptimization({ sessionId }: Props) {
+export default function SEOOptimization({ sessionId, darkMode }: Props) {
   // Business profile state
   const [businessName, setBusinessName] = useState('')
   const [businessType, setBusinessType] = useState('')
@@ -196,7 +196,7 @@ export default function SEOOptimization({ sessionId }: Props) {
 
       {loading && (
         <div className="flex items-center gap-3 text-muted font-mono text-sm">
-          <span className="w-4 h-4 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
+          <span className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: darkMode ? '#f0f0f0 transparent transparent transparent' : '#1a1a1a transparent transparent transparent' }} />
           Analyzing your local search landscape...
         </div>
       )}

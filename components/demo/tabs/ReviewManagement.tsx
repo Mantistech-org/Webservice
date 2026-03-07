@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-interface Props { sessionId: string }
+interface Props { sessionId: string; darkMode?: boolean }
 interface ReviewResult { response: string }
 
 const MOCK_REVIEWS = {
@@ -42,7 +42,7 @@ function Stars({ n }: { n: number }) {
   )
 }
 
-export default function ReviewManagement({ sessionId }: Props) {
+export default function ReviewManagement({ sessionId, darkMode }: Props) {
   const [mainTab, setMainTab] = useState<'reviews' | 'response'>('reviews')
   const [platform, setPlatform] = useState<'google' | 'yelp' | 'facebook'>('google')
 
@@ -252,7 +252,7 @@ export default function ReviewManagement({ sessionId }: Props) {
 
               {loading && (
                 <div className="mt-6 flex items-center gap-3 text-muted font-mono text-sm">
-                  <span className="w-4 h-4 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: darkMode ? '#f0f0f0 transparent transparent transparent' : '#1a1a1a transparent transparent transparent' }} />
                   Crafting a professional response...
                 </div>
               )}

@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 
-interface Props { sessionId: string }
+interface Props { sessionId: string; darkMode?: boolean }
 
 interface FbVar { headline: string; primaryText: string; description: string }
 interface IgVar { caption: string }
@@ -49,7 +49,7 @@ function VarTabs({ count, active, onChange }: { count: number; active: number; o
   )
 }
 
-export default function AdCreative({ sessionId }: Props) {
+export default function AdCreative({ sessionId, darkMode }: Props) {
   const [businessName, setBusinessName] = useState('')
   const [promotion, setPromotion] = useState('')
   const [description, setDescription] = useState('')
@@ -203,7 +203,7 @@ export default function AdCreative({ sessionId }: Props) {
 
           {loading && (
             <div className="mt-6 flex items-center gap-3 text-muted font-mono text-sm">
-              <span className="w-4 h-4 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: darkMode ? '#f0f0f0 transparent transparent transparent' : '#1a1a1a transparent transparent transparent' }} />
               Creating platform-optimized ad copy...
             </div>
           )}

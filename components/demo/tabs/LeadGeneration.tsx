@@ -5,6 +5,7 @@ import { useState } from 'react'
 interface Props {
   sessionId: string
   onImportContacts: (leads: { businessName: string; email: string }[]) => void
+  darkMode?: boolean
 }
 
 interface Lead {
@@ -18,7 +19,7 @@ interface Lead {
 
 interface LeadResult { leads: Lead[] }
 
-export default function LeadGeneration({ sessionId, onImportContacts }: Props) {
+export default function LeadGeneration({ sessionId, onImportContacts, darkMode }: Props) {
   const [industry, setIndustry] = useState('')
   const [location, setLocation] = useState('')
   const [clientDescription, setClientDescription] = useState('')
@@ -156,7 +157,7 @@ export default function LeadGeneration({ sessionId, onImportContacts }: Props) {
 
           {loading && (
             <div className="mt-6 flex items-center gap-3 text-muted font-mono text-sm">
-              <span className="w-4 h-4 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: darkMode ? '#f0f0f0 transparent transparent transparent' : '#1a1a1a transparent transparent transparent' }} />
               Researching leads and writing personalized emails...
             </div>
           )}
@@ -246,8 +247,8 @@ export default function LeadGeneration({ sessionId, onImportContacts }: Props) {
               disabled={imported}
               className="font-mono text-sm px-6 py-3 rounded tracking-wider border transition-all flex-1 sm:flex-none"
               style={imported
-                ? { borderColor: '#d0d0d0', color: '#3a6a8a' }
-                : { borderColor: '#b0b0b0', color: '#333333', backgroundColor: 'transparent' }
+                ? { borderColor: darkMode ? '#444444' : '#d0d0d0', color: '#3a6a8a' }
+                : { borderColor: darkMode ? '#555555' : '#b0b0b0', color: darkMode ? '#cccccc' : '#333333', backgroundColor: 'transparent' }
               }
             >
               {imported ? 'Imported to Email Marketing' : 'Import to Email Marketing'}

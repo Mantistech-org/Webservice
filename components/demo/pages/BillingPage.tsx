@@ -15,7 +15,7 @@ const INVOICES = [
   { date: 'Dec 1, 2025',  desc: 'Setup fee + first month', amount: '$220.00', status: 'Paid' },
 ]
 
-export default function BillingPage() {
+export default function BillingPage({ darkMode }: { darkMode?: boolean }) {
   const [showUpgrade, setShowUpgrade] = useState(false)
   const [showPayment, setShowPayment] = useState(false)
   const [showCancel, setShowCancel] = useState(false)
@@ -66,7 +66,11 @@ export default function BillingPage() {
           {!cancelled && (
             <button
               onClick={() => setShowUpgrade(true)}
-              className="shrink-0 font-mono text-xs border border-[#1a1a1a] text-[#1a1a1a] px-4 py-2 rounded hover:bg-[#1a1a1a] hover:text-white transition-colors"
+              className="shrink-0 font-mono text-xs px-4 py-2 rounded transition-colors"
+              style={{
+                border: `1px solid ${darkMode ? '#f0f0f0' : '#1a1a1a'}`,
+                color: darkMode ? '#f0f0f0' : '#1a1a1a',
+              }}
             >
               Upgrade Plan
             </button>
@@ -107,8 +111,8 @@ export default function BillingPage() {
           <div className="flex items-center gap-3">
             <div className="w-10 h-7 bg-[#d8d8d8] rounded flex items-center justify-center">
               <svg width="20" height="14" viewBox="0 0 32 22" fill="none">
-                <rect width="32" height="22" rx="3" fill="#e0e0e0" />
-                <rect x="2" y="8" width="28" height="2" fill="#aaaaaa" />
+                <rect width="32" height="22" rx="3" fill={darkMode ? '#3a3a3a' : '#e0e0e0'} />
+                <rect x="2" y="8" width="28" height="2" fill={darkMode ? '#555555' : '#aaaaaa'} />
               </svg>
             </div>
             <span className="font-mono text-xs text-[#1a1a1a]">Visa ending in 4242</span>

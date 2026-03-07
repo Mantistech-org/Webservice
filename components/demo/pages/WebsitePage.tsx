@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-export default function WebsitePage() {
+export default function WebsitePage({ darkMode }: { darkMode?: boolean }) {
   const [request, setRequest] = useState('')
   const [submitted, setSubmitted] = useState(false)
 

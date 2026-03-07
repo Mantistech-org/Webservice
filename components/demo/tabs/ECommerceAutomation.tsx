@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 
-interface Props { sessionId: string; initialSubTab?: 'automations' | 'inventory' | 'sales' }
+interface Props { sessionId: string; initialSubTab?: 'automations' | 'inventory' | 'sales'; darkMode?: boolean }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -149,7 +149,7 @@ function EditableEmailCard({
 
 // ── Automated Emails + Follow Up Emails sub-tab ───────────────────────────────
 
-function AutomatedEmails({ sessionId }: { sessionId: string }) {
+function AutomatedEmails({ sessionId, darkMode }: { sessionId: string; darkMode?: boolean }) {
   const [automations, setAutomations] = useState(INITIAL_AUTOMATIONS)
   const [editing, setEditing] = useState<number | null>(null)
   const [editSubject, setEditSubject] = useState('')
@@ -303,7 +303,7 @@ function AutomatedEmails({ sessionId }: { sessionId: string }) {
 
             {loading && (
               <div className="mt-6 flex items-center gap-3 text-muted font-mono text-sm">
-                <span className="w-4 h-4 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
+                <span className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: darkMode ? '#f0f0f0 transparent transparent transparent' : '#1a1a1a transparent transparent transparent' }} />
                 Writing your follow up email sequences...
               </div>
             )}
@@ -561,7 +561,7 @@ function Sales() {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export default function ECommerceAutomation({ sessionId, initialSubTab = 'automations' }: Props) {
+export default function ECommerceAutomation({ sessionId, initialSubTab = 'automations', darkMode }: Props) {
   const [activeSubTab, setActiveSubTab] = useState<'automations' | 'inventory' | 'sales'>(initialSubTab)
 
   useEffect(() => {
@@ -595,7 +595,7 @@ export default function ECommerceAutomation({ sessionId, initialSubTab = 'automa
         ))}
       </div>
 
-      {activeSubTab === 'automations' && <AutomatedEmails sessionId={sessionId} />}
+      {activeSubTab === 'automations' && <AutomatedEmails sessionId={sessionId} darkMode={darkMode} />}
       {activeSubTab === 'inventory'   && <Inventory />}
       {activeSubTab === 'sales'       && <Sales />}
 

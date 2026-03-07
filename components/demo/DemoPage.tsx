@@ -34,7 +34,14 @@ export default function DemoView() {
   const [gateInput, setGateInput] = useState('')
   const [gateType, setGateType] = useState('')
   const [gateSubmitted, setGateSubmitted] = useState(false)
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    try { return localStorage.getItem('demo-dark-mode') === 'true' } catch { return false }
+  })
   const mountedPages = useRef<Set<DemoView>>(new Set())
+
+  useEffect(() => {
+    try { localStorage.setItem('demo-dark-mode', String(darkMode)) } catch {}
+  }, [darkMode])
 
   useEffect(() => {
     const stored = sessionStorage.getItem('demo-session-id')
@@ -97,13 +104,13 @@ export default function DemoView() {
 
   const renderPage = (page: DemoView) => {
     switch (page) {
-      case 'dashboard':  return <DashboardHome businessName={businessName} />
-      case 'website':    return <WebsitePage />
-      case 'review':     return <ReviewManagement sessionId={sessionId} />
-      case 'social':     return <SocialMedia sessionId={sessionId} />
-      case 'leads':      return <LeadGeneration sessionId={sessionId} onImportContacts={handleImportFromLeads} />
-      case 'email':      return <EmailMarketing sessionId={sessionId} contacts={contacts} onAddContacts={handleAddContacts} />
-      case 'seo':        return <SEOOptimization sessionId={sessionId} />
+      case 'dashboard':  return <DashboardHome businessName={businessName} darkMode={darkMode} />
+      case 'website':    return <WebsitePage darkMode={darkMode} />
+      case 'review':     return <ReviewManagement sessionId={sessionId} darkMode={darkMode} />
+      case 'social':     return <SocialMedia sessionId={sessionId} darkMode={darkMode} />
+      case 'leads':      return <LeadGeneration sessionId={sessionId} onImportContacts={handleImportFromLeads} darkMode={darkMode} />
+      case 'email':      return <EmailMarketing sessionId={sessionId} contacts={contacts} onAddContacts={handleAddContacts} darkMode={darkMode} />
+      case 'seo':        return <SEOOptimization sessionId={sessionId} darkMode={darkMode} />
       case 'ecommerce':
       case 'ecommerce-inventory':
       case 'ecommerce-automations':
@@ -111,31 +118,39 @@ export default function DemoView() {
           <ECommerceAutomation
             sessionId={sessionId}
             initialSubTab={page === 'ecommerce-inventory' ? 'inventory' : 'automations'}
+            darkMode={darkMode}
           />
         )
-      case 'ads':        return <AdCreative sessionId={sessionId} />
-      case 'chatbot':    return <WebsiteChatbot sessionId={sessionId} />
-      case 'calendar':   return <CalendarPage />
-      case 'billing':    return <BillingPage />
-      default:           return <DashboardHome businessName={businessName} />
+      case 'ads':        return <AdCreative sessionId={sessionId} darkMode={darkMode} />
+      case 'chatbot':    return <WebsiteChatbot sessionId={sessionId} darkMode={darkMode} />
+      case 'calendar':   return <CalendarPage darkMode={darkMode} />
+      case 'billing':    return <BillingPage darkMode={darkMode} />
+      default:           return <DashboardHome businessName={businessName} darkMode={darkMode} />
     }
   }
 
   if (!gateSubmitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: '#fafaf8' }}>
+      <div
+        className={darkMode ? 'demo-page demo-dark' : 'demo-page'}
+        style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 1.5rem' }}
+      >
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-4">
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#00ff88' }} />
-              <span className="font-heading text-xl" style={{ color: '#1a1a1a' }}>Mantis Tech Demo</span>
+              <span className="font-heading text-xl" style={{ color: darkMode ? '#f0f0f0' : '#1a1a1a' }}>Mantis Tech Demo</span>
             </div>
-            <h1 className="font-heading text-4xl mb-3" style={{ color: '#1a1a1a' }}>Welcome to Your Demo</h1>
+            <h1 className="font-heading text-4xl mb-3" style={{ color: darkMode ? '#f0f0f0' : '#1a1a1a' }}>Welcome to Your Demo</h1>
             <p className="font-mono text-sm" style={{ color: '#888888' }}>
               Enter your business name to personalize the experience.
             </p>
           </div>
-          <form onSubmit={handleGateSubmit} className="bg-white border rounded-lg p-8 shadow-sm space-y-4" style={{ borderColor: '#e0e0e0' }}>
+          <form
+            onSubmit={handleGateSubmit}
+            className="border rounded-lg p-8 shadow-sm space-y-4"
+            style={{ backgroundColor: darkMode ? '#1a1a1a' : '#ffffff', borderColor: darkMode ? '#333333' : '#e0e0e0' }}
+          >
             <div>
               <label className="font-mono text-xs tracking-widest uppercase block mb-2" style={{ color: '#888888' }}>Business Name</label>
               <input
@@ -146,18 +161,26 @@ export default function DemoView() {
                 required
                 autoFocus
                 className="w-full border rounded px-4 py-3 font-mono text-sm focus:outline-none transition-colors"
-                style={{ backgroundColor: '#f5f5f5', borderColor: '#d0d0d0', color: '#1a1a1a' }}
+                style={{
+                  backgroundColor: darkMode ? '#252525' : '#f5f5f5',
+                  borderColor: darkMode ? '#3a3a3a' : '#d0d0d0',
+                  color: darkMode ? '#f0f0f0' : '#1a1a1a',
+                }}
               />
             </div>
             <div>
-              <label className="font-mono text-xs tracking-widest uppercase block mb-2" style={{ color: '#888888' }}>Business Type <span style={{ color: '#aaaaaa' }}>(optional)</span></label>
+              <label className="font-mono text-xs tracking-widest uppercase block mb-2" style={{ color: '#888888' }}>Business Type <span style={{ color: darkMode ? '#555555' : '#aaaaaa' }}>(optional)</span></label>
               <input
                 type="text"
                 value={gateType}
                 onChange={(e) => setGateType(e.target.value)}
                 placeholder="e.g. Auto Repair, Restaurant, Law Firm"
                 className="w-full border rounded px-4 py-3 font-mono text-sm focus:outline-none transition-colors"
-                style={{ backgroundColor: '#f5f5f5', borderColor: '#d0d0d0', color: '#1a1a1a' }}
+                style={{
+                  backgroundColor: darkMode ? '#252525' : '#f5f5f5',
+                  borderColor: darkMode ? '#3a3a3a' : '#d0d0d0',
+                  color: darkMode ? '#f0f0f0' : '#1a1a1a',
+                }}
               />
             </div>
             <button
@@ -167,7 +190,7 @@ export default function DemoView() {
             >
               Enter Demo
             </button>
-            <p className="font-mono text-xs text-center" style={{ color: '#aaaaaa' }}>
+            <p className="font-mono text-xs text-center" style={{ color: darkMode ? '#555555' : '#aaaaaa' }}>
               No sign-up required. All tools are fully functional.
             </p>
           </form>
@@ -177,12 +200,18 @@ export default function DemoView() {
   }
 
   return (
-    <div style={{ backgroundColor: '#fafaf8', minHeight: '100vh' }}>
-      <TopBar onToggleSidebar={() => setSidebarExpanded((v) => !v)} onNavigate={setActivePage} />
+    <div className={darkMode ? 'demo-page demo-dark' : 'demo-page'} style={{ minHeight: '100vh' }}>
+      <TopBar
+        onToggleSidebar={() => setSidebarExpanded((v) => !v)}
+        onNavigate={setActivePage}
+        darkMode={darkMode}
+        onToggleDark={() => setDarkMode((v) => !v)}
+      />
       <Sidebar
         expanded={sidebarExpanded}
         activePage={activePage}
         onNavigate={setActivePage}
+        darkMode={darkMode}
       />
 
       <main

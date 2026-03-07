@@ -580,6 +580,22 @@ export default function IntakeForm() {
               Add-ons included in your plan are shown below. Select extras to add to your monthly rate.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Booking Calendar — always included on every plan */}
+              <div className="flex items-center gap-4 p-4 rounded border border-[#16a34a]/40 bg-[#16a34a]/5 cursor-default">
+                <div className="w-5 h-5 rounded border-2 border-[#16a34a] flex items-center justify-center shrink-0">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="3.5">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm text-primary font-medium">Booking Calendar</div>
+                  <div className="text-xs text-muted mt-0.5">An automated booking calendar that lets customers schedule appointments directly from your website, with automatic confirmation emails.</div>
+                </div>
+                <div className="font-mono text-sm shrink-0 text-[#16a34a] font-medium">
+                  Included
+                </div>
+              </div>
+
               {ADDONS.map((addon) => {
                 const tierStatus = getAddonTierStatus(addon.id, form.plan)
                 const isIncluded = tierStatus === 'included'

@@ -2,11 +2,11 @@
 
 import { useState, useRef, useEffect } from 'react'
 
-interface Props { sessionId: string }
+interface Props { sessionId: string; darkMode?: boolean }
 interface Message { role: 'user' | 'assistant'; content: string }
 interface BusinessContext { businessName: string; hours: string; services: string; faqs: string }
 
-export default function WebsiteChatbot({ sessionId }: Props) {
+export default function WebsiteChatbot({ sessionId, darkMode }: Props) {
   const [businessName, setBusinessName] = useState('')
   const [hours, setHours] = useState('')
   const [services, setServices] = useState('')

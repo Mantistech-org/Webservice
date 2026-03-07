@@ -91,6 +91,7 @@ export interface Addon {
 }
 
 export const ADDONS: Addon[] = [
+  { id: 'email-with-domain', label: 'Email with Domain', price: 12, description: 'A professional email address at your own domain builds trust instantly. We set it up and manage it so you always look established and credible.' },
   { id: 'review-management', label: 'Review Management', price: 19, description: 'Most customers check reviews before choosing a business. We automatically filter your best reviews and post them to Google, building your reputation on autopilot while keeping negative feedback private until you can address it.' },
   { id: 'social-media-automation', label: 'Social Media Automation', price: 24, description: 'Staying active on social media is a full time job. Upload a photo and we handle the rest, turning it into a polished ad and posting it across all your platforms automatically.' },
   { id: 'lead-generation', label: 'Automated Lead Generation and Outreach', price: 30, description: 'We find and compile targeted lists of potential customers that match your ideal client profile, including contact information and business details. Add Automated Email Marketing to enable full automated outreach to these lists.' },
@@ -99,7 +100,6 @@ export const ADDONS: Addon[] = [
   { id: 'ad-creative-generation', label: 'Ad Creative Generation', price: 19, description: 'Fully automates creating and running ads across all major platforms including Facebook, Instagram, and Google. Upload a photo or product and ads are created, targeted, and published automatically.' },
   { id: 'website-chatbot', label: 'Website Chatbot', price: 15, description: 'Most visitors leave without contacting you. Our chatbot engages them instantly, answers common questions and captures their information so you never miss a lead, even at 2am.' },
   { id: 'email-marketing', label: 'Automated Email Marketing', price: 15, description: 'Sends automated email campaigns to your contact lists, including lead lists generated through the Automated Lead Generation service. When paired with Lead Generation, this enables fully automated prospecting and outreach.' },
-  { id: 'email-with-domain', label: 'Email with Domain', price: 12, description: 'A professional email address at your own domain builds trust instantly. We set it up and manage it so you always look established and credible.' },
 ]
 
 export const PLAN_INCLUDED_ADDONS: Record<Plan, string[]> = {

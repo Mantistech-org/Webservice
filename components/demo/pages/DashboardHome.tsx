@@ -1,5 +1,8 @@
 'use client'
 
+interface LineChartProps { darkMode?: boolean }
+interface DashboardProps { businessName?: string; darkMode?: boolean }
+
 const STATS = [
   { label: 'Website Visitors', value: '2,847', change: '+12%', up: true },
   { label: 'Leads Captured', value: '134', change: '+8%', up: true },
@@ -50,7 +53,7 @@ const ACTIVITY = [
   },
 ]
 
-function LineChart() {
+function LineChart({ darkMode }: LineChartProps) {
   const w = 480
   const h = 140
   const pad = { top: 12, right: 12, bottom: 24, left: 36 }
@@ -75,8 +78,8 @@ function LineChart() {
         const y = pad.top + ih * (1 - t)
         return (
           <g key={t}>
-            <line x1={pad.left} y1={y} x2={pad.left + iw} y2={y} stroke="#d0d0d0" strokeWidth="0.5" />
-            <text x={pad.left - 6} y={y + 4} textAnchor="end" fontSize="8" fill="#999">
+            <line x1={pad.left} y1={y} x2={pad.left + iw} y2={y} stroke={darkMode ? '#333333' : '#d0d0d0'} strokeWidth="0.5" />
+            <text x={pad.left - 6} y={y + 4} textAnchor="end" fontSize="8" fill={darkMode ? '#666666' : '#999'}>
               {Math.round(min + t * range)}
             </text>
           </g>
@@ -94,7 +97,7 @@ function LineChart() {
           y={h - 4}
           textAnchor="middle"
           fontSize="8"
-          fill="#999"
+          fill={darkMode ? '#666666' : '#999'}
         >
           {m}
         </text>
@@ -105,7 +108,7 @@ function LineChart() {
   )
 }
 
-export default function DashboardHome({ businessName }: { businessName?: string }) {
+export default function DashboardHome({ businessName, darkMode }: DashboardProps) {
   return (
     <div className="space-y-6">
       <div>
@@ -132,7 +135,7 @@ export default function DashboardHome({ businessName }: { businessName?: string 
           <div className="font-mono text-xs text-[#888888] tracking-widest uppercase mb-4">
             Website Traffic (12 months)
           </div>
-          <LineChart />
+          <LineChart darkMode={darkMode} />
         </div>
 
         <div className="bg-[#e8e8e8] border border-[#d0d0d0] rounded p-5">
