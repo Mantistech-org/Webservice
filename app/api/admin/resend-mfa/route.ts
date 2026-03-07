@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Resend } from 'resend'
+import { sendAdminMfaCodeEmail } from '@/lib/resend'
 import fs from 'fs'
 import path from 'path'
 
@@ -27,17 +27,7 @@ export async function POST(req: NextRequest) {
   config.mfaExpires = String(expires)
   writeConfig(config)
 
-  const adminEmail = process.env.ADMIN_EMAIL ?? ''
-  if (adminEmail) {
-    const resend = new Resend(process.env.RESEND_API_KEY ?? 'placeholder')
-    const FROM = process.env.EMAIL_FROM ?? 'no-reply@mantistech.io'
-    await resend.emails.send({
-      from: FROM,
-      to: adminEmail,
-      subject: 'Mantis Tech Admin Login Code',
-      html: `<p>Your new verification code is:</p><p style="font-size:32px;font-weight:bold;letter-spacing:8px;">${code}</p><p>This code expires in 10 minutes.</p>`,
-    }).catch(() => { /* non-fatal */ })
-  }
+  await sendAdminMfaCodeEmail(code).catch(() => { /* non-fatal */ })
 
   return NextResponse.json({ success: true })
 }

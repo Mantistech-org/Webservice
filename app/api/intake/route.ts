@@ -212,13 +212,7 @@ export async function POST(req: NextRequest) {
   // 3b: Admin notification
   console.log('[intake] EMAIL SEND ATTEMPTED — admin notification')
   try {
-    await sendAdminNewProjectEmail({
-      projectId,
-      adminToken,
-      businessName: businessName as string,
-      ownerName: ownerName as string,
-      plan: plan as Plan,
-    })
+    await sendAdminNewProjectEmail(project)
     console.log('[intake] EMAIL SEND COMPLETE — admin notification sent')
   } catch (emailErr) {
     console.error('[intake] Admin notification email failed:', emailErr)

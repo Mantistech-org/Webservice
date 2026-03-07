@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Resend } from 'resend'
+import { sendAdminPasswordResetEmail } from '@/lib/resend'
 import fs from 'fs'
 import path from 'path'
 import crypto from 'crypto'
@@ -40,15 +40,8 @@ export async function POST(req: NextRequest) {
   config.resetTokenExpires = String(expires)
   writeConfig(config)
 
-  const resend = new Resend(process.env.RESEND_API_KEY ?? 'placeholder')
-  const FROM = process.env.EMAIL_FROM ?? 'no-reply@mantistech.io'
-
-  await resend.emails.send({
-    from: FROM,
-    to: adminEmail,
-    subject: 'Mantis Tech Admin Password Reset',
-    html: `<p>Your password reset token is:</p><p><strong>${token}</strong></p><p>This token expires in 30 minutes. Go to <a href="${process.env.NEXT_PUBLIC_BASE_URL}/admin/reset-password">${process.env.NEXT_PUBLIC_BASE_URL}/admin/reset-password</a> to complete the reset.</p>`,
-  })
+  const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'}/admin/reset-password`
+  await sendAdminPasswordResetEmail({ token, resetUrl }).catch(() => { /* non-fatal */ })
 
   return NextResponse.json({ success: true })
 }
