@@ -16,7 +16,10 @@ function getResend() {
 // ── Wrapper that turns Resend's { data, error } return into a real throw ──────
 async function send(payload: Parameters<Resend['emails']['send']>[0]): Promise<string> {
   console.log(`[resend] send() from="${payload.from}" to="${Array.isArray(payload.to) ? payload.to.join(',') : payload.to}" subject="${payload.subject}"`)
-  const { data, error } = await getResend().emails.send(payload)
+  const { data, error } = await getResend().emails.send({
+    ...payload,
+    ...(ADMIN_EMAIL ? { reply_to: ADMIN_EMAIL } : {}),
+  })
   if (error) {
     console.error('[resend] Resend API error:', JSON.stringify(error))
     throw new Error(`[resend] ${error.name}: ${error.message}`)
