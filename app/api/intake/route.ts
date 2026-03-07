@@ -5,7 +5,7 @@ import path from 'path'
 import { Project, Plan } from '@/types'
 import { saveProject } from '@/lib/db'
 import { generateWebsite } from '@/lib/anthropic'
-import { sendAdminNewProjectEmail } from '@/lib/resend'
+import { sendAdminNewProjectEmail, sendIntakeConfirmationEmail } from '@/lib/resend'
 
 // No maxDuration needed — response returns immediately now
 export const maxDuration = 30
@@ -186,14 +186,30 @@ export async function POST(req: NextRequest) {
       // Project is already saved without HTML — admin will generate manually
     })
 
-  // ── Step 3: Notify admin (fire-and-forget) ─────────────────────────────────
+  // ── Step 3a: Confirmation email to client (fire-and-forget) ─────────────────
+  console.log(`[intake] Sending intake confirmation email to client: ${email as string}`)
+  console.log('[intake] RESEND_API_KEY present:', !!process.env.RESEND_API_KEY)
+  console.log('[intake] EMAIL_FROM:', process.env.EMAIL_FROM ?? '(not set)')
+  sendIntakeConfirmationEmail({
+    businessName: businessName as string,
+    ownerName: ownerName as string,
+    email: email as string,
+    plan: plan as string,
+  })
+    .then(() => console.log(`[intake] Client confirmation email sent to ${email as string}`))
+    .catch((err) => console.error('[intake] Failed to send client confirmation email:', err))
+
+  // ── Step 3b: Notify admin (fire-and-forget) ──────────────────────────────────
+  console.log(`[intake] Sending new project notification email to admin`)
   sendAdminNewProjectEmail({
     projectId,
     adminToken,
     businessName: businessName as string,
     ownerName: ownerName as string,
     plan: plan as Plan,
-  }).catch((err) => console.error('[intake] Failed to send admin email:', err))
+  })
+    .then(() => console.log('[intake] Admin notification email sent'))
+    .catch((err) => console.error('[intake] Failed to send admin email:', err))
 
   // ── Step 4: Return success immediately ─────────────────────────────────────
   console.log(`[intake] Returning 201 success to client immediately (id=${projectId})`)

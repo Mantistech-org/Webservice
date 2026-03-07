@@ -5,7 +5,11 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? ''
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
 
 function getResend() {
-  return new Resend(process.env.RESEND_API_KEY ?? 'placeholder')
+  const key = process.env.RESEND_API_KEY
+  if (!key) {
+    console.error('[resend] RESEND_API_KEY is not set — emails will fail')
+  }
+  return new Resend(key ?? 'missing-key')
 }
 
 export async function sendAdminNewProjectEmail(params: {
@@ -190,6 +194,47 @@ export async function sendClientChangeResponseEmail(params: {
       </div>
     `,
   })
+}
+
+export async function sendIntakeConfirmationEmail(params: {
+  businessName: string
+  ownerName: string
+  email: string
+  plan: string
+}) {
+  const { businessName, ownerName, email, plan } = params
+
+  console.log(`[resend] sendIntakeConfirmationEmail — to: ${email}, business: ${businessName}`)
+  console.log('[resend] EMAIL_FROM:', process.env.EMAIL_FROM ?? '(not set, using default)')
+  console.log('[resend] RESEND_API_KEY present:', !!process.env.RESEND_API_KEY)
+
+  const result = await getResend().emails.send({
+    from: FROM,
+    to: email,
+    subject: `We Received Your Request: ${businessName}`,
+    html: `
+      <div style="font-family: monospace; background: #080c10; color: #e0e0e0; padding: 32px; border-radius: 8px; max-width: 600px;">
+        <h1 style="color: #00ff88; font-size: 24px; margin-bottom: 8px;">Request Received</h1>
+        <p style="color: #8ab8b5; margin-bottom: 8px;">Hi ${ownerName},</p>
+        <p style="color: #e0e0e0; margin-bottom: 16px;">
+          Thank you for submitting your project request for <strong>${businessName}</strong>.
+          Our team is reviewing your submission and will be in touch shortly with next steps.
+        </p>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; background: #0d1117; border-radius: 4px; padding: 16px;">
+          <tr><td style="padding: 8px 16px; color: #5a6a7a; width: 100px;">Business</td><td style="padding: 8px 16px; color: #e0e0e0;">${businessName}</td></tr>
+          <tr><td style="padding: 8px 16px; color: #5a6a7a;">Plan</td><td style="padding: 8px 16px; color: #00ff88; text-transform: capitalize;">${plan}</td></tr>
+        </table>
+        <p style="color: #8ab8b5; margin-bottom: 8px;">
+          If you have any questions in the meantime, call us at
+          <a href="tel:+15016690488" style="color: #00ff88; text-decoration: none;">(501) 669-0488</a>.
+        </p>
+        <p style="color: #5a6a7a; font-size: 12px; margin-top: 24px;">Mantis Tech &mdash; mantistech.io</p>
+      </div>
+    `,
+  })
+
+  console.log('[resend] sendIntakeConfirmationEmail result:', JSON.stringify(result))
+  return result
 }
 
 export async function sendClientNotificationEmail(params: {

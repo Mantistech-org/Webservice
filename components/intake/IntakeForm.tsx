@@ -333,10 +333,7 @@ export default function IntakeForm() {
           </div>
           <h2 className="font-heading text-5xl text-primary mb-4">Request Received</h2>
           <p className="text-teal leading-relaxed mb-4">
-            Our team is reviewing your submission and will begin building your website shortly. You will receive an email from us within 24 hours with next steps and a link to review your new site before it goes live.
-          </p>
-          <p className="text-teal leading-relaxed mb-2">
-            If you have any questions in the meantime call us at{' '}
+            Our team is reviewing your submission and will be in touch shortly with next steps. If you have any questions in the meantime call us at{' '}
             <a href="tel:+15016690488" className="text-accent hover:underline">(501) 669-0488</a>.
           </p>
           <p className="font-mono text-sm text-muted">
