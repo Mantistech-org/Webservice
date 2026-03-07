@@ -4,7 +4,6 @@ import fs from 'fs'
 import path from 'path'
 import { Project, Plan } from '@/types'
 import { saveProject } from '@/lib/db'
-import { generateWebsite } from '@/lib/anthropic'
 import { sendAdminNewProjectEmail, sendIntakeConfirmationEmail } from '@/lib/resend'
 
 // No maxDuration needed — response returns immediately now
@@ -168,23 +167,17 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // ── Step 2: Fire-and-forget AI generation ──────────────────────────────────
-  // DO NOT await this — return success to the client immediately.
-  // Railway kills requests at 30s; AI generation takes 30-90s.
-  // The generation runs in the background after the response is sent.
-  console.log(`[intake] Kicking off background AI generation for ${projectId}`)
-  generateWebsite(project)
-    .then(async (html) => {
-      console.log(`[intake:bg] AI generation succeeded for ${projectId}, saving HTML`)
-      project.generatedHtml = html
-      project.updatedAt = new Date().toISOString()
-      await saveProject(project)
-      console.log(`[intake:bg] Project updated with generated HTML (id=${projectId})`)
-    })
-    .catch((err) => {
-      console.error(`[intake:bg] AI generation failed for ${projectId}:`, err)
-      // Project is already saved without HTML — admin will generate manually
-    })
+  // ── Step 2: Trigger AI generation via separate long-running endpoint ───────
+  // Non-blocking fetch to /api/generate — do not await so the response
+  // returns immediately while generation runs in its own request lifecycle.
+  console.log(`[intake] Triggering background AI generation for ${projectId}`)
+  fetch(`${req.nextUrl.origin}/api/generate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ projectId }),
+  }).catch((err) => {
+    console.error(`[intake] Failed to trigger /api/generate for ${projectId}:`, err)
+  })
 
   // ── Step 3: Send emails (awaited — fire-and-forget is unreliable in Next.js) ──
   // Next.js App Router does not guarantee unawaited promises complete after the

@@ -65,14 +65,14 @@ OUTPUT: Respond with ONLY the complete HTML file starting with <!DOCTYPE html> a
 
   console.log(`[anthropic] Starting website generation for project ${project.id} (${project.businessName})`)
 
-  // 30-second timeout on the API call
+  // 120-second timeout on the API call
   const message = await getClient().messages.create(
     {
       model: 'claude-sonnet-4-5',
       max_tokens: 8192,
       messages: [{ role: 'user', content: prompt }],
     },
-    { timeout: 30_000 }
+    { timeout: 120_000 }
   )
 
   console.log(`[anthropic] Generation complete for project ${project.id}, stop_reason=${message.stop_reason}`)
