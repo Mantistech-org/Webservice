@@ -57,7 +57,7 @@ function TitleMockup({ title, url, description }: { title: string; url: string; 
     <BrowserMockup>
       <div className="space-y-0.5">
         <div className="font-mono text-xs text-[#aaaaaa] mb-2">Search result preview</div>
-        <div className="text-blue-500 text-sm font-medium leading-snug border border-dashed border-[#4ade80] rounded px-2 py-0.5 inline-block">
+        <div className="text-[#00ff88] text-sm font-medium leading-snug border border-dashed border-[#4ade80] rounded px-2 py-0.5 inline-block">
           {title}
         </div>
         <div className="font-mono text-xs text-[#16a34a]">{url}</div>
@@ -76,7 +76,7 @@ function MetaMockup({ title, url, description }: { title: string; url: string; d
     <BrowserMockup>
       <div className="space-y-0.5">
         <div className="font-mono text-xs text-[#aaaaaa] mb-2">Search result preview</div>
-        <div className="text-blue-500 text-sm font-medium leading-snug">{title}</div>
+        <div className="text-[#00ff88] text-sm font-medium leading-snug">{title}</div>
         <div className="font-mono text-xs text-[#16a34a]">{url}</div>
         <div className="font-mono text-xs text-[#555555] leading-relaxed border border-dashed border-[#4ade80] rounded px-2 py-1">
           {description}
@@ -419,7 +419,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
                 <div className="p-6 space-y-4">
                   {result.pageTitles.map((title, i) => (
                     <div key={i} className="bg-[#efefef] border border-[#d0d0d0] rounded p-4">
-                      <div className="text-blue-400 text-sm font-medium mb-1">{title}</div>
+                      <div className="text-[#00ff88] text-sm font-medium mb-1">{title}</div>
                       <div className="font-mono text-xs text-muted mb-1">{businessName} &middot; {location}</div>
                       {result.metaDescriptions[i] && (
                         <div className="font-mono text-xs text-teal leading-relaxed">{result.metaDescriptions[i]}</div>

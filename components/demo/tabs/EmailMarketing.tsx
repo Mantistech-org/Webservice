@@ -60,10 +60,10 @@ function EmailCard({ email, badge, badgeColor }: { email: EmailItem; badge: stri
 
 const CALENDAR_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const CALENDAR_EVENTS: Record<number, { label: string; color: string }> = {
-  1: { label: 'Welcome 1', color: '#3a6a8a' }, 2: { label: 'Welcome 2', color: '#3a6a8a' },
-  4: { label: 'Welcome 3', color: '#3a6a8a' }, 8: { label: 'Welcome 4', color: '#3a6a8a' },
-  15: { label: 'Welcome 5', color: '#3a6a8a' }, 18: { label: 'Newsletter', color: '#3b82f6' },
-  25: { label: 'Re-engage 1', color: '#f97316' }, 30: { label: 'Welcome 6', color: '#3a6a8a' },
+  1: { label: 'Welcome 1', color: '#00aa55' }, 2: { label: 'Welcome 2', color: '#00aa55' },
+  4: { label: 'Welcome 3', color: '#00aa55' }, 8: { label: 'Welcome 4', color: '#00aa55' },
+  15: { label: 'Welcome 5', color: '#00aa55' }, 18: { label: 'Newsletter', color: '#00ff88' },
+  25: { label: 'Re-engage 1', color: '#f97316' }, 30: { label: 'Welcome 6', color: '#00aa55' },
   31: { label: 'Re-engage 2', color: '#f97316' },
 }
 
@@ -115,7 +115,7 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts, dar
   }
 
   const sourceLabel: Record<DemoContact['source'], string> = { upload: 'Uploaded', leads: 'From Lead Gen' }
-  const sourceColor: Record<DemoContact['source'], string> = { upload: '#3b82f6', leads: '#8ab4cc' }
+  const sourceColor: Record<DemoContact['source'], string> = { upload: '#00ff88', leads: '#4ade80' }
 
   return (
     <div className="space-y-8">
@@ -244,7 +244,7 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts, dar
               )
             })()}
             <div className="flex flex-wrap gap-4 mt-4">
-              {[{ color: '#3a6a8a', label: 'Welcome Sequence' }, { color: '#3b82f6', label: 'Newsletter' }, { color: '#f97316', label: 'Re-engagement' }].map((item) => (
+              {[{ color: '#00aa55', label: 'Welcome Sequence' }, { color: '#00ff88', label: 'Newsletter' }, { color: '#f97316', label: 'Re-engagement' }].map((item) => (
                 <div key={item.label} className="flex items-center gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
                   <span className="font-mono text-xs text-muted">{item.label}</span>
@@ -256,23 +256,23 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts, dar
           {/* Welcome sequence */}
           <div className="bg-card border border-border rounded">
             <div className="px-6 py-4 border-b border-border">
-              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Welcome Sequence</p>
+              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Welcome Sequence</p>
               <h3 className="font-heading text-xl text-primary">{result.welcomeSequence.length} Emails</h3>
               <p className="font-mono text-xs text-muted mt-1">Sent automatically when a contact joins your list</p>
             </div>
             <div className="p-6 space-y-3">
-              {result.welcomeSequence.map((email, i) => <EmailCard key={i} email={email} badge={email.day === 0 ? 'Day 0' : `Day ${email.day}`} badgeColor="#8ab4cc" />)}
+              {result.welcomeSequence.map((email, i) => <EmailCard key={i} email={email} badge={email.day === 0 ? 'Day 0' : `Day ${email.day}`} badgeColor="#4ade80" />)}
             </div>
           </div>
 
           {/* Newsletter */}
           <div className="bg-card border border-border rounded">
             <div className="px-6 py-4 border-b border-border">
-              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3b82f6' }}>Monthly Newsletter</p>
+              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00ff88' }}>Monthly Newsletter</p>
               <h3 className="font-heading text-xl text-primary">Newsletter Template</h3>
               <p className="font-mono text-xs text-muted mt-1">Sent on the first Tuesday of each month</p>
             </div>
-            <div className="p-6"><EmailCard email={result.newsletter} badge="Monthly" badgeColor="#3b82f6" /></div>
+            <div className="p-6"><EmailCard email={result.newsletter} badge="Monthly" badgeColor="#00ff88" /></div>
           </div>
 
           {/* Re-engagement */}

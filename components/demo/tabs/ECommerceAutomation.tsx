@@ -70,8 +70,8 @@ const DELAY_OPTIONS = ['Immediately', '1 day later', '3 days later', '7 days lat
 
 const SEQUENCE_CONFIGS: { key: keyof ECommerceResult; label: string; description: string; color: string }[] = [
   { key: 'abandonedCart', label: 'Abandoned Cart Recovery', description: 'Sends when a shopper leaves without completing checkout', color: '#f97316' },
-  { key: 'postPurchase', label: 'Post-Purchase Follow-up', description: 'Sends immediately after a confirmed order', color: '#3b82f6' },
-  { key: 'restockAlert', label: 'Restock Alert', description: 'Sends when a previously out-of-stock item is available', color: '#8ab4cc' },
+  { key: 'postPurchase', label: 'Post-Purchase Follow-up', description: 'Sends immediately after a confirmed order', color: '#00ff88' },
+  { key: 'restockAlert', label: 'Restock Alert', description: 'Sends when a previously out-of-stock item is available', color: '#4ade80' },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
