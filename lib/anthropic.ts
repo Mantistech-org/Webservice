@@ -4,7 +4,11 @@ import { Project, PLAN_PAGE_LIMITS } from '@/types'
 let _client: Anthropic | null = null
 function getClient(): Anthropic {
   if (!_client) {
-    _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY ?? '' })
+    const apiKey = process.env.ANTHROPIC_API_KEY
+    if (!apiKey) {
+      throw new Error('ANTHROPIC_API_KEY environment variable is not set')
+    }
+    _client = new Anthropic({ apiKey })
   }
   return _client
 }
@@ -59,16 +63,19 @@ TECHNICAL REQUIREMENTS:
 
 OUTPUT: Respond with ONLY the complete HTML file starting with <!DOCTYPE html> and ending with </html>. No markdown, no explanation, no code blocks.`
 
-  const message = await getClient().messages.create({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 8192,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  })
+  console.log(`[anthropic] Starting website generation for project ${project.id} (${project.businessName})`)
+
+  // 30-second timeout on the API call
+  const message = await getClient().messages.create(
+    {
+      model: 'claude-sonnet-4-5',
+      max_tokens: 8192,
+      messages: [{ role: 'user', content: prompt }],
+    },
+    { timeout: 30_000 }
+  )
+
+  console.log(`[anthropic] Generation complete for project ${project.id}, stop_reason=${message.stop_reason}`)
 
   const content = message.content[0]
   if (content.type !== 'text') {

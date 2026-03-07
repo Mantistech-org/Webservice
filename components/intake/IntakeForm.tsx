@@ -118,6 +118,7 @@ export default function IntakeForm() {
   const [customAddonBudget, setCustomAddonBudget] = useState('')
   const [customAddons, setCustomAddons] = useState<Array<{ name: string; description: string; budget: string }>>([])
   const [referralToken, setReferralToken] = useState('')
+  const [successMsg, setSuccessMsg] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const dropRef = useRef<HTMLDivElement>(null)
 
@@ -245,29 +246,50 @@ export default function IntakeForm() {
     }
 
     try {
-      const res = await fetch('/api/intake', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...form,
-          requestedPages: form.requestedPages ? parseInt(form.requestedPages) : undefined,
-          photos: photoData,
-          customAddons: customAddons,
-          referredBy: referralToken || undefined,
-        }),
-      })
+      // 90-second client-side timeout — prevents the browser from hanging
+      // if the server takes too long or the connection drops
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 90_000)
+
+      let res: Response
+      try {
+        res = await fetch('/api/intake', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({
+            ...form,
+            requestedPages: form.requestedPages ? parseInt(form.requestedPages) : undefined,
+            photos: photoData,
+            customAddons: customAddons,
+            referredBy: referralToken || undefined,
+          }),
+        })
+      } finally {
+        clearTimeout(timeoutId)
+      }
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error ?? 'Submission failed. Please try again.')
       }
 
+      const data = await res.json().catch(() => ({}))
+
       // Clear draft on successful submission
       try { localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
+
+      // If AI generation failed on the server, show the fallback message
+      if (data.message) setSuccessMsg(data.message)
+
       setSubmitState('success')
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        setErrorMsg('The request timed out. Your submission may have gone through — check your email or try again.')
+      } else {
+        setErrorMsg(err instanceof Error ? err.message : 'An unexpected error occurred.')
+      }
       setSubmitState('error')
-      setErrorMsg(err instanceof Error ? err.message : 'An unexpected error occurred.')
     }
   }
 
@@ -287,7 +309,7 @@ export default function IntakeForm() {
           </div>
           <h2 className="font-heading text-5xl text-primary mb-4">Submission Received</h2>
           <p className="text-teal leading-relaxed mb-2">
-            We are generating your custom website now. Our team will review it and reach out within 48 hours.
+            {successMsg || 'We are generating your custom website now. Our team will review it and reach out within 48 hours.'}
           </p>
           <p className="font-mono text-sm text-muted">
             Check your inbox at <span className="text-accent">{form.email}</span>
