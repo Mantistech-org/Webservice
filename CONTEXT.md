@@ -49,8 +49,8 @@ admin_review → client_review → changes_requested ↔ client_review → activ
 - SUPABASE_DB_URL (Transaction pooler postgres:// URI from Supabase Project Settings → Connect)
 
 ## Recent Fixes
-- Dockerfile: DNS moved from build time to runtime in CMD so Supabase resolves correctly
 - lib/anthropic.ts: timeout increased from 30s to 120s
 - app/api/generate/route.ts: created with maxDuration 300 to handle long-running AI generation
 - app/api/intake/route.ts: replaced fire-and-forget promise with non-blocking fetch to /api/generate
 - Switched Supabase client from REST API (HTTP) to direct postgres connection via pg pool (Transaction pooler) to bypass Railway Hobby plan DNS restrictions on external HTTP hosts
+- Internal /api/generate fetch uses NEXT_PUBLIC_BASE_URL since Railway private networking does not resolve on Hobby plan
