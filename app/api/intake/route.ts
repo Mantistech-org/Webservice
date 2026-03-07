@@ -7,14 +7,17 @@ import { saveProject } from '@/lib/db'
 import { generateWebsite } from '@/lib/anthropic'
 import { sendAdminNewProjectEmail } from '@/lib/resend'
 
-export const maxDuration = 120 // Allow up to 120s for AI generation
+// No maxDuration needed — response returns immediately now
+export const maxDuration = 30
 
 export async function POST(req: NextRequest) {
-  console.log('[intake] POST /api/intake — start')
+  console.log('[intake] POST /api/intake — start', new Date().toISOString())
 
+  // ── Parse body ─────────────────────────────────────────────────────────────
   let body: Record<string, unknown>
   try {
     body = await req.json()
+    console.log('[intake] Body parsed successfully')
   } catch {
     console.error('[intake] Failed to parse request body')
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
@@ -42,30 +45,43 @@ export async function POST(req: NextRequest) {
     referredBy,
   } = body
 
-  // Validate required fields
-  if (
-    !businessName || !ownerName || !email || !businessType ||
-    !location || !businessDescription || !primaryGoal ||
-    !timeline || !stylePreference || !plan
-  ) {
-    console.error('[intake] Missing required fields')
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+  // ── Validate required fields ────────────────────────────────────────────────
+  const missing = [
+    !businessName && 'businessName',
+    !ownerName && 'ownerName',
+    !email && 'email',
+    !businessType && 'businessType',
+    !location && 'location',
+    !businessDescription && 'businessDescription',
+    !primaryGoal && 'primaryGoal',
+    !timeline && 'timeline',
+    !stylePreference && 'stylePreference',
+    !plan && 'plan',
+  ].filter(Boolean)
+
+  if (missing.length > 0) {
+    console.error('[intake] Missing required fields:', missing)
+    return NextResponse.json({ error: 'Missing required fields', missing }, { status: 400 })
   }
+  console.log('[intake] Validation passed')
 
   const validPlans: Plan[] = ['starter', 'mid', 'pro']
   if (!validPlans.includes(plan as Plan)) {
     console.error('[intake] Invalid plan:', plan)
     return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
   }
+  console.log('[intake] Plan valid:', plan)
 
   // Log env key presence (never log the value)
   console.log('[intake] ANTHROPIC_API_KEY present:', !!process.env.ANTHROPIC_API_KEY)
 
+  // ── Generate IDs ────────────────────────────────────────────────────────────
   const projectId = uuidv4()
   const adminToken = uuidv4()
   const clientToken = uuidv4()
+  console.log(`[intake] Project ID generated: ${projectId}`)
 
-  // Save uploaded photos (best-effort — don't fail the whole request on photo errors)
+  // ── Save uploaded photos (best-effort) ─────────────────────────────────────
   const uploadedFiles: string[] = []
   if (Array.isArray(photos) && photos.length > 0) {
     try {
@@ -91,7 +107,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Build project object
+  // ── Build project object ────────────────────────────────────────────────────
   const project: Project = {
     id: projectId,
     adminToken,
@@ -130,38 +146,39 @@ export async function POST(req: NextRequest) {
     adminNotes: '',
     uploadedFiles,
   }
+  console.log(`[intake] Project object built for "${project.businessName}"`)
 
-  // ── Step 1: Save the project immediately so it is never lost ──────────────
+  // ── Step 1: Save project immediately ───────────────────────────────────────
   try {
     saveProject(project)
-    console.log(`[intake] Project saved (id=${projectId}) before AI generation`)
+    console.log(`[intake] Project saved to DB (id=${projectId})`)
   } catch (dbErr) {
-    console.error('[intake] Failed to save project:', dbErr)
+    console.error('[intake] Failed to save project to DB:', dbErr)
     return NextResponse.json(
       { error: 'Failed to save your project. Please try again.' },
       { status: 500 }
     )
   }
 
-  // ── Step 2: Attempt AI website generation (non-blocking on failure) ───────
-  let aiSucceeded = false
-  try {
-    console.log(`[intake] Calling generateWebsite for project ${projectId}`)
-    const generatedHtml = await generateWebsite(project)
-    project.generatedHtml = generatedHtml
-    project.updatedAt = new Date().toISOString()
+  // ── Step 2: Fire-and-forget AI generation ──────────────────────────────────
+  // DO NOT await this — return success to the client immediately.
+  // Railway kills requests at 30s; AI generation takes 30-90s.
+  // The generation runs in the background after the response is sent.
+  console.log(`[intake] Kicking off background AI generation for ${projectId}`)
+  generateWebsite(project)
+    .then((html) => {
+      console.log(`[intake:bg] AI generation succeeded for ${projectId}, saving HTML`)
+      project.generatedHtml = html
+      project.updatedAt = new Date().toISOString()
+      saveProject(project)
+      console.log(`[intake:bg] Project updated with generated HTML (id=${projectId})`)
+    })
+    .catch((err) => {
+      console.error(`[intake:bg] AI generation failed for ${projectId}:`, err)
+      // Project is already saved without HTML — admin will generate manually
+    })
 
-    // Save again with HTML
-    saveProject(project)
-    aiSucceeded = true
-    console.log(`[intake] AI generation succeeded for project ${projectId}`)
-  } catch (aiErr) {
-    // Log the full error but don't fail the request — project is already saved
-    console.error(`[intake] AI generation failed for project ${projectId}:`, aiErr)
-    // Leave generatedHtml as empty string; admin will be alerted via the project
-  }
-
-  // ── Step 3: Notify admin ──────────────────────────────────────────────────
+  // ── Step 3: Notify admin (fire-and-forget) ─────────────────────────────────
   sendAdminNewProjectEmail({
     projectId,
     adminToken,
@@ -170,17 +187,12 @@ export async function POST(req: NextRequest) {
     plan: plan as Plan,
   }).catch((err) => console.error('[intake] Failed to send admin email:', err))
 
-  console.log(`[intake] Returning success (aiSucceeded=${aiSucceeded})`)
-
+  // ── Step 4: Return success immediately ─────────────────────────────────────
+  console.log(`[intake] Returning 201 success to client immediately (id=${projectId})`)
   return NextResponse.json(
     {
       success: true,
       projectId,
-      aiGenerated: aiSucceeded,
-      // If AI failed, tell the frontend so it can show an appropriate message
-      message: aiSucceeded
-        ? undefined
-        : 'Your project has been received. Our team will have your website ready shortly.',
     },
     { status: 201 }
   )
