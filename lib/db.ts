@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { Project } from '@/types'
-import { pgEnabled, query } from '@/lib/pg'
+import { pgEnabled, query, transaction } from '@/lib/pg'
 
 // ── Local JSON fallback ────────────────────────────────────────────────────────
 const DB_PATH = path.join(process.cwd(), 'data', 'projects.json')
@@ -58,18 +58,22 @@ export async function readProjects(): Promise<Project[]> {
 export async function writeProjects(projects: Project[]): Promise<void> {
   if (pgEnabled) {
     try {
-      for (const p of projects) {
-        await query(
-          `INSERT INTO projects (id, admin_token, client_token, data, created_at, updated_at)
-           VALUES ($1, $2, $3, $4, $5, $6)
-           ON CONFLICT (id) DO UPDATE
-             SET admin_token = EXCLUDED.admin_token,
-                 client_token = EXCLUDED.client_token,
-                 data = EXCLUDED.data,
-                 updated_at = EXCLUDED.updated_at`,
-          [p.id, p.adminToken, p.clientToken, p, p.createdAt, new Date().toISOString()]
-        )
-      }
+      // Use a transaction so a mid-loop failure does not leave pg partially written
+      // while JSON receives all records, causing permanent inconsistency.
+      await transaction(async (client) => {
+        for (const p of projects) {
+          await client.query(
+            `INSERT INTO projects (id, admin_token, client_token, data, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             ON CONFLICT (id) DO UPDATE
+               SET admin_token = EXCLUDED.admin_token,
+                   client_token = EXCLUDED.client_token,
+                   data = EXCLUDED.data,
+                   updated_at = EXCLUDED.updated_at`,
+            [p.id, p.adminToken, p.clientToken, p, p.createdAt, new Date().toISOString()]
+          )
+        }
+      })
       jsonWriteProjects(projects)
       return
     } catch (err) {
