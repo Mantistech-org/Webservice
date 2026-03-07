@@ -26,15 +26,15 @@ export async function POST(req: NextRequest) {
   const config = readConfig()
 
   if (!config.mfaCode || !config.mfaExpires) {
-    return NextResponse.json({ error: 'No pending verification. Please log in again.' }, { status: 400 })
+    return NextResponse.json({ error: 'No pending verification. Please log in again.', type: 'no_code' }, { status: 400 })
   }
 
   if (Date.now() > Number(config.mfaExpires)) {
-    return NextResponse.json({ error: 'Code has expired. Please log in again.' }, { status: 400 })
+    return NextResponse.json({ error: 'Your code has expired. Request a new one below.', type: 'expired' }, { status: 400 })
   }
 
-  if (code !== config.mfaCode) {
-    return NextResponse.json({ error: 'Incorrect code. Please try again.' }, { status: 401 })
+  if (String(code).trim() !== config.mfaCode) {
+    return NextResponse.json({ error: 'Incorrect code. Please try again.', type: 'wrong_code' }, { status: 401 })
   }
 
   // Invalidate the code

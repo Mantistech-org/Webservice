@@ -566,16 +566,16 @@ export async function sendContactFormEmail(params: {
 
 // ── 15. Admin MFA login code ──────────────────────────────────────────────────
 export async function sendAdminMfaCodeEmail(code: string) {
-  if (!ADMIN_EMAIL) return
+  if (!ADMIN_EMAIL) throw new Error('[resend] ADMIN_EMAIL is not configured')
   await send({
     from: FROM,
     to: ADMIN_EMAIL,
-    subject: 'Mantis Tech Admin Login Code',
+    subject: 'Your Mantis Tech Login Code',
     html: emailLayout(`
-      <h1>Login Verification Code</h1>
-      <p>Use the code below to complete your login. It expires in 10 minutes.</p>
+      <h1>Your Login Code</h1>
+      <p>Your login code is shown below. It expires in 10 minutes.</p>
       <div class="code-block">${code}</div>
-      <p class="muted">If you did not attempt to log in, please secure your account immediately.</p>
+      <p class="muted">If you did not request this code, contact us immediately at (501) 669-0488.</p>
     `),
   })
 }

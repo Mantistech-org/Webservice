@@ -80,6 +80,7 @@ export default function AdminPage() {
   const [mfaPending, setMfaPending] = useState(false)
   const [mfaCode, setMfaCode] = useState('')
   const [mfaError, setMfaError] = useState('')
+  const [mfaErrorType, setMfaErrorType] = useState('')
   const [verifying, setVerifying] = useState(false)
   const [resending, setResending] = useState(false)
   const [resent, setResent] = useState(false)
@@ -142,12 +143,16 @@ export default function AdminPage() {
     const data = await res.json()
     if (res.ok && data.mfaRequired) {
       setMfaPending(true)
+      setMfaCode('')
+      setMfaError('')
+      setMfaErrorType('')
+      setResent(false)
     } else if (res.ok) {
       setAuthed(true)
       loadProjects()
       loadDemoSessions()
     } else {
-      setLoginError('Incorrect password.')
+      setLoginError(data.error ?? 'Incorrect password.')
     }
     setLoggingIn(false)
   }
@@ -156,6 +161,7 @@ export default function AdminPage() {
     e.preventDefault()
     setVerifying(true)
     setMfaError('')
+    setMfaErrorType('')
     const res = await fetch('/api/admin/verify-mfa', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -166,8 +172,15 @@ export default function AdminPage() {
       setAuthed(true)
       loadProjects()
       loadDemoSessions()
+    } else if (data.type === 'no_code') {
+      // No pending verification — send back to password screen
+      setMfaPending(false)
+      setMfaCode('')
+      setLoginError('Session expired. Please log in again.')
     } else {
       setMfaError(data.error ?? 'Verification failed.')
+      setMfaErrorType(data.type ?? '')
+      if (data.type !== 'expired') setMfaCode('')
     }
     setVerifying(false)
   }
@@ -175,10 +188,19 @@ export default function AdminPage() {
   const handleResendMfa = async () => {
     setResending(true)
     setResent(false)
-    await fetch('/api/admin/resend-mfa', { method: 'POST' })
-    setResent(true)
+    setMfaError('')
+    setMfaErrorType('')
+    const res = await fetch('/api/admin/resend-mfa', { method: 'POST' })
+    if (res.ok) {
+      setResent(true)
+      setMfaCode('')
+      setTimeout(() => setResent(false), 6000)
+    } else {
+      const data = await res.json().catch(() => ({}))
+      setMfaError(data.error ?? 'Failed to resend code. Check your email configuration.')
+      setMfaErrorType('send_error')
+    }
     setResending(false)
-    setTimeout(() => setResent(false), 4000)
   }
 
   const handleLogout = async () => {
@@ -221,6 +243,7 @@ export default function AdminPage() {
 
   if (!authed) {
     if (mfaPending) {
+      const codeExpired = mfaErrorType === 'expired'
       return (
         <div className="min-h-screen bg-bg flex items-center justify-center px-6">
           <div className="w-full max-w-sm">
@@ -232,7 +255,7 @@ export default function AdminPage() {
               <div className="font-mono text-xs text-accent tracking-widest uppercase mb-2">Admin</div>
               <h1 className="font-heading text-3xl text-white mb-2">Check Your Email</h1>
               <p className="font-mono text-xs text-muted mb-6">
-                A 6-digit code was sent to your admin email. Enter it below to complete login.
+                A 6-digit code was sent to your admin email address. Enter it below to complete login.
               </p>
               <form onSubmit={handleVerifyMfa} className="space-y-4">
                 <div>
@@ -244,37 +267,65 @@ export default function AdminPage() {
                     inputMode="numeric"
                     maxLength={6}
                     value={mfaCode}
-                    onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ''))}
+                    onChange={(e) => { setMfaCode(e.target.value.replace(/\D/g, '')); setMfaError(''); setMfaErrorType('') }}
                     autoFocus
                     required
-                    className="form-input tracking-[0.5em] text-center text-lg"
+                    disabled={codeExpired}
+                    className="form-input tracking-[0.5em] text-center text-lg disabled:opacity-50"
                     placeholder="000000"
                   />
                 </div>
-                {mfaError && <p className="font-mono text-xs text-red-400">{mfaError}</p>}
-                {resent && <p className="font-mono text-xs text-accent">Code resent to your email.</p>}
+
+                {/* Error messages */}
+                {mfaError && !resent && (
+                  <div className={`font-mono text-xs p-3 rounded border ${
+                    codeExpired
+                      ? 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5'
+                      : mfaErrorType === 'send_error'
+                      ? 'text-red-400 border-red-400/30 bg-red-400/5'
+                      : 'text-red-400 border-red-400/30 bg-red-400/5'
+                  }`}>
+                    {mfaError}
+                  </div>
+                )}
+                {resent && (
+                  <div className="font-mono text-xs p-3 rounded border text-accent border-accent/30 bg-accent/5">
+                    A new code has been sent to your email.
+                  </div>
+                )}
+
+                {/* Verify button — hidden when expired, show resend prominently instead */}
+                {!codeExpired && (
+                  <button
+                    type="submit"
+                    disabled={verifying || mfaCode.length !== 6}
+                    className="w-full bg-accent text-bg font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60"
+                  >
+                    {verifying ? 'Verifying...' : 'Verify and Log In'}
+                  </button>
+                )}
+
+                {/* Resend button — prominent when expired */}
                 <button
-                  type="submit"
-                  disabled={verifying || mfaCode.length !== 6}
-                  className="w-full bg-accent text-bg font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60"
+                  type="button"
+                  onClick={handleResendMfa}
+                  disabled={resending}
+                  className={`w-full font-mono text-sm py-3 rounded tracking-wider transition-all disabled:opacity-60 ${
+                    codeExpired
+                      ? 'bg-accent text-bg hover:bg-white'
+                      : 'border border-border text-muted hover:border-accent hover:text-accent'
+                  }`}
                 >
-                  {verifying ? 'Verifying...' : 'Verify and Log In'}
+                  {resending ? 'Sending...' : codeExpired ? 'Send New Code' : 'Resend Code'}
                 </button>
-                <div className="flex items-center justify-between">
+
+                <div className="text-center">
                   <button
                     type="button"
-                    onClick={() => { setMfaPending(false); setMfaCode(''); setMfaError('') }}
+                    onClick={() => { setMfaPending(false); setMfaCode(''); setMfaError(''); setMfaErrorType('') }}
                     className="font-mono text-xs text-dim hover:text-muted transition-colors"
                   >
                     Back to login
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleResendMfa}
-                    disabled={resending}
-                    className="font-mono text-xs text-muted hover:text-accent transition-colors disabled:opacity-60"
-                  >
-                    {resending ? 'Sending...' : 'Resend code'}
                   </button>
                 </div>
               </form>

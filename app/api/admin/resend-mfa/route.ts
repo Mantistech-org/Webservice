@@ -27,7 +27,18 @@ export async function POST(req: NextRequest) {
   config.mfaExpires = String(expires)
   writeConfig(config)
 
-  await sendAdminMfaCodeEmail(code).catch(() => { /* non-fatal */ })
+  try {
+    await sendAdminMfaCodeEmail(code)
+  } catch (emailErr) {
+    delete config.mfaCode
+    delete config.mfaExpires
+    writeConfig(config)
+    console.error('[admin/resend-mfa] Failed to send MFA code email:', emailErr)
+    return NextResponse.json(
+      { error: 'Failed to send verification code. Check that ADMIN_EMAIL and RESEND_API_KEY are configured correctly.' },
+      { status: 500 }
+    )
+  }
 
   return NextResponse.json({ success: true })
 }
