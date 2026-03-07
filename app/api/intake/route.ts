@@ -186,33 +186,46 @@ export async function POST(req: NextRequest) {
       // Project is already saved without HTML — admin will generate manually
     })
 
-  // ── Step 3a: Confirmation email to client (fire-and-forget) ─────────────────
-  console.log(`[intake] Sending intake confirmation email to client: ${email as string}`)
+  // ── Step 3: Send emails (awaited — fire-and-forget is unreliable in Next.js) ──
+  // Next.js App Router does not guarantee unawaited promises complete after the
+  // response is sent. Both sends are fast (<500ms) so we await them here before
+  // returning. The project is already saved so the user's data is never at risk.
+
   console.log('[intake] RESEND_API_KEY present:', !!process.env.RESEND_API_KEY)
-  console.log('[intake] EMAIL_FROM:', process.env.EMAIL_FROM ?? '(not set)')
-  sendIntakeConfirmationEmail({
-    businessName: businessName as string,
-    ownerName: ownerName as string,
-    email: email as string,
-    plan: plan as string,
-  })
-    .then(() => console.log(`[intake] Client confirmation email sent to ${email as string}`))
-    .catch((err) => console.error('[intake] Failed to send client confirmation email:', err))
+  console.log('[intake] EMAIL_FROM:', process.env.EMAIL_FROM ?? '(not set, using default)')
 
-  // ── Step 3b: Notify admin (fire-and-forget) ──────────────────────────────────
-  console.log(`[intake] Sending new project notification email to admin`)
-  sendAdminNewProjectEmail({
-    projectId,
-    adminToken,
-    businessName: businessName as string,
-    ownerName: ownerName as string,
-    plan: plan as Plan,
-  })
-    .then(() => console.log('[intake] Admin notification email sent'))
-    .catch((err) => console.error('[intake] Failed to send admin email:', err))
+  // 3a: Client confirmation
+  console.log(`[intake] EMAIL SEND ATTEMPTED — client confirmation to ${email as string}`)
+  try {
+    await sendIntakeConfirmationEmail({
+      businessName: businessName as string,
+      ownerName: ownerName as string,
+      email: email as string,
+      plan: plan as string,
+    })
+    console.log(`[intake] EMAIL SEND COMPLETE — client confirmation sent to ${email as string}`)
+  } catch (emailErr) {
+    console.error('[intake] Client confirmation email failed:', emailErr)
+    // Non-fatal — project is saved, admin will follow up manually
+  }
 
-  // ── Step 4: Return success immediately ─────────────────────────────────────
-  console.log(`[intake] Returning 201 success to client immediately (id=${projectId})`)
+  // 3b: Admin notification
+  console.log('[intake] EMAIL SEND ATTEMPTED — admin notification')
+  try {
+    await sendAdminNewProjectEmail({
+      projectId,
+      adminToken,
+      businessName: businessName as string,
+      ownerName: ownerName as string,
+      plan: plan as Plan,
+    })
+    console.log('[intake] EMAIL SEND COMPLETE — admin notification sent')
+  } catch (emailErr) {
+    console.error('[intake] Admin notification email failed:', emailErr)
+  }
+
+  // ── Step 4: Return success ──────────────────────────────────────────────────
+  console.log(`[intake] Returning 201 success (id=${projectId})`)
   return NextResponse.json(
     {
       success: true,
