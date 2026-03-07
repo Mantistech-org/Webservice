@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 interface Props { sessionId: string; darkMode?: boolean }
 
@@ -19,6 +19,7 @@ interface Change {
   type: 'title' | 'meta' | 'keyword'
   label: string
   value: string
+  applied: boolean
 }
 
 const DIFF_COLORS: Record<string, string> = {
@@ -27,36 +28,162 @@ const DIFF_COLORS: Record<string, string> = {
   High: '#f87171',
 }
 
+const STORAGE_KEY = 'seo_business_profile'
+
+// ── Browser window mockup ────────────────────────────────────────────────────
+
+function BrowserMockup({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded border border-[#d0d0d0] overflow-hidden text-left">
+      {/* Browser chrome */}
+      <div className="bg-[#e8e8e8] border-b border-[#d0d0d0] px-3 py-2 flex items-center gap-2">
+        <span className="w-2.5 h-2.5 rounded-full bg-[#f87171]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[#facc15]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[#4ade80]" />
+        <div className="ml-2 flex-1 bg-white border border-[#d0d0d0] rounded px-2 py-0.5 font-mono text-xs text-[#888888]">
+          google.com/search
+        </div>
+      </div>
+      {/* Page area */}
+      <div className="bg-white p-4">
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function TitleMockup({ title, url, description }: { title: string; url: string; description: string }) {
+  return (
+    <BrowserMockup>
+      <div className="space-y-0.5">
+        <div className="font-mono text-xs text-[#aaaaaa] mb-2">Search result preview</div>
+        <div className="text-blue-500 text-sm font-medium leading-snug border border-dashed border-[#4ade80] rounded px-2 py-0.5 inline-block">
+          {title}
+        </div>
+        <div className="font-mono text-xs text-[#16a34a]">{url}</div>
+        <div className="font-mono text-xs text-[#555555] leading-relaxed">{description}</div>
+      </div>
+      <div className="mt-2 flex items-center gap-1">
+        <span className="font-mono text-xs text-[#16a34a] border border-[#4ade80]/40 rounded px-1.5 py-0.5">Updated</span>
+        <span className="font-mono text-xs text-[#888888]">Page title optimized for search</span>
+      </div>
+    </BrowserMockup>
+  )
+}
+
+function MetaMockup({ title, url, description }: { title: string; url: string; description: string }) {
+  return (
+    <BrowserMockup>
+      <div className="space-y-0.5">
+        <div className="font-mono text-xs text-[#aaaaaa] mb-2">Search result preview</div>
+        <div className="text-blue-500 text-sm font-medium leading-snug">{title}</div>
+        <div className="font-mono text-xs text-[#16a34a]">{url}</div>
+        <div className="font-mono text-xs text-[#555555] leading-relaxed border border-dashed border-[#4ade80] rounded px-2 py-1">
+          {description}
+        </div>
+      </div>
+      <div className="mt-2 flex items-center gap-1">
+        <span className="font-mono text-xs text-[#16a34a] border border-[#4ade80]/40 rounded px-1.5 py-0.5">Updated</span>
+        <span className="font-mono text-xs text-[#888888]">Meta description optimized</span>
+      </div>
+    </BrowserMockup>
+  )
+}
+
+function KeywordMockup({ keyword, businessName }: { keyword: string; businessName: string }) {
+  return (
+    <BrowserMockup>
+      <div className="font-mono text-xs text-[#aaaaaa] mb-2">Website page preview</div>
+      <div className="bg-[#f5f5f5] rounded p-3 space-y-1.5">
+        <div className="font-mono text-xs text-[#1a1a1a] font-bold">{businessName}</div>
+        <div className="font-mono text-xs text-[#555555] leading-relaxed">
+          Welcome to our website. We offer quality services tailored to your needs.{' '}
+          <span className="bg-[#4ade80]/30 border border-[#4ade80]/50 rounded px-0.5">
+            {keyword}
+          </span>
+          {' '}is one of our most requested services. Contact us today to learn more.
+        </div>
+      </div>
+      <div className="mt-2 flex items-center gap-1">
+        <span className="font-mono text-xs text-[#16a34a] border border-[#4ade80]/40 rounded px-1.5 py-0.5">Added</span>
+        <span className="font-mono text-xs text-[#888888]">Keyword added to page content</span>
+      </div>
+    </BrowserMockup>
+  )
+}
+
+// ── Metric card ───────────────────────────────────────────────────────────────
+
+function MetricCard({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) {
+  return (
+    <div className="bg-card border border-border rounded p-4">
+      <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">{label}</div>
+      <div className={`font-heading text-3xl leading-none mb-1 ${accent ? 'text-[#4ade80]' : 'text-primary'}`}>{value}</div>
+      {sub && <div className="font-mono text-xs text-dim">{sub}</div>}
+    </div>
+  )
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
 export default function SEOOptimization({ sessionId, darkMode }: Props) {
-  // Business profile state
+  // Business profile — persisted in localStorage
   const [businessName, setBusinessName] = useState('')
   const [businessType, setBusinessType] = useState('')
   const [location, setLocation] = useState('')
-  const [profileSaved, setProfileSaved] = useState(false)
   const [editingProfile, setEditingProfile] = useState(true)
 
   // Analysis state
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<SEOResult | null>(null)
+  const [hasRunAnalysis, setHasRunAnalysis] = useState(false)
   const [error, setError] = useState('')
-  const [activeSubTab, setActiveSubTab] = useState<'report' | 'apply' | 'keywords'>('report')
+  const [activeSubTab, setActiveSubTab] = useState<'report' | 'keywords' | 'apply'>('report')
   const [changes, setChanges] = useState<Change[]>([])
-  const [checkedChanges, setCheckedChanges] = useState<Set<string>>(new Set())
-  const [editedChanges, setEditedChanges] = useState<Record<string, string>>({})
-  const [applyStatus, setApplyStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [metrics, setMetrics] = useState<{ seoScore: number; pageSpeed: number; backlinks: number; keywordsRanked: number } | null>(null)
+  const [animating, setAnimating] = useState(false)
 
-  const applyTabRef = useRef<HTMLDivElement>(null)
+  const applyRef = useRef<HTMLDivElement>(null)
+
+  // Load saved profile from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved) as { businessName: string; businessType: string; location: string }
+        setBusinessName(parsed.businessName || '')
+        setBusinessType(parsed.businessType || '')
+        setLocation(parsed.location || '')
+        if (parsed.businessName && parsed.businessType && parsed.location) {
+          setEditingProfile(false)
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  // Save profile to localStorage whenever fields change
+  const saveProfile = () => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ businessName, businessType, location }))
+    } catch {
+      // ignore
+    }
+    setEditingProfile(false)
+  }
 
   const allFieldsFilled = businessName.trim() !== '' && businessType.trim() !== '' && location.trim() !== ''
 
   const handleRunAnalysis = async () => {
     if (!allFieldsFilled) return
-    setProfileSaved(true)
-    setEditingProfile(false)
+    saveProfile()
     setLoading(true)
     setError('')
     setResult(null)
-    setApplyStatus('idle')
+    setMetrics(null)
+    setAnimating(false)
+
     try {
       const res = await fetch('/api/demo/seo-optimization', {
         method: 'POST',
@@ -66,15 +193,27 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed')
       const r = data.result as SEOResult
+
       setResult(r)
+      setHasRunAnalysis(true)
+      setActiveSubTab('report')
+
+      // Derive metrics from result
+      const lowCount = r.keywords.filter((k) => k.difficulty === 'Low').length
+      const seoScore = Math.min(95, 52 + lowCount * 6 + r.rankings.length * 2)
+      const pageSpeed = Math.round(1600 + Math.random() * 1400)
+      const backlinks = 12 + r.rankings.length * 4 + Math.floor(Math.random() * 20)
+      setMetrics({ seoScore, pageSpeed, backlinks, keywordsRanked: r.rankings.length })
+
       const built: Change[] = [
-        ...r.pageTitles.map((t, i): Change => ({ id: `title-${i}`, type: 'title', label: `Update page title ${i + 1}`, value: t })),
-        ...r.metaDescriptions.map((m, i): Change => ({ id: `meta-${i}`, type: 'meta', label: `Update description for page ${i + 1}`, value: m })),
-        ...r.keywords.slice(0, 4).map((k, i): Change => ({ id: `kw-${i}`, type: 'keyword', label: `Add to page content: "${k.term}"`, value: `Add the phrase "${k.term}" to your homepage or relevant service page. This phrase gets ${k.monthlyVolume.toLocaleString()} searches per month.` })),
+        ...r.pageTitles.map((t, i): Change => ({ id: `title-${i}`, type: 'title', label: `Update page title ${i + 1}`, value: t, applied: false })),
+        ...r.metaDescriptions.map((m, i): Change => ({ id: `meta-${i}`, type: 'meta', label: `Update meta description for page ${i + 1}`, value: m, applied: false })),
+        ...r.keywords.slice(0, 3).map((k, i): Change => ({ id: `kw-${i}`, type: 'keyword', label: `Add keyword to page content`, value: k.term, applied: false })),
       ]
       setChanges(built)
-      setCheckedChanges(new Set(built.map((c) => c.id)))
-      setEditedChanges(Object.fromEntries(built.map((c) => [c.id, c.value])))
+
+      // Trigger count-up animation
+      setAnimating(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
@@ -82,27 +221,24 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
     }
   }
 
-  const toggleChange = (id: string) => {
-    setCheckedChanges((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) { next.delete(id) } else { next.add(id) }
-      return next
-    })
-  }
-
-  const applyChanges = () => {
-    setApplyStatus('saving')
-    setTimeout(() => setApplyStatus('saved'), 1500)
+  const applyChange = (id: string) => {
+    setChanges((prev) => prev.map((c) => c.id === id ? { ...c, applied: true } : c))
   }
 
   const goToApplyTab = () => {
     setActiveSubTab('apply')
-    setTimeout(() => applyTabRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+    setTimeout(() => applyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
   }
 
   const maxVol = result ? Math.max(...result.keywords.map((k) => k.monthlyVolume)) : 1
 
   const inputClass = 'w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-3 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors'
+
+  const subTabs = [
+    { id: 'report' as const, label: 'Your SEO Report' },
+    { id: 'keywords' as const, label: 'Keyword Tracker' },
+    ...(hasRunAnalysis ? [{ id: 'apply' as const, label: 'Apply Changes' }] : []),
+  ]
 
   return (
     <div className="space-y-8">
@@ -110,7 +246,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
       <div className="bg-[#efefef] border border-[#d0d0d0] rounded p-5">
         <p className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: '#3a6a8a' }}>How This Works</p>
         <p className="text-sm text-teal leading-relaxed">
-          When someone searches for a business like yours on Google, your website either shows up or it does not. SEO is the process of making sure you show up as high as possible for the searches that matter to your business. Mantis Tech analyzes what people are actually searching for near you, then makes targeted updates to your website so Google understands exactly what you do and who you serve. The higher you rank, the more people find you instead of your competitors.
+          When someone searches for a business like yours on Google, your website either shows up or it does not. SEO is the process of making sure you show up as high as possible for the searches that matter to your business. Enter your business details below and run an analysis to see exactly where you stand and what to fix.
         </p>
       </div>
 
@@ -120,9 +256,9 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
           <div>
             <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Your Business Profile</p>
             <h2 className="font-heading text-2xl text-primary">Business Details</h2>
-            <p className="font-mono text-xs text-muted mt-1">Saved for this session. Your info carries across every analysis.</p>
+            <p className="font-mono text-xs text-muted mt-1">Saved to this browser. Your info carries across every analysis.</p>
           </div>
-          {profileSaved && !editingProfile && (
+          {!editingProfile && (
             <button
               onClick={() => setEditingProfile(true)}
               className="font-mono text-xs border border-[#d0d0d0] text-muted px-4 py-2 rounded hover:border-[#b0b0b0] hover:text-primary transition-all shrink-0"
@@ -132,7 +268,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
           )}
         </div>
         <div className="p-6">
-          {profileSaved && !editingProfile ? (
+          {!editingProfile ? (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div>
                 <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">Business Name</div>
@@ -148,47 +284,65 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Business Name</label>
-                <input
-                  type="text"
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  placeholder="Riverside Dental"
-                  className={inputClass}
-                />
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Business Name</label>
+                  <input type="text" value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="Riverside Dental" className={inputClass} />
+                </div>
+                <div>
+                  <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Type of Business</label>
+                  <input type="text" value={businessType} onChange={(e) => setBusinessType(e.target.value)} placeholder="Dental Practice" className={inputClass} />
+                </div>
+                <div>
+                  <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">City and State</label>
+                  <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Portland, OR" className={inputClass} />
+                </div>
               </div>
-              <div>
-                <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Type of Business</label>
-                <input
-                  type="text"
-                  value={businessType}
-                  onChange={(e) => setBusinessType(e.target.value)}
-                  placeholder="Dental Practice"
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">City and State</label>
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Portland, OR"
-                  className={inputClass}
-                />
-              </div>
+              {allFieldsFilled && (
+                <button
+                  onClick={saveProfile}
+                  className="font-mono text-xs px-5 py-2 rounded tracking-wider transition-opacity hover:opacity-80"
+                  style={{ backgroundColor: '#000000', color: '#f0f0f0' }}
+                >
+                  Save Profile
+                </button>
+              )}
             </div>
           )}
         </div>
+      </div>
+
+      {/* Analytics overview cards — always visible, empty state until analysis runs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <MetricCard
+          label="SEO Score"
+          value={animating && metrics ? `${metrics.seoScore}/100` : '--'}
+          sub={animating && metrics ? (metrics.seoScore >= 70 ? 'Good' : 'Needs improvement') : 'Run analysis'}
+          accent={!!(animating && metrics && metrics.seoScore >= 70)}
+        />
+        <MetricCard
+          label="Page Speed"
+          value={animating && metrics ? `${metrics.pageSpeed}ms` : '--'}
+          sub={animating && metrics ? (metrics.pageSpeed < 2500 ? 'Fast' : 'Could be faster') : 'Run analysis'}
+        />
+        <MetricCard
+          label="Backlinks"
+          value={animating && metrics ? `${metrics.backlinks}` : '--'}
+          sub={animating && metrics ? 'Referring domains' : 'Run analysis'}
+        />
+        <MetricCard
+          label="Keywords Ranked"
+          value={animating && metrics ? `${metrics.keywordsRanked}` : '--'}
+          sub={animating && metrics ? 'In top 50 results' : 'Run analysis'}
+        />
       </div>
 
       {/* Run SEO Analysis button */}
       <button
         onClick={handleRunAnalysis}
         disabled={!allFieldsFilled || loading}
-        className="w-full font-mono text-sm py-4 rounded tracking-wider transition-opacity disabled:opacity-40 font-medium"
+        className="w-full font-mono text-sm py-5 rounded tracking-wider transition-opacity disabled:opacity-40 font-medium text-base"
         style={{ backgroundColor: '#000000', color: '#f0f0f0' }}
       >
         {loading ? 'Analyzing your local search landscape...' : 'Run SEO Analysis'}
@@ -202,11 +356,12 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
       )}
       {error && <div className="bg-red-900/20 border border-red-500/30 rounded p-4 font-mono text-sm text-red-300">{error}</div>}
 
+      {/* Results — only shown after analysis */}
       {result && (
-        <div className="space-y-6" ref={applyTabRef}>
-          {/* Sub-tab switcher */}
+        <div className="space-y-6" ref={applyRef}>
+          {/* Sub-tab switcher — Apply Changes always last, only appears after first run */}
           <div className="flex gap-2 border-b border-border pb-0">
-            {([['report', 'Your SEO Report'], ['apply', 'Apply Changes'], ['keywords', 'Keyword Tracker']] as const).map(([id, label]) => (
+            {subTabs.map(({ id, label }) => (
               <button
                 key={id}
                 onClick={() => setActiveSubTab(id)}
@@ -219,6 +374,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
             ))}
           </div>
 
+          {/* ── Report tab ── */}
           {activeSubTab === 'report' && (
             <div className="space-y-6">
               {/* Top search terms */}
@@ -233,10 +389,8 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
                     <div key={i} className="px-6 py-5">
                       <div className="flex items-start justify-between gap-4 mb-3">
                         <div className="flex-1">
-                          <div className="font-heading text-base text-primary mb-1">"{kw.term}"</div>
-                          <p className="font-mono text-xs text-teal">
-                            Update your website to include this phrase and you show up when people search for it.
-                          </p>
+                          <div className="font-heading text-base text-primary mb-1">&ldquo;{kw.term}&rdquo;</div>
+                          <p className="font-mono text-xs text-teal">Update your website to include this phrase and you show up when people search for it.</p>
                         </div>
                         <div className="text-right shrink-0">
                           <div className="font-mono text-sm text-primary">{kw.monthlyVolume.toLocaleString()}</div>
@@ -248,7 +402,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
                           <div className="h-full rounded-full" style={{ width: `${(kw.monthlyVolume / maxVol) * 100}%`, backgroundColor: '#8ab4cc' }} />
                         </div>
                         <span className="font-mono text-xs rounded px-2 py-0.5" style={{ color: DIFF_COLORS[kw.difficulty] }}>
-                          {kw.difficulty === 'Low' ? 'Easy to rank for' : kw.difficulty === 'Medium' ? 'Moderate competition' : 'High competition'}
+                          {kw.difficulty === 'Low' ? 'Easy to rank' : kw.difficulty === 'Medium' ? 'Moderate competition' : 'High competition'}
                         </span>
                       </div>
                     </div>
@@ -256,7 +410,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
                 </div>
               </div>
 
-              {/* How you appear in search results */}
+              {/* Suggested page titles and descriptions */}
               <div className="bg-card border border-border rounded">
                 <div className="px-6 py-4 border-b border-border">
                   <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>How You Appear in Search Results</p>
@@ -266,7 +420,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
                   {result.pageTitles.map((title, i) => (
                     <div key={i} className="bg-[#efefef] border border-[#d0d0d0] rounded p-4">
                       <div className="text-blue-400 text-sm font-medium mb-1">{title}</div>
-                      <div className="font-mono text-xs text-muted mb-1">{businessName} · {location}</div>
+                      <div className="font-mono text-xs text-muted mb-1">{businessName} &middot; {location}</div>
                       {result.metaDescriptions[i] && (
                         <div className="font-mono text-xs text-teal leading-relaxed">{result.metaDescriptions[i]}</div>
                       )}
@@ -275,13 +429,11 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
                 </div>
               </div>
 
-              {/* Local searches to target */}
+              {/* Local search terms */}
               <div className="bg-card border border-border rounded p-6">
                 <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Local Searches to Target</p>
                 <h3 className="font-heading text-xl text-primary mb-2">Searches Happening Near You</h3>
-                <p className="font-mono text-xs text-teal leading-relaxed mb-4">
-                  These are searches people in your area are doing right now. Showing up for these means more local customers finding you instead of your competitors.
-                </p>
+                <p className="font-mono text-xs text-teal leading-relaxed mb-4">These are searches people in your area are doing right now. Showing up for these means more local customers finding you instead of your competitors.</p>
                 <div className="flex flex-wrap gap-2">
                   {result.localTerms.map((term, i) => (
                     <span key={i} className="font-mono text-xs bg-[#efefef] border border-[#d0d0d0] text-primary px-3 py-1.5 rounded">
@@ -291,7 +443,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
                 </div>
               </div>
 
-              {/* Current Google rankings */}
+              {/* Current rankings */}
               <div className="bg-card border border-border rounded">
                 <div className="px-6 py-4 border-b border-border">
                   <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Your Current Google Rankings</p>
@@ -304,8 +456,8 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
                       <div className="w-12 h-10 rounded bg-[#efefef] border border-[#d0d0d0] flex items-center justify-center font-mono text-sm text-primary shrink-0">
                         #{r.position}
                       </div>
-                      <span className="font-mono text-sm text-primary flex-1">"{r.term}"</span>
-                      <div className={`flex items-center gap-1 font-mono text-sm shrink-0 ${r.change > 0 ? 'text-[#4ade80]' : r.change < 0 ? 'text-[#f87171]' : 'text-dim'}`}>
+                      <span className="font-mono text-sm text-primary flex-1">&ldquo;{r.term}&rdquo;</span>
+                      <div className={`font-mono text-sm shrink-0 ${r.change > 0 ? 'text-[#4ade80]' : r.change < 0 ? 'text-[#f87171]' : 'text-dim'}`}>
                         {r.change > 0 ? `up ${r.change}` : r.change < 0 ? `down ${Math.abs(r.change)}` : 'no change'}
                       </div>
                     </div>
@@ -313,85 +465,18 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
                 </div>
               </div>
 
-              {/* Apply Changes CTA at bottom of report */}
+              {/* Apply Changes CTA */}
               <button
                 onClick={goToApplyTab}
-                className="w-full font-mono text-sm py-4 rounded tracking-wider transition-opacity font-medium"
+                className="w-full font-mono text-sm py-4 rounded tracking-wider transition-opacity font-medium hover:opacity-80"
                 style={{ backgroundColor: '#000000', color: '#f0f0f0' }}
               >
-                Apply to My Website
+                Apply Changes to My Website
               </button>
             </div>
           )}
 
-          {activeSubTab === 'apply' && (
-            <div className="space-y-6">
-              <div className="bg-[#efefef] border border-[#d0d0d0] rounded p-5">
-                <p className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: '#3a6a8a' }}>Recommended Updates</p>
-                <p className="text-sm text-teal leading-relaxed">
-                  Select the changes you want to apply to your website. You can edit each one before saving. Uncheck anything you want to skip.
-                </p>
-              </div>
-
-              {applyStatus === 'saved' ? (
-                <div className="bg-[#efefef] border border-[#4ade80]/50 rounded p-6 text-center">
-                  <div className="font-heading text-2xl text-primary mb-2">Changes Saved</div>
-                  <p className="font-mono text-sm text-teal">
-                    {checkedChanges.size} update{checkedChanges.size !== 1 ? 's' : ''} have been applied to your website.
-                  </p>
-                  <button onClick={() => setApplyStatus('idle')} className="mt-4 font-mono text-xs text-muted hover:text-primary transition-colors tracking-wider">
-                    Make More Changes
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {changes.map((change) => (
-                    <div key={change.id} className="bg-card border border-border rounded p-5">
-                      <div className="flex items-start gap-3 mb-3">
-                        <input
-                          type="checkbox"
-                          checked={checkedChanges.has(change.id)}
-                          onChange={() => toggleChange(change.id)}
-                          className="mt-1 w-4 h-4 rounded border-[#d0d0d0] accent-black shrink-0"
-                        />
-                        <div className="flex-1">
-                          <div className="font-mono text-xs text-muted uppercase tracking-widest mb-1">
-                            {change.type === 'title' ? 'Page Title' : change.type === 'meta' ? 'Page Description' : 'Add to Content'}
-                          </div>
-                          <div className="font-mono text-sm text-primary">{change.label}</div>
-                        </div>
-                        {change.type !== 'keyword' && (
-                          <span className="font-mono text-xs text-dim shrink-0">
-                            {(editedChanges[change.id] ?? change.value).length} chars
-                          </span>
-                        )}
-                      </div>
-                      <textarea
-                        value={editedChanges[change.id] ?? change.value}
-                        onChange={(e) => setEditedChanges((prev) => ({ ...prev, [change.id]: e.target.value }))}
-                        rows={change.type === 'keyword' ? 2 : 1}
-                        disabled={!checkedChanges.has(change.id)}
-                        className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-3 py-2 font-mono text-xs focus:outline-none focus:border-[#888888] transition-colors resize-none disabled:opacity-40"
-                      />
-                    </div>
-                  ))}
-
-                  <div className="flex items-center justify-between pt-2">
-                    <span className="font-mono text-xs text-muted">{checkedChanges.size} of {changes.length} changes selected</span>
-                    <button
-                      onClick={applyChanges}
-                      disabled={checkedChanges.size === 0 || applyStatus === 'saving'}
-                      className="font-mono text-sm px-6 py-3 rounded tracking-wider transition-opacity disabled:opacity-40"
-                      style={{ backgroundColor: '#000000', color: '#f0f0f0' }}
-                    >
-                      {applyStatus === 'saving' ? 'Saving...' : 'Apply to My Website'}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
+          {/* ── Keyword tracker tab ── */}
           {activeSubTab === 'keywords' && (
             <div className="space-y-6">
               <div className="bg-card border border-border rounded">
@@ -412,7 +497,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
                     <tbody className="divide-y divide-border">
                       {result.rankings.map((r, i) => (
                         <tr key={i}>
-                          <td className="px-5 py-4 font-mono text-sm text-primary">"{r.term}"</td>
+                          <td className="px-5 py-4 font-mono text-sm text-primary">&ldquo;{r.term}&rdquo;</td>
                           <td className="px-5 py-4 text-center">
                             <span className="inline-flex items-center justify-center w-10 h-8 rounded bg-[#efefef] border border-[#d0d0d0] font-mono text-sm text-primary">
                               #{r.position}
@@ -444,10 +529,109 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
 
               <div className="bg-[#efefef] border border-[#d0d0d0] rounded p-5">
                 <p className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: '#3a6a8a' }}>About These Rankings</p>
+                <p className="text-sm text-teal leading-relaxed">These rankings reflect estimated positions based on your current website content and the competitive landscape in your area. Applying the recommended changes improves these numbers over time.</p>
+              </div>
+
+              <button
+                onClick={goToApplyTab}
+                className="w-full font-mono text-sm py-4 rounded tracking-wider transition-opacity font-medium hover:opacity-80"
+                style={{ backgroundColor: '#000000', color: '#f0f0f0' }}
+              >
+                Apply Changes to My Website
+              </button>
+            </div>
+          )}
+
+          {/* ── Apply Changes tab — always last ── */}
+          {activeSubTab === 'apply' && (
+            <div className="space-y-6">
+              <div className="bg-[#efefef] border border-[#d0d0d0] rounded p-5">
+                <p className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: '#3a6a8a' }}>Recommended Updates</p>
                 <p className="text-sm text-teal leading-relaxed">
-                  These rankings reflect estimated positions based on your current website content and the competitive landscape in your area. Applying the recommended changes improves these numbers over time.
+                  Each change below includes a preview of how it will look once applied. Review the preview, then click Apply to update your website.
                 </p>
               </div>
+
+              <div className="space-y-6">
+                {changes.map((change) => {
+                  const pageIndex = parseInt(change.id.split('-')[1] ?? '0')
+                  const title = result.pageTitles[pageIndex] ?? result.pageTitles[0]
+                  const meta = result.metaDescriptions[pageIndex] ?? result.metaDescriptions[0]
+                  const siteUrl = `${businessName.toLowerCase().replace(/\s+/g, '')}.com`
+
+                  return (
+                    <div key={change.id} className="bg-card border border-border rounded overflow-hidden">
+                      <div className="px-6 py-4 border-b border-border">
+                        <div className="flex items-center justify-between gap-4">
+                          <div>
+                            <div className="font-mono text-xs text-muted uppercase tracking-widest mb-1">
+                              {change.type === 'title' ? 'Page Title Update' : change.type === 'meta' ? 'Meta Description Update' : 'Keyword Addition'}
+                            </div>
+                            <div className="font-mono text-sm text-primary">{change.label}</div>
+                          </div>
+                          {change.applied ? (
+                            <span className="font-mono text-xs text-[#16a34a] border border-[#4ade80]/50 px-3 py-1.5 rounded shrink-0">
+                              Applied
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => applyChange(change.id)}
+                              className="font-mono text-xs px-4 py-1.5 rounded tracking-wider transition-opacity hover:opacity-80 shrink-0"
+                              style={{ backgroundColor: '#000000', color: '#f0f0f0' }}
+                            >
+                              Apply
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="p-6 space-y-4">
+                        {/* What will change */}
+                        <div>
+                          <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">The Change</div>
+                          <div className="bg-[#efefef] border border-[#d0d0d0] rounded px-4 py-3 font-mono text-sm text-primary">
+                            {change.value}
+                          </div>
+                        </div>
+
+                        {/* Preview mockup */}
+                        <div>
+                          <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Preview</div>
+                          {change.type === 'title' && (
+                            <TitleMockup
+                              title={change.value}
+                              url={`${siteUrl} › home`}
+                              description={meta}
+                            />
+                          )}
+                          {change.type === 'meta' && (
+                            <MetaMockup
+                              title={title}
+                              url={`${siteUrl} › home`}
+                              description={change.value}
+                            />
+                          )}
+                          {change.type === 'keyword' && (
+                            <KeywordMockup
+                              keyword={change.value}
+                              businessName={businessName}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {changes.every((c) => c.applied) && (
+                <div className="bg-[#efefef] border border-[#4ade80]/50 rounded p-6 text-center">
+                  <div className="font-heading text-2xl text-primary mb-2">All Changes Applied</div>
+                  <p className="font-mono text-sm text-teal">
+                    {changes.length} update{changes.length !== 1 ? 's' : ''} have been applied to your website.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>

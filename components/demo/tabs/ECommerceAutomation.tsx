@@ -358,6 +358,15 @@ function Inventory() {
   const [restockDate, setRestockDate] = useState('')
   const [restockQty, setRestockQty] = useState('')
   const [bulkStatus, setBulkStatus] = useState<'idle' | 'uploading' | 'done'>('idle')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const filteredItems = searchQuery.trim()
+    ? items.filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.sku.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : items
 
   const saveRestock = (id: number) => {
     setItems(prev => prev.map(item => item.id === id ? { ...item, restockDate: restockDate || null } : item))
@@ -385,6 +394,15 @@ function Inventory() {
 
   return (
     <div className="space-y-4">
+      {/* Search input */}
+      <input
+        type="text"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        placeholder="Search by product name or SKU..."
+        className="w-full bg-[#efefef] border border-[#d0d0d0] text-[#1a1a1a] rounded px-4 py-2.5 font-mono text-sm placeholder:text-[#aaaaaa] focus:outline-none focus:border-[#888888] transition-colors"
+      />
+
       <div className="flex items-center justify-between mb-2">
         <p className="font-mono text-xs text-muted">Live inventory across all products. New orders automatically subtract from quantities.</p>
         <div className="flex items-center gap-2 shrink-0">
@@ -417,7 +435,14 @@ function Inventory() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {items.map(item => (
+              {filteredItems.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center font-mono text-sm text-muted">
+                    No products match &quot;{searchQuery}&quot;
+                  </td>
+                </tr>
+              )}
+              {filteredItems.map(item => (
                 <React.Fragment key={item.id}>
                   <tr>
                     <td className="px-4 py-3 font-mono text-sm text-primary">{item.name}</td>

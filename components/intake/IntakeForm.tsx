@@ -837,7 +837,7 @@ export default function IntakeForm() {
                   <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeOpacity="0.3" />
                   <path d="M21 12a9 9 0 00-9-9" />
                 </svg>
-                Generating Your Website...
+                Submitting...
               </>
             ) : (
               <>
