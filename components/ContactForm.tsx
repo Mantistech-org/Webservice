@@ -55,12 +55,8 @@ export default function ContactForm() {
           </svg>
         </div>
         <h2 className="font-heading text-4xl text-primary mb-4">Message Sent</h2>
-        <p className="text-muted leading-relaxed mb-2">
+        <p className="text-muted leading-relaxed">
           Thank you for reaching out. We will be in touch within 24 hours.
-        </p>
-        <p className="font-mono text-sm text-muted">
-          A copy has been sent to{' '}
-          <span className="text-accent">{email}</span>.
         </p>
       </div>
     )

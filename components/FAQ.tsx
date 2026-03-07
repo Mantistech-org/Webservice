@@ -83,9 +83,10 @@ export default function FAQ() {
                         height="12"
                         viewBox="0 0 12 12"
                         fill="none"
-                        stroke="#00ff88"
+                        stroke="currentColor"
                         strokeWidth="2"
                         strokeLinecap="round"
+                        className="text-accent"
                       >
                         <line x1="1" y1="6" x2="11" y2="6" />
                       </svg>

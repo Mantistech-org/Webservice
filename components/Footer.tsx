@@ -41,6 +41,7 @@ export default function Footer() {
                 'Website Chatbot',
                 'Automated Email Marketing',
                 'Booking Calendar',
+                'Email with Domain',
               ].map((s) => (
                 <li key={s}>
                   <a href="/#services" className="hover:text-primary transition-colors">
@@ -101,7 +102,7 @@ export default function Footer() {
           <p className="font-mono text-xs text-muted tracking-wider">
             &copy; {year} Mantis Tech. All rights reserved.
           </p>
-          <p className="font-mono text-xs text-dim tracking-wider">
+          <p className="font-mono text-xs text-muted tracking-wider">
             Built with care.
           </p>
         </div>

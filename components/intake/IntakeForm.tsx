@@ -735,10 +735,10 @@ export default function IntakeForm() {
                   <div className="font-mono text-xs text-muted mt-0.5">
                     For example: hello@{form.existingDomain || form.preferredDomain?.split(' ')[0] || 'yourbusiness.com'}
                   </div>
-                  <div className="font-mono text-xs text-dim mt-1">
+                  <div className="font-mono text-xs text-muted mt-1">
                     {getAddonTierStatus('email-with-domain', form.plan) === 'included'
                       ? 'Included in your plan at no extra cost'
-                      : '+$12/mo — added to your add-ons automatically'}
+                      : '+$12/mo, added to your add-ons automatically'}
                   </div>
                 </div>
               </label>
