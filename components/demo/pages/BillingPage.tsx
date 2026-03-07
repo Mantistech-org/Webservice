@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 const PLANS = [
   { id: 'starter', label: 'Starter', price: 40 },
-  { id: 'mid',     label: 'Mid',     price: 70 },
+  { id: 'mid',     label: 'Growth',  price: 70 },
   { id: 'pro',     label: 'Pro',     price: 120 },
 ]
 
@@ -54,8 +54,8 @@ export default function BillingPage({ darkMode }: { darkMode?: boolean }) {
           <div>
             <div className="font-heading text-2xl text-[#1a1a1a] mb-1">
               {upgraded && selectedPlan !== 'mid'
-                ? PLANS.find(p => p.id === selectedPlan)?.label ?? 'Mid'
-                : 'Mid'} Plan
+                ? PLANS.find(p => p.id === selectedPlan)?.label ?? 'Growth'
+                : 'Growth'} Plan
             </div>
             <div className="font-mono text-xs text-[#888888]">
               ${upgraded && selectedPlan !== 'mid'

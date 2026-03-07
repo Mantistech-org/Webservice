@@ -134,7 +134,7 @@ export const PLANS = {
     ],
   },
   mid: {
-    name: 'Mid',
+    name: 'Growth',
     upfront: 150,
     monthly: 125,
     pages: 6,
@@ -154,7 +154,7 @@ export const PLANS = {
     pages: 9,
     features: [
       'Booking Calendar included free',
-      'Everything in Mid',
+      'Everything in Growth',
       'E-Commerce Automation',
       'Automated Lead Generation',
       'Website Chatbot',

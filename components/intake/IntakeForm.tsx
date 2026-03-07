@@ -531,7 +531,7 @@ export default function IntakeForm() {
                 {showPageWarning && (
                   <div className="mt-2 p-3 bg-yellow-950/40 border border-yellow-600/40 rounded text-xs text-yellow-400 font-mono">
                     Your {PLANS[form.plan].name} plan includes up to {pageLimit} pages. You requested {requestedPagesNum}.
-                    Consider upgrading to {form.plan === 'starter' ? 'Mid (up to 6 pages)' : 'Pro (up to 9 pages)'} to fit your needs.
+                    Consider upgrading to {form.plan === 'starter' ? 'Growth (up to 6 pages)' : 'Pro (up to 9 pages)'} to fit your needs.
                   </div>
                 )}
               </FormField>
@@ -812,7 +812,7 @@ export default function IntakeForm() {
                         <div className="text-xs text-muted mt-0.5">{addon.description}</div>
                       </div>
                       <div className="font-mono text-sm shrink-0 text-muted">
-                        Upgrade to Mid
+                        Upgrade to Growth
                       </div>
                     </div>
                   )

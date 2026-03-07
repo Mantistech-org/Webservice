@@ -21,7 +21,7 @@ A Next.js web agency platform deployed on Railway via Docker. Small businesses s
 
 ## Plans
 - Starter: $100 upfront / $40/mo / 4 pages
-- Mid: $150 upfront / $125/mo / 6 pages
+- Growth: $150 upfront / $125/mo / 6 pages
 - Pro: $200 upfront / $250/mo / 9 pages
 
 ## Project Statuses

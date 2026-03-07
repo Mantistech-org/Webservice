@@ -711,7 +711,7 @@ export default function AdminPage() {
                   <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Plan *</label>
                   <select required value={addForm.plan} onChange={(e) => setAddForm(f => ({ ...f, plan: e.target.value as Plan }))} className="form-input">
                     <option value="starter">Starter</option>
-                    <option value="mid">Mid</option>
+                    <option value="mid">Growth</option>
                     <option value="pro">Pro</option>
                   </select>
                 </div>
