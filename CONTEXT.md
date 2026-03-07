@@ -46,6 +46,7 @@ admin_review → client_review → changes_requested ↔ client_review → activ
 - STRIPE_SECRET_KEY
 - STRIPE_WEBHOOK_SECRET
 - STRIPE_PRICE_* (various plan and addon price IDs)
+- SUPABASE_DB_URL (Transaction pooler postgres:// URI from Supabase Project Settings → Connect)
 
 ## Recent Fixes
 - Dockerfile: DNS moved from build time to runtime in CMD so Supabase resolves correctly

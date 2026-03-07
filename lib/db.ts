@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { Project } from '@/types'
-import { supabase, supabaseEnabled } from '@/lib/supabase'
+import { pgEnabled, query } from '@/lib/pg'
 
 // ── Local JSON fallback ────────────────────────────────────────────────────────
 const DB_PATH = path.join(process.cwd(), 'data', 'projects.json')
@@ -26,8 +26,6 @@ function jsonWriteProjects(projects: Project[]): void {
   fs.writeFileSync(DB_PATH, JSON.stringify(projects, null, 2), 'utf-8')
 }
 
-// Keep the local JSON file in sync after every Supabase write so the
-// fallback is always up to date if Supabase ever becomes unavailable.
 function jsonSaveProject(project: Project): void {
   const projects = jsonReadProjects()
   const idx = projects.findIndex((p) => p.id === project.id)
@@ -40,124 +38,109 @@ function jsonSaveProject(project: Project): void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Public API — all functions are async; Supabase is primary, JSON is fallback
+// Public API — postgres (via pg) is primary, JSON is fallback
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export async function readProjects(): Promise<Project[]> {
-  if (supabaseEnabled) {
+  if (pgEnabled) {
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('data')
-        .order('created_at', { ascending: false })
-      if (error) throw error
-      return (data ?? []).map((row) => row.data as Project)
+      const rows = await query<{ data: Project }>(
+        'SELECT data FROM projects ORDER BY created_at DESC'
+      )
+      return rows.map((r) => r.data)
     } catch (err) {
-      console.error('[db] Supabase readProjects failed, using JSON fallback:', err)
+      console.error('[db] pg readProjects failed, using JSON fallback:', err)
     }
   }
   return jsonReadProjects()
 }
 
 export async function writeProjects(projects: Project[]): Promise<void> {
-  // writeProjects is a bulk-replace used only by the add-client admin route.
-  // With Supabase we upsert each project individually instead.
-  if (supabaseEnabled) {
+  if (pgEnabled) {
     try {
-      const rows = projects.map((p) => ({
-        id: p.id,
-        admin_token: p.adminToken,
-        client_token: p.clientToken,
-        data: p,
-        updated_at: new Date().toISOString(),
-      }))
-      const { error } = await supabase
-        .from('projects')
-        .upsert(rows, { onConflict: 'id' })
-      if (error) throw error
+      for (const p of projects) {
+        await query(
+          `INSERT INTO projects (id, admin_token, client_token, data, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           ON CONFLICT (id) DO UPDATE
+             SET admin_token = EXCLUDED.admin_token,
+                 client_token = EXCLUDED.client_token,
+                 data = EXCLUDED.data,
+                 updated_at = EXCLUDED.updated_at`,
+          [p.id, p.adminToken, p.clientToken, p, p.createdAt, new Date().toISOString()]
+        )
+      }
       jsonWriteProjects(projects)
       return
     } catch (err) {
-      console.error('[db] Supabase writeProjects failed, using JSON fallback:', err)
+      console.error('[db] pg writeProjects failed, using JSON fallback:', err)
     }
   }
   jsonWriteProjects(projects)
 }
 
 export async function getProject(id: string): Promise<Project | undefined> {
-  if (supabaseEnabled) {
+  if (pgEnabled) {
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('data')
-        .eq('id', id)
-        .maybeSingle()
-      if (error) throw error
-      if (data) return data.data as Project
-      return undefined
+      const rows = await query<{ data: Project }>(
+        'SELECT data FROM projects WHERE id = $1',
+        [id]
+      )
+      return rows[0]?.data
     } catch (err) {
-      console.error('[db] Supabase getProject failed, using JSON fallback:', err)
+      console.error('[db] pg getProject failed, using JSON fallback:', err)
     }
   }
   return jsonReadProjects().find((p) => p.id === id)
 }
 
 export async function getProjectByAdminToken(token: string): Promise<Project | undefined> {
-  if (supabaseEnabled) {
+  if (pgEnabled) {
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('data')
-        .eq('admin_token', token)
-        .maybeSingle()
-      if (error) throw error
-      if (data) return data.data as Project
-      return undefined
+      const rows = await query<{ data: Project }>(
+        'SELECT data FROM projects WHERE admin_token = $1',
+        [token]
+      )
+      return rows[0]?.data
     } catch (err) {
-      console.error('[db] Supabase getProjectByAdminToken failed, using JSON fallback:', err)
+      console.error('[db] pg getProjectByAdminToken failed, using JSON fallback:', err)
     }
   }
   return jsonReadProjects().find((p) => p.adminToken === token)
 }
 
 export async function getProjectByClientToken(token: string): Promise<Project | undefined> {
-  if (supabaseEnabled) {
+  if (pgEnabled) {
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('data')
-        .eq('client_token', token)
-        .maybeSingle()
-      if (error) throw error
-      if (data) return data.data as Project
-      return undefined
+      const rows = await query<{ data: Project }>(
+        'SELECT data FROM projects WHERE client_token = $1',
+        [token]
+      )
+      return rows[0]?.data
     } catch (err) {
-      console.error('[db] Supabase getProjectByClientToken failed, using JSON fallback:', err)
+      console.error('[db] pg getProjectByClientToken failed, using JSON fallback:', err)
     }
   }
   return jsonReadProjects().find((p) => p.clientToken === token)
 }
 
 export async function saveProject(project: Project): Promise<void> {
-  if (supabaseEnabled) {
+  if (pgEnabled) {
     try {
-      const { error } = await supabase
-        .from('projects')
-        .upsert(
-          {
-            id: project.id,
-            admin_token: project.adminToken,
-            client_token: project.clientToken,
-            data: project,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'id' }
-        )
-      if (error) throw error
+      await query(
+        `INSERT INTO projects (id, admin_token, client_token, data, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (id) DO UPDATE
+           SET admin_token = EXCLUDED.admin_token,
+               client_token = EXCLUDED.client_token,
+               data = EXCLUDED.data,
+               updated_at = EXCLUDED.updated_at`,
+        [project.id, project.adminToken, project.clientToken, project, project.createdAt, new Date().toISOString()]
+      )
       jsonSaveProject(project) // keep fallback in sync
       return
     } catch (err) {
-      console.error('[db] Supabase saveProject failed, using JSON fallback:', err)
+      console.error('[db] pg saveProject failed, using JSON fallback:', err)
     }
   }
   jsonSaveProject(project)
@@ -167,41 +150,31 @@ export async function updateProject(
   id: string,
   updates: Partial<Project>
 ): Promise<Project | null> {
-  if (supabaseEnabled) {
+  if (pgEnabled) {
     try {
-      // Fetch current data, merge updates, write back
-      const { data: existing, error: fetchErr } = await supabase
-        .from('projects')
-        .select('data')
-        .eq('id', id)
-        .maybeSingle()
-      if (fetchErr) throw fetchErr
-      if (!existing) return null
+      const rows = await query<{ data: Project }>(
+        'SELECT data FROM projects WHERE id = $1',
+        [id]
+      )
+      if (!rows[0]) return null
 
       const merged: Project = {
-        ...(existing.data as Project),
+        ...rows[0].data,
         ...updates,
         updatedAt: new Date().toISOString(),
       }
 
-      const { error: upsertErr } = await supabase
-        .from('projects')
-        .upsert(
-          {
-            id: merged.id,
-            admin_token: merged.adminToken,
-            client_token: merged.clientToken,
-            data: merged,
-            updated_at: merged.updatedAt,
-          },
-          { onConflict: 'id' }
-        )
-      if (upsertErr) throw upsertErr
+      await query(
+        `UPDATE projects
+         SET admin_token = $2, client_token = $3, data = $4, updated_at = $5
+         WHERE id = $1`,
+        [merged.id, merged.adminToken, merged.clientToken, merged, merged.updatedAt]
+      )
 
       jsonSaveProject(merged) // keep fallback in sync
       return merged
     } catch (err) {
-      console.error('[db] Supabase updateProject failed, using JSON fallback:', err)
+      console.error('[db] pg updateProject failed, using JSON fallback:', err)
     }
   }
 
