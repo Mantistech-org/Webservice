@@ -418,6 +418,15 @@ export default function AdminProjectPage() {
               ) : null}
             </div>
 
+            <a
+              href={`/client/dashboard/${project.clientToken}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-center border border-border text-muted font-mono text-sm py-3 px-6 rounded tracking-wider hover:border-accent hover:text-accent transition-all"
+            >
+              View Client Dashboard
+            </a>
+
             {actionMsg && (
               <div className="font-mono text-xs text-accent bg-accent/5 border border-accent/20 rounded px-4 py-3">
                 {actionMsg}
