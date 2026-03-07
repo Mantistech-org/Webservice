@@ -13,12 +13,12 @@ export async function POST(
   if (!addonId || typeof monthlyPrice !== 'number' || monthlyPrice <= 0) {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
   }
-  const project = getProject(id)
+  const project = await getProject(id)
   if (!project) return NextResponse.json({ error: 'Not found.' }, { status: 404 })
   const customAddons = (project.customAddons ?? []).map((a) =>
     a.id === addonId ? { ...a, status: 'priced' as const, monthlyPrice } : a
   )
-  const updated = updateProject(id, { customAddons })
+  const updated = await updateProject(id, { customAddons })
   if (!updated) return NextResponse.json({ error: 'Update failed.' }, { status: 500 })
   const addon = customAddons.find((a) => a.id === addonId)
   if (addon) {

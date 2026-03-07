@@ -6,13 +6,13 @@ export async function GET(
   { params }: { params: Promise<{ clientToken: string }> }
 ) {
   const { clientToken } = await params
-  const project = getProjectByClientToken(clientToken)
+  const project = await getProjectByClientToken(clientToken)
 
   if (!project) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
-  const allProjects = readProjects()
+  const allProjects = await readProjects()
   const convertedReferrals = allProjects
     .filter((p) => p.referredBy === project.clientToken)
     .map((p) => ({ businessName: p.businessName, date: p.createdAt }))

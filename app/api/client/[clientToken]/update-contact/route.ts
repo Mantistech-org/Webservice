@@ -3,7 +3,7 @@ import { readProjects, updateProject } from '@/lib/db'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ clientToken: string }> }) {
   const { clientToken } = await params
-  const projects = readProjects()
+  const projects = await readProjects()
   const project = projects.find((p) => p.clientToken === clientToken)
 
   if (!project) return NextResponse.json({ error: 'Not found.' }, { status: 404 })
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cli
     return NextResponse.json({ error: 'Name and email are required.' }, { status: 400 })
   }
 
-  updateProject(project.id, { ownerName, email, phone: phone ?? '' })
+  await updateProject(project.id, { ownerName, email, phone: phone ?? '' })
 
   return NextResponse.json({ success: true })
 }

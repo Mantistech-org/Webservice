@@ -12,12 +12,12 @@ export async function POST(
   }
 
   const { id } = await params
-  const project = getProject(id)
+  const project = await getProject(id)
   if (!project) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
-  const updated = updateProject(id, { status: 'client_review' })
+  const updated = await updateProject(id, { status: 'client_review' })
 
   sendClientReviewEmail({
     clientToken: project.clientToken,

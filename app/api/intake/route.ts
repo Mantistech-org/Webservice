@@ -158,7 +158,7 @@ export async function POST(req: NextRequest) {
 
   // ── Step 1: Save project immediately ───────────────────────────────────────
   try {
-    saveProject(project)
+    await saveProject(project)
     console.log(`[intake] Project saved to DB (id=${projectId})`)
   } catch (dbErr) {
     console.error('[intake] Failed to save project to DB:', dbErr)
@@ -174,11 +174,11 @@ export async function POST(req: NextRequest) {
   // The generation runs in the background after the response is sent.
   console.log(`[intake] Kicking off background AI generation for ${projectId}`)
   generateWebsite(project)
-    .then((html) => {
+    .then(async (html) => {
       console.log(`[intake:bg] AI generation succeeded for ${projectId}, saving HTML`)
       project.generatedHtml = html
       project.updatedAt = new Date().toISOString()
-      saveProject(project)
+      await saveProject(project)
       console.log(`[intake:bg] Project updated with generated HTML (id=${projectId})`)
     })
     .catch((err) => {

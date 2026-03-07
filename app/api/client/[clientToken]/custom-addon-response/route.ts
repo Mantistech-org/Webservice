@@ -10,13 +10,13 @@ export async function POST(
   if (!addonId || !['accept', 'decline'].includes(response)) {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
   }
-  const project = getProjectByClientToken(clientToken)
+  const project = await getProjectByClientToken(clientToken)
   if (!project) return NextResponse.json({ error: 'Not found.' }, { status: 404 })
   const customAddons = (project.customAddons ?? []).map((a) =>
     a.id === addonId
       ? { ...a, status: (response === 'accept' ? 'accepted' : 'declined') as 'accepted' | 'declined', respondedAt: new Date().toISOString() }
       : a
   )
-  const updated = updateProject(project.id, { customAddons })
+  const updated = await updateProject(project.id, { customAddons })
   return NextResponse.json({ success: true, project: updated })
 }

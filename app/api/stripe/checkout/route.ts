@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing token' }, { status: 400 })
   }
 
-  const project = getProjectByClientToken(clientToken)
+  const project = await getProjectByClientToken(clientToken)
   if (!project) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }

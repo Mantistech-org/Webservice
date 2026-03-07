@@ -12,7 +12,7 @@ export async function POST(
   }
 
   const { id } = await params
-  const project = getProject(id)
+  const project = await getProject(id)
 
   if (!project) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
@@ -29,7 +29,7 @@ export async function POST(
       : cr
   )
 
-  const updated = updateProject(id, { changeRequests })
+  const updated = await updateProject(id, { changeRequests })
   if (!updated) {
     return NextResponse.json({ error: 'Failed to update change request' }, { status: 500 })
   }

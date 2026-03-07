@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true })
     }
 
-    const project = getProject(projectId)
+    const project = await getProject(projectId)
     if (!project) {
       console.error(`Project ${projectId} not found`)
       return NextResponse.json({ received: true })
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     if (type === 'addon' && addonId) {
       // Add the addon subscription to the project
       const currentAddons = project.stripeAddonSubscriptions ?? []
-      const updatedProject = updateProject(projectId, {
+      const updatedProject = await updateProject(projectId, {
         stripeAddonSubscriptions: [...currentAddons, addonId],
         addons: project.addons.includes(addonId) ? project.addons : [...project.addons, addonId],
       })
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     } else if (type === 'upgrade') {
       // Plan upgrade
       const newPlan = session.metadata?.plan as string | undefined
-      const updatedProject = updateProject(projectId, {
+      const updatedProject = await updateProject(projectId, {
         status: 'active',
         plan: newPlan as 'starter' | 'mid' | 'pro' ?? project.plan,
         stripeSessionId: session.id,
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
       }
     } else {
       // Initial plan payment
-      const updatedProject = updateProject(projectId, {
+      const updatedProject = await updateProject(projectId, {
         status: 'active',
         stripeSessionId: session.id,
         stripeCustomerId: typeof session.customer === 'string' ? session.customer : undefined,

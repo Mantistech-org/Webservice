@@ -14,7 +14,7 @@ export async function POST(
   }
 
   const { id } = await params
-  const project = getProject(id)
+  const project = await getProject(id)
 
   if (!project) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
@@ -33,7 +33,7 @@ export async function POST(
   }
 
   const existing = project.notifications ?? []
-  const updated = updateProject(id, { notifications: [...existing, notification] })
+  const updated = await updateProject(id, { notifications: [...existing, notification] })
 
   if (!updated) {
     return NextResponse.json({ error: 'Failed to save notification' }, { status: 500 })

@@ -12,7 +12,7 @@ export async function POST(
   }
 
   const { id } = await params
-  const project = getProject(id)
+  const project = await getProject(id)
   if (!project) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
@@ -20,7 +20,7 @@ export async function POST(
   const body = await req.json().catch(() => ({}))
   const adminNotes: string = body.notes ?? ''
 
-  const updated = updateProject(id, {
+  const updated = await updateProject(id, {
     status: 'changes_requested',
     adminNotes,
   })

@@ -9,7 +9,7 @@ export async function POST(
   { params }: { params: Promise<{ clientToken: string }> }
 ) {
   const { clientToken } = await params
-  const project = getProjectByClientToken(clientToken)
+  const project = await getProjectByClientToken(clientToken)
 
   if (!project) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
@@ -28,7 +28,7 @@ export async function POST(
   }
 
   const existing = project.changeRequests ?? []
-  const updated = updateProject(project.id, {
+  const updated = await updateProject(project.id, {
     changeRequests: [...existing, newRequest],
   })
 

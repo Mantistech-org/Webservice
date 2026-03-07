@@ -6,7 +6,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '20
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ clientToken: string }> }) {
   const { clientToken } = await params
-  const projects = readProjects()
+  const projects = await readProjects()
   const project = projects.find((p) => p.clientToken === clientToken)
 
   if (!project) return NextResponse.json({ error: 'Not found.' }, { status: 404 })

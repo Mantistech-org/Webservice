@@ -9,11 +9,11 @@ export async function POST(
 ) {
   if (!(await isAdminAuthenticated())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { id } = await params
-  const project = getProject(id)
+  const project = await getProject(id)
   if (!project) return NextResponse.json({ error: 'Not found.' }, { status: 404 })
   if (!project.referredBy) return NextResponse.json({ error: 'No referral on this project.' }, { status: 400 })
-  const updated = updateProject(id, { referralRewardGranted: true })
-  const referrer = getProjectByClientToken(project.referredBy)
+  const updated = await updateProject(id, { referralRewardGranted: true })
+  const referrer = await getProjectByClientToken(project.referredBy)
   if (referrer) {
     sendReferralRewardEmail({
       ownerName: referrer.ownerName,

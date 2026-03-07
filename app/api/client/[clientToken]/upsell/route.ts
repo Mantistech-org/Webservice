@@ -8,7 +8,7 @@ export async function POST(
   { params }: { params: Promise<{ clientToken: string }> }
 ) {
   const { clientToken } = await params
-  const project = getProjectByClientToken(clientToken)
+  const project = await getProjectByClientToken(clientToken)
 
   if (!project) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
@@ -21,7 +21,7 @@ export async function POST(
   const clicks = project.upsellClicks ?? []
   const clickLabel = type === 'addon' ? `addon:${addonId}` : `upgrade:${newPlan}`
   if (!clicks.includes(clickLabel)) {
-    updateProject(project.id, { upsellClicks: [...clicks, clickLabel] })
+    await updateProject(project.id, { upsellClicks: [...clicks, clickLabel] })
   }
 
   try {

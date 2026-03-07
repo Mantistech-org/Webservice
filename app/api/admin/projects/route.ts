@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const projects = readProjects().map((p) => ({
+  const projects = (await readProjects()).map((p) => ({
     id: p.id,
     businessName: p.businessName,
     ownerName: p.ownerName,

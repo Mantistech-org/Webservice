@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/auth'
-import { readProjects, writeProjects } from '@/lib/db'
+import { saveProject } from '@/lib/db'
 import { sendDashboardReadyEmail } from '@/lib/resend'
 import crypto from 'crypto'
 
@@ -14,7 +14,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 })
   }
 
-  const projects = readProjects()
   const id = crypto.randomUUID()
   const adminToken = crypto.randomBytes(24).toString('hex')
   const clientToken = crypto.randomBytes(24).toString('hex')
@@ -50,8 +49,7 @@ export async function POST(req: NextRequest) {
     upsellClicks: [],
   }
 
-  projects.push(project)
-  writeProjects(projects)
+  await saveProject(project)
 
   await sendDashboardReadyEmail({ businessName, ownerName, email, clientToken }).catch(() => { /* non-fatal */ })
 

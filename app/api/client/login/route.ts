@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
 
   // Non-blocking: find project and send email
   try {
-    const projects = readProjects()
+    const projects = await readProjects()
     const project = projects.find(
       (p) => p.email.toLowerCase() === email.toLowerCase() && p.status === 'active'
     )

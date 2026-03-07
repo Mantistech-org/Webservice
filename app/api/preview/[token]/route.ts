@@ -9,14 +9,14 @@ export async function GET(
   const { token } = await params
 
   // Try admin token first (admin must be authenticated)
-  let project = getProjectByAdminToken(token)
+  let project = await getProjectByAdminToken(token)
   if (project) {
     if (!(await isAdminAuthenticated())) {
       return new NextResponse('Unauthorized', { status: 401 })
     }
   } else {
     // Try client token
-    project = getProjectByClientToken(token)
+    project = await getProjectByClientToken(token)
     if (!project) {
       return new NextResponse('Not Found', { status: 404 })
     }
