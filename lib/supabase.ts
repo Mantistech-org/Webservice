@@ -5,6 +5,8 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
 
 if (!supabaseUrl || !supabaseServiceKey) {
   console.warn('[supabase] SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set — Supabase disabled, using local JSON fallback')
+} else {
+  console.log('[supabase] SUPABASE_URL (first 30 chars):', supabaseUrl.slice(0, 30))
 }
 
 // Service role client bypasses Row Level Security and has full table access.
