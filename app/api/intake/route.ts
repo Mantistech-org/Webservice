@@ -171,7 +171,9 @@ export async function POST(req: NextRequest) {
   // Non-blocking fetch to /api/generate — do not await so the response
   // returns immediately while generation runs in its own request lifecycle.
   console.log(`[intake] Triggering background AI generation for ${projectId}`)
-  const generateUrl = `http://webservice.railway.internal/api/generate`
+  const generateUrl = process.env.NEXT_PUBLIC_BASE_URL
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}/api/generate`
+    : `http://webservice.railway.internal/api/generate`
   fetch(generateUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
