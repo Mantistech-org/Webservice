@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Project, ProjectStatus, PLANS, ADDONS, ADDONS as ALL_ADDONS } from '@/types'
+import ThemeToggle from '@/components/ThemeToggle'
 
 const STATUS_LABELS: Record<ProjectStatus, string> = {
   admin_review: 'Awaiting Review',
@@ -15,7 +16,7 @@ const STATUS_LABELS: Record<ProjectStatus, string> = {
 const STATUS_COLORS: Record<ProjectStatus, string> = {
   admin_review: 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5',
   client_review: 'text-blue-400 border-blue-400/30 bg-blue-400/5',
-  changes_requested: 'text-orange-400 border-orange-400/30 bg-orange-400/5',
+  changes_requested: 'text-red-400 border-red-400/30 bg-red-400/5',
   active: 'text-accent border-accent/30 bg-accent/5',
 }
 
@@ -194,12 +195,15 @@ export default function AdminProjectPage() {
             &larr; Dashboard
           </Link>
           <span className="text-border">/</span>
-          <span className="font-heading text-lg text-white truncate max-w-xs">{project.businessName}</span>
+          <span className="font-heading text-lg text-primary truncate max-w-xs">{project.businessName}</span>
           <span className={`font-mono text-xs border px-2 py-0.5 rounded-full ${STATUS_COLORS[project.status]}`}>
             {STATUS_LABELS[project.status]}
           </span>
         </div>
-        <div className="font-mono text-xs text-dim hidden sm:block">ID: {project.id}</div>
+        <div className="flex items-center gap-3">
+          <div className="font-mono text-xs text-dim hidden sm:block">ID: {project.id}</div>
+          <ThemeToggle />
+        </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -208,7 +212,7 @@ export default function AdminProjectPage() {
           {/* Preview */}
           <div className="xl:col-span-2 flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <h2 className="font-heading text-3xl text-white">Website Preview</h2>
+              <h2 className="font-heading text-3xl text-primary">Website Preview</h2>
               <a
                 href={`/api/preview/${project.adminToken}`}
                 target="_blank"
@@ -233,7 +237,7 @@ export default function AdminProjectPage() {
                   <button
                     onClick={handleApprove}
                     disabled={approving}
-                    className="flex-1 bg-accent text-bg font-mono text-sm py-3 px-6 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60 glow-accent"
+                    className="flex-1 bg-accent text-black font-mono text-sm py-3 px-6 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60 glow-accent"
                   >
                     {approving ? 'Approving...' : 'Approve and Send to Client'}
                   </button>
@@ -308,7 +312,7 @@ export default function AdminProjectPage() {
                 ].map(([label, value]) => (
                   <div key={label}>
                     <dt className="font-mono text-xs text-muted uppercase tracking-wider mb-0.5">{label}</dt>
-                    <dd className="text-sm text-white break-words">{value}</dd>
+                    <dd className="text-sm text-primary break-words">{value}</dd>
                   </div>
                 ))}
               </dl>
@@ -339,20 +343,20 @@ export default function AdminProjectPage() {
                 <dl className="space-y-3">
                   <div>
                     <dt className="font-mono text-xs text-muted uppercase tracking-wider mb-0.5">Status</dt>
-                    <dd className="text-sm text-white font-medium">
+                    <dd className="text-sm text-primary font-medium">
                       {project.domainStatus === 'existing' ? 'Client has an existing domain' : 'Client needs a new domain registered'}
                     </dd>
                   </div>
                   {project.domainStatus === 'existing' && project.existingDomain && (
                     <div>
                       <dt className="font-mono text-xs text-muted uppercase tracking-wider mb-0.5">Their Domain</dt>
-                      <dd className="text-sm text-white font-mono">{project.existingDomain}</dd>
+                      <dd className="text-sm text-primary font-mono">{project.existingDomain}</dd>
                     </div>
                   )}
                   {project.domainStatus === 'new' && project.preferredDomain && (
                     <div>
                       <dt className="font-mono text-xs text-muted uppercase tracking-wider mb-0.5">Preferred Domain</dt>
-                      <dd className="text-sm text-white font-mono">{project.preferredDomain}</dd>
+                      <dd className="text-sm text-primary font-mono">{project.preferredDomain}</dd>
                     </div>
                   )}
                   {project.wantsProfessionalEmail && (
@@ -366,8 +370,8 @@ export default function AdminProjectPage() {
                 </dl>
                 <div className={`mt-4 text-xs font-mono leading-relaxed p-3 rounded border ${
                   project.domainStatus === 'new'
-                    ? 'text-yellow-300 bg-yellow-400/5 border-yellow-400/20'
-                    : 'text-blue-300 bg-blue-400/5 border-blue-400/20'
+                    ? 'text-primary bg-yellow-400/5 border-yellow-400/20'
+                    : 'text-primary bg-blue-400/5 border-blue-400/20'
                 }`}>
                   {project.domainStatus === 'new'
                     ? 'Action needed: Check availability and register this domain before building the site. If unavailable reach out to client with alternatives.'
@@ -381,7 +385,7 @@ export default function AdminProjectPage() {
               <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Plan and Add-ons</h3>
               <div className="mb-4">
                 <div className="font-mono text-xs text-muted uppercase mb-1">Plan</div>
-                <div className="font-heading text-2xl text-white capitalize">
+                <div className="font-heading text-2xl text-primary capitalize">
                   {plan.name}
                   <span className="font-mono text-sm text-muted ml-2 font-normal">
                     ${plan.upfront} upfront / ${plan.monthly}/mo
@@ -464,7 +468,7 @@ export default function AdminProjectPage() {
                       {req.adminResponse && (
                         <div className="bg-bg border border-border rounded p-3">
                           <div className="font-mono text-xs text-accent mb-1">Your Response</div>
-                          <p className="text-sm text-white">{req.adminResponse}</p>
+                          <p className="text-sm text-primary">{req.adminResponse}</p>
                         </div>
                       )}
                       {req.status === 'pending' && (
@@ -482,7 +486,7 @@ export default function AdminProjectPage() {
                                 <button
                                   onClick={() => handleRespondToChange(req.id)}
                                   disabled={sendingResponse || !responseText.trim()}
-                                  className="flex-1 font-mono text-xs bg-accent text-bg py-2 rounded hover:bg-white transition-all disabled:opacity-60"
+                                  className="flex-1 font-mono text-xs bg-accent text-black py-2 rounded hover:bg-white transition-all disabled:opacity-60"
                                 >
                                   {sendingResponse ? 'Sending...' : 'Send and Resolve'}
                                 </button>
@@ -548,7 +552,7 @@ export default function AdminProjectPage() {
                   {project.customAddons.map((addon) => (
                     <div key={addon.id} className="border border-orange-400/20 rounded p-4 space-y-2">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm text-white font-medium">{addon.name}</span>
+                        <span className="text-sm text-primary font-medium">{addon.name}</span>
                         <span className={`font-mono text-xs border px-2 py-0.5 rounded-full shrink-0 ${
                           addon.status === 'accepted' ? 'text-accent border-accent/30' :
                           addon.status === 'declined' ? 'text-red-400 border-red-400/30' :
@@ -579,13 +583,13 @@ export default function AdminProjectPage() {
                             <button
                               onClick={() => handleSetAddonPrice(addon.id)}
                               disabled={settingPrice || !addonPrice}
-                              className="font-mono text-xs bg-accent text-bg px-3 py-1.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60"
+                              className="font-mono text-xs bg-accent text-black px-3 py-1.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60"
                             >
                               {settingPrice ? 'Saving...' : 'Set Price'}
                             </button>
                             <button
                               onClick={() => { setPricingAddonId(null); setAddonPrice('') }}
-                              className="font-mono text-xs text-muted hover:text-white transition-colors"
+                              className="font-mono text-xs text-muted hover:text-primary transition-colors"
                             >
                               Cancel
                             </button>
@@ -621,7 +625,7 @@ export default function AdminProjectPage() {
                   <button
                     onClick={handleGrantReferral}
                     disabled={grantingReferral}
-                    className="font-mono text-xs bg-accent text-bg px-4 py-2 rounded hover:opacity-90 transition-opacity disabled:opacity-60"
+                    className="font-mono text-xs bg-accent text-black px-4 py-2 rounded hover:opacity-90 transition-opacity disabled:opacity-60"
                   >
                     {grantingReferral ? 'Processing...' : 'Grant Free Month'}
                   </button>
@@ -643,7 +647,7 @@ export default function AdminProjectPage() {
                 <button
                   onClick={handleSendNotification}
                   disabled={sendingNotif || !notifMessage.trim()}
-                  className="w-full font-mono text-xs bg-accent text-bg py-2.5 rounded hover:bg-white transition-all disabled:opacity-60"
+                  className="w-full font-mono text-xs bg-accent text-black py-2.5 rounded hover:bg-white transition-all disabled:opacity-60"
                 >
                   {sendingNotif ? 'Sending...' : 'Send to Client'}
                 </button>
@@ -657,7 +661,7 @@ export default function AdminProjectPage() {
             {project.adminNotes && (
               <div className="bg-orange-950/20 border border-orange-400/20 rounded p-6">
                 <h3 className="font-mono text-xs text-orange-400 tracking-widest uppercase mb-3">Admin Notes</h3>
-                <p className="text-sm text-orange-300 leading-relaxed">{project.adminNotes}</p>
+                <p className="text-sm text-primary leading-relaxed">{project.adminNotes}</p>
               </div>
             )}
 

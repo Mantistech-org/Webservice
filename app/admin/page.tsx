@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ProjectStatus, Plan, PLANS } from '@/types'
+import ThemeToggle from '@/components/ThemeToggle'
 
 interface DemoSession {
   id: string
@@ -37,7 +38,7 @@ const STATUS_LABELS: Record<ProjectStatus, string> = {
 const STATUS_COLORS: Record<ProjectStatus, string> = {
   admin_review: 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5',
   client_review: 'text-blue-400 border-blue-400/30 bg-blue-400/5',
-  changes_requested: 'text-orange-400 border-orange-400/30 bg-orange-400/5',
+  changes_requested: 'text-red-400 border-red-400/30 bg-red-400/5',
   active: 'text-accent border-accent/30 bg-accent/5',
 }
 
@@ -249,11 +250,11 @@ export default function AdminPage() {
           <div className="w-full max-w-sm">
             <div className="flex items-center gap-2 mb-8 justify-center">
               <span className="w-2 h-2 rounded-full bg-accent" />
-              <span className="font-heading text-2xl tracking-widest text-white">MANTIS TECH</span>
+              <span className="font-heading text-2xl tracking-widest text-primary">MANTIS TECH</span>
             </div>
             <div className="bg-card border border-border rounded p-8">
               <div className="font-mono text-xs text-accent tracking-widest uppercase mb-2">Admin</div>
-              <h1 className="font-heading text-3xl text-white mb-2">Check Your Email</h1>
+              <h1 className="font-heading text-3xl text-primary mb-2">Check Your Email</h1>
               <p className="font-mono text-xs text-muted mb-6">
                 A 6-digit code was sent to your admin email address. Enter it below to complete login.
               </p>
@@ -299,7 +300,7 @@ export default function AdminPage() {
                   <button
                     type="submit"
                     disabled={verifying || mfaCode.length !== 6}
-                    className="w-full bg-accent text-bg font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60"
+                    className="w-full bg-accent text-black font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60"
                   >
                     {verifying ? 'Verifying...' : 'Verify and Log In'}
                   </button>
@@ -312,7 +313,7 @@ export default function AdminPage() {
                   disabled={resending}
                   className={`w-full font-mono text-sm py-3 rounded tracking-wider transition-all disabled:opacity-60 ${
                     codeExpired
-                      ? 'bg-accent text-bg hover:bg-white'
+                      ? 'bg-accent text-black hover:bg-white'
                       : 'border border-border text-muted hover:border-accent hover:text-accent'
                   }`}
                 >
@@ -340,11 +341,11 @@ export default function AdminPage() {
         <div className="w-full max-w-sm">
           <div className="flex items-center gap-2 mb-8 justify-center">
             <span className="w-2 h-2 rounded-full bg-accent" />
-            <span className="font-heading text-2xl tracking-widest text-white">MANTIS TECH</span>
+            <span className="font-heading text-2xl tracking-widest text-primary">MANTIS TECH</span>
           </div>
           <div className="bg-card border border-border rounded p-8">
             <div className="font-mono text-xs text-accent tracking-widest uppercase mb-2">Admin</div>
-            <h1 className="font-heading text-3xl text-white mb-6">Dashboard Login</h1>
+            <h1 className="font-heading text-3xl text-primary mb-6">Dashboard Login</h1>
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">
@@ -366,7 +367,7 @@ export default function AdminPage() {
               <button
                 type="submit"
                 disabled={loggingIn}
-                className="w-full bg-accent text-bg font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60"
+                className="w-full bg-accent text-black font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60"
               >
                 {loggingIn ? 'Authenticating...' : 'Enter Dashboard'}
               </button>
@@ -407,13 +408,13 @@ export default function AdminPage() {
       <header className="border-b border-border bg-card px-6 py-4 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <span className="w-2 h-2 rounded-full bg-accent" />
-          <span className="font-heading text-xl tracking-widest text-white">MANTIS TECH</span>
+          <span className="font-heading text-xl tracking-widest text-primary">MANTIS TECH</span>
           <span className="font-mono text-xs text-muted ml-2">/ Admin</span>
         </div>
         <div className="flex items-center gap-4">
           <button
             onClick={() => setShowAddModal(true)}
-            className="font-mono text-xs bg-accent text-bg px-4 py-1.5 rounded hover:opacity-90 transition-opacity tracking-wider"
+            className="font-mono text-xs bg-accent text-black px-4 py-1.5 rounded hover:opacity-90 transition-opacity tracking-wider"
           >
             Add Client
           </button>
@@ -424,6 +425,7 @@ export default function AdminPage() {
           >
             {loading ? 'Refreshing...' : 'Refresh'}
           </button>
+          <ThemeToggle />
           <button
             onClick={handleLogout}
             className="font-mono text-xs border border-border text-muted px-4 py-1.5 rounded hover:border-accent hover:text-accent transition-all"
@@ -435,7 +437,7 @@ export default function AdminPage() {
 
       <main className="max-w-7xl mx-auto px-6 py-10">
         <div className="mb-8">
-          <h1 className="font-heading text-5xl text-white mb-2">Project Dashboard</h1>
+          <h1 className="font-heading text-5xl text-primary mb-2">Project Dashboard</h1>
           <p className="font-mono text-sm text-muted">
             {projects.length} total project{projects.length !== 1 ? 's' : ''}
           </p>
@@ -445,7 +447,7 @@ export default function AdminPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
           <div className="bg-card border border-border rounded p-5">
             <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Active Clients</div>
-            <div className="font-heading text-4xl text-white">{activeProjects.length}</div>
+            <div className="font-heading text-4xl text-primary">{activeProjects.length}</div>
           </div>
           <div className="bg-card border border-border rounded p-5">
             <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Estimated MRR</div>
@@ -513,7 +515,7 @@ export default function AdminPage() {
                 <div className="p-6 flex flex-col sm:flex-row sm:items-center gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-1">
-                      <h3 className="font-heading text-xl text-white group-hover:text-accent transition-colors truncate">
+                      <h3 className="font-heading text-xl text-primary group-hover:text-accent transition-colors truncate">
                         {project.businessName}
                       </h3>
                       <span
@@ -553,7 +555,7 @@ export default function AdminPage() {
         <div className="mt-16 pt-10 border-t border-border">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="font-heading text-3xl text-white mb-1">Demo Visitors</h2>
+              <h2 className="font-heading text-3xl text-primary mb-1">Demo Visitors</h2>
               <p className="font-mono text-sm text-muted">
                 {demoSessions.length} session{demoSessions.length !== 1 ? 's' : ''} recorded
               </p>
@@ -621,7 +623,7 @@ export default function AdminPage() {
         {/* Referrals */}
         <div className="mt-16 pt-10 border-t border-border">
           <div className="mb-6">
-            <h2 className="font-heading text-3xl text-white mb-1">Referrals</h2>
+            <h2 className="font-heading text-3xl text-primary mb-1">Referrals</h2>
             <p className="font-mono text-sm text-muted">Clients who referred new signups and reward status.</p>
           </div>
           {(() => {
@@ -640,7 +642,7 @@ export default function AdminPage() {
                   return (
                     <div key={p.id} className="bg-card border border-border rounded p-5 flex flex-col sm:flex-row sm:items-center gap-4">
                       <div className="flex-1 min-w-0">
-                        <div className="font-heading text-lg text-white mb-1">{p.businessName}</div>
+                        <div className="font-heading text-lg text-primary mb-1">{p.businessName}</div>
                         <div className="font-mono text-xs text-muted">
                           Referred by: <span className="text-teal">{referrer?.businessName ?? 'Unknown'}</span>
                         </div>
@@ -670,10 +672,10 @@ export default function AdminPage() {
         <div className="fixed inset-0 bg-bg/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
           <div className="bg-card border border-border rounded w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-              <h2 className="font-heading text-2xl text-white">Add Client</h2>
+              <h2 className="font-heading text-2xl text-primary">Add Client</h2>
               <button
                 onClick={() => { setShowAddModal(false); setAddError(''); setAddForm(DEFAULT_ADD_FORM) }}
-                className="font-mono text-xs text-muted hover:text-white transition-colors"
+                className="font-mono text-xs text-muted hover:text-primary transition-colors"
               >
                 Close
               </button>
@@ -739,7 +741,7 @@ export default function AdminPage() {
                 <input type="text" required value={addForm.primaryGoal} onChange={(e) => setAddForm(f => ({ ...f, primaryGoal: e.target.value }))} className="form-input" placeholder="Generate leads, sell products, book appointments..." />
               </div>
               {addError && <p className="font-mono text-xs text-red-400">{addError}</p>}
-              <button type="submit" disabled={addingClient} className="w-full bg-accent text-bg font-mono text-sm py-3 rounded tracking-wider hover:opacity-90 transition-opacity disabled:opacity-60">
+              <button type="submit" disabled={addingClient} className="w-full bg-accent text-black font-mono text-sm py-3 rounded tracking-wider hover:opacity-90 transition-opacity disabled:opacity-60">
                 {addingClient ? 'Creating...' : 'Create Client Project'}
               </button>
             </form>

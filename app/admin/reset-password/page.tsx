@@ -64,14 +64,14 @@ export default function AdminResetPasswordPage() {
       <div className="w-full max-w-sm">
         <div className="flex items-center gap-2 mb-8 justify-center">
           <span className="w-2 h-2 rounded-full bg-accent" />
-          <span className="font-heading text-2xl tracking-widest text-white">MANTIS TECH</span>
+          <span className="font-heading text-2xl tracking-widest text-primary">MANTIS TECH</span>
         </div>
         <div className="bg-card border border-border rounded p-8">
           <div className="font-mono text-xs text-accent tracking-widest uppercase mb-2">Admin</div>
 
           {step === 'request' && (
             <>
-              <h1 className="font-heading text-3xl text-white mb-2">Reset Password</h1>
+              <h1 className="font-heading text-3xl text-primary mb-2">Reset Password</h1>
               <p className="font-mono text-xs text-muted mb-6">Enter the admin email address to receive a reset link.</p>
               <form onSubmit={handleRequest} className="space-y-4">
                 <div>
@@ -79,7 +79,7 @@ export default function AdminResetPasswordPage() {
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="form-input" placeholder="admin@mantistech.io" />
                 </div>
                 {error && <p className="font-mono text-xs text-red-400">{error}</p>}
-                <button type="submit" disabled={loading} className="w-full bg-accent text-bg font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60">
+                <button type="submit" disabled={loading} className="w-full bg-accent text-black font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60">
                   {loading ? 'Sending...' : 'Send Reset Link'}
                 </button>
                 <div className="text-center">
@@ -91,7 +91,7 @@ export default function AdminResetPasswordPage() {
 
           {step === 'reset' && (
             <>
-              <h1 className="font-heading text-3xl text-white mb-2">Enter New Password</h1>
+              <h1 className="font-heading text-3xl text-primary mb-2">Enter New Password</h1>
               <p className="font-mono text-xs text-muted mb-6">Paste the reset token from your email and set a new password.</p>
               <form onSubmit={handleReset} className="space-y-4">
                 <div>
@@ -103,7 +103,7 @@ export default function AdminResetPasswordPage() {
                   <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={8} className="form-input" placeholder="Minimum 8 characters" />
                 </div>
                 {error && <p className="font-mono text-xs text-red-400">{error}</p>}
-                <button type="submit" disabled={loading} className="w-full bg-accent text-bg font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60">
+                <button type="submit" disabled={loading} className="w-full bg-accent text-black font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60">
                   {loading ? 'Resetting...' : 'Set New Password'}
                 </button>
               </form>
@@ -112,9 +112,9 @@ export default function AdminResetPasswordPage() {
 
           {step === 'done' && (
             <>
-              <h1 className="font-heading text-3xl text-white mb-4">Password Updated</h1>
+              <h1 className="font-heading text-3xl text-primary mb-4">Password Updated</h1>
               <p className="font-mono text-xs text-muted mb-6">Your password has been reset successfully.</p>
-              <Link href="/admin" className="block w-full text-center bg-accent text-bg font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all">
+              <Link href="/admin" className="block w-full text-center bg-accent text-black font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all">
                 Back to Login
               </Link>
             </>
