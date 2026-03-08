@@ -53,11 +53,16 @@ export async function POST(req: NextRequest) {
     if (type === 'addon' && addonId) {
       // Add the addon subscription to the project
       const currentAddons = project.stripeAddonSubscriptions ?? []
-      const updatedProject = await updateProject(projectId, {
+      const addonUpdates: Partial<typeof project> = {
         stripeAddonSubscriptions: [...currentAddons, addonId],
         addons: project.addons.includes(addonId) ? project.addons : [...project.addons, addonId],
-      })
-      console.log(`Addon ${addonId} activated for project ${projectId}`)
+      }
+      // Also activate if not already active
+      if (project.status !== 'active') {
+        addonUpdates.status = 'active'
+        if (typeof session.customer === 'string') addonUpdates.stripeCustomerId = session.customer
+      }
+      const updatedProject = await updateProject(projectId, addonUpdates)
       if (updatedProject) {
         console.log(`Project ${projectId} addon ${addonId} activated`)
       }
@@ -81,21 +86,29 @@ export async function POST(req: NextRequest) {
         }).catch((err) => console.error('Failed to send upgrade confirmation emails:', err))
       }
     } else {
-      // Initial plan payment
-      const updatedProject = await updateProject(projectId, {
-        status: 'active',
-        stripeSessionId: session.id,
-        stripeCustomerId: typeof session.customer === 'string' ? session.customer : undefined,
-        stripeSubscriptionId: typeof session.subscription === 'string' ? session.subscription : undefined,
-      })
-      if (updatedProject) {
-        sendConfirmationEmail({
-          businessName: updatedProject.businessName,
-          ownerName: updatedProject.ownerName,
-          email: updatedProject.email,
-          plan: updatedProject.plan,
-          clientToken: updatedProject.clientToken,
-        }).catch((err) => console.error('Failed to send confirmation emails:', err))
+      // Initial plan payment — only activate if not already active to prevent duplicate emails
+      if (project.status !== 'active') {
+        const updatedProject = await updateProject(projectId, {
+          status: 'active',
+          stripeSessionId: session.id,
+          stripeCustomerId: typeof session.customer === 'string' ? session.customer : undefined,
+          stripeSubscriptionId: typeof session.subscription === 'string' ? session.subscription : undefined,
+        })
+        if (updatedProject) {
+          sendConfirmationEmail({
+            businessName: updatedProject.businessName,
+            ownerName: updatedProject.ownerName,
+            email: updatedProject.email,
+            plan: updatedProject.plan,
+            clientToken: updatedProject.clientToken,
+          }).catch((err) => console.error('Failed to send confirmation emails:', err))
+        }
+      } else {
+        // Already active — still update stripeCustomerId/sessionId if missing
+        await updateProject(projectId, {
+          stripeSessionId: session.id,
+          stripeCustomerId: typeof session.customer === 'string' ? session.customer : undefined,
+        })
       }
     }
   }

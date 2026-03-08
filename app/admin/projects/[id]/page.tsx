@@ -57,6 +57,8 @@ export default function AdminProjectPage() {
   const [grantingReferral, setGrantingReferral] = useState(false)
   const [referralMsg, setReferralMsg] = useState('')
   const [copiedId, setCopiedId] = useState(false)
+  const [activating, setActivating] = useState(false)
+  const [activateMsg, setActivateMsg] = useState('')
 
   const fetchProject = useCallback(async () => {
     try {
@@ -161,6 +163,20 @@ export default function AdminProjectPage() {
       setPriceMsg('Failed to set price.')
     }
     setSettingPrice(false)
+  }
+
+  const handleActivate = async () => {
+    setActivating(true)
+    setActivateMsg('')
+    const res = await fetch(`/api/admin/projects/${id}/activate`, { method: 'POST' })
+    if (res.ok) {
+      const data = await res.json()
+      setProject((p) => p ? { ...p, status: data.project.status } : p)
+      setActivateMsg('Project activated successfully.')
+    } else {
+      setActivateMsg('Failed to activate project.')
+    }
+    setActivating(false)
   }
 
   const handleCopyId = () => {
@@ -426,6 +442,23 @@ export default function AdminProjectPage() {
             >
               View Client Dashboard
             </a>
+
+            {project.status !== 'active' && (
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handleActivate}
+                  disabled={activating}
+                  className="w-full border border-accent/40 text-accent font-mono text-sm py-3 px-6 rounded tracking-wider hover:bg-accent/5 transition-all disabled:opacity-60"
+                >
+                  {activating ? 'Activating...' : 'Activate Project'}
+                </button>
+                {activateMsg && (
+                  <p className={`font-mono text-xs ${activateMsg.includes('successfully') ? 'text-accent' : 'text-red-400'}`}>
+                    {activateMsg}
+                  </p>
+                )}
+              </div>
+            )}
 
             {actionMsg && (
               <div className="font-mono text-xs text-accent bg-accent/5 border border-accent/20 rounded px-4 py-3">

@@ -57,7 +57,7 @@ export default function WebsiteChatbot({ sessionId, darkMode }: Props) {
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border flex items-center justify-between">
           <div>
-            <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Chatbot Setup</p>
+            <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Chatbot Setup</p>
             <h2 className="font-heading text-2xl text-primary">Configure Your Chatbot</h2>
           </div>
           {configured && <span className="font-mono text-xs border border-[#4ade80]/30 text-[#4ade80] px-3 py-1 rounded">Live</span>}

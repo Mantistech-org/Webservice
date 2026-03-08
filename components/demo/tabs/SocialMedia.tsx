@@ -24,10 +24,10 @@ const PLATFORM_LABELS: Record<PlatformKey, string> = {
 
 const PLATFORM_COLORS: Record<PlatformKey, string> = {
   instagram: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
-  facebook: '#1877f2',
+  facebook: '#1a1a1a',
   google_business: '#f8f8f8',
   twitter: '#000000',
-  linkedin: '#0077b5',
+  linkedin: '#1a1a1a',
 }
 
 const PLATFORM_TEXT: Record<PlatformKey, string> = {
@@ -89,7 +89,7 @@ function SchedulePicker() {
   if (scheduled) {
     return (
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#d0d0d0]">
-        <span className="font-mono text-xs" style={{ color: '#3a6a8a' }}>Scheduled: {day} at {time}</span>
+        <span className="font-mono text-xs" style={{ color: '#00aa55' }}>Scheduled: {day} at {time}</span>
         <button onClick={() => setScheduled(false)} className="font-mono text-xs text-muted hover:text-primary transition-colors">Cancel</button>
       </div>
     )
@@ -182,7 +182,7 @@ export default function SocialMedia({ sessionId, darkMode }: Props) {
     <div className="space-y-8">
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border">
-          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Post Generator</p>
+          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Post Generator</p>
           <h2 className="font-heading text-2xl text-primary">Create Social Media Posts</h2>
         </div>
         <div className="p-6">
@@ -249,7 +249,7 @@ export default function SocialMedia({ sessionId, darkMode }: Props) {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Posts Ready</p>
+              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Posts Ready</p>
               <h3 className="font-heading text-xl text-primary">Edit and Post</h3>
             </div>
             <div className="flex items-center gap-3">

@@ -244,7 +244,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
     <div className="space-y-8">
       {/* How SEO works info box */}
       <div className="bg-[#efefef] border border-[#d0d0d0] rounded p-5">
-        <p className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: '#3a6a8a' }}>How This Works</p>
+        <p className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: '#00aa55' }}>How This Works</p>
         <p className="text-sm text-teal leading-relaxed">
           Search engine optimization determines how visible your business is when potential customers are actively looking for what you offer. A strong SEO presence means your business appears at the top of Google results for the searches that matter most to you, putting you in front of customers at the exact moment they are ready to buy. Enter your business details and run an analysis to see your current visibility score, what is holding you back and exactly what we will fix.
         </p>
@@ -254,7 +254,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border flex items-center justify-between gap-4">
           <div>
-            <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Your Business Profile</p>
+            <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Your Business Profile</p>
             <h2 className="font-heading text-2xl text-primary">Business Details</h2>
             <p className="font-mono text-xs text-muted mt-1">Saved to this browser. Your info carries across every analysis.</p>
           </div>
@@ -380,7 +380,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
               {/* Top search terms */}
               <div className="bg-card border border-border rounded">
                 <div className="px-6 py-4 border-b border-border">
-                  <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Top Search Terms For Your Business</p>
+                  <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Top Search Terms For Your Business</p>
                   <h3 className="font-heading text-xl text-primary">High Value Keywords</h3>
                   <p className="font-mono text-xs text-muted mt-1">Each of these is a real phrase people type into Google. Showing up for them means more customers finding you.</p>
                 </div>
@@ -413,7 +413,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
               {/* Suggested page titles and descriptions */}
               <div className="bg-card border border-border rounded">
                 <div className="px-6 py-4 border-b border-border">
-                  <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>How You Appear in Search Results</p>
+                  <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>How You Appear in Search Results</p>
                   <h3 className="font-heading text-xl text-primary">Suggested Page Titles and Descriptions</h3>
                 </div>
                 <div className="p-6 space-y-4">
@@ -431,7 +431,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
 
               {/* Local search terms */}
               <div className="bg-card border border-border rounded p-6">
-                <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Local Searches to Target</p>
+                <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Local Searches to Target</p>
                 <h3 className="font-heading text-xl text-primary mb-2">Searches Happening Near You</h3>
                 <p className="font-mono text-xs text-teal leading-relaxed mb-4">These are searches people in your area are doing right now. Showing up for these means more local customers finding you instead of your competitors.</p>
                 <div className="flex flex-wrap gap-2">
@@ -446,7 +446,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
               {/* Current rankings */}
               <div className="bg-card border border-border rounded">
                 <div className="px-6 py-4 border-b border-border">
-                  <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Your Current Google Rankings</p>
+                  <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Your Current Google Rankings</p>
                   <h3 className="font-heading text-xl text-primary">Where You Stand Right Now</h3>
                   <p className="font-mono text-xs text-muted mt-1">Position 1 means you are the first result. Lower numbers are better.</p>
                 </div>
@@ -481,7 +481,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
             <div className="space-y-6">
               <div className="bg-card border border-border rounded">
                 <div className="px-6 py-4 border-b border-border">
-                  <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Keyword Tracker</p>
+                  <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Keyword Tracker</p>
                   <h3 className="font-heading text-xl text-primary">Your Ranked Keywords</h3>
                   <p className="font-mono text-xs text-muted mt-1">Current positions in Google search results. Lower position numbers mean you appear higher on the page.</p>
                 </div>
@@ -528,7 +528,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
               </div>
 
               <div className="bg-[#efefef] border border-[#d0d0d0] rounded p-5">
-                <p className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: '#3a6a8a' }}>About These Rankings</p>
+                <p className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: '#00aa55' }}>About These Rankings</p>
                 <p className="text-sm text-teal leading-relaxed">These rankings reflect estimated positions based on your current website content and the competitive landscape in your area. Applying the recommended changes improves these numbers over time.</p>
               </div>
 
@@ -546,7 +546,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
           {activeSubTab === 'apply' && (
             <div className="space-y-6">
               <div className="bg-[#efefef] border border-[#d0d0d0] rounded p-5">
-                <p className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: '#3a6a8a' }}>Recommended Updates</p>
+                <p className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: '#00aa55' }}>Recommended Updates</p>
                 <p className="text-sm text-teal leading-relaxed">
                   Each change below includes a preview of how it will look once applied. Review the preview, then click Apply to update your website.
                 </p>

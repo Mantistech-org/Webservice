@@ -602,7 +602,7 @@ export default function ECommerceAutomation({ sessionId, initialSubTab = 'automa
   return (
     <div className="space-y-6">
       <div>
-        <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>E-Commerce Automation</p>
+        <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>E-Commerce Automation</p>
         <h2 className="font-heading text-2xl text-primary">Store Management</h2>
       </div>
 

@@ -120,7 +120,7 @@ export default function ReviewManagement({ sessionId, darkMode }: Props) {
           {/* Fake Review Protection */}
           <div className="bg-[#00ff88]/5 border border-[#00ff88]/40 rounded">
             <div className="px-6 py-4 border-b border-[#00ff88]/30">
-              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Protection System</p>
+              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Protection System</p>
               <h2 className="font-heading text-2xl text-primary">Fake Review Protection</h2>
               <p className="font-mono text-xs text-teal mt-1">
                 The system automatically detects suspicious reviews and reports them to Google before they can hurt your business. Below are reviews flagged in the last 30 days.
@@ -136,7 +136,7 @@ export default function ReviewManagement({ sessionId, darkMode }: Props) {
                     <div className="min-w-0">
                       <div className="font-mono text-sm text-primary mb-0.5">{fr.author}</div>
                       <p className="font-mono text-xs text-dim mb-1 truncate">"{fr.text}"</p>
-                      <span className="font-mono text-xs" style={{ color: '#3a6a8a' }}>{fr.flag}</span>
+                      <span className="font-mono text-xs" style={{ color: '#00aa55' }}>{fr.flag}</span>
                     </div>
                   </div>
                   <span className="shrink-0 font-mono text-xs px-2.5 py-1 rounded border border-[#4ade80]/50 text-[#16a34a] whitespace-nowrap">
@@ -166,7 +166,7 @@ export default function ReviewManagement({ sessionId, darkMode }: Props) {
             {/* Unanswered reviews */}
             {unanswered.length > 0 && (
               <div className="mb-6">
-                <p className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: '#3a6a8a' }}>Unanswered Reviews</p>
+                <p className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: '#00aa55' }}>Unanswered Reviews</p>
                 <div className="space-y-3">
                   {unanswered.map((r, i) => (
                     <div key={i} className="bg-card border border-border rounded p-5">
@@ -197,7 +197,7 @@ export default function ReviewManagement({ sessionId, darkMode }: Props) {
             {/* Answered reviews */}
             {answered.length > 0 && (
               <div>
-                <p className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: '#3a6a8a' }}>Answered Reviews</p>
+                <p className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: '#00aa55' }}>Answered Reviews</p>
                 <div className="space-y-3">
                   {answered.map((r, i) => (
                     <div key={i} className="bg-card border border-border rounded p-5">
@@ -232,7 +232,7 @@ export default function ReviewManagement({ sessionId, darkMode }: Props) {
         <div className="space-y-6">
           <div className="bg-card border border-border rounded">
             <div className="px-6 py-4 border-b border-border">
-              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Response Generator</p>
+              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Response Generator</p>
               <h2 className="font-heading text-2xl text-primary">Generate a Review Response</h2>
             </div>
             <div className="p-6">
@@ -261,7 +261,7 @@ export default function ReviewManagement({ sessionId, darkMode }: Props) {
               {result && (
                 <div className="mt-6 bg-[#efefef] border border-[#d0d0d0] rounded p-5">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="font-mono text-xs tracking-widest uppercase" style={{ color: '#3a6a8a' }}>Generated Response</span>
+                    <span className="font-mono text-xs tracking-widest uppercase" style={{ color: '#00aa55' }}>Generated Response</span>
                     <button onClick={copy} className="font-mono text-xs text-muted hover:text-primary transition-colors tracking-wider">{copied ? 'Copied' : 'Copy'}</button>
                   </div>
                   <p className="text-sm text-primary leading-relaxed">{result.response}</p>

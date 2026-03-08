@@ -134,7 +134,7 @@ function pillLabel(e: CalEvent): string {
 function eventStyle(status: string, source: string): React.CSSProperties {
   if (status === 'cancelled') return { backgroundColor: 'rgba(200,50,50,0.14)', color: '#cc4444', border: '1px solid rgba(200,50,50,0.3)' }
   if (status === 'pending')   return { backgroundColor: 'rgba(200,150,0,0.14)', color: '#bb8800', border: '1px solid rgba(200,150,0,0.3)' }
-  if (source === 'website_booking') return { backgroundColor: 'rgba(50,130,220,0.16)', color: '#5599ee', border: '1px solid rgba(50,130,220,0.3)' }
+  if (source === 'website_booking') return { backgroundColor: 'rgba(0,170,170,0.14)', color: '#00aaaa', border: '1px solid rgba(0,170,170,0.3)' }
   return { backgroundColor: 'rgba(0,180,90,0.14)', color: '#00aa55', border: '1px solid rgba(0,180,90,0.3)' }
 }
 

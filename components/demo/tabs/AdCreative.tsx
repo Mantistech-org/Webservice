@@ -128,7 +128,7 @@ export default function AdCreative({ sessionId, darkMode }: Props) {
       {/* Form */}
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border">
-          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Ad Creative Studio</p>
+          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Ad Creative Studio</p>
           <h2 className="font-heading text-2xl text-primary">Generate Ad Creatives</h2>
         </div>
         <div className="p-6">
@@ -216,7 +216,7 @@ export default function AdCreative({ sessionId, darkMode }: Props) {
         <div className="space-y-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Ads Ready</p>
+              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Ads Ready</p>
               <p className="font-mono text-xs text-muted">Select a variation and edit before posting.</p>
             </div>
             <button onClick={() => setPostedAll(true)} className="font-mono text-sm px-5 py-2.5 rounded tracking-wider transition-opacity hover:opacity-80" style={{ backgroundColor: '#000000', color: '#f0f0f0' }}>
@@ -234,7 +234,7 @@ export default function AdCreative({ sessionId, darkMode }: Props) {
                 const isE = editingPlatform === 'facebook'
                 return (
                   <div key="facebook" className="bg-card border border-border rounded overflow-hidden">
-                    <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: '#1877f2' }}>
+                    <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: '#1a1a1a' }}>
                       <span className="font-mono text-xs tracking-wider font-semibold text-white">Facebook</span>
                       <div className="flex items-center gap-2">
                         <VarTabs count={editState.facebook.length} active={vi} onChange={i => setSelectedVar(p => ({ ...p, facebook: i }))} />
@@ -305,7 +305,7 @@ export default function AdCreative({ sessionId, darkMode }: Props) {
                       <div className="px-3 py-2 flex items-center gap-2">
                         <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#833ab4] to-[#fcb045]" />
                         <div className="font-mono text-xs font-semibold text-[#1a1a1a] flex-1">{businessName.toLowerCase().replace(/\s+/g, '.') || 'your.business'}</div>
-                        <span className="font-mono text-xs font-semibold text-[#0095f6]">Follow</span>
+                        <span className="font-mono text-xs font-semibold text-[#00aa55]">Follow</span>
                       </div>
                       <div className="relative aspect-square overflow-hidden bg-[#e4e6eb]">
                         {photoPreview
@@ -319,7 +319,7 @@ export default function AdCreative({ sessionId, darkMode }: Props) {
                       </div>
                       <div className="px-3 py-2 border-t border-[#dbdbdb] flex items-center justify-between">
                         <span className="font-mono text-[10px] text-[#8a8d91]">Sponsored</span>
-                        <span className="font-mono text-xs font-semibold text-[#0095f6]">{cta}</span>
+                        <span className="font-mono text-xs font-semibold text-[#00aa55]">{cta}</span>
                       </div>
                     </div>
                     {isE && (
@@ -396,7 +396,7 @@ export default function AdCreative({ sessionId, darkMode }: Props) {
                 const overWarn = li.post.length > 150
                 return (
                   <div key="linkedin" className="bg-card border border-border rounded overflow-hidden">
-                    <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: '#0077b5' }}>
+                    <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: '#1a1a1a' }}>
                       <span className="font-mono text-xs tracking-wider font-semibold text-white">LinkedIn</span>
                       <div className="flex items-center gap-2">
                         <VarTabs count={editState.linkedin.length} active={vi} onChange={i => setSelectedVar(p => ({ ...p, linkedin: i }))} />
@@ -407,7 +407,7 @@ export default function AdCreative({ sessionId, darkMode }: Props) {
                     </div>
                     <div className="bg-white">
                       <div className="px-3 py-2 flex items-center gap-2">
-                        <div className="w-8 h-8 rounded bg-[#0077b5] flex items-center justify-center font-mono text-xs text-white font-bold">{businessName.charAt(0) || 'B'}</div>
+                        <div className="w-8 h-8 rounded bg-[#1a1a1a] flex items-center justify-center font-mono text-xs text-white font-bold">{businessName.charAt(0) || 'B'}</div>
                         <div>
                           <div className="font-mono text-xs font-semibold text-[#1a1a1a]">{businessName || 'Your Business'}</div>
                           <div className="font-mono text-[10px] text-[#8a8d91]">Sponsored</div>
@@ -424,7 +424,7 @@ export default function AdCreative({ sessionId, darkMode }: Props) {
                       )}
                       {!isE && (
                         <div className="px-3 pb-3 pt-2">
-                          <span className="font-mono text-xs px-4 py-1.5 rounded border border-[#0077b5] text-[#0077b5]">{cta}</span>
+                          <span className="font-mono text-xs px-4 py-1.5 rounded border border-[#1a1a1a] text-[#1a1a1a]">{cta}</span>
                         </div>
                       )}
                     </div>

@@ -123,7 +123,7 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts, dar
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border flex items-center justify-between gap-4">
           <div>
-            <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Contact List</p>
+            <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Contact List</p>
             <h2 className="font-heading text-2xl text-primary">
               {contacts.length > 0 ? `${contacts.length} Contact${contacts.length !== 1 ? 's' : ''}` : 'No Contacts Yet'}
             </h2>
@@ -177,7 +177,7 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts, dar
       {/* Campaign generator */}
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border">
-          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Campaign Builder</p>
+          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Campaign Builder</p>
           <h2 className="font-heading text-2xl text-primary">Generate Email Campaigns</h2>
           {contacts.length > 0 && (
             <p className="font-mono text-xs text-muted mt-1">Campaigns will be sent to {contacts.length} contact{contacts.length !== 1 ? 's' : ''} in your list.</p>
@@ -218,7 +218,7 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts, dar
         <div className="space-y-6">
           {/* Campaign calendar */}
           <div className="bg-card border border-border rounded p-6">
-            <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Send Schedule</p>
+            <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Send Schedule</p>
             <h3 className="font-heading text-xl text-primary mb-4">30-Day Campaign Calendar</h3>
             {(() => {
               // Offset so day 1 starts on today's day of week (Mon=0 in Mon-indexed grid)

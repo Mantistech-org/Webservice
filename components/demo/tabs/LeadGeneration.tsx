@@ -84,7 +84,7 @@ export default function LeadGeneration({ sessionId, onImportContacts, darkMode }
     <div className="space-y-8">
       <div className="bg-card border border-border rounded">
         <div className="px-6 py-4 border-b border-border">
-          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Lead Finder</p>
+          <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Lead Finder</p>
           <h2 className="font-heading text-2xl text-primary">Generate Targeted Leads</h2>
         </div>
         <div className="p-6">
@@ -172,7 +172,7 @@ export default function LeadGeneration({ sessionId, onImportContacts, darkMode }
         <div>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Results</p>
+              <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Results</p>
               <h3 className="font-heading text-xl text-primary">{result.leads.length} Leads Found</h3>
             </div>
             <span className="font-mono text-xs text-dim">{industry} in {location}</span>
@@ -184,7 +184,7 @@ export default function LeadGeneration({ sessionId, onImportContacts, darkMode }
                 <div className="p-5 flex flex-col sm:flex-row sm:items-center gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded bg-[#efefef] border border-[#d0d0d0] flex items-center justify-center font-mono text-xs shrink-0 mt-0.5" style={{ color: '#3a6a8a' }}>
+                      <div className="w-8 h-8 rounded bg-[#efefef] border border-[#d0d0d0] flex items-center justify-center font-mono text-xs shrink-0 mt-0.5" style={{ color: '#00aa55' }}>
                         {i + 1}
                       </div>
                       <div className="min-w-0">
@@ -247,7 +247,7 @@ export default function LeadGeneration({ sessionId, onImportContacts, darkMode }
               disabled={imported}
               className="font-mono text-sm px-6 py-3 rounded tracking-wider border transition-all flex-1 sm:flex-none"
               style={imported
-                ? { borderColor: darkMode ? '#444444' : '#d0d0d0', color: '#3a6a8a' }
+                ? { borderColor: darkMode ? '#444444' : '#d0d0d0', color: '#00aa55' }
                 : { borderColor: darkMode ? '#555555' : '#b0b0b0', color: darkMode ? '#cccccc' : '#333333', backgroundColor: 'transparent' }
               }
             >
