@@ -13,7 +13,7 @@ import SEOOptimization from '@/components/demo/tabs/SEOOptimization'
 import ECommerceAutomation from '@/components/demo/tabs/ECommerceAutomation'
 import AdCreative from '@/components/demo/tabs/AdCreative'
 import WebsiteChatbot from '@/components/demo/tabs/WebsiteChatbot'
-import CalendarPage from '@/components/demo/tabs/CalendarPage'
+import CalendarCore from '@/components/calendar/CalendarCore'
 import type { DemoContact } from '@/components/demo/DemoPage'
 
 import { PLANS, PLAN_INCLUDED_ADDONS, Plan, ChangeRequest, ClientNotification } from '@/types'
@@ -1212,7 +1212,7 @@ export default function ClientDashboard() {
           />
         )
       case 'calendar':
-        return <CalendarPage darkMode={darkMode} />
+        return <CalendarCore mode="live" clientToken={clientToken} businessName={project.businessName} darkMode={darkMode} />
       case 'review':
         return <ReviewManagement sessionId={sessionId} darkMode={darkMode} />
       case 'social':

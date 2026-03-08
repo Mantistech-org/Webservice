@@ -623,7 +623,72 @@ export async function sendAdminMfaCodeEmail(code: string) {
   })
 }
 
-// ── 16. Admin password reset ──────────────────────────────────────────────────
+// ── 16. Booking notification (new website booking — to owner + support) ───────
+export async function sendBookingNotificationEmail(params: {
+  projectId: string
+  businessName: string
+  ownerEmail: string
+  customerName: string
+  customerEmail: string
+  customerPhone: string
+  preferredDate: string
+  preferredTime: string
+  message: string
+}) {
+  const { projectId, businessName, ownerEmail, customerName, customerEmail, customerPhone, preferredDate, preferredTime, message } = params
+  const link = `${BASE_URL}/admin/projects/${projectId}`
+  const subject = `New Booking Request: ${businessName}`
+  const html = emailLayout(`
+    <h1>New Booking Request</h1>
+    <p>A new booking has been submitted through the website for <strong>${businessName}</strong>.</p>
+    <div class="divider"></div>
+    <table class="data">
+      <tr><td class="key">Name</td><td class="val">${customerName || 'Not provided'}</td></tr>
+      <tr><td class="key">Email</td><td class="val">${customerEmail || 'Not provided'}</td></tr>
+      <tr><td class="key">Phone</td><td class="val">${customerPhone || 'Not provided'}</td></tr>
+      <tr><td class="key">Preferred Date</td><td class="val">${preferredDate}</td></tr>
+      <tr><td class="key">Preferred Time</td><td class="val">${preferredTime || 'Not specified'}</td></tr>
+    </table>
+    ${message ? `<h2>Message</h2><div class="note-block"><p>${message}</p></div>` : ''}
+    <div class="btn-wrap"><a href="${link}" class="btn">View Project</a></div>
+  `)
+
+  const targets = [ownerEmail, 'support@mantistech.org'].filter(Boolean)
+  await Promise.all(targets.map(to => send({ from: FROM, to, subject, html }).catch(err => console.error('[resend] Booking notification to', to, 'failed:', err))))
+}
+
+// ── 17. Automation email (confirm / cancel / reschedule — to customer) ─────────
+export async function sendAutomationEmail(params: {
+  to: string
+  subject: string
+  body: string
+  customerName: string
+  date: string
+  time: string
+  businessName: string
+}) {
+  const { to, subject, body, customerName, date, time, businessName } = params
+  const replace = (text: string) =>
+    text
+      .replace(/\[customer_name\]/g, customerName)
+      .replace(/\[date\]/g, date)
+      .replace(/\[time\]/g, time)
+      .replace(/\[business_name\]/g, businessName)
+
+  await send({
+    from: FROM,
+    to,
+    subject: replace(subject),
+    html: emailLayout(`
+      <h1>${replace(subject)}</h1>
+      <p>${replace(body)}</p>
+      <div class="divider"></div>
+      <p class="muted">If you have any questions, call us at (501) 669-0488 or reply to this email.</p>
+    `),
+  })
+}
+
+// ── 18. Admin password reset ─────────────────────────────────────────────────
 export async function sendAdminPasswordResetEmail(params: {
   token: string
   resetUrl: string

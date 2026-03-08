@@ -61,6 +61,56 @@ TECHNICAL REQUIREMENTS:
 - No placeholder Lorem Ipsum — use realistic content for "${project.businessName}"
 - Include a contact form with fields: name, email, phone, message
 
+BOOKING SECTION — REQUIRED FOR ALL SITES:
+Every website MUST include a booking/appointment section with a form. This is a standard feature included free with every plan.
+
+The booking form must collect: name, email, phone, preferred date, preferred time, message.
+The form submits via fetch() to https://www.mantistech.org/api/bookings/${project.clientToken}
+
+Use exactly this pattern in the booking form's submit handler:
+
+  async function submitBooking(event) {
+    event.preventDefault();
+    const btn = event.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    try {
+      const res = await fetch('https://www.mantistech.org/api/bookings/${project.clientToken}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: event.target.name.value,
+          email: event.target.email.value,
+          phone: event.target.phone ? event.target.phone.value : '',
+          date: event.target.date ? event.target.date.value : '',
+          time: event.target.time ? event.target.time.value : '',
+          message: event.target.message ? event.target.message.value : '',
+        }),
+      });
+      if (res.ok) {
+        event.target.style.display = 'none';
+        document.getElementById('booking-success').style.display = 'block';
+      } else {
+        throw new Error('Request failed');
+      }
+    } catch {
+      document.getElementById('booking-error').style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Request Appointment';
+    }
+  }
+
+Add this hidden success message directly after the booking form:
+  <div id="booking-success" style="display:none; padding: 1.5rem; text-align: center;">
+    <p style="font-size: 1rem; font-weight: 600;">Your appointment request has been received.</p>
+    <p style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.8;">We will confirm your booking shortly.</p>
+  </div>
+  <p id="booking-error" style="display:none; color: #cc0000; font-size: 0.875rem; margin-top: 0.75rem;">
+    Something went wrong. Please try again or call us directly.
+  </p>
+
+Attach the handler: <form onsubmit="submitBooking(event)">
+
 CONTACT FORM SUBMISSION — CRITICAL:
 Every contact form MUST submit via JavaScript fetch(), never via a plain HTML form action/method POST.
 Use exactly this pattern in the form's submit handler:
