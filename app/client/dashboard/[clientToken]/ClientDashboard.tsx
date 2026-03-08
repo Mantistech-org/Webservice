@@ -614,25 +614,60 @@ function DashboardPage({ project, clientToken, darkMode, onMarkRead, analytics }
         </p>
       </div>
 
-      {/* Stat cards — leads (real) + placeholder */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <div className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
           <div className="font-mono text-xs tracking-wider uppercase mb-2" style={{ color: textMuted }}>
             Leads Captured
           </div>
           <div className="font-heading text-3xl leading-none mb-1" style={{ color: textPrimary }}>
-            {analytics ? leadsThisMonth : '--'}
+            {leadsThisMonth}
           </div>
           <div className="font-mono text-xs" style={{ color: diff < 0 ? '#cc4444' : '#00aa55' }}>
-            {analytics ? leadsChangeStr : 'Loading...'}
+            {leadsChangeStr}
           </div>
         </div>
-        <div className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
-          <div className="font-mono text-xs tracking-wider uppercase mb-2" style={{ color: textMuted }}>
-            Performance Analytics
+        {[
+          'Website Visitors',
+          'Reviews This Month',
+          'Email Open Rate',
+          'Avg SEO Position',
+          'Ad Impressions',
+        ].map((label) => (
+          <div key={label} className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
+            <div className="font-mono text-xs tracking-wider uppercase mb-2" style={{ color: textMuted }}>
+              {label}
+            </div>
+            <div className="font-heading text-3xl leading-none mb-1" style={{ color: textPrimary }}>--</div>
+            <div className="font-mono text-xs" style={{ color: textDim }}>Coming soon</div>
           </div>
-          <div className="font-heading text-3xl leading-none mb-1" style={{ color: textPrimary }}>--</div>
-          <div className="font-mono text-xs" style={{ color: textMuted }}>More analytics coming soon</div>
+        ))}
+      </div>
+
+      {/* Website Traffic Chart */}
+      <div className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
+        <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: textMuted }}>
+          Website Traffic
+        </div>
+        <div style={{ height: 100, position: 'relative' }}>
+          <svg width="100%" height="100%" viewBox="0 0 400 100" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="trafficGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#00ff88" stopOpacity="0.12" />
+                <stop offset="100%" stopColor="#00ff88" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path d="M0,88 L400,88" stroke="#00ff88" strokeWidth="1.5" fill="none" strokeOpacity="0.25" />
+            <path d="M0,88 L400,88 L400,100 L0,100 Z" fill="url(#trafficGrad)" />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="font-mono text-xs" style={{ color: textDim }}>No traffic data yet</span>
+          </div>
+        </div>
+        <div className="flex justify-between mt-2">
+          {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'].map((m) => (
+            <span key={m} className="font-mono text-xs" style={{ color: textDim }}>{m}</span>
+          ))}
         </div>
       </div>
 
@@ -700,6 +735,36 @@ function DashboardPage({ project, clientToken, darkMode, onMarkRead, analytics }
             No leads yet. Your first lead will appear here.
           </p>
         )}
+      </div>
+
+      {/* Top Pages */}
+      <div className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
+        <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: textMuted }}>
+          Top Pages
+        </div>
+        <p className="font-mono text-xs" style={{ color: textDim }}>
+          Page analytics will appear here once traffic data is available.
+        </p>
+      </div>
+
+      {/* Recent Reviews */}
+      <div className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
+        <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: textMuted }}>
+          Recent Reviews
+        </div>
+        <p className="font-mono text-xs" style={{ color: textDim }}>
+          No reviews yet. Customer reviews will appear here.
+        </p>
+      </div>
+
+      {/* Recent Campaigns */}
+      <div className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
+        <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: textMuted }}>
+          Recent Campaigns
+        </div>
+        <p className="font-mono text-xs" style={{ color: textDim }}>
+          No campaigns yet. Your email and ad campaigns will appear here.
+        </p>
       </div>
 
       {/* Live Site Preview */}
