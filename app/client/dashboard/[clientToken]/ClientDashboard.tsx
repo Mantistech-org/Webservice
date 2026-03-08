@@ -1010,21 +1010,28 @@ export default function ClientDashboard() {
 
   const fetchProject = async () => {
     try {
-      const [projectRes, analyticsRes] = await Promise.all([
-        fetch(`/api/client/${clientToken}/project`),
-        fetch(`/api/client/${clientToken}/analytics`),
-      ])
-      const [projectData, analyticsData] = await Promise.all([
-        projectRes.json(),
-        analyticsRes.json(),
-      ])
-      if (projectData.error) setError(projectData.error)
-      else setProject(projectData.project)
-      if (!analyticsData.error) setAnalytics(analyticsData)
+      const projectRes = await fetch(`/api/client/${clientToken}/project`)
+      const projectData = await projectRes.json()
+      if (projectData.error) {
+        setError(projectData.error)
+      } else {
+        setProject(projectData.project)
+      }
     } catch {
       setError('Failed to load your dashboard.')
     } finally {
       setLoading(false)
+    }
+
+    // Analytics is non-critical — a missing table or any error must not crash the dashboard
+    try {
+      const analyticsRes = await fetch(`/api/client/${clientToken}/analytics`)
+      if (analyticsRes.ok) {
+        const analyticsData = await analyticsRes.json()
+        if (!analyticsData.error) setAnalytics(analyticsData)
+      }
+    } catch {
+      // silently ignore — dashboard shows 0 leads
     }
   }
 
