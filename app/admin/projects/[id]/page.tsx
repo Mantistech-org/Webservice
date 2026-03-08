@@ -419,7 +419,7 @@ export default function AdminProjectPage() {
             </div>
 
             <a
-              href={`/client/dashboard/${project.clientToken}`}
+              href={`/client/dashboard/${project.clientToken}?admin_preview=true`}
               target="_blank"
               rel="noopener noreferrer"
               className="block text-center border border-border text-muted font-mono text-sm py-3 px-6 rounded tracking-wider hover:border-accent hover:text-accent transition-all"

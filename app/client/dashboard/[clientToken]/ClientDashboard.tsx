@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 // Demo addon tab components — imported as-is, not modified
@@ -977,6 +977,8 @@ function ClientBillingPage({ project, clientToken, darkMode }: ClientBillingPage
 
 export default function ClientDashboard() {
   const { clientToken } = useParams<{ clientToken: string }>()
+  const searchParams = useSearchParams()
+  const adminPreview = searchParams.get('admin_preview') === 'true'
 
   const [project, setProject]     = useState<ProjectData | null>(null)
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
@@ -1068,6 +1070,29 @@ export default function ClientDashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: '#f5f5f5' }}>
         <p className="font-mono text-sm text-red-500">{error || 'Dashboard unavailable.'}</p>
+      </div>
+    )
+  }
+
+  if (!adminPreview && project.status !== 'active') {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: '#080c10' }}>
+        <div className="text-center max-w-md">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <span className="w-2 h-2 rounded-full bg-[#00ff88]" />
+            <span className="font-mono font-bold text-sm tracking-widest text-white">MANTIS TECH</span>
+          </div>
+          <h1 className="font-mono text-2xl text-white mb-3">Dashboard Not Yet Active</h1>
+          <p className="font-mono text-sm text-[#888888] leading-relaxed mb-6">
+            Your dashboard will be available once your project goes live. Our team will notify you by email when everything is ready.
+          </p>
+          <a
+            href="tel:+15016690488"
+            className="font-mono text-sm text-[#00ff88] hover:underline"
+          >
+            (501) 669-0488
+          </a>
+        </div>
       </div>
     )
   }
