@@ -30,6 +30,7 @@ export async function POST(
   const existing = project.changeRequests ?? []
   const updated = await updateProject(project.id, {
     changeRequests: [...existing, newRequest],
+    status: 'changes_requested',
   })
 
   if (!updated) {

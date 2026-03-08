@@ -25,6 +25,10 @@ export default function ClientReviewContent() {
   const [error, setError] = useState('')
   const [approving, setApproving] = useState(false)
   const [actionMsg, setActionMsg] = useState('')
+  const [changeMessage, setChangeMessage] = useState('')
+  const [submittingChange, setSubmittingChange] = useState(false)
+  const [changeSubmitted, setChangeSubmitted] = useState(false)
+  const [changeError, setChangeError] = useState('')
 
   const fetchProject = useCallback(async () => {
     try {
@@ -70,6 +74,30 @@ export default function ClientReviewContent() {
     } catch {
       setActionMsg('Network error. Please try again.')
       setApproving(false)
+    }
+  }
+
+  const handleChangeRequest = async () => {
+    if (!changeMessage.trim()) return
+    setSubmittingChange(true)
+    setChangeError('')
+    try {
+      const res = await fetch(`/api/client/${clientToken}/change-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: changeMessage.trim() }),
+      })
+      if (res.ok) {
+        setChangeSubmitted(true)
+        setChangeMessage('')
+      } else {
+        const data = await res.json()
+        setChangeError(data.error ?? 'Failed to submit. Please try again.')
+        setSubmittingChange(false)
+      }
+    } catch {
+      setChangeError('Network error. Please try again.')
+      setSubmittingChange(false)
     }
   }
 
@@ -126,7 +154,7 @@ export default function ClientReviewContent() {
     )
   }
 
-  if (project.status !== 'client_review') {
+  if (project.status !== 'client_review' && project.status !== 'changes_requested') {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center px-6">
         <div className="text-center max-w-md">
@@ -220,8 +248,32 @@ export default function ClientReviewContent() {
 
             <div className="h-px bg-border" />
 
+            {/* Approve section */}
             <div>
-              {project.stripeSessionId ? (
+              {project.status === 'changes_requested' && !changeSubmitted ? (
+                <div className="text-center py-4">
+                  <p className="font-mono text-sm text-orange-400 font-semibold">
+                    Changes requested
+                  </p>
+                  <p className="font-mono text-xs text-muted mt-1">
+                    Our team is reviewing your feedback and will send you an updated preview shortly.
+                  </p>
+                </div>
+              ) : changeSubmitted ? (
+                <div className="text-center py-4">
+                  <div className="w-10 h-10 rounded-full bg-accent/10 border border-accent flex items-center justify-center mx-auto mb-3">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="2">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                  <p className="font-mono text-sm text-accent font-semibold">
+                    Your request has been submitted.
+                  </p>
+                  <p className="font-mono text-xs text-muted mt-1">
+                    We will be in touch shortly.
+                  </p>
+                </div>
+              ) : project.stripeSessionId ? (
                 <div className="text-center py-4">
                   <div className="w-10 h-10 rounded-full bg-accent/10 border border-accent flex items-center justify-center mx-auto mb-3">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="2">
@@ -286,6 +338,36 @@ export default function ClientReviewContent() {
                 </>
               )}
             </div>
+
+            {/* Request Changes section */}
+            {!changeSubmitted && project.status === 'client_review' && (
+              <>
+                <div className="h-px bg-border" />
+
+                <div>
+                  <div className="font-mono text-xs text-muted tracking-widest uppercase mb-3">
+                    Request Changes
+                  </div>
+                  <textarea
+                    value={changeMessage}
+                    onChange={(e) => setChangeMessage(e.target.value)}
+                    placeholder="Describe what you would like changed..."
+                    rows={4}
+                    className="w-full bg-bg border border-border rounded px-3 py-2 font-mono text-xs text-white placeholder-dim resize-none focus:outline-none focus:border-accent/50 transition-colors"
+                  />
+                  {changeError && (
+                    <p className="font-mono text-xs text-orange-400 mt-2">{changeError}</p>
+                  )}
+                  <button
+                    onClick={handleChangeRequest}
+                    disabled={submittingChange || !changeMessage.trim()}
+                    className="mt-3 w-full border border-border text-muted font-mono text-sm py-2 px-4 rounded tracking-wider hover:border-orange-400/50 hover:text-orange-400 transition-all disabled:opacity-40"
+                  >
+                    {submittingChange ? 'Submitting...' : 'Submit Change Request'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
