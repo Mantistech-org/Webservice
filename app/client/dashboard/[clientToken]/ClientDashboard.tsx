@@ -252,6 +252,15 @@ function ClientTopBar({ businessName, unreadCount, onToggleSidebar, onNavigate, 
 
         <div className="flex-1" />
 
+        {/* Phone */}
+        <a
+          href="tel:+15016690488"
+          className="font-mono text-xs tracking-wider transition-colors"
+          style={{ color: darkMode ? '#888888' : '#555555' }}
+        >
+          (501) 669-0488
+        </a>
+
         {/* Dark mode toggle */}
         <button
           onClick={onToggleDark}

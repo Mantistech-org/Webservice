@@ -176,8 +176,16 @@ export default function ClientReviewContent() {
           <span className="w-2 h-2 rounded-full bg-accent" />
           <span className="font-heading text-xl tracking-widest text-white">MANTIS TECH</span>
         </div>
-        <div className="font-mono text-xs text-muted hidden sm:block">
-          Website Preview for <span className="text-teal">{project.businessName}</span>
+        <div className="flex items-center gap-4 ml-auto">
+          <a
+            href="tel:+15016690488"
+            className="font-mono text-xs text-muted hover:text-teal transition-colors"
+          >
+            (501) 669-0488
+          </a>
+          <div className="font-mono text-xs text-muted hidden sm:block">
+            Website Preview for <span className="text-teal">{project.businessName}</span>
+          </div>
         </div>
       </header>
 
