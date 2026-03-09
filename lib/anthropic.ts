@@ -46,12 +46,10 @@ DESIGN REQUIREMENTS:
 8. Include a footer with contact info and copyright
 
 FEATURE REQUIREMENTS based on selected add-ons:
-${project.addons.includes('online-booking') ? '- Online Booking: Include a booking/appointment section with a simple form' : ''}
-${project.addons.includes('ecommerce') ? '- E-Commerce: Include a products/shop section with sample product cards' : ''}
-${project.addons.includes('ai-chatbot') ? '- AI Chatbot: Include a floating chat button in the corner' : ''}
-${project.addons.includes('seo') ? '- SEO: Include proper meta tags, semantic HTML, and schema markup' : ''}
+${project.addons.includes('ecommerce-automation') ? '- E-Commerce: Include a products/shop section with sample product cards' : ''}
+${project.addons.includes('website-chatbot') ? '- AI Chatbot: Include a floating chat button in the corner' : ''}
+${project.addons.includes('seo-optimization') ? '- SEO: Include proper meta tags, semantic HTML, and schema markup' : ''}
 ${project.addons.includes('email-marketing') ? '- Email Marketing: Include a newsletter signup section' : ''}
-${project.addons.includes('loyalty-program') ? '- Loyalty Program: Include a loyalty rewards section' : ''}
 
 TECHNICAL REQUIREMENTS:
 - Single HTML file with all CSS in a <style> tag and all JS in a <script> tag

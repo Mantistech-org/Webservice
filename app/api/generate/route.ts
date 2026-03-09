@@ -24,14 +24,29 @@ export async function POST(req: NextRequest) {
 
   const notes = typeof overrideNotes === 'string' && overrideNotes.trim() ? overrideNotes.trim() : undefined
 
-  try {
-    const html = await generateWebsite(project, notes)
-    project.generatedHtml = html
-    project.updatedAt = new Date().toISOString()
-    await saveProject(project)
-    return NextResponse.json({ success: true }, { status: 200 })
-  } catch (err) {
-    console.error(`[generate] Failed for project ${projectId}:`, err)
-    return NextResponse.json({ error: 'Generation failed' }, { status: 500 })
-  }
+  // Capture original status to restore after generation completes or fails
+  const originalStatus = project.status
+
+  // Mark as generating and persist before returning
+  project.status = 'generating'
+  project.updatedAt = new Date().toISOString()
+  await saveProject(project)
+
+  // Fire-and-forget: generation runs in the background after the 202 response
+  ;(async () => {
+    try {
+      const html = await generateWebsite(project, notes)
+      project.generatedHtml = html
+      project.status = originalStatus
+      project.updatedAt = new Date().toISOString()
+      await saveProject(project)
+    } catch (err) {
+      console.error(`[generate] Failed for project ${projectId}:`, err)
+      project.status = originalStatus
+      project.updatedAt = new Date().toISOString()
+      await saveProject(project)
+    }
+  })()
+
+  return NextResponse.json({ success: true }, { status: 202 })
 }

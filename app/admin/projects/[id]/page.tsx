@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Project, ProjectStatus, PLANS, ADDONS, ADDONS as ALL_ADDONS } from '@/types'
@@ -11,6 +11,7 @@ const STATUS_LABELS: Record<ProjectStatus, string> = {
   client_review: 'Client Review',
   changes_requested: 'Changes Requested',
   active: 'Active',
+  generating: 'Generating',
 }
 
 const STATUS_COLORS: Record<ProjectStatus, string> = {
@@ -18,6 +19,7 @@ const STATUS_COLORS: Record<ProjectStatus, string> = {
   client_review: 'text-blue-400 border-blue-400/30 bg-blue-400/5',
   changes_requested: 'text-red-400 border-red-400/30 bg-red-400/5',
   active: 'text-accent border-accent/30 bg-accent/5',
+  generating: 'text-purple-400 border-purple-400/30 bg-purple-400/5',
 }
 
 export default function AdminProjectPage() {
@@ -77,6 +79,27 @@ export default function AdminProjectPage() {
   }, [id, router])
 
   useEffect(() => { fetchProject() }, [fetchProject])
+
+  // Poll every 3s while status is 'generating'; stop automatically when it changes
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  useEffect(() => {
+    if (project?.status === 'generating') {
+      if (!pollingRef.current) {
+        pollingRef.current = setInterval(fetchProject, 3000)
+      }
+    } else {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current)
+        pollingRef.current = null
+      }
+    }
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current)
+        pollingRef.current = null
+      }
+    }
+  }, [project?.status, fetchProject])
 
   const handleApprove = async () => {
     setApproving(true)
@@ -238,10 +261,11 @@ export default function AdminProjectPage() {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error ?? 'Regeneration failed.')
       }
+      // Server accepted the job (202) — close modal and fetch immediately so
+      // status updates to 'generating', which triggers the polling useEffect
       setShowRegenModal(false)
       setRegenNotes('')
       await fetchProject()
-      setActiveTab('preview')
     } catch (err) {
       setRegenMsg(err instanceof Error ? err.message : 'Regeneration failed.')
     } finally {
@@ -328,10 +352,10 @@ export default function AdminProjectPage() {
                   </a>
                   <button
                     onClick={() => { setShowRegenModal(true); setRegenMsg('') }}
-                    disabled={regenerating}
+                    disabled={regenerating || project.status === 'generating'}
                     className="font-mono text-xs border border-border text-muted px-4 py-1.5 rounded hover:border-accent hover:text-accent transition-all disabled:opacity-60"
                   >
-                    Regenerate Site
+                    {project.status === 'generating' ? 'Generating…' : 'Regenerate Site'}
                   </button>
                 </div>
                 <div className="bg-card border border-border rounded overflow-hidden" style={{ height: '70vh' }}>
@@ -430,6 +454,10 @@ export default function AdminProjectPage() {
               ) : project.status === 'active' ? (
                 <div className="flex-1 text-center font-mono text-sm text-accent py-3 border border-accent/20 rounded bg-accent/5">
                   Project is active and payment received
+                </div>
+              ) : project.status === 'generating' ? (
+                <div className="flex-1 text-center font-mono text-sm text-purple-400 py-3 border border-purple-400/20 rounded bg-purple-400/5 animate-pulse">
+                  Generating site — checking for updates every 3s&hellip;
                 </div>
               ) : null}
             </div>

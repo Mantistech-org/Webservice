@@ -3,6 +3,7 @@ export type ProjectStatus =
   | 'client_review'
   | 'changes_requested'
   | 'active'
+  | 'generating'
 
 export type Plan = 'starter' | 'mid' | 'pro'
 
