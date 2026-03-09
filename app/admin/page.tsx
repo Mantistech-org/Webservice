@@ -33,6 +33,7 @@ const STATUS_LABELS: Record<ProjectStatus, string> = {
   client_review: 'Client Review',
   changes_requested: 'Changes Requested',
   active: 'Active',
+  generating: 'Generating',
 }
 
 const STATUS_COLORS: Record<ProjectStatus, string> = {
@@ -40,6 +41,7 @@ const STATUS_COLORS: Record<ProjectStatus, string> = {
   client_review: 'text-blue-400 border-blue-400/30 bg-blue-400/5',
   changes_requested: 'text-red-400 border-red-400/30 bg-red-400/5',
   active: 'text-accent border-accent/30 bg-accent/5',
+  generating: 'text-purple-400 border-purple-400/30 bg-purple-400/5',
 }
 
 const BUSINESS_TYPES = [
