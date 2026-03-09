@@ -113,7 +113,7 @@ export default function ClientReviewContent() {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center px-6">
         <div className="text-center max-w-md">
-          <h1 className="font-heading text-4xl text-white mb-4">Link Not Found</h1>
+          <h1 className="font-heading text-4xl text-primary mb-4">Link Not Found</h1>
           <p className="font-mono text-sm text-muted leading-relaxed">
             {error || 'This review link is invalid or has expired. Please contact us for assistance.'}
           </p>
@@ -135,18 +135,18 @@ export default function ClientReviewContent() {
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
-          <div className="font-mono text-xs text-accent tracking-widest uppercase mb-2">
+          <div className="font-mono text-xs text-primary tracking-widest uppercase mb-2">
             Payment Confirmed
           </div>
-          <h1 className="font-heading text-5xl text-white mb-4">You Are Live</h1>
+          <h1 className="font-heading text-5xl text-primary mb-4">You Are Live</h1>
           <p className="text-teal leading-relaxed mb-2">
             Welcome to Mantis Tech, {project.ownerName}. Your{' '}
-            <span className="text-white capitalize">{plan.name}</span> plan is now active.
+            <span className="text-primary capitalize">{plan.name}</span> plan is now active.
           </p>
           <p className="font-mono text-sm text-muted">
             Our team will be in touch within 24 hours with your next steps.
           </p>
-          <div className="mt-8 p-4 bg-card border border-border rounded font-mono text-xs text-dim">
+          <div className="mt-8 p-4 bg-card border border-border rounded font-mono text-xs text-muted">
             Confirmation sent to <span className="text-teal">{project.email}</span>
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function ClientReviewContent() {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center px-6">
         <div className="text-center max-w-md">
-          <h1 className="font-heading text-4xl text-white mb-4">Not Ready Yet</h1>
+          <h1 className="font-heading text-4xl text-primary mb-4">Not Ready Yet</h1>
           <p className="font-mono text-sm text-muted leading-relaxed">
             Your website is still being reviewed by our team. You will receive an email when it is
             ready for your approval.
@@ -174,7 +174,7 @@ export default function ClientReviewContent() {
       <header className="border-b border-border bg-card px-6 py-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-accent" />
-          <span className="font-heading text-xl tracking-widest text-white">MANTIS TECH</span>
+          <span className="font-heading text-xl tracking-widest text-primary">MANTIS TECH</span>
         </div>
         <div className="flex items-center gap-4 ml-auto">
           <a
@@ -204,10 +204,10 @@ export default function ClientReviewContent() {
         <div className="xl:w-80 shrink-0 bg-card border-t xl:border-t-0 xl:border-l border-border overflow-y-auto">
           <div className="p-6 space-y-6">
             <div>
-              <div className="font-mono text-xs text-accent tracking-widest uppercase mb-1">
+              <div className="font-mono text-xs text-primary tracking-widest uppercase mb-1">
                 Your Preview
               </div>
-              <h2 className="font-heading text-3xl text-white">{project.businessName}</h2>
+              <h2 className="font-heading text-3xl text-primary">{project.businessName}</h2>
               <p className="font-mono text-xs text-muted mt-1">
                 Hi {project.ownerName}, this is your custom website.
               </p>
@@ -223,16 +223,16 @@ export default function ClientReviewContent() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-teal capitalize">{plan.name} Plan</span>
-                  <span className="font-mono text-white">${plan.upfront} upfront</span>
+                  <span className="font-mono text-primary">${plan.upfront} upfront</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-teal">Base website</span>
-                  <span className="font-mono text-white">${plan.monthly}/mo</span>
+                  <span className="font-mono text-primary">${plan.monthly}/mo</span>
                 </div>
                 {activeAddons.map((a) => (
                   <div key={a.id} className="flex justify-between">
                     <span className="text-teal text-xs">{a.label}</span>
-                    <span className="font-mono text-xs text-white">+${a.price}/mo</span>
+                    <span className="font-mono text-xs text-primary">+${a.price}/mo</span>
                   </div>
                 ))}
               </div>
@@ -241,14 +241,14 @@ export default function ClientReviewContent() {
                 <div className="flex justify-between items-end">
                   <div>
                     <div className="font-mono text-xs text-muted uppercase">Monthly</div>
-                    <div className="font-heading text-3xl text-accent">
+                    <div className="font-heading text-3xl text-primary">
                       ${monthlyTotal}
                       <span className="font-mono text-sm text-muted font-normal">/mo</span>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="font-mono text-xs text-muted uppercase">Due Now</div>
-                    <div className="font-heading text-2xl text-white">${plan.upfront}</div>
+                    <div className="font-heading text-2xl text-primary">${plan.upfront}</div>
                   </div>
                 </div>
               </div>
@@ -260,7 +260,7 @@ export default function ClientReviewContent() {
             <div>
               {project.status === 'changes_requested' && !changeSubmitted ? (
                 <div className="text-center py-4">
-                  <p className="font-mono text-sm text-orange-400 font-semibold">
+                  <p className="font-mono text-sm text-orange-600 font-semibold">
                     Changes requested
                   </p>
                   <p className="font-mono text-xs text-muted mt-1">
@@ -274,7 +274,7 @@ export default function ClientReviewContent() {
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   </div>
-                  <p className="font-mono text-sm text-accent font-semibold">
+                  <p className="font-mono text-sm text-primary font-semibold">
                     Your request has been submitted.
                   </p>
                   <p className="font-mono text-xs text-muted mt-1">
@@ -288,7 +288,7 @@ export default function ClientReviewContent() {
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   </div>
-                  <p className="font-mono text-sm text-accent font-semibold">
+                  <p className="font-mono text-sm text-primary font-semibold">
                     You have already approved this site.
                   </p>
                   <p className="font-mono text-xs text-muted mt-1">
@@ -311,7 +311,7 @@ export default function ClientReviewContent() {
                   <button
                     onClick={handleApprove}
                     disabled={approving}
-                    className="w-full bg-accent text-bg font-mono text-sm py-3 px-6 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60 glow-accent flex items-center justify-center gap-2"
+                    className="w-full bg-accent text-black font-mono text-sm py-3 px-6 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60 glow-accent flex items-center justify-center gap-2"
                   >
                     {approving ? (
                       <>
@@ -340,7 +340,7 @@ export default function ClientReviewContent() {
                     )}
                   </button>
 
-                  <p className="font-mono text-xs text-dim text-center mt-3">
+                  <p className="font-mono text-xs text-muted text-center mt-3">
                     Secure payment powered by Stripe
                   </p>
                 </>
@@ -361,7 +361,7 @@ export default function ClientReviewContent() {
                     onChange={(e) => setChangeMessage(e.target.value)}
                     placeholder="Describe what you would like changed..."
                     rows={4}
-                    className="w-full bg-bg border border-border rounded px-3 py-2 font-mono text-xs text-white placeholder-dim resize-none focus:outline-none focus:border-accent/50 transition-colors"
+                    className="w-full bg-bg border border-border rounded px-3 py-2 font-mono text-xs text-primary placeholder-muted resize-none focus:outline-none focus:border-accent/50 transition-colors"
                   />
                   {changeError && (
                     <p className="font-mono text-xs text-orange-400 mt-2">{changeError}</p>
