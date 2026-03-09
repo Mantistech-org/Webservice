@@ -25,6 +25,21 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
   const baseMonthly = launchMonthly ?? plan.monthly
   const monthlyTotal = baseMonthly + extraAddonTotal
 
+  // Upsell logic — suggest the next plan when the current total approaches its price
+  const nextPlan: Plan | null =
+    selectedPlan === 'starter' ? 'mid' :
+    selectedPlan === 'mid' ? 'pro' :
+    null
+  const nextPlanData = nextPlan ? PLANS[nextPlan] : null
+  // Starter: trigger whenever any paid extra is selected (max possible is $52, far below mid's $125,
+  //   but any extra spend is a signal that Growth's bundled addons are a better deal).
+  // Mid: trigger at 80% of Pro's price ($200) — reachable with 3+ extras like lead-gen+ecommerce+chatbot.
+  const showUpsell = nextPlanData !== null && (
+    selectedPlan === 'starter'
+      ? extraAddons.length > 0
+      : monthlyTotal >= PLANS.pro.monthly * 0.8
+  )
+
   return (
     <div className="sticky top-20 bg-card border border-border rounded overflow-hidden">
       {/* Header */}
@@ -118,13 +133,32 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
           </div>
         </div>
 
-        {extraAddons.length > 0 && (
+        {showUpsell && nextPlanData ? (
+          <div className="border border-accent/40 bg-accent/5 rounded p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="2.5">
+                <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+              <span className="font-mono text-xs text-accent tracking-widest uppercase">
+                Better value available
+              </span>
+            </div>
+            <p className="text-sm text-primary font-medium leading-snug">
+              Upgrade to {nextPlanData.name} for ${nextPlanData.monthly}/mo
+            </p>
+            <p className="font-mono text-xs text-muted leading-relaxed">
+              {selectedPlan === 'starter'
+                ? `The Growth plan includes Review Management, Social Media Automation, SEO Optimization, and Ad Creative Generation — all bundled. You get far more for $${nextPlanData.monthly}/mo than adding extras to Starter.`
+                : `You're close to Pro pricing. For $${nextPlanData.monthly}/mo, Pro includes every add-on — Lead Generation, E-Commerce Automation, Website Chatbot, Email Marketing, and more. Nothing left to add.`}
+            </p>
+          </div>
+        ) : extraAddons.length > 0 ? (
           <div className="bg-bg rounded border border-border/50 p-3">
             <div className="font-mono text-xs text-dim">
               {extraAddons.length} extra add-on{extraAddons.length > 1 ? 's' : ''} selected on top of your plan.
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   )
