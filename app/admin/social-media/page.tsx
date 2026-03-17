@@ -547,7 +547,7 @@ export default function AdminSocialMediaPage() {
       <aside className="w-56 shrink-0 sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto border-r border-border bg-card flex flex-col">
         {/* Social sub-navigation */}
         <div className="p-3 border-b border-border">
-          <div className="font-mono text-xs text-muted tracking-widest uppercase px-2 py-1.5 mb-1">Social Media</div>
+          <div className="font-mono text-xs text-primary/50 tracking-widest uppercase px-2 py-1.5 mb-1">Social Media</div>
           <nav className="space-y-0.5">
             {(Object.keys(TAB_LABELS) as SocialTab[]).map((tab) => (
               <button
@@ -556,7 +556,7 @@ export default function AdminSocialMediaPage() {
                 className={`w-full text-left flex items-center gap-2.5 px-3 py-2 rounded font-mono text-xs tracking-wider transition-all ${
                   activeTab === tab
                     ? 'bg-bg text-primary font-medium border border-border'
-                    : 'text-muted hover:text-primary hover:bg-bg'
+                    : 'text-primary/65 hover:text-primary hover:bg-bg'
                 }`}
               >
                 {TAB_LABELS[tab]}
@@ -567,11 +567,11 @@ export default function AdminSocialMediaPage() {
 
         {/* Connection status */}
         <div className="p-4">
-          <div className="font-mono text-xs text-muted tracking-widest uppercase mb-3">Connection Status</div>
+          <div className="font-mono text-xs text-primary/50 tracking-widest uppercase mb-3">Connection Status</div>
           {['Facebook / Instagram', 'Google Ads', 'Google Business'].map((platform) => (
             <div key={platform} className="flex items-center justify-between py-1.5">
-              <span className="font-mono text-xs text-muted">{platform}</span>
-              <span className="font-mono text-xs text-dim">Not connected</span>
+              <span className="font-mono text-xs text-primary/65">{platform}</span>
+              <span className="font-mono text-xs text-primary/40">Not connected</span>
             </div>
           ))}
         </div>
