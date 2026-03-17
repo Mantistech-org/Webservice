@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ProjectStatus, Plan, PLANS } from '@/types'
-import ThemeToggle from '@/components/ThemeToggle'
 
 interface DemoSession {
   id: string
@@ -37,11 +36,11 @@ const STATUS_LABELS: Record<ProjectStatus, string> = {
 }
 
 const STATUS_COLORS: Record<ProjectStatus, string> = {
-  admin_review: 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5',
-  client_review: 'text-blue-400 border-blue-400/30 bg-blue-400/5',
-  changes_requested: 'text-red-400 border-red-400/30 bg-red-400/5',
-  active: 'text-accent border-accent/30 bg-accent/5',
-  generating: 'text-purple-400 border-purple-400/30 bg-purple-400/5',
+  admin_review:      'text-yellow-700 dark:text-yellow-400 border-yellow-700/30 dark:border-yellow-400/30 bg-yellow-700/5 dark:bg-yellow-400/5',
+  client_review:     'text-blue-700   dark:text-blue-400   border-blue-700/30   dark:border-blue-400/30   bg-blue-700/5   dark:bg-blue-400/5',
+  changes_requested: 'text-red-700    dark:text-red-400    border-red-700/30    dark:border-red-400/30    bg-red-700/5    dark:bg-red-400/5',
+  active:            'text-emerald-700 dark:text-accent    border-emerald-700/30 dark:border-accent/30    bg-emerald-700/5 dark:bg-accent/5',
+  generating:        'text-purple-700 dark:text-purple-400 border-purple-700/30 dark:border-purple-400/30 bg-purple-700/5 dark:bg-purple-400/5',
 }
 
 const BUSINESS_TYPES = [
@@ -56,17 +55,9 @@ const STYLE_PREFERENCES = [
 ]
 
 interface AddClientForm {
-  businessName: string
-  ownerName: string
-  email: string
-  phone: string
-  businessType: string
-  location: string
-  plan: Plan
-  businessDescription: string
-  primaryGoal: string
-  timeline: string
-  stylePreference: string
+  businessName: string; ownerName: string; email: string; phone: string
+  businessType: string; location: string; plan: Plan; businessDescription: string
+  primaryGoal: string; timeline: string; stylePreference: string
 }
 
 const DEFAULT_ADD_FORM: AddClientForm = {
@@ -102,20 +93,10 @@ export default function AdminPage() {
   useEffect(() => {
     fetch('/api/admin/projects')
       .then((r) => {
-        if (r.ok) {
-          setAuthed(true)
-          return r.json()
-        } else {
-          setAuthed(false)
-          return null
-        }
+        if (r.ok) { setAuthed(true); return r.json() }
+        setAuthed(false); return null
       })
-      .then((data) => {
-        if (data) {
-          setProjects(data.projects)
-          loadDemoSessions()
-        }
-      })
+      .then((data) => { if (data) { setProjects(data.projects); loadDemoSessions() } })
       .catch(() => setAuthed(false))
   }, [])
 
@@ -137,24 +118,16 @@ export default function AdminPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoggingIn(true)
-    setLoginError('')
+    setLoggingIn(true); setLoginError('')
     const res = await fetch('/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password }),
     })
     const data = await res.json()
     if (res.ok && data.mfaRequired) {
-      setMfaPending(true)
-      setMfaCode('')
-      setMfaError('')
-      setMfaErrorType('')
-      setResent(false)
+      setMfaPending(true); setMfaCode(''); setMfaError(''); setMfaErrorType(''); setResent(false)
     } else if (res.ok) {
-      setAuthed(true)
-      loadProjects()
-      loadDemoSessions()
+      setAuthed(true); loadProjects(); loadDemoSessions()
     } else {
       setLoginError(data.error ?? 'Incorrect password.')
     }
@@ -163,24 +136,16 @@ export default function AdminPage() {
 
   const handleVerifyMfa = async (e: React.FormEvent) => {
     e.preventDefault()
-    setVerifying(true)
-    setMfaError('')
-    setMfaErrorType('')
+    setVerifying(true); setMfaError(''); setMfaErrorType('')
     const res = await fetch('/api/admin/verify-mfa', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code: mfaCode }),
     })
     const data = await res.json()
     if (res.ok) {
-      setAuthed(true)
-      loadProjects()
-      loadDemoSessions()
+      setAuthed(true); loadProjects(); loadDemoSessions()
     } else if (data.type === 'no_code') {
-      // No pending verification — send back to password screen
-      setMfaPending(false)
-      setMfaCode('')
-      setLoginError('Session expired. Please log in again.')
+      setMfaPending(false); setMfaCode(''); setLoginError('Session expired. Please log in again.')
     } else {
       setMfaError(data.error ?? 'Verification failed.')
       setMfaErrorType(data.type ?? '')
@@ -190,14 +155,10 @@ export default function AdminPage() {
   }
 
   const handleResendMfa = async () => {
-    setResending(true)
-    setResent(false)
-    setMfaError('')
-    setMfaErrorType('')
+    setResending(true); setResent(false); setMfaError(''); setMfaErrorType('')
     const res = await fetch('/api/admin/resend-mfa', { method: 'POST' })
     if (res.ok) {
-      setResent(true)
-      setMfaCode('')
+      setResent(true); setMfaCode('')
       setTimeout(() => setResent(false), 6000)
     } else {
       const data = await res.json().catch(() => ({}))
@@ -207,29 +168,16 @@ export default function AdminPage() {
     setResending(false)
   }
 
-  const handleLogout = async () => {
-    await fetch('/api/admin/logout', { method: 'POST' })
-    setAuthed(false)
-    setProjects([])
-  }
-
   const handleAddClient = async (e: React.FormEvent) => {
     e.preventDefault()
-    setAddingClient(true)
-    setAddError('')
+    setAddingClient(true); setAddError('')
     try {
       const res = await fetch('/api/admin/add-client', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(addForm),
       })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data.error ?? 'Failed to add client.')
-      }
-      setShowAddModal(false)
-      setAddForm(DEFAULT_ADD_FORM)
-      loadProjects()
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error ?? 'Failed to add client.') }
+      setShowAddModal(false); setAddForm(DEFAULT_ADD_FORM); loadProjects()
     } catch (err) {
       setAddError(err instanceof Error ? err.message : 'An error occurred.')
     } finally {
@@ -237,14 +185,10 @@ export default function AdminPage() {
     }
   }
 
-  if (authed === null) {
-    return (
-      <div className="min-h-screen bg-bg flex items-center justify-center">
-        <div className="font-mono text-sm text-muted animate-pulse">Checking session...</div>
-      </div>
-    )
-  }
+  // ── Loading (the layout shows its own spinner, so return null here) ─────────
+  if (authed === null) return null
 
+  // ── Not authenticated: show login / MFA forms (fullscreen — layout passes through) ─
   if (!authed) {
     if (mfaPending) {
       const codeExpired = mfaErrorType === 'expired'
@@ -256,79 +200,50 @@ export default function AdminPage() {
               <span className="font-heading text-2xl tracking-widest text-primary">MANTIS TECH</span>
             </div>
             <div className="bg-card border border-border rounded p-8">
-              <div className="font-mono text-xs text-accent tracking-widest uppercase mb-2">Admin</div>
+              <div className="font-mono text-xs text-emerald-700 dark:text-accent tracking-widest uppercase mb-2">Admin</div>
               <h1 className="font-heading text-3xl text-primary mb-2">Check Your Email</h1>
               <p className="font-mono text-xs text-muted mb-6">
                 A 6-digit code was sent to your admin email address. Enter it below to complete login.
               </p>
               <form onSubmit={handleVerifyMfa} className="space-y-4">
                 <div>
-                  <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">
-                    Verification Code
-                  </label>
+                  <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Verification Code</label>
                   <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={mfaCode}
-                    onChange={(e) => { setMfaCode(e.target.value.replace(/\D/g, '')); setMfaError(''); setMfaErrorType('') }}
-                    autoFocus
-                    required
+                    type="text" inputMode="numeric" maxLength={6} value={mfaCode} autoFocus required
                     disabled={codeExpired}
+                    onChange={(e) => { setMfaCode(e.target.value.replace(/\D/g, '')); setMfaError(''); setMfaErrorType('') }}
                     className="form-input tracking-[0.5em] text-center text-lg disabled:opacity-50"
                     placeholder="000000"
                   />
                 </div>
-
-                {/* Error messages */}
                 {mfaError && !resent && (
                   <div className={`font-mono text-xs p-3 rounded border ${
                     codeExpired
-                      ? 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5'
-                      : mfaErrorType === 'send_error'
-                      ? 'text-red-400 border-red-400/30 bg-red-400/5'
-                      : 'text-red-400 border-red-400/30 bg-red-400/5'
-                  }`}>
-                    {mfaError}
-                  </div>
+                      ? 'text-yellow-700 dark:text-yellow-400 border-yellow-700/30 dark:border-yellow-400/30 bg-yellow-700/5 dark:bg-yellow-400/5'
+                      : 'text-red-700 dark:text-red-400 border-red-700/30 dark:border-red-400/30 bg-red-700/5 dark:bg-red-400/5'
+                  }`}>{mfaError}</div>
                 )}
                 {resent && (
-                  <div className="font-mono text-xs p-3 rounded border text-accent border-accent/30 bg-accent/5">
+                  <div className="font-mono text-xs p-3 rounded border text-emerald-700 dark:text-accent border-emerald-700/30 dark:border-accent/30 bg-emerald-700/5 dark:bg-accent/5">
                     A new code has been sent to your email.
                   </div>
                 )}
-
-                {/* Verify button — hidden when expired, show resend prominently instead */}
                 {!codeExpired && (
-                  <button
-                    type="submit"
-                    disabled={verifying || mfaCode.length !== 6}
-                    className="w-full bg-accent text-black font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60"
-                  >
+                  <button type="submit" disabled={verifying || mfaCode.length !== 6}
+                    className="w-full bg-accent text-black font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60">
                     {verifying ? 'Verifying...' : 'Verify and Log In'}
                   </button>
                 )}
-
-                {/* Resend button — prominent when expired */}
-                <button
-                  type="button"
-                  onClick={handleResendMfa}
-                  disabled={resending}
+                <button type="button" onClick={handleResendMfa} disabled={resending}
                   className={`w-full font-mono text-sm py-3 rounded tracking-wider transition-all disabled:opacity-60 ${
-                    codeExpired
-                      ? 'bg-accent text-black hover:bg-white'
-                      : 'border border-border text-muted hover:border-accent hover:text-accent'
-                  }`}
-                >
+                    codeExpired ? 'bg-accent text-black hover:bg-white' : 'border border-border text-muted hover:border-accent hover:text-primary'
+                  }`}>
                   {resending ? 'Sending...' : codeExpired ? 'Send New Code' : 'Resend Code'}
                 </button>
-
                 <div className="text-center">
-                  <button
-                    type="button"
+                  <button type="button"
                     onClick={() => { setMfaPending(false); setMfaCode(''); setMfaError(''); setMfaErrorType('') }}
-                    className="font-mono text-xs text-dim hover:text-muted transition-colors"
-                  >
+                    className="font-mono text-xs text-muted hover:text-primary transition-colors">
                     Back to login
                   </button>
                 </div>
@@ -347,35 +262,21 @@ export default function AdminPage() {
             <span className="font-heading text-2xl tracking-widest text-primary">MANTIS TECH</span>
           </div>
           <div className="bg-card border border-border rounded p-8">
-            <div className="font-mono text-xs text-accent tracking-widest uppercase mb-2">Admin</div>
+            <div className="font-mono text-xs text-emerald-700 dark:text-accent tracking-widest uppercase mb-2">Admin</div>
             <h1 className="font-heading text-3xl text-primary mb-6">Dashboard Login</h1>
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoFocus
-                  required
-                  className="form-input"
-                  placeholder="Enter admin password"
-                />
+                <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Password</label>
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                  autoFocus required className="form-input" placeholder="Enter admin password" />
               </div>
-              {loginError && (
-                <p className="font-mono text-xs text-red-400">{loginError}</p>
-              )}
-              <button
-                type="submit"
-                disabled={loggingIn}
-                className="w-full bg-accent text-black font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60"
-              >
+              {loginError && <p className="font-mono text-xs text-red-700 dark:text-red-400">{loginError}</p>}
+              <button type="submit" disabled={loggingIn}
+                className="w-full bg-accent text-black font-mono text-sm py-3 rounded tracking-wider hover:bg-white transition-all disabled:opacity-60">
                 {loggingIn ? 'Authenticating...' : 'Enter Dashboard'}
               </button>
               <div className="text-center">
-                <Link href="/admin/reset-password" className="font-mono text-xs text-dim hover:text-muted transition-colors">
+                <Link href="/admin/reset-password" className="font-mono text-xs text-muted hover:text-primary transition-colors">
                   Forgot password?
                 </Link>
               </div>
@@ -386,6 +287,7 @@ export default function AdminPage() {
     )
   }
 
+  // ── Authenticated: render dashboard content (layout provides header + sidebar) ─
   const activeProjects = projects.filter((p) => p.status === 'active')
   const estimatedMRR = activeProjects.reduce((sum, p) => sum + PLANS[p.plan].monthly, 0)
   const pendingCount = projects.filter((p) => p.status === 'admin_review').length
@@ -406,82 +308,43 @@ export default function AdminPage() {
   const toggleGroup = (key: string) => {
     setCollapsedGroups((prev) => {
       const next = new Set(prev)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
+      if (next.has(key)) next.delete(key); else next.add(key)
       return next
     })
   }
 
   return (
-    <div className="min-h-screen bg-bg flex flex-col">
-      <header className="border-b border-border bg-card px-6 py-4 flex items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <span className="w-2 h-2 rounded-full bg-accent" />
-          <span className="font-heading text-xl tracking-widest text-primary">MANTIS TECH</span>
-          <span className="font-mono text-xs text-muted ml-2">/ Admin</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="font-mono text-xs bg-accent text-black px-4 py-1.5 rounded hover:opacity-90 transition-opacity tracking-wider"
-          >
-            Add Client
-          </button>
-          <button
-            onClick={loadProjects}
-            className="font-mono text-xs text-muted hover:text-accent transition-colors tracking-wider"
-            disabled={loading}
-          >
-            {loading ? 'Refreshing...' : 'Refresh'}
-          </button>
-          <ThemeToggle />
-          <button
-            onClick={handleLogout}
-            className="font-mono text-xs border border-border text-muted px-4 py-1.5 rounded hover:border-accent hover:text-accent transition-all"
-          >
-            Logout
-          </button>
-        </div>
-      </header>
-
+    <>
+      {/* Inner layout: project list sidebar + main content */}
       <div className="flex flex-1 items-start">
-        {/* Left sidebar */}
-        <aside className="w-72 shrink-0 sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto border-r border-border bg-card flex flex-col">
+        {/* Project list sidebar */}
+        <aside className="w-64 shrink-0 sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto border-r border-border bg-card flex flex-col">
           {/* Search */}
           <div className="p-4 border-b border-border">
             <input
-              type="text"
-              value={searchQuery}
+              type="text" value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search clients..."
-              className="form-input text-xs w-full"
+              placeholder="Search clients..." className="form-input text-xs w-full"
             />
           </div>
 
-          {/* Groups */}
+          {/* Project groups */}
           <div className="flex-1 overflow-y-auto">
             {sidebarGroups.map((group) => {
               const groupItems = searchFiltered.filter((p) => group.statuses.includes(p.status))
               const isCollapsed = collapsedGroups.has(group.key)
               return (
                 <div key={group.key} className="border-b border-border last:border-0">
-                  <button
-                    onClick={() => toggleGroup(group.key)}
-                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-bg transition-colors"
-                  >
+                  <button onClick={() => toggleGroup(group.key)}
+                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-bg transition-colors">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-xs text-muted tracking-widest uppercase">{group.label}</span>
-                      <span className="font-mono text-xs bg-bg border border-border text-dim px-1.5 py-0.5 rounded">
+                      <span className="font-mono text-xs bg-bg border border-border text-muted px-1.5 py-0.5 rounded">
                         {groupItems.length}
                       </span>
                     </div>
-                    <svg
-                      className={`w-3 h-3 text-dim transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
+                    <svg className={`w-3 h-3 text-muted transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+                      viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <polyline points="9 18 15 12 9 6" />
                     </svg>
                   </button>
@@ -489,29 +352,22 @@ export default function AdminPage() {
                   {!isCollapsed && (
                     <div className="pb-1">
                       {groupItems.length === 0 ? (
-                        <div className="px-4 py-3 font-mono text-xs text-dim">None</div>
+                        <div className="px-4 py-3 font-mono text-xs text-muted">None</div>
                       ) : (
                         groupItems.map((p) => (
-                          <Link
-                            key={p.id}
-                            href={`/admin/projects/${p.id}`}
+                          <Link key={p.id} href={`/admin/projects/${p.id}`}
                             onClick={() => setSelectedId(p.id)}
                             className={`block px-4 py-3 hover:bg-bg transition-colors border-l-2 ${
                               selectedId === p.id ? 'border-accent bg-accent/5' : 'border-transparent'
-                            }`}
-                          >
+                            }`}>
                             <div className="flex items-center justify-between gap-2 mb-1">
                               <span className="font-mono text-xs text-primary truncate">{p.businessName}</span>
                               <span className="font-mono text-xs border border-border text-muted px-1.5 py-0.5 rounded capitalize shrink-0">
                                 {p.plan}
                               </span>
                             </div>
-                            <div className="font-mono text-xs text-dim">
-                              {new Date(p.createdAt).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                              })}
+                            <div className="font-mono text-xs text-muted">
+                              {new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                             </div>
                           </Link>
                         ))
@@ -525,12 +381,25 @@ export default function AdminPage() {
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 min-w-0 px-8 py-10">
-          <div className="mb-8">
-            <h1 className="font-heading text-5xl text-primary mb-2">Project Dashboard</h1>
-            <p className="font-mono text-sm text-muted">
-              {projects.length} total project{projects.length !== 1 ? 's' : ''}
-            </p>
+        <div className="flex-1 min-w-0 px-8 py-10">
+          {/* Page title + actions */}
+          <div className="flex items-start justify-between mb-8 gap-4">
+            <div>
+              <h1 className="font-heading text-5xl text-primary mb-2">Project Dashboard</h1>
+              <p className="font-mono text-sm text-muted">
+                {projects.length} total project{projects.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+            <div className="flex items-center gap-3 mt-2 shrink-0">
+              <button onClick={() => setShowAddModal(true)}
+                className="font-mono text-xs bg-accent text-black px-4 py-2 rounded hover:opacity-90 transition-opacity tracking-wider">
+                Add Client
+              </button>
+              <button onClick={loadProjects} disabled={loading}
+                className="font-mono text-xs text-muted hover:text-primary transition-colors tracking-wider">
+                {loading ? 'Refreshing...' : 'Refresh'}
+              </button>
+            </div>
           </div>
 
           {/* Revenue Overview */}
@@ -541,12 +410,12 @@ export default function AdminPage() {
             </div>
             <div className="bg-card border border-border rounded p-5">
               <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Estimated MRR</div>
-              <div className="font-heading text-4xl text-accent">${estimatedMRR}</div>
-              <div className="font-mono text-xs text-dim mt-1">base plans only</div>
+              <div className="font-heading text-4xl text-emerald-700 dark:text-accent">${estimatedMRR}</div>
+              <div className="font-mono text-xs text-muted mt-1">base plans only</div>
             </div>
             <div className="bg-card border border-border rounded p-5">
               <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Pending Review</div>
-              <div className="font-heading text-4xl text-yellow-400">{pendingCount}</div>
+              <div className="font-heading text-4xl text-yellow-700 dark:text-yellow-400">{pendingCount}</div>
             </div>
           </div>
 
@@ -559,11 +428,8 @@ export default function AdminPage() {
                   {demoSessions.length} session{demoSessions.length !== 1 ? 's' : ''} recorded
                 </p>
               </div>
-              <button
-                onClick={loadDemoSessions}
-                disabled={demoLoading}
-                className="font-mono text-xs text-muted hover:text-accent transition-colors tracking-wider"
-              >
+              <button onClick={loadDemoSessions} disabled={demoLoading}
+                className="font-mono text-xs text-muted hover:text-primary transition-colors tracking-wider">
                 {demoLoading ? 'Loading...' : 'Refresh'}
               </button>
             </div>
@@ -582,7 +448,7 @@ export default function AdminPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-3 mb-2">
                             <span className="font-mono text-xs text-muted">Session {session.id.slice(0, 8)}</span>
-                            <span className="font-mono text-xs text-accent border border-accent/30 bg-accent/5 px-2 py-0.5 rounded-full">
+                            <span className="font-mono text-xs text-emerald-700 dark:text-accent border border-emerald-700/30 dark:border-accent/30 bg-emerald-700/5 dark:bg-accent/5 px-2 py-0.5 rounded-full">
                               {totalSubmissions} submission{totalSubmissions !== 1 ? 's' : ''}
                             </span>
                           </div>
@@ -600,15 +466,14 @@ export default function AdminPage() {
                         <div className="text-right shrink-0">
                           <div className="font-mono text-xs text-muted">
                             {new Date(session.createdAt).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
+                              month: 'short', day: 'numeric', year: 'numeric',
+                              hour: '2-digit', minute: '2-digit',
                             })}
                           </div>
-                          <div className="font-mono text-xs text-dim mt-0.5">
-                            Last active {new Date(session.lastActiveAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          <div className="font-mono text-xs text-muted mt-0.5">
+                            Last active {new Date(session.lastActiveAt).toLocaleString('en-US', {
+                              month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+                            })}
                           </div>
                         </div>
                       </div>
@@ -645,15 +510,19 @@ export default function AdminPage() {
                           <div className="font-mono text-xs text-muted">
                             Referred by: <span className="text-teal">{referrer?.businessName ?? 'Unknown'}</span>
                           </div>
-                          <div className="font-mono text-xs text-dim mt-0.5">
+                          <div className="font-mono text-xs text-muted mt-0.5">
                             {new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                           </div>
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
-                          <span className={`font-mono text-xs border px-2 py-0.5 rounded-full ${(p as any).referralRewardGranted ? 'text-accent border-accent/30 bg-accent/5' : 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5'}`}>
+                          <span className={`font-mono text-xs border px-2 py-0.5 rounded-full ${
+                            (p as any).referralRewardGranted
+                              ? 'text-emerald-700 dark:text-accent border-emerald-700/30 dark:border-accent/30 bg-emerald-700/5 dark:bg-accent/5'
+                              : 'text-yellow-700 dark:text-yellow-400 border-yellow-700/30 dark:border-yellow-400/30 bg-yellow-700/5 dark:bg-yellow-400/5'
+                          }`}>
                             {(p as any).referralRewardGranted ? 'Reward Granted' : 'Reward Pending'}
                           </span>
-                          <Link href={`/admin/projects/${p.id}`} className="font-mono text-xs text-muted hover:text-accent transition-colors">
+                          <Link href={`/admin/projects/${p.id}`} className="font-mono text-xs text-muted hover:text-primary transition-colors">
                             View &rarr;
                           </Link>
                         </div>
@@ -664,7 +533,7 @@ export default function AdminPage() {
               )
             })()}
           </div>
-        </main>
+        </div>
       </div>
 
       {/* Add Client Modal */}
@@ -673,45 +542,55 @@ export default function AdminPage() {
           <div className="bg-card border border-border rounded w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
               <h2 className="font-heading text-2xl text-primary">Add Client</h2>
-              <button
-                onClick={() => { setShowAddModal(false); setAddError(''); setAddForm(DEFAULT_ADD_FORM) }}
-                className="font-mono text-xs text-muted hover:text-primary transition-colors"
-              >
-                Close
-              </button>
+              <button onClick={() => { setShowAddModal(false); setAddError(''); setAddForm(DEFAULT_ADD_FORM) }}
+                className="font-mono text-xs text-muted hover:text-primary transition-colors">Close</button>
             </div>
             <form onSubmit={handleAddClient} className="p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Business Name *</label>
-                  <input type="text" required value={addForm.businessName} onChange={(e) => setAddForm(f => ({ ...f, businessName: e.target.value }))} className="form-input" placeholder="Acme Corp" />
+                  <input type="text" required value={addForm.businessName}
+                    onChange={(e) => setAddForm(f => ({ ...f, businessName: e.target.value }))}
+                    className="form-input" placeholder="Acme Corp" />
                 </div>
                 <div>
                   <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Owner Name *</label>
-                  <input type="text" required value={addForm.ownerName} onChange={(e) => setAddForm(f => ({ ...f, ownerName: e.target.value }))} className="form-input" placeholder="Jane Smith" />
+                  <input type="text" required value={addForm.ownerName}
+                    onChange={(e) => setAddForm(f => ({ ...f, ownerName: e.target.value }))}
+                    className="form-input" placeholder="Jane Smith" />
                 </div>
                 <div>
                   <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Email *</label>
-                  <input type="email" required value={addForm.email} onChange={(e) => setAddForm(f => ({ ...f, email: e.target.value }))} className="form-input" placeholder="jane@acmecorp.com" />
+                  <input type="email" required value={addForm.email}
+                    onChange={(e) => setAddForm(f => ({ ...f, email: e.target.value }))}
+                    className="form-input" placeholder="jane@acmecorp.com" />
                 </div>
                 <div>
                   <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Phone</label>
-                  <input type="tel" value={addForm.phone} onChange={(e) => setAddForm(f => ({ ...f, phone: e.target.value }))} className="form-input" placeholder="+1 555 000 0000" />
+                  <input type="tel" value={addForm.phone}
+                    onChange={(e) => setAddForm(f => ({ ...f, phone: e.target.value }))}
+                    className="form-input" placeholder="+1 555 000 0000" />
                 </div>
                 <div>
                   <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Business Type *</label>
-                  <select required value={addForm.businessType} onChange={(e) => setAddForm(f => ({ ...f, businessType: e.target.value }))} className="form-input">
+                  <select required value={addForm.businessType}
+                    onChange={(e) => setAddForm(f => ({ ...f, businessType: e.target.value }))}
+                    className="form-input">
                     <option value="">Select a type</option>
                     {BUSINESS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Location *</label>
-                  <input type="text" required value={addForm.location} onChange={(e) => setAddForm(f => ({ ...f, location: e.target.value }))} className="form-input" placeholder="Austin, TX" />
+                  <input type="text" required value={addForm.location}
+                    onChange={(e) => setAddForm(f => ({ ...f, location: e.target.value }))}
+                    className="form-input" placeholder="Austin, TX" />
                 </div>
                 <div>
                   <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Plan *</label>
-                  <select required value={addForm.plan} onChange={(e) => setAddForm(f => ({ ...f, plan: e.target.value as Plan }))} className="form-input">
+                  <select required value={addForm.plan}
+                    onChange={(e) => setAddForm(f => ({ ...f, plan: e.target.value as Plan }))}
+                    className="form-input">
                     <option value="starter">Starter</option>
                     <option value="mid">Growth</option>
                     <option value="pro">Pro</option>
@@ -719,14 +598,18 @@ export default function AdminPage() {
                 </div>
                 <div>
                   <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Timeline *</label>
-                  <select required value={addForm.timeline} onChange={(e) => setAddForm(f => ({ ...f, timeline: e.target.value }))} className="form-input">
+                  <select required value={addForm.timeline}
+                    onChange={(e) => setAddForm(f => ({ ...f, timeline: e.target.value }))}
+                    className="form-input">
                     <option value="">Select timeline</option>
                     {TIMELINES.map((t) => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Style Preference *</label>
-                  <select required value={addForm.stylePreference} onChange={(e) => setAddForm(f => ({ ...f, stylePreference: e.target.value }))} className="form-input">
+                  <select required value={addForm.stylePreference}
+                    onChange={(e) => setAddForm(f => ({ ...f, stylePreference: e.target.value }))}
+                    className="form-input">
                     <option value="">Select a style</option>
                     {STYLE_PREFERENCES.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
@@ -734,20 +617,25 @@ export default function AdminPage() {
               </div>
               <div>
                 <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Business Description *</label>
-                <textarea required rows={3} value={addForm.businessDescription} onChange={(e) => setAddForm(f => ({ ...f, businessDescription: e.target.value }))} className="form-input resize-none w-full" placeholder="Tell us what the business does..." />
+                <textarea required rows={3} value={addForm.businessDescription}
+                  onChange={(e) => setAddForm(f => ({ ...f, businessDescription: e.target.value }))}
+                  className="form-input resize-none w-full" placeholder="Tell us what the business does..." />
               </div>
               <div>
                 <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Primary Goal *</label>
-                <input type="text" required value={addForm.primaryGoal} onChange={(e) => setAddForm(f => ({ ...f, primaryGoal: e.target.value }))} className="form-input" placeholder="Generate leads, sell products, book appointments..." />
+                <input type="text" required value={addForm.primaryGoal}
+                  onChange={(e) => setAddForm(f => ({ ...f, primaryGoal: e.target.value }))}
+                  className="form-input" placeholder="Generate leads, sell products, book appointments..." />
               </div>
-              {addError && <p className="font-mono text-xs text-red-400">{addError}</p>}
-              <button type="submit" disabled={addingClient} className="w-full bg-accent text-black font-mono text-sm py-3 rounded tracking-wider hover:opacity-90 transition-opacity disabled:opacity-60">
+              {addError && <p className="font-mono text-xs text-red-700 dark:text-red-400">{addError}</p>}
+              <button type="submit" disabled={addingClient}
+                className="w-full bg-accent text-black font-mono text-sm py-3 rounded tracking-wider hover:opacity-90 transition-opacity disabled:opacity-60">
                 {addingClient ? 'Creating...' : 'Create Client Project'}
               </button>
             </form>
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }

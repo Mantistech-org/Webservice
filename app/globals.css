@@ -10,8 +10,8 @@
   --color-border:       213 209 200;
   --color-border-light: 196 191 182;
   --color-teal:         80 74 68;
-  --color-muted:        130 121 112;
-  --color-dim:          175 168 160;
+  --color-muted:        90 82 74;   /* Darker for 5:1+ contrast on card bg */
+  --color-dim:          128 120 112; /* Darker for 3:1+ contrast on card bg */
   --color-primary:      27 25 22;
 }
 

@@ -67,7 +67,7 @@ export default function AdminResetPasswordPage() {
           <span className="font-heading text-2xl tracking-widest text-primary">MANTIS TECH</span>
         </div>
         <div className="bg-card border border-border rounded p-8">
-          <div className="font-mono text-xs text-accent tracking-widest uppercase mb-2">Admin</div>
+          <div className="font-mono text-xs text-emerald-700 dark:text-accent tracking-widest uppercase mb-2">Admin</div>
 
           {step === 'request' && (
             <>
@@ -83,7 +83,7 @@ export default function AdminResetPasswordPage() {
                   {loading ? 'Sending...' : 'Send Reset Link'}
                 </button>
                 <div className="text-center">
-                  <Link href="/admin" className="font-mono text-xs text-dim hover:text-muted transition-colors">Back to login</Link>
+                  <Link href="/admin" className="font-mono text-xs text-muted hover:text-primary transition-colors">Back to login</Link>
                 </div>
               </form>
             </>

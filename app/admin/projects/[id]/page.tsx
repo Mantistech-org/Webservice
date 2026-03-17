@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Project, ProjectStatus, PLANS, ADDONS, ADDONS as ALL_ADDONS } from '@/types'
-import ThemeToggle from '@/components/ThemeToggle'
 
 const STATUS_LABELS: Record<ProjectStatus, string> = {
   admin_review: 'Awaiting Review',
@@ -14,12 +13,13 @@ const STATUS_LABELS: Record<ProjectStatus, string> = {
   generating: 'Generating',
 }
 
+// High-contrast status colors for both light and dark mode
 const STATUS_COLORS: Record<ProjectStatus, string> = {
-  admin_review: 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5',
-  client_review: 'text-blue-400 border-blue-400/30 bg-blue-400/5',
-  changes_requested: 'text-red-400 border-red-400/30 bg-red-400/5',
-  active: 'text-accent border-accent/30 bg-accent/5',
-  generating: 'text-purple-400 border-purple-400/30 bg-purple-400/5',
+  admin_review:       'text-yellow-700 dark:text-yellow-400 border-yellow-700/30 dark:border-yellow-400/30 bg-yellow-700/5 dark:bg-yellow-400/5',
+  client_review:      'text-blue-700   dark:text-blue-400   border-blue-700/30   dark:border-blue-400/30   bg-blue-700/5   dark:bg-blue-400/5',
+  changes_requested:  'text-red-700    dark:text-red-400    border-red-700/30    dark:border-red-400/30    bg-red-700/5    dark:bg-red-400/5',
+  active:             'text-emerald-700 dark:text-accent    border-emerald-700/30 dark:border-accent/30    bg-emerald-700/5 dark:bg-accent/5',
+  generating:         'text-purple-700 dark:text-purple-400 border-purple-700/30 dark:border-purple-400/30 bg-purple-700/5 dark:bg-purple-400/5',
 }
 
 export default function AdminProjectPage() {
@@ -275,7 +275,7 @@ export default function AdminProjectPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-bg flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         <div className="font-mono text-sm text-muted animate-pulse">Loading project...</div>
       </div>
     )
@@ -283,7 +283,7 @@ export default function AdminProjectPage() {
 
   if (error || !project) {
     return (
-      <div className="min-h-screen bg-bg flex items-center justify-center px-6">
+      <div className="flex-1 flex items-center justify-center px-6">
         <div className="text-center">
           <p className="font-mono text-sm text-red-400 mb-4">{error || 'Project not found.'}</p>
           <Link href="/admin" className="font-mono text-xs text-muted hover:text-accent transition-colors">
@@ -298,23 +298,19 @@ export default function AdminProjectPage() {
   const activeAddons = ADDONS.filter((a) => project.addons.includes(a.id))
 
   return (
-    <div className="min-h-screen bg-bg">
-      <header className="border-b border-border bg-card px-6 py-4 flex items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <Link href="/admin" className="font-mono text-xs text-muted hover:text-accent transition-colors">
-            &larr; Dashboard
-          </Link>
-          <span className="text-border">/</span>
-          <span className="font-heading text-lg text-primary truncate max-w-xs">{project.businessName}</span>
-          <span className={`font-mono text-xs border px-2 py-0.5 rounded-full ${STATUS_COLORS[project.status]}`}>
-            {STATUS_LABELS[project.status]}
-          </span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="font-mono text-xs text-dim hidden sm:block">ID: {project.id}</div>
-          <ThemeToggle />
-        </div>
-      </header>
+    <div className="flex-1 min-w-0">
+      {/* Breadcrumb */}
+      <div className="border-b border-border bg-card px-6 py-3 flex items-center gap-3">
+        <Link href="/admin" className="font-mono text-xs text-muted hover:text-primary transition-colors">
+          &larr; Clients
+        </Link>
+        <span className="text-border">/</span>
+        <span className="font-heading text-sm text-primary truncate max-w-xs">{project.businessName}</span>
+        <span className={`font-mono text-xs border px-2 py-0.5 rounded-full ${STATUS_COLORS[project.status]}`}>
+          {STATUS_LABELS[project.status]}
+        </span>
+        <span className="font-mono text-xs text-dim ml-auto hidden sm:block">ID: {project.id}</span>
+      </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -448,15 +444,15 @@ export default function AdminProjectPage() {
                   )}
                 </>
               ) : project.status === 'client_review' ? (
-                <div className="flex-1 text-center font-mono text-sm text-blue-400 py-3 border border-blue-400/20 rounded bg-blue-400/5">
+                <div className="flex-1 text-center font-mono text-sm text-blue-700 dark:text-blue-400 py-3 border border-blue-700/20 dark:border-blue-400/20 rounded bg-blue-700/5 dark:bg-blue-400/5">
                   Waiting for client approval
                 </div>
               ) : project.status === 'active' ? (
-                <div className="flex-1 text-center font-mono text-sm text-accent py-3 border border-accent/20 rounded bg-accent/5">
+                <div className="flex-1 text-center font-mono text-sm text-emerald-700 dark:text-accent py-3 border border-emerald-700/20 dark:border-accent/20 rounded bg-emerald-700/5 dark:bg-accent/5">
                   Project is active and payment received
                 </div>
               ) : project.status === 'generating' ? (
-                <div className="flex-1 text-center font-mono text-sm text-purple-400 py-3 border border-purple-400/20 rounded bg-purple-400/5 animate-pulse">
+                <div className="flex-1 text-center font-mono text-sm text-purple-700 dark:text-purple-400 py-3 border border-purple-700/20 dark:border-purple-400/20 rounded bg-purple-700/5 dark:bg-purple-400/5 animate-pulse">
                   Generating site — checking for updates every 3s&hellip;
                 </div>
               ) : null}
@@ -489,7 +485,7 @@ export default function AdminProjectPage() {
             )}
 
             {actionMsg && (
-              <div className="font-mono text-xs text-accent bg-accent/5 border border-accent/20 rounded px-4 py-3">
+              <div className="font-mono text-xs text-emerald-700 dark:text-accent bg-emerald-700/5 dark:bg-accent/5 border border-emerald-700/20 dark:border-accent/20 rounded px-4 py-3">
                 {actionMsg}
               </div>
             )}
@@ -499,7 +495,7 @@ export default function AdminProjectPage() {
           <div className="space-y-6">
             {/* Client info */}
             <div className="bg-card border border-border rounded p-6">
-              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-3">Client Information</h3>
+              <h3 className="font-mono text-xs text-emerald-700 dark:text-accent tracking-widest uppercase mb-3">Client Information</h3>
               <div className="flex items-start gap-2 mb-4 pb-4 border-b border-border">
                 <div className="flex-1 min-w-0">
                   <div className="font-mono text-xs text-muted uppercase tracking-wider mb-0.5">Project ID</div>
@@ -596,7 +592,7 @@ export default function AdminProjectPage() {
 
             {/* Plan and Add-ons */}
             <div className="bg-card border border-border rounded p-6">
-              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Plan and Add-ons</h3>
+              <h3 className="font-mono text-xs text-emerald-700 dark:text-accent tracking-widest uppercase mb-4">Plan and Add-ons</h3>
               <div className="mb-4">
                 <div className="font-mono text-xs text-muted uppercase mb-1">Plan</div>
                 <div className="font-heading text-2xl text-primary capitalize">
@@ -625,7 +621,7 @@ export default function AdminProjectPage() {
 
             {/* Business Description */}
             <div className="bg-card border border-border rounded p-6">
-              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Business Description</h3>
+              <h3 className="font-mono text-xs text-emerald-700 dark:text-accent tracking-widest uppercase mb-4">Business Description</h3>
               <p className="text-sm text-teal leading-relaxed">{project.businessDescription}</p>
               {project.primaryGoal && (
                 <>
@@ -650,7 +646,7 @@ export default function AdminProjectPage() {
             {/* Uploaded files */}
             {project.uploadedFiles?.length > 0 && (
               <div className="bg-card border border-border rounded p-6">
-                <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Uploaded Photos</h3>
+                <h3 className="font-mono text-xs text-emerald-700 dark:text-accent tracking-widest uppercase mb-4">Uploaded Photos</h3>
                 <div className="grid grid-cols-3 gap-2">
                   {project.uploadedFiles.map((file, i) => (
                     <a key={i} href={file} target="_blank" rel="noopener noreferrer"
@@ -665,7 +661,7 @@ export default function AdminProjectPage() {
 
             {/* Change Requests */}
             <div className="bg-card border border-border rounded p-6">
-              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">
+              <h3 className="font-mono text-xs text-emerald-700 dark:text-accent tracking-widest uppercase mb-4">
                 Change Requests {(project.changeRequests?.length ?? 0) > 0 && `(${project.changeRequests!.length})`}
               </h3>
               {project.changeRequests && project.changeRequests.length > 0 ? (
@@ -673,7 +669,7 @@ export default function AdminProjectPage() {
                   {project.changeRequests.map((req) => (
                     <div key={req.id} className="border border-border rounded p-4 space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className={`font-mono text-xs border px-2 py-0.5 rounded-full ${req.status === 'resolved' ? 'text-accent border-accent/30' : 'text-yellow-400 border-yellow-400/30'}`}>
+                        <span className={`font-mono text-xs border px-2 py-0.5 rounded-full ${req.status === 'resolved' ? 'text-emerald-700 dark:text-accent border-emerald-700/30 dark:border-accent/30' : 'text-yellow-700 dark:text-yellow-400 border-yellow-700/30 dark:border-yellow-400/30'}`}>
                           {req.status === 'resolved' ? 'Resolved' : 'Pending'}
                         </span>
                         <span className="font-mono text-xs text-dim">{new Date(req.createdAt).toLocaleString()}</span>
@@ -681,7 +677,7 @@ export default function AdminProjectPage() {
                       <p className="text-sm text-teal">{req.message}</p>
                       {req.adminResponse && (
                         <div className="bg-bg border border-border rounded p-3">
-                          <div className="font-mono text-xs text-accent mb-1">Your Response</div>
+                          <div className="font-mono text-xs text-emerald-700 dark:text-accent mb-1">Your Response</div>
                           <p className="text-sm text-primary">{req.adminResponse}</p>
                         </div>
                       )}
@@ -732,7 +728,7 @@ export default function AdminProjectPage() {
 
             {/* Upsell Activity */}
             <div className="bg-card border border-border rounded p-6">
-              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Upsell Activity</h3>
+              <h3 className="font-mono text-xs text-emerald-700 dark:text-accent tracking-widest uppercase mb-4">Upsell Activity</h3>
               {project.upsellClicks && project.upsellClicks.length > 0 ? (
                 <div className="space-y-1.5">
                   {project.upsellClicks.map((click, i) => {
@@ -826,13 +822,13 @@ export default function AdminProjectPage() {
             {/* Referral */}
             {project.referredBy && (
               <div className="bg-card border border-border rounded p-6">
-                <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Referral</h3>
-                {referralMsg && <p className="font-mono text-xs text-accent mb-3">{referralMsg}</p>}
+                <h3 className="font-mono text-xs text-emerald-700 dark:text-accent tracking-widest uppercase mb-4">Referral</h3>
+                {referralMsg && <p className="font-mono text-xs text-emerald-700 dark:text-accent mb-3">{referralMsg}</p>}
                 <div className="font-mono text-xs text-muted mb-3">
                   Referred by client: <span className="text-teal break-all">{project.referredBy.slice(0, 16)}...</span>
                 </div>
                 {project.referralRewardGranted ? (
-                  <span className="font-mono text-xs text-accent border border-accent/30 px-2 py-1 rounded">
+                  <span className="font-mono text-xs text-emerald-700 dark:text-accent border border-emerald-700/30 dark:border-accent/30 px-2 py-1 rounded">
                     Free month granted
                   </span>
                 ) : (
@@ -849,7 +845,7 @@ export default function AdminProjectPage() {
 
             {/* Send Notification */}
             <div className="bg-card border border-border rounded p-6">
-              <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-4">Send Notification</h3>
+              <h3 className="font-mono text-xs text-emerald-700 dark:text-accent tracking-widest uppercase mb-4">Send Notification</h3>
               <div className="space-y-3">
                 <textarea
                   value={notifMessage}
@@ -866,7 +862,7 @@ export default function AdminProjectPage() {
                   {sendingNotif ? 'Sending...' : 'Send to Client'}
                 </button>
                 {notifMsg && (
-                  <p className="font-mono text-xs text-accent">{notifMsg}</p>
+                  <p className="font-mono text-xs text-emerald-700 dark:text-accent">{notifMsg}</p>
                 )}
               </div>
             </div>
