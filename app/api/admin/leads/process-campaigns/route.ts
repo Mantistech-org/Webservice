@@ -21,27 +21,17 @@ function buildEmailHtml(body: string): string {
     .split('\n')
     .map((l) => l.trim())
     .filter(Boolean)
-    .map((l) => `<p style="margin:0 0 14px 0;line-height:1.6;">${l}</p>`)
+    .map((l) => `<p style="margin:0 0 16px 0;">${l}</p>`)
     .join('')
 
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:40px 20px;">
-    <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:4px;overflow:hidden;max-width:600px;width:100%;">
-        <tr><td style="padding:32px 40px 0 40px;">
-          <p style="margin:0 0 24px 0;font-size:13px;font-weight:600;letter-spacing:0.05em;color:#333;text-transform:uppercase;">Mantis Tech</p>
-        </td></tr>
-        <tr><td style="padding:0 40px 40px 40px;font-size:15px;color:#333;">${paragraphs}</td></tr>
-        <tr><td style="padding:20px 40px;background:#f9f9f9;border-top:1px solid #eee;font-size:12px;color:#888;">
-          Mantis Tech &mdash; Web Design &amp; Digital Marketing<br>
-          <a href="https://mantistech.org" style="color:#888;">mantistech.org</a>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
+<body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#000000;line-height:1.6;">
+  <div style="max-width:600px;padding:40px 24px;">
+    ${paragraphs}
+    <p style="margin:32px 0 0 0;font-size:13px;color:#666666;">Mantis Tech - Web Design &amp; Digital Marketing</p>
+  </div>
 </body>
 </html>`
 }

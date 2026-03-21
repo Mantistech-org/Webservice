@@ -479,37 +479,17 @@ export default function TemplatesTab() {
             {/* Email body rendered as it will be sent */}
             <div className="p-6">
               <div className="font-mono text-xs text-muted tracking-widest uppercase mb-3">Body</div>
-              <div className="rounded border border-border overflow-hidden" style={{ backgroundColor: '#f5f5f5' }}>
-                <div style={{ padding: '24px 20px' }}>
-                  <div
-                    style={{
-                      backgroundColor: '#ffffff',
-                      borderRadius: '4px',
-                      overflow: 'hidden',
-                      maxWidth: '560px',
-                      margin: '0 auto',
-                    }}
-                  >
-                    {/* Mantis Tech header */}
-                    <div style={{ padding: '24px 32px 0 32px' }}>
-                      <p style={{ margin: '0 0 20px 0', fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em', color: '#333', textTransform: 'uppercase', fontFamily: 'monospace' }}>
-                        Mantis Tech
-                      </p>
-                    </div>
-                    {/* Body paragraphs */}
-                    <div style={{ padding: '0 32px 32px 32px', fontSize: '14px', color: '#333', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif', lineHeight: '1.6' }}>
-                      {previewBody
-                        ? previewBody.split('\n').filter((line) => line.trim()).map((line, i) => (
-                            <p key={i} style={{ margin: '0 0 14px 0' }}>{line}</p>
-                          ))
-                        : <p style={{ margin: 0, color: '#888', fontStyle: 'italic' }}>No body content.</p>
-                      }
-                    </div>
-                    {/* Footer */}
-                    <div style={{ padding: '16px 32px', backgroundColor: '#f9f9f9', borderTop: '1px solid #eee', fontSize: '11px', color: '#888', fontFamily: 'monospace' }}>
-                      Mantis Tech &mdash; Web Design &amp; Digital Marketing
-                    </div>
-                  </div>
+              <div className="rounded border border-border overflow-hidden bg-white">
+                <div style={{ maxWidth: '560px', padding: '32px 24px', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif', fontSize: '15px', color: '#000000', lineHeight: '1.6' }}>
+                  {previewBody
+                    ? previewBody.split('\n').filter((line) => line.trim()).map((line, i) => (
+                        <p key={i} style={{ margin: '0 0 16px 0' }}>{line}</p>
+                      ))
+                    : <p style={{ margin: 0, color: '#888', fontStyle: 'italic' }}>No body content.</p>
+                  }
+                  <p style={{ margin: '32px 0 0 0', fontSize: '13px', color: '#666666' }}>
+                    Mantis Tech - Web Design &amp; Digital Marketing
+                  </p>
                 </div>
               </div>
 
