@@ -6,16 +6,9 @@ import SearchTab from '@/components/admin/leads/SearchTab'
 import LeadsTab from '@/components/admin/leads/LeadsTab'
 import TemplatesTab from '@/components/admin/leads/TemplatesTab'
 import CampaignsTab from '@/components/admin/leads/CampaignsTab'
+import type { OutreachLead } from '@/types/leads'
 
 type Tab = 'search' | 'leads' | 'templates' | 'campaigns'
-
-interface OutreachLead {
-  id: string
-  business_name: string
-  email: string | null
-  address: string | null
-  status: string
-}
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'search',    label: 'Search' },

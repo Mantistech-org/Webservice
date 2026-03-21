@@ -1,22 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-
-interface OutreachLead {
-  id: string
-  business_name: string
-  address: string | null
-  phone: string | null
-  email: string | null
-  website: string | null
-  rating: number | null
-  category: string | null
-  location_searched: string | null
-  status: 'new' | 'emailed' | 'bounced'
-  notes: string | null
-  last_emailed_at: string | null
-  created_at: string
-}
+import type { OutreachLead } from '@/types/leads'
 
 interface LeadsTabProps {
   refreshSignal: number

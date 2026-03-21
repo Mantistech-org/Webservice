@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import type { OutreachLead } from '@/types/leads'
 
 interface Campaign {
   id: string
@@ -22,15 +23,6 @@ interface Campaign {
 interface EmailTemplate {
   id: string
   name: string
-}
-
-interface OutreachLead {
-  id: string
-  business_name: string
-  email: string | null
-  address: string | null
-  status: string
-  category: string | null
 }
 
 interface CampaignsTabProps {
