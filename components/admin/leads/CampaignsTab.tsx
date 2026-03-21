@@ -30,6 +30,7 @@ interface OutreachLead {
   email: string | null
   address: string | null
   status: string
+  category: string | null
 }
 
 interface CampaignsTabProps {
@@ -70,6 +71,7 @@ export default function CampaignsTab({ savedLeads }: CampaignsTabProps) {
     weekly_limit: '',
   })
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set())
+  const [leadCategoryFilter, setLeadCategoryFilter] = useState('all')
   const [creating, setCreating] = useState(false)
 
   useEffect(() => {
@@ -198,6 +200,10 @@ export default function CampaignsTab({ savedLeads }: CampaignsTabProps) {
   }
 
   const freshLeads = savedLeads.filter((l) => l.status !== 'emailed')
+  const leadCategories = ['all', ...Array.from(new Set(freshLeads.map((l) => l.category).filter(Boolean))).sort()] as string[]
+  const filteredLeads = leadCategoryFilter === 'all'
+    ? freshLeads
+    : freshLeads.filter((l) => l.category === leadCategoryFilter)
 
   return (
     <div className="space-y-6">
@@ -352,25 +358,49 @@ export default function CampaignsTab({ savedLeads }: CampaignsTabProps) {
                 <label className="font-mono text-xs text-muted tracking-widest uppercase">
                   Select Leads ({selectedLeadIds.size} selected)
                 </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const allIds = freshLeads.map((l) => l.id)
-                    if (selectedLeadIds.size === allIds.length) setSelectedLeadIds(new Set())
-                    else setSelectedLeadIds(new Set(allIds))
-                  }}
-                  className="font-mono text-xs text-muted hover:text-primary transition-colors"
-                >
-                  {selectedLeadIds.size === freshLeads.length ? 'Deselect all' : 'Select all'}
-                </button>
+                <div className="flex items-center gap-3">
+                  {leadCategories.length > 1 && (
+                    <select
+                      value={leadCategoryFilter}
+                      onChange={(e) => setLeadCategoryFilter(e.target.value)}
+                      className="bg-bg border border-border text-primary rounded px-2 py-1 font-mono text-xs focus:outline-none focus:border-accent transition-colors"
+                    >
+                      {leadCategories.map((c) => (
+                        <option key={c} value={c}>{c === 'all' ? 'All categories' : c}</option>
+                      ))}
+                    </select>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const visibleIds = filteredLeads.map((l) => l.id)
+                      const allSelected = visibleIds.every((id) => selectedLeadIds.has(id))
+                      setSelectedLeadIds((prev) => {
+                        const next = new Set(prev)
+                        if (allSelected) visibleIds.forEach((id) => next.delete(id))
+                        else visibleIds.forEach((id) => next.add(id))
+                        return next
+                      })
+                    }}
+                    className="font-mono text-xs text-muted hover:text-primary transition-colors"
+                  >
+                    {filteredLeads.every((l) => selectedLeadIds.has(l.id)) && filteredLeads.length > 0
+                      ? 'Deselect visible'
+                      : 'Select visible'}
+                  </button>
+                </div>
               </div>
               {freshLeads.length === 0 ? (
                 <p className="font-mono text-xs text-muted p-3 border border-dashed border-border rounded">
                   No leads available. Save leads from the Search tab first.
                 </p>
+              ) : filteredLeads.length === 0 ? (
+                <p className="font-mono text-xs text-muted p-3 border border-dashed border-border rounded">
+                  No leads in this category.
+                </p>
               ) : (
                 <div className="border border-border rounded overflow-hidden max-h-64 overflow-y-auto">
-                  {freshLeads.map((lead) => (
+                  {filteredLeads.map((lead) => (
                     <label
                       key={lead.id}
                       className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer border-b border-border last:border-0 transition-colors ${
@@ -383,12 +413,17 @@ export default function CampaignsTab({ savedLeads }: CampaignsTabProps) {
                         onChange={() => toggleLeadSelect(lead.id)}
                         className="accent-emerald-600 shrink-0"
                       />
-                      <div className="min-w-0">
-                        <div className="font-mono text-xs text-primary truncate">{lead.business_name}</div>
-                        <div className="font-mono text-[11px] text-muted truncate">
+                      <div className="min-w-0 flex items-center gap-2 flex-wrap">
+                        <span className="font-mono text-xs text-primary truncate">{lead.business_name}</span>
+                        {lead.category && (
+                          <span className="border border-border rounded px-1.5 py-0.5 text-[10px] text-muted font-mono shrink-0">
+                            {lead.category}
+                          </span>
+                        )}
+                        <span className="font-mono text-[11px] text-muted truncate w-full">
                           {lead.email ? lead.email : <span className="italic">No email</span>}
                           {lead.address && ` — ${lead.address}`}
-                        </div>
+                        </span>
                       </div>
                     </label>
                   ))}

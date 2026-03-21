@@ -33,6 +33,7 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
   const [leads, setLeads] = useState<OutreachLead[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('all')
+  const [categoryFilter, setCategoryFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValues, setEditValues] = useState<{ email: string; notes: string; status: string }>({ email: '', notes: '', status: 'new' })
@@ -101,6 +102,13 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
     }
   }
 
+  const categories = ['all', ...Array.from(new Set(leads.map((l) => l.category).filter(Boolean))).sort()] as string[]
+
+  const visibleLeads = leads.filter((l) => {
+    if (categoryFilter !== 'all' && l.category !== categoryFilter) return false
+    return true
+  })
+
   return (
     <div className="space-y-4">
       {/* Filters */}
@@ -120,6 +128,15 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
             </button>
           ))}
         </div>
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="bg-bg border border-border text-primary rounded px-3 py-1.5 font-mono text-xs focus:outline-none focus:border-accent transition-colors"
+        >
+          {categories.map((c) => (
+            <option key={c} value={c}>{c === 'all' ? 'All categories' : c}</option>
+          ))}
+        </select>
         <input
           type="text"
           placeholder="Search by name or address..."
@@ -154,7 +171,7 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
       ) : (
         <div className="bg-card border border-border rounded overflow-hidden">
           <div className="px-5 py-3 border-b border-border bg-bg font-mono text-xs text-muted">
-            {leads.length} lead{leads.length !== 1 ? 's' : ''}
+            {visibleLeads.length}{visibleLeads.length !== leads.length ? ` of ${leads.length}` : ''} lead{visibleLeads.length !== 1 ? 's' : ''}
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs font-mono">
@@ -171,7 +188,7 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
                 </tr>
               </thead>
               <tbody>
-                {leads.map((lead) => (
+                {visibleLeads.map((lead) => (
                   <tr key={lead.id} className="border-b border-border last:border-0 hover:bg-bg transition-colors">
                     <td className="px-4 py-3">
                       <div className="text-primary font-medium">{lead.business_name}</div>
@@ -179,7 +196,9 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
                         <div className="text-muted text-[11px] mt-0.5 max-w-[200px] truncate">{lead.address}</div>
                       )}
                       {lead.category && (
-                        <div className="text-muted/60 text-[11px] mt-0.5">{lead.category}</div>
+                        <span className="inline-block mt-1 border border-border rounded px-1.5 py-0.5 text-[10px] text-muted font-mono">
+                          {lead.category}
+                        </span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-muted">{lead.phone || '—'}</td>
