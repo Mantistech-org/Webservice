@@ -9,7 +9,11 @@ import { Resend } from 'resend'
 const OUTREACH_FROM = 'Mantis Tech <support@mantistech.org>'
 
 function applyVariables(text: string, vars: Record<string, string>): string {
-  return text.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? `{{${key}}}`)
+  // Support both [Variable] bracket syntax and {{variable}} curly syntax
+  return text
+    .replace(/\[Name\]/g, vars.name ?? '[Name]')
+    .replace(/\[Location\]/g, vars.location ?? '[Location]')
+    .replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? `{{${key}}}`)
 }
 
 function buildEmailHtml(body: string): string {
@@ -127,7 +131,8 @@ export async function POST(req: NextRequest) {
     }
 
     let pendingQuery = `
-      SELECT cl.id AS campaign_lead_id, cl.lead_id, ol.business_name, ol.email
+      SELECT cl.id AS campaign_lead_id, cl.lead_id, ol.business_name, ol.email,
+             ol.address, ol.location_searched
       FROM public.campaign_leads cl
       JOIN public.outreach_leads ol ON ol.id = cl.lead_id
       WHERE cl.campaign_id = $1 AND cl.status = 'pending' AND ol.email IS NOT NULL AND ol.email != ''
@@ -140,6 +145,8 @@ export async function POST(req: NextRequest) {
       lead_id: string
       business_name: string
       email: string
+      address: string | null
+      location_searched: string | null
     }>(pendingQuery, [campaignId])
 
     await query(
@@ -151,7 +158,12 @@ export async function POST(req: NextRequest) {
     let failed = 0
 
     for (const lead of pending) {
-      const vars = { business_name: lead.business_name }
+      const location = lead.location_searched ?? lead.address ?? ''
+      const vars = {
+        name: lead.business_name,
+        location,
+        business_name: lead.business_name, // legacy {{business_name}} support
+      }
       const subject = applyVariables(template.subject, vars)
       const bodyText = applyVariables(template.body, vars)
 

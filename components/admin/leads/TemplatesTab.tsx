@@ -274,7 +274,7 @@ export default function TemplatesTab() {
                   Email Body
                 </label>
                 <span className="font-mono text-xs text-muted/60">
-                  Use {'{{business_name}}'} for personalization
+                  Variables: {'[Name]'} (business name), {'[Location]'} (city/location)
                 </span>
               </div>
               <textarea
