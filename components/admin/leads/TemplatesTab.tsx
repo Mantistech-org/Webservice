@@ -27,6 +27,9 @@ export default function TemplatesTab() {
   const [generating, setGenerating] = useState(false)
   const [showAiPanel, setShowAiPanel] = useState(false)
 
+  // Preview state
+  const [showPreview, setShowPreview] = useState(false)
+
   useEffect(() => {
     fetchTemplates()
   }, [])
@@ -148,6 +151,19 @@ export default function TemplatesTab() {
 
   const isEditing = isNew || !!selected
 
+  const PREVIEW_NAME = 'Main Street Thrift'
+  const PREVIEW_LOCATION = 'Austin, TX'
+
+  function applyPreviewVars(text: string): string {
+    return text
+      .replace(/\[Name\]/g, PREVIEW_NAME)
+      .replace(/\[Location\]/g, PREVIEW_LOCATION)
+      .replace(/\{\{business_name\}\}/g, PREVIEW_NAME)
+  }
+
+  const previewSubject = applyPreviewVars(form.subject)
+  const previewBody = applyPreviewVars(form.body)
+
   return (
     <div className="flex gap-6 min-h-[500px]">
       {/* Left: template list */}
@@ -194,12 +210,21 @@ export default function TemplatesTab() {
               <h2 className="font-heading text-xl text-primary">
                 {isNew ? 'New Template' : 'Edit Template'}
               </h2>
-              <button
-                onClick={() => setShowAiPanel(!showAiPanel)}
-                className="font-mono text-xs px-3 py-1.5 border border-border rounded text-muted hover:text-primary hover:border-accent transition-colors"
-              >
-                {showAiPanel ? 'Hide AI' : 'Generate with AI'}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => { setShowPreview(true); setShowAiPanel(false) }}
+                  disabled={!form.subject.trim() && !form.body.trim()}
+                  className="font-mono text-xs px-3 py-1.5 border border-border rounded text-muted hover:text-primary hover:border-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Preview Email
+                </button>
+                <button
+                  onClick={() => setShowAiPanel(!showAiPanel)}
+                  className="font-mono text-xs px-3 py-1.5 border border-border rounded text-muted hover:text-primary hover:border-accent transition-colors"
+                >
+                  {showAiPanel ? 'Hide AI' : 'Generate with AI'}
+                </button>
+              </div>
             </div>
 
             {/* AI panel */}
@@ -310,6 +335,89 @@ export default function TemplatesTab() {
           </div>
         )}
       </div>
+
+      {/* Preview modal */}
+      {showPreview && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setShowPreview(false)}
+        >
+          <div
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-card border border-border rounded shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <div>
+                <div className="font-mono text-xs text-muted tracking-widest uppercase mb-0.5">
+                  Email Preview
+                </div>
+                <div className="font-mono text-xs text-muted/60">
+                  Variables replaced with example values
+                </div>
+              </div>
+              <button
+                onClick={() => setShowPreview(false)}
+                className="font-mono text-xs text-muted hover:text-primary transition-colors px-3 py-1.5 border border-border rounded"
+              >
+                Close
+              </button>
+            </div>
+
+            {/* Subject */}
+            <div className="px-6 py-4 border-b border-border">
+              <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1.5">Subject</div>
+              <div className="font-mono text-sm text-primary">
+                {previewSubject || <span className="text-muted italic">No subject</span>}
+              </div>
+            </div>
+
+            {/* Email body rendered as it will be sent */}
+            <div className="p-6">
+              <div className="font-mono text-xs text-muted tracking-widest uppercase mb-3">Body</div>
+              <div className="rounded border border-border overflow-hidden" style={{ backgroundColor: '#f5f5f5' }}>
+                <div style={{ padding: '24px 20px' }}>
+                  <div
+                    style={{
+                      backgroundColor: '#ffffff',
+                      borderRadius: '4px',
+                      overflow: 'hidden',
+                      maxWidth: '560px',
+                      margin: '0 auto',
+                    }}
+                  >
+                    {/* Mantis Tech header */}
+                    <div style={{ padding: '24px 32px 0 32px' }}>
+                      <p style={{ margin: '0 0 20px 0', fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em', color: '#333', textTransform: 'uppercase', fontFamily: 'monospace' }}>
+                        Mantis Tech
+                      </p>
+                    </div>
+                    {/* Body paragraphs */}
+                    <div style={{ padding: '0 32px 32px 32px', fontSize: '14px', color: '#333', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif', lineHeight: '1.6' }}>
+                      {previewBody
+                        ? previewBody.split('\n').filter((line) => line.trim()).map((line, i) => (
+                            <p key={i} style={{ margin: '0 0 14px 0' }}>{line}</p>
+                          ))
+                        : <p style={{ margin: 0, color: '#888', fontStyle: 'italic' }}>No body content.</p>
+                      }
+                    </div>
+                    {/* Footer */}
+                    <div style={{ padding: '16px 32px', backgroundColor: '#f9f9f9', borderTop: '1px solid #eee', fontSize: '11px', color: '#888', fontFamily: 'monospace' }}>
+                      Mantis Tech &mdash; Web Design &amp; Digital Marketing
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Example values note */}
+              <div className="mt-4 font-mono text-xs text-muted">
+                Preview uses: [Name] = &quot;{PREVIEW_NAME}&quot;, [Location] = &quot;{PREVIEW_LOCATION}&quot;
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
