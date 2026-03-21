@@ -30,6 +30,12 @@ export default function TemplatesTab() {
   // Preview state
   const [showPreview, setShowPreview] = useState(false)
 
+  // Test send state
+  const [showTestSend, setShowTestSend] = useState(false)
+  const [testEmail, setTestEmail] = useState('')
+  const [testSending, setTestSending] = useState(false)
+  const [testMsg, setTestMsg] = useState<{ ok: boolean; text: string } | null>(null)
+
   useEffect(() => {
     fetchTemplates()
   }, [])
@@ -149,6 +155,27 @@ export default function TemplatesTab() {
     }
   }
 
+  const handleTestSend = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!testEmail.trim()) return
+    setTestSending(true)
+    setTestMsg(null)
+    try {
+      const res = await fetch('/api/admin/leads/templates/test-send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: testEmail, subject: form.subject, body: form.body }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Send failed.')
+      setTestMsg({ ok: true, text: `Test email sent to ${testEmail}.` })
+    } catch (err) {
+      setTestMsg({ ok: false, text: err instanceof Error ? err.message : 'Send failed.' })
+    } finally {
+      setTestSending(false)
+    }
+  }
+
   const isEditing = isNew || !!selected
 
   const PREVIEW_NAME = 'Main Street Thrift'
@@ -217,6 +244,13 @@ export default function TemplatesTab() {
                   className="font-mono text-xs px-3 py-1.5 border border-border rounded text-muted hover:text-primary hover:border-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Preview Email
+                </button>
+                <button
+                  onClick={() => { setShowTestSend(true); setShowAiPanel(false); setTestMsg(null) }}
+                  disabled={!form.subject.trim() && !form.body.trim()}
+                  className="font-mono text-xs px-3 py-1.5 border border-border rounded text-muted hover:text-primary hover:border-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Send Test Email
                 </button>
                 <button
                   onClick={() => setShowAiPanel(!showAiPanel)}
@@ -335,6 +369,75 @@ export default function TemplatesTab() {
           </div>
         )}
       </div>
+
+      {/* Test send modal */}
+      {showTestSend && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setShowTestSend(false)}
+        >
+          <div
+            className="w-full max-w-sm bg-card border border-border rounded shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <div className="font-mono text-xs text-muted tracking-widest uppercase">Send Test Email</div>
+              <button
+                onClick={() => setShowTestSend(false)}
+                className="font-mono text-xs text-muted hover:text-primary transition-colors"
+              >
+                Close
+              </button>
+            </div>
+            <form onSubmit={handleTestSend} className="px-6 py-5 space-y-4">
+              <p className="font-mono text-xs text-muted leading-relaxed">
+                Sends the template to the address below with placeholder variables replaced by example values.
+                The subject will be prefixed with [TEST].
+              </p>
+              <div>
+                <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-1.5">
+                  Send To
+                </label>
+                <input
+                  type="email"
+                  required
+                  autoFocus
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
+                />
+              </div>
+              {testMsg && (
+                <div className={`font-mono text-xs px-3 py-2 rounded border ${
+                  testMsg.ok
+                    ? 'text-emerald-700 dark:text-accent border-emerald-700/20 dark:border-accent/20 bg-emerald-700/5 dark:bg-accent/5'
+                    : 'text-red-700 dark:text-red-400 border-red-700/20 dark:border-red-400/20 bg-red-700/5 dark:bg-red-400/5'
+                }`}>
+                  {testMsg.text}
+                </div>
+              )}
+              <div className="flex items-center gap-3 pt-1">
+                <button
+                  type="submit"
+                  disabled={testSending || !testEmail.trim()}
+                  className="font-mono text-xs px-5 py-2 rounded bg-accent text-black hover:opacity-90 transition-opacity disabled:opacity-50 tracking-wider"
+                >
+                  {testSending ? 'Sending...' : 'Send'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowTestSend(false)}
+                  className="font-mono text-xs text-muted hover:text-primary transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Preview modal */}
       {showPreview && (
