@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/auth'
 import { query, pgEnabled } from '@/lib/pg'
+import { scrapeEmailFromWebsite } from '@/lib/scrape-email'
 import type { OutreachLead } from '@/types/leads'
 
 export type { OutreachLead }
@@ -75,6 +76,9 @@ export async function POST(req: NextRequest) {
   let saved = 0
   let skipped = 0
 
+  // Track newly inserted leads that have a website (for email scraping)
+  const toScrape: Array<{ id: string; website: string }> = []
+
   for (const lead of leads) {
     try {
       const result = await query<{ id: string }>(
@@ -96,6 +100,9 @@ export async function POST(req: NextRequest) {
       )
       if (result.length > 0) {
         saved++
+        if (lead.website) {
+          toScrape.push({ id: result[0].id, website: lead.website })
+        }
       } else {
         skipped++
       }
@@ -103,6 +110,25 @@ export async function POST(req: NextRequest) {
       console.error('[leads] insert failed for', lead.business_name, err)
       skipped++
     }
+  }
+
+  // Scrape all newly saved leads' websites in parallel, then patch any found emails
+  if (toScrape.length > 0) {
+    await Promise.all(
+      toScrape.map(async ({ id, website }) => {
+        try {
+          const email = await scrapeEmailFromWebsite(website)
+          if (email) {
+            await query(
+              `UPDATE public.outreach_leads SET email = $1, updated_at = now() WHERE id = $2 AND email IS NULL`,
+              [email, id]
+            )
+          }
+        } catch (err) {
+          console.error('[leads] scrape failed for', website, err)
+        }
+      })
+    )
   }
 
   return NextResponse.json({ saved, skipped })
