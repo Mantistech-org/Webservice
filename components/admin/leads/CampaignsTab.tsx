@@ -191,7 +191,8 @@ export default function CampaignsTab({ savedLeads }: CampaignsTabProps) {
     })
   }
 
-  const freshLeads = savedLeads.filter((l) => l.status !== 'emailed')
+  const freshLeads = savedLeads.filter((l) => l.status !== 'emailed' && !!l.email)
+  const hiddenNoEmail = savedLeads.filter((l) => l.status !== 'emailed' && !l.email).length
   const leadCategories = ['all', ...Array.from(new Set(freshLeads.map((l) => l.category).filter(Boolean))).sort()] as string[]
   const filteredLeads = leadCategoryFilter === 'all'
     ? freshLeads
@@ -384,11 +385,13 @@ export default function CampaignsTab({ savedLeads }: CampaignsTabProps) {
               </div>
               {freshLeads.length === 0 ? (
                 <p className="font-mono text-xs text-muted p-3 border border-dashed border-border rounded">
-                  No leads available. Save leads from the Search tab first.
+                  No leads with an email address are available.
+                  {hiddenNoEmail > 0 && ` ${hiddenNoEmail} lead${hiddenNoEmail !== 1 ? 's are' : ' is'} hidden because no email is on file.`}
+                  {hiddenNoEmail === 0 && ' Save leads from the Search tab first.'}
                 </p>
               ) : filteredLeads.length === 0 ? (
                 <p className="font-mono text-xs text-muted p-3 border border-dashed border-border rounded">
-                  No leads in this category.
+                  No leads with an email address in this category.
                 </p>
               ) : (
                 <div className="border border-border rounded overflow-hidden max-h-64 overflow-y-auto">
@@ -423,7 +426,8 @@ export default function CampaignsTab({ savedLeads }: CampaignsTabProps) {
               )}
               {freshLeads.length > 0 && (
                 <p className="font-mono text-[11px] text-muted mt-1.5">
-                  Only leads with an email address will receive emails. Leads already emailed are excluded.
+                  Leads already emailed are excluded.
+                  {hiddenNoEmail > 0 && ` ${hiddenNoEmail} lead${hiddenNoEmail !== 1 ? 's are' : ' is'} hidden because no email is on file.`}
                 </p>
               )}
             </div>

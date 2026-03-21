@@ -9,7 +9,7 @@ export interface OutreachLead {
   category: string | null
   location_searched: string | null
   place_id: string | null
-  status: 'new' | 'emailed' | 'bounced'
+  status: 'new' | 'called' | 'emailed' | 'bounced'
   notes: string | null
   last_emailed_at: string | null
   created_at: string

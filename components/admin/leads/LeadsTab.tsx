@@ -9,10 +9,26 @@ interface LeadsTabProps {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  new: 'text-primary border-border',
+  new:     'text-primary border-border',
+  called:  'text-yellow-700 dark:text-yellow-400 border-yellow-700/30 dark:border-yellow-400/30',
   emailed: 'text-emerald-700 dark:text-accent border-emerald-700/30 dark:border-accent/30',
   bounced: 'text-red-700 dark:text-red-400 border-red-700/20 dark:border-red-400/20',
 }
+
+function escapeCell(val: unknown): string {
+  if (val == null) return ''
+  const str = String(val)
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    return `"${str.replace(/"/g, '""')}"`
+  }
+  return str
+}
+
+const CSV_FIELDS: (keyof OutreachLead)[] = [
+  'id', 'business_name', 'address', 'phone', 'email', 'website',
+  'rating', 'category', 'location_searched', 'place_id',
+  'status', 'notes', 'last_emailed_at', 'created_at', 'updated_at',
+]
 
 export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps) {
   const [leads, setLeads] = useState<OutreachLead[]>([])
@@ -24,6 +40,7 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
   const [editValues, setEditValues] = useState<{ email: string; notes: string; status: string }>({ email: '', notes: '', status: 'new' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const fetchLeads = useCallback(async () => {
     setLoading(true)
@@ -37,6 +54,7 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
       if (!res.ok) throw new Error(data.error ?? 'Failed to load leads.')
       setLeads(data.leads ?? [])
       onLeadsChange(data.leads ?? [])
+      setSelectedIds(new Set())
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load leads.')
     } finally {
@@ -82,9 +100,44 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
     try {
       await fetch(`/api/admin/leads/${id}`, { method: 'DELETE' })
       setLeads((prev) => prev.filter((l) => l.id !== id))
+      setSelectedIds((prev) => { const next = new Set(prev); next.delete(id); return next })
     } catch {
       setError('Delete failed.')
     }
+  }
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    const allSelected = visibleLeads.every((l) => selectedIds.has(l.id))
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (allSelected) visibleLeads.forEach((l) => next.delete(l.id))
+      else visibleLeads.forEach((l) => next.add(l.id))
+      return next
+    })
+  }
+
+  const exportCSV = () => {
+    const rows = visibleLeads.filter((l) => selectedIds.has(l.id))
+    if (rows.length === 0) return
+    const header = CSV_FIELDS.join(',')
+    const lines = rows.map((l) => CSV_FIELDS.map((f) => escapeCell(l[f])).join(','))
+    const csv = [header, ...lines].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `leads-export-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   const categories = ['all', ...Array.from(new Set(leads.map((l) => l.category).filter(Boolean))).sort()] as string[]
@@ -94,12 +147,15 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
     return true
   })
 
+  const allVisibleSelected = visibleLeads.length > 0 && visibleLeads.every((l) => selectedIds.has(l.id))
+  const someVisibleSelected = visibleLeads.some((l) => selectedIds.has(l.id))
+
   return (
     <div className="space-y-4">
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex gap-1">
-          {['all', 'new', 'emailed', 'bounced'].map((s) => (
+          {['all', 'new', 'called', 'emailed', 'bounced'].map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
@@ -135,6 +191,14 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
         >
           Refresh
         </button>
+        {someVisibleSelected && (
+          <button
+            onClick={exportCSV}
+            className="font-mono text-xs px-3 py-1.5 border border-border rounded text-primary hover:border-accent transition-colors"
+          >
+            Export Selected ({selectedIds.size})
+          </button>
+        )}
       </div>
 
       {error && (
@@ -162,6 +226,15 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
             <table className="w-full text-xs font-mono">
               <thead>
                 <tr className="border-b border-border bg-bg">
+                  <th className="px-4 py-3 w-8">
+                    <input
+                      type="checkbox"
+                      checked={allVisibleSelected}
+                      ref={(el) => { if (el) el.indeterminate = someVisibleSelected && !allVisibleSelected }}
+                      onChange={toggleSelectAll}
+                      className="accent-emerald-600"
+                    />
+                  </th>
                   <th className="px-4 py-3 text-left text-muted tracking-widest uppercase">Business</th>
                   <th className="px-4 py-3 text-left text-muted tracking-widest uppercase">Phone</th>
                   <th className="px-4 py-3 text-left text-muted tracking-widest uppercase">Email</th>
@@ -175,6 +248,14 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
               <tbody>
                 {visibleLeads.map((lead) => (
                   <tr key={lead.id} className="border-b border-border last:border-0 hover:bg-bg transition-colors">
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(lead.id)}
+                        onChange={() => toggleSelect(lead.id)}
+                        className="accent-emerald-600"
+                      />
+                    </td>
                     <td className="px-4 py-3">
                       <div className="text-primary font-medium">{lead.business_name}</div>
                       {lead.address && (
@@ -223,6 +304,7 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
                           className="bg-bg border border-border text-primary rounded px-2 py-1 font-mono text-xs focus:outline-none"
                         >
                           <option value="new">new</option>
+                          <option value="called">called</option>
                           <option value="emailed">emailed</option>
                           <option value="bounced">bounced</option>
                         </select>
