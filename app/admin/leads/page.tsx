@@ -83,20 +83,6 @@ export default function AdminLeadsPage() {
       {activeTab === 'campaigns' && (
         <CampaignsTab savedLeads={savedLeads} />
       )}
-
-      {/* DB warning */}
-      <div className="mt-12 p-4 bg-yellow-700/5 dark:bg-yellow-400/5 border border-yellow-700/20 dark:border-yellow-400/20 rounded">
-        <div className="font-mono text-xs text-yellow-700 dark:text-yellow-400 tracking-widest uppercase mb-1">
-          Setup Required
-        </div>
-        <p className="font-mono text-xs text-muted">
-          Run <span className="text-primary">scripts/outreach-migration.sql</span> in your Supabase SQL editor before using this page.
-          Requires <span className="text-primary">SUPABASE_DB_URL</span> and <span className="text-primary">GOOGLE_PLACES_API_KEY</span> in your environment.
-          For drip/scheduled campaigns, configure a daily cron job pointing to{' '}
-          <span className="text-primary">POST /api/admin/leads/process-campaigns</span> with your{' '}
-          <span className="text-primary">CRON_SECRET</span> as a Bearer token.
-        </p>
-      </div>
     </div>
   )
 }
