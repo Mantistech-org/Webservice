@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/admin/leads/process-campaigns",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}
