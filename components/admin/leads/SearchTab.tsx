@@ -8,6 +8,7 @@ interface SearchResult {
   address: string
   phone: string
   website: string
+  email: string | null
   rating: number | null
   rating_count: number
   already_saved: boolean
@@ -16,6 +17,9 @@ interface SearchResult {
 interface SearchTabProps {
   onLeadsSaved: () => void
 }
+
+const FIELD_CLS = 'w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent transition-colors'
+const LABEL_CLS = 'block font-mono text-xs text-muted tracking-widest uppercase mb-1.5'
 
 export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
   const [form, setForm] = useState({
@@ -26,6 +30,8 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
     minRating: '',
     maxRating: '',
     hasWebsite: 'any',
+    hasEmail: 'any',
+    hasPhone: 'any',
     maxResults: '20',
   })
   const [searching, setSearching] = useState(false)
@@ -35,6 +41,10 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
   const [searchedMeta, setSearchedMeta] = useState<{ location: string; category: string } | null>(null)
   const [error, setError] = useState('')
   const [saveMsg, setSaveMsg] = useState('')
+
+  const applyPreset = (preset: Partial<typeof form>) => {
+    setForm((prev) => ({ ...prev, ...preset }))
+  }
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,6 +66,8 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
           minRating: form.minRating ? Number(form.minRating) : undefined,
           maxRating: form.maxRating ? Number(form.maxRating) : undefined,
           hasWebsite: form.hasWebsite,
+          hasEmail: form.hasEmail,
+          hasPhone: form.hasPhone,
           maxResults: Number(form.maxResults),
         }),
       })
@@ -114,7 +126,6 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Save failed.')
       setSaveMsg(`${data.saved} lead${data.saved !== 1 ? 's' : ''} saved${data.skipped > 0 ? `, ${data.skipped} already existed` : ''}.`)
-      // Mark saved results as already_saved
       setResults((prev) =>
         prev.map((r) => (selected.has(r.place_id) ? { ...r, already_saved: true } : r))
       )
@@ -137,7 +148,7 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
         <form onSubmit={handleSearch} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-1.5">
+              <label className={LABEL_CLS}>
                 Business Category / Type <span className="text-red-500">*</span>
               </label>
               <input
@@ -146,42 +157,37 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
                 placeholder="e.g. plumbers, restaurants, dentists"
                 value={form.query}
                 onChange={(e) => setForm({ ...form, query: e.target.value })}
-                className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
+                className={FIELD_CLS}
               />
             </div>
             <div>
-              <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-1.5">
-                Location <span className="text-red-500">*</span>
+              <label className={LABEL_CLS}>
+                Location <span className="text-muted font-normal normal-case tracking-normal">(optional — leave blank for national)</span>
               </label>
               <input
                 type="text"
-                required
                 placeholder="e.g. Austin, TX or Chicago"
                 value={form.location}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
-                className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
+                className={FIELD_CLS}
               />
             </div>
             <div>
-              <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-1.5">
-                Keyword (optional)
-              </label>
+              <label className={LABEL_CLS}>Keyword (optional)</label>
               <input
                 type="text"
                 placeholder="e.g. family-owned, emergency"
                 value={form.keyword}
                 onChange={(e) => setForm({ ...form, keyword: e.target.value })}
-                className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
+                className={FIELD_CLS}
               />
             </div>
             <div>
-              <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-1.5">
-                Radius
-              </label>
+              <label className={LABEL_CLS}>Radius</label>
               <select
                 value={form.radius}
                 onChange={(e) => setForm({ ...form, radius: e.target.value })}
-                className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
+                className={FIELD_CLS}
               >
                 <option value="5000">5 km</option>
                 <option value="10000">10 km</option>
@@ -191,9 +197,7 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
               </select>
             </div>
             <div>
-              <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-1.5">
-                Min Rating
-              </label>
+              <label className={LABEL_CLS}>Min Rating</label>
               <input
                 type="number"
                 min="1"
@@ -202,13 +206,11 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
                 placeholder="e.g. 3.5"
                 value={form.minRating}
                 onChange={(e) => setForm({ ...form, minRating: e.target.value })}
-                className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
+                className={FIELD_CLS}
               />
             </div>
             <div>
-              <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-1.5">
-                Max Rating
-              </label>
+              <label className={LABEL_CLS}>Max Rating</label>
               <input
                 type="number"
                 min="1"
@@ -217,37 +219,77 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
                 placeholder="e.g. 4.5"
                 value={form.maxRating}
                 onChange={(e) => setForm({ ...form, maxRating: e.target.value })}
-                className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
+                className={FIELD_CLS}
               />
             </div>
             <div>
-              <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-1.5">
-                Has Website
-              </label>
+              <label className={LABEL_CLS}>Has Website</label>
               <select
                 value={form.hasWebsite}
                 onChange={(e) => setForm({ ...form, hasWebsite: e.target.value })}
-                className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
+                className={FIELD_CLS}
               >
                 <option value="any">Any</option>
-                <option value="no">No website (higher conversion potential)</option>
+                <option value="no">No website</option>
                 <option value="yes">Has existing website</option>
               </select>
             </div>
             <div>
-              <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-1.5">
-                Max Results
-              </label>
+              <label className={LABEL_CLS}>Has Phone</label>
+              <select
+                value={form.hasPhone}
+                onChange={(e) => setForm({ ...form, hasPhone: e.target.value })}
+                className={FIELD_CLS}
+              >
+                <option value="any">Any</option>
+                <option value="yes">Has Phone</option>
+                <option value="no">No Phone</option>
+              </select>
+            </div>
+            <div>
+              <label className={LABEL_CLS}>Has Email</label>
+              <select
+                value={form.hasEmail}
+                onChange={(e) => setForm({ ...form, hasEmail: e.target.value })}
+                className={FIELD_CLS}
+              >
+                <option value="any">Any</option>
+                <option value="yes">Has Email</option>
+                <option value="no">No Email</option>
+              </select>
+            </div>
+            <div>
+              <label className={LABEL_CLS}>Max Results</label>
               <select
                 value={form.maxResults}
                 onChange={(e) => setForm({ ...form, maxResults: e.target.value })}
-                className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
+                className={FIELD_CLS}
               >
-                <option value="5">5</option>
-                <option value="10">10</option>
                 <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
               </select>
             </div>
+          </div>
+
+          {/* Quick filter presets */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className="font-mono text-xs text-muted tracking-widest uppercase">Presets:</span>
+            <button
+              type="button"
+              onClick={() => applyPreset({ hasWebsite: 'no', hasEmail: 'yes', hasPhone: 'any' })}
+              className="font-mono text-xs px-3 py-1.5 border border-border rounded text-muted hover:text-primary hover:border-accent transition-colors"
+            >
+              No Website + Has Email
+            </button>
+            <button
+              type="button"
+              onClick={() => applyPreset({ hasWebsite: 'no', hasPhone: 'yes', hasEmail: 'any' })}
+              className="font-mono text-xs px-3 py-1.5 border border-border rounded text-muted hover:text-primary hover:border-accent transition-colors"
+            >
+              No Website + Has Phone
+            </button>
           </div>
 
           {error && (
@@ -310,6 +352,7 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
                   <th className="px-4 py-3 text-left text-muted tracking-widest uppercase">Address</th>
                   <th className="px-4 py-3 text-left text-muted tracking-widest uppercase">Phone</th>
                   <th className="px-4 py-3 text-left text-muted tracking-widest uppercase">Website</th>
+                  <th className="px-4 py-3 text-left text-muted tracking-widest uppercase">Email</th>
                   <th className="px-4 py-3 text-left text-muted tracking-widest uppercase">Rating</th>
                 </tr>
               </thead>
@@ -354,6 +397,7 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
                         <span className="text-muted">None</span>
                       )}
                     </td>
+                    <td className="px-4 py-3 text-muted">{r.email || '—'}</td>
                     <td className="px-4 py-3 text-muted">
                       {r.rating !== null ? (
                         <span>
