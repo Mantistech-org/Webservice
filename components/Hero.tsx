@@ -10,7 +10,7 @@ export default function Hero() {
             Mantis Tech
           </p>
           <h1 className="font-heading text-[clamp(2.5rem,6vw,4.5rem)] leading-tight text-primary mb-6">
-            Websites Built to Run Your Business For You.
+            Your Business, On Autopilot.
           </h1>
           <p className="text-base text-teal leading-relaxed mb-10 max-w-lg mx-auto">
             We don&apos;t just build websites. We build systems into your website that automatically
