@@ -318,9 +318,9 @@ export default function AdminPage() {
       {/* Inner layout: project list sidebar + main content */}
       <div className="flex flex-1 items-start">
         {/* Project list sidebar */}
-        <aside className="w-64 shrink-0 sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto border-r border-green-border bg-green-panel flex flex-col">
+        <aside className="w-64 shrink-0 sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto border-r border-black/10 dark:border-white/8 bg-[#c0c0c0] dark:bg-[#1c1c1c] flex flex-col">
           {/* Search */}
-          <div className="p-4 border-b border-border">
+          <div className="p-4 border-b border-black/10 dark:border-white/8">
             <input
               type="text" value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -334,16 +334,16 @@ export default function AdminPage() {
               const groupItems = searchFiltered.filter((p) => group.statuses.includes(p.status))
               const isCollapsed = collapsedGroups.has(group.key)
               return (
-                <div key={group.key} className="border-b border-border last:border-0">
+                <div key={group.key} className="border-b border-black/10 dark:border-white/8 last:border-0">
                   <button onClick={() => toggleGroup(group.key)}
-                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-green-card transition-colors">
+                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-black/8 dark:hover:bg-white/5 transition-colors">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs text-muted tracking-widest uppercase">{group.label}</span>
-                      <span className="font-mono text-xs bg-green-card border border-green-border text-muted px-1.5 py-0.5 rounded">
+                      <span className="font-mono text-xs text-primary/70 dark:text-white/50 tracking-widest uppercase">{group.label}</span>
+                      <span className="font-mono text-xs bg-black/10 dark:bg-white/8 border border-black/10 dark:border-white/10 text-primary/70 dark:text-white/50 px-1.5 py-0.5 rounded">
                         {groupItems.length}
                       </span>
                     </div>
-                    <svg className={`w-3 h-3 text-muted transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+                    <svg className="w-3 h-3 text-primary/50 dark:text-white/35 transition-transform" style={{ transform: isCollapsed ? undefined : 'rotate(90deg)' }}
                       viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <polyline points="9 18 15 12 9 6" />
                     </svg>
@@ -352,21 +352,21 @@ export default function AdminPage() {
                   {!isCollapsed && (
                     <div className="pb-1">
                       {groupItems.length === 0 ? (
-                        <div className="px-4 py-3 font-mono text-xs text-muted">None</div>
+                        <div className="px-4 py-3 font-mono text-xs text-primary/50 dark:text-white/35">None</div>
                       ) : (
                         groupItems.map((p) => (
                           <Link key={p.id} href={`/admin/projects/${p.id}`}
                             onClick={() => setSelectedId(p.id)}
-                            className={`block px-4 py-3 hover:bg-green-card transition-colors border-l-2 ${
-                              selectedId === p.id ? 'border-accent bg-accent/5' : 'border-transparent'
+                            className={`block px-4 py-3 hover:bg-black/8 dark:hover:bg-white/5 transition-colors border-l-2 ${
+                              selectedId === p.id ? 'border-accent bg-accent/10' : 'border-transparent'
                             }`}>
                             <div className="flex items-center justify-between gap-2 mb-1">
-                              <span className="font-mono text-xs text-primary truncate">{p.businessName}</span>
-                              <span className="font-mono text-xs border border-border text-muted px-1.5 py-0.5 rounded capitalize shrink-0">
+                              <span className="font-mono text-xs text-primary dark:text-white/85 truncate">{p.businessName}</span>
+                              <span className="font-mono text-xs border border-black/15 dark:border-white/15 text-primary/60 dark:text-white/50 px-1.5 py-0.5 rounded capitalize shrink-0">
                                 {p.plan}
                               </span>
                             </div>
-                            <div className="font-mono text-xs text-muted">
+                            <div className="font-mono text-xs text-primary/50 dark:text-white/40">
                               {new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                             </div>
                           </Link>

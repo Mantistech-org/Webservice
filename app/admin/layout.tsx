@@ -55,18 +55,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-bg flex flex-col">
       {/* Shared header */}
-      <header className="bg-accent px-6 py-5 flex items-center justify-between sticky top-0 z-50">
+      <header className="bg-[#0d6b3c] h-[73px] px-6 flex items-center justify-between shrink-0 sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <span className="font-heading text-xl tracking-widest text-black">MANTIS TECH</span>
-          <span className="font-mono text-xs text-black/50 ml-2">/ Admin</span>
+          <span className="font-heading text-xl tracking-widest text-white">MANTIS TECH</span>
+          <span className="font-mono text-xs text-white/55 ml-2">/ Admin</span>
         </div>
         <div className="flex items-center gap-4">
-          <div className="[&_button]:!text-black/60 [&_button:hover]:!text-black">
+          <div className="[&_button]:!text-white/70 [&_button:hover]:!text-white">
             <ThemeToggle />
           </div>
           <button
             onClick={handleLogout}
-            className="font-mono text-xs border border-black/25 text-black/70 px-4 py-1.5 rounded hover:border-black/40 hover:text-black transition-all"
+            className="font-mono text-xs border border-white/30 text-white/80 px-4 py-1.5 rounded hover:border-white/60 hover:text-white transition-all"
           >
             Logout
           </button>
