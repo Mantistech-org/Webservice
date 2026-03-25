@@ -3,6 +3,7 @@ import Nav from '@/components/Nav'
 import Hero from '@/components/Hero'
 import ServicesGrid from '@/components/ServicesGrid'
 import HowItWorks from '@/components/HowItWorks'
+import DemoPromo from '@/components/DemoPromo'
 import Pricing from '@/components/Pricing'
 import Testimonials from '@/components/Testimonials'
 import FAQ from '@/components/FAQ'
@@ -32,6 +33,7 @@ export default function HomePage() {
         <Hero />
         <ServicesGrid />
         <HowItWorks />
+        <DemoPromo />
         <Pricing />
         <Testimonials />
         <FAQ />

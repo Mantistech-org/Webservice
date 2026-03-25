@@ -17,18 +17,12 @@ export default function Hero() {
             handle your client outreach, appointments, reviews, social media posts, and more. Let
             your business run on autopilot.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex items-center justify-center">
             <Link
               href="/intake"
               className="inline-block font-mono text-sm bg-accent text-black px-8 py-4 rounded tracking-wider hover:opacity-90 transition-opacity"
             >
               Start Your Project
-            </Link>
-            <Link
-              href="/demo"
-              className="inline-block font-mono text-sm border border-current text-primary px-8 py-4 rounded tracking-wider hover:border-accent hover:text-accent transition-all"
-            >
-              Try the Demo
             </Link>
           </div>
         </div>
