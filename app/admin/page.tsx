@@ -318,7 +318,7 @@ export default function AdminPage() {
       {/* Inner layout: project list sidebar + main content */}
       <div className="flex flex-1 items-start">
         {/* Project list sidebar */}
-        <aside className="w-64 shrink-0 sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto border-r border-green-border bg-green-panel flex flex-col">
+        <aside className="w-64 shrink-0 sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto border-r border-green-border bg-green-panel flex flex-col">
           {/* Search */}
           <div className="p-4 border-b border-border">
             <input

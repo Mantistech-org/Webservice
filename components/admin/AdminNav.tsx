@@ -80,8 +80,8 @@ export default function AdminNav() {
   const pathname = usePathname()
 
   return (
-    <div className="p-3 border-b border-border">
-      <div className="font-mono text-xs text-primary/50 tracking-widest uppercase px-2 py-1.5 mb-1">Navigation</div>
+    <div className="p-3">
+      <div className="font-mono text-xs text-white/35 tracking-widest uppercase px-2 py-1.5 mb-1">Navigation</div>
       <nav className="space-y-0.5">
         {NAV_ITEMS.map((item) => {
           const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href)
@@ -91,11 +91,11 @@ export default function AdminNav() {
               href={item.href}
               className={`flex items-center gap-2.5 px-3 py-2 rounded font-mono text-xs tracking-wider transition-all ${
                 isActive
-                  ? 'bg-accent/10 text-emerald-700 dark:text-accent font-medium border border-accent/20'
-                  : 'text-primary/65 hover:text-primary hover:bg-bg'
+                  ? 'bg-accent/15 text-accent font-medium border border-accent/30'
+                  : 'text-white/55 hover:text-white hover:bg-white/8'
               }`}
             >
-              <span className={isActive ? 'text-emerald-700 dark:text-accent' : 'text-primary/50'}>
+              <span className={isActive ? 'text-accent' : 'text-white/35'}>
                 {item.icon}
               </span>
               {item.label}

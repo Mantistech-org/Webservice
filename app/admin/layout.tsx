@@ -55,17 +55,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-bg flex flex-col">
       {/* Shared header */}
-      <header className="border-b border-border bg-card px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+      <header className="bg-accent px-6 py-5 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <span className="w-2 h-2 rounded-full bg-accent" />
-          <span className="font-heading text-xl tracking-widest text-primary">MANTIS TECH</span>
-          <span className="font-mono text-xs text-muted ml-2">/ Admin</span>
+          <span className="font-heading text-xl tracking-widest text-black">MANTIS TECH</span>
+          <span className="font-mono text-xs text-black/50 ml-2">/ Admin</span>
         </div>
         <div className="flex items-center gap-4">
-          <ThemeToggle />
+          <div className="[&_button]:!text-black/60 [&_button:hover]:!text-black">
+            <ThemeToggle />
+          </div>
           <button
             onClick={handleLogout}
-            className="font-mono text-xs border border-border text-muted px-4 py-1.5 rounded hover:border-border-light hover:text-primary transition-all"
+            className="font-mono text-xs border border-black/25 text-black/70 px-4 py-1.5 rounded hover:border-black/40 hover:text-black transition-all"
           >
             Logout
           </button>
@@ -74,7 +75,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Body: AdminNav sidebar + page content */}
       <div className="flex flex-1 min-h-0">
-        <aside className="w-56 shrink-0 sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto border-r border-border bg-card">
+        <aside className="w-56 shrink-0 sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto border-r border-white/10 bg-[#252525] dark:bg-[#0f0f0f]">
           <AdminNav />
         </aside>
         <main className="flex-1 min-w-0 flex flex-col">
