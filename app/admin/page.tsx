@@ -81,7 +81,7 @@ export default function AdminPage() {
   const [projects, setProjects] = useState<ProjectSummary[]>([])
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set(['with_client', 'active']))
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set(['attention', 'with_client', 'active_group', 'all']))
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [demoSessions, setDemoSessions] = useState<DemoSession[]>([])
   const [demoLoading, setDemoLoading] = useState(false)
