@@ -318,7 +318,7 @@ export default function AdminPage() {
       {/* Inner layout: project list sidebar + main content */}
       <div className="flex flex-1 items-start">
         {/* Project list sidebar */}
-        <aside className="w-64 shrink-0 sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto border-r border-black/10 dark:border-white/8 bg-[#c0c0c0] dark:bg-[#1c1c1c] flex flex-col">
+        <aside className="w-64 shrink-0 sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto border-r border-black/10 dark:border-white/8 bg-[#c0c0c0] dark:bg-[#404040] flex flex-col">
           {/* Search */}
           <div className="p-4 border-b border-black/10 dark:border-white/8">
             <input
@@ -404,16 +404,16 @@ export default function AdminPage() {
 
           {/* Revenue Overview */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-16">
-            <div className="bg-green-card border border-green-border rounded-lg p-5 shadow-sm dark:shadow-none">
+            <div className="bg-white dark:bg-[#2a2a2a] border border-[#d0d0d0] dark:border-[#3f3f3f] rounded-lg p-5 shadow-sm dark:shadow-none">
               <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Active Clients</div>
               <div className="font-heading text-4xl text-primary">{activeProjects.length}</div>
             </div>
-            <div className="bg-green-card border border-green-border rounded-lg p-5 shadow-sm dark:shadow-none">
+            <div className="bg-white dark:bg-[#2a2a2a] border border-[#d0d0d0] dark:border-[#3f3f3f] rounded-lg p-5 shadow-sm dark:shadow-none">
               <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Estimated MRR</div>
               <div className="font-heading text-4xl text-emerald-700 dark:text-accent">${estimatedMRR}</div>
               <div className="font-mono text-xs text-muted mt-1">base plans only</div>
             </div>
-            <div className="bg-green-card border border-green-border rounded-lg p-5 shadow-sm dark:shadow-none">
+            <div className="bg-white dark:bg-[#2a2a2a] border border-[#d0d0d0] dark:border-[#3f3f3f] rounded-lg p-5 shadow-sm dark:shadow-none">
               <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Pending Review</div>
               <div className="font-heading text-4xl text-yellow-700 dark:text-yellow-400">{pendingCount}</div>
             </div>
