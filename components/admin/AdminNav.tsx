@@ -54,6 +54,16 @@ const NAV_ITEMS = [
     ),
   },
   {
+    href: '/admin/seo',
+    label: 'SEO Tools',
+    exact: false,
+    icon: (
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+      </svg>
+    ),
+  },
+  {
     href: '/admin/settings',
     label: 'Settings',
     exact: false,
