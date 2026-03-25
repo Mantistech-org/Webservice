@@ -318,7 +318,7 @@ export default function AdminPage() {
       {/* Inner layout: project list sidebar + main content */}
       <div className="flex flex-1 items-start">
         {/* Project list sidebar */}
-        <aside className="w-64 shrink-0 sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto border-r border-border bg-card flex flex-col">
+        <aside className="w-64 shrink-0 sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto border-r border-border bg-bg flex flex-col">
           {/* Search */}
           <div className="p-4 border-b border-border">
             <input
@@ -336,10 +336,10 @@ export default function AdminPage() {
               return (
                 <div key={group.key} className="border-b border-border last:border-0">
                   <button onClick={() => toggleGroup(group.key)}
-                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-bg transition-colors">
+                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-card transition-colors">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-xs text-muted tracking-widest uppercase">{group.label}</span>
-                      <span className="font-mono text-xs bg-bg border border-border text-muted px-1.5 py-0.5 rounded">
+                      <span className="font-mono text-xs bg-card border border-border text-muted px-1.5 py-0.5 rounded">
                         {groupItems.length}
                       </span>
                     </div>
@@ -357,7 +357,7 @@ export default function AdminPage() {
                         groupItems.map((p) => (
                           <Link key={p.id} href={`/admin/projects/${p.id}`}
                             onClick={() => setSelectedId(p.id)}
-                            className={`block px-4 py-3 hover:bg-bg transition-colors border-l-2 ${
+                            className={`block px-4 py-3 hover:bg-card transition-colors border-l-2 ${
                               selectedId === p.id ? 'border-accent bg-accent/5' : 'border-transparent'
                             }`}>
                             <div className="flex items-center justify-between gap-2 mb-1">
@@ -404,16 +404,16 @@ export default function AdminPage() {
 
           {/* Revenue Overview */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-16">
-            <div className="bg-card border border-border rounded p-5">
+            <div className="bg-card border border-border rounded-lg p-5 shadow-sm dark:shadow-none">
               <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Active Clients</div>
               <div className="font-heading text-4xl text-primary">{activeProjects.length}</div>
             </div>
-            <div className="bg-card border border-border rounded p-5">
+            <div className="bg-card border border-border rounded-lg p-5 shadow-sm dark:shadow-none">
               <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Estimated MRR</div>
               <div className="font-heading text-4xl text-emerald-700 dark:text-accent">${estimatedMRR}</div>
               <div className="font-mono text-xs text-muted mt-1">base plans only</div>
             </div>
-            <div className="bg-card border border-border rounded p-5">
+            <div className="bg-card border border-border rounded-lg p-5 shadow-sm dark:shadow-none">
               <div className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Pending Review</div>
               <div className="font-heading text-4xl text-yellow-700 dark:text-yellow-400">{pendingCount}</div>
             </div>
@@ -443,7 +443,7 @@ export default function AdminPage() {
                 {demoSessions.map((session) => {
                   const totalSubmissions = Object.values(session.submissions).reduce((a, b) => a + b, 0)
                   return (
-                    <div key={session.id} className="bg-card border border-border rounded p-5">
+                    <div key={session.id} className="bg-card border border-border rounded-lg p-5 shadow-sm dark:shadow-none">
                       <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-3 mb-2">
@@ -504,7 +504,7 @@ export default function AdminPage() {
                   {referredProjects.map((p) => {
                     const referrer = projects.find((r) => r.clientToken === (p as any).referredBy)
                     return (
-                      <div key={p.id} className="bg-card border border-border rounded p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+                      <div key={p.id} className="bg-card border border-border rounded-lg p-5 shadow-sm dark:shadow-none flex flex-col sm:flex-row sm:items-center gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="font-heading text-lg text-primary mb-1">{p.businessName}</div>
                           <div className="font-mono text-xs text-muted">
