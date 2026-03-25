@@ -23,7 +23,7 @@ const slides = [
         }}
       >
         {/* Dark overlay for text readability */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.60)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.32)' }} />
         {/* Left / right vertical accent lines */}
         <div style={{ position: 'absolute', left: '7%', top: '18%', width: 1, height: '64%', background: 'linear-gradient(to bottom, transparent, rgba(200,147,63,0.22), transparent)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', right: '7%', top: '18%', width: 1, height: '64%', background: 'linear-gradient(to bottom, transparent, rgba(200,147,63,0.22), transparent)', pointerEvents: 'none' }} />
@@ -80,7 +80,7 @@ const slides = [
         }}
       >
         {/* Dark overlay for text readability */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.58)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.30)' }} />
         {/* Decorative circles */}
         <div style={{ position: 'absolute', right: '-60px', top: '50%', transform: 'translateY(-50%)', width: 380, height: 380, borderRadius: '50%', border: '1px solid rgba(184,132,90,0.25)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', right: '2%', top: '50%', transform: 'translateY(-50%)', width: 260, height: 260, borderRadius: '50%', background: 'linear-gradient(135deg, rgba(184,132,90,0.12) 0%, rgba(196,154,138,0.16) 100%)', pointerEvents: 'none' }} />
@@ -136,7 +136,7 @@ const slides = [
         }}
       >
         {/* Dark overlay for text readability */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.65)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.32)' }} />
         {/* Large ghosted word */}
         <div style={{ position: 'absolute', right: '-1rem', bottom: '-1.5rem', fontSize: 'clamp(5rem, 13vw, 10rem)', fontFamily: 'Georgia, serif', fontWeight: 700, color: 'rgba(184,150,62,0.06)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none', letterSpacing: '-0.03em' }}>JUSTICE</div>
         {/* Top gold accent bar */}
@@ -196,7 +196,7 @@ const slides = [
         }}
       >
         {/* Dark overlay for text readability */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.65)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.32)' }} />
         {/* Right-side angled accent panel */}
         <div style={{ position: 'absolute', right: 0, top: 0, width: '38%', height: '100%', background: 'linear-gradient(180deg, rgba(244,96,12,0.12) 0%, rgba(244,96,12,0.06) 100%)', clipPath: 'polygon(18% 0, 100% 0, 100% 100%, 0% 100%)', pointerEvents: 'none' }} />
         {/* Nav */}
@@ -260,7 +260,7 @@ const slides = [
         }}
       >
         {/* Dark overlay for text readability */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.65)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.32)' }} />
         {/* Diagonal red slab */}
         <div style={{ position: 'absolute', right: '-4%', top: '-8%', width: '44%', height: '120%', background: 'linear-gradient(180deg, rgba(196,18,48,0.75) 0%, rgba(139,12,34,0.75) 100%)', transform: 'skewX(-7deg)', transformOrigin: 'top right', pointerEvents: 'none' }} />
         {/* Thin red edge line */}
@@ -314,7 +314,7 @@ const slides = [
         }}
       >
         {/* Dark overlay for text readability */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.60)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.32)' }} />
         {/* Background decorative arcs */}
         <div style={{ position: 'absolute', right: '-100px', bottom: '-100px', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(13,148,136,0.12) 0%, transparent 65%)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', left: '-60px', top: '-60px', width: 300, height: 300, borderRadius: '50%', border: '1px solid rgba(13,148,136,0.18)', pointerEvents: 'none' }} />
@@ -401,28 +401,27 @@ export default function HeroSlideshow() {
         aria-label="Previous example"
         style={{
           position: 'absolute',
-          left: '1rem',
+          left: '1.25rem',
           top: '50%',
           transform: 'translateY(-50%)',
           zIndex: 30,
-          width: 48,
-          height: 48,
+          width: 64,
+          height: 64,
           borderRadius: '50%',
-          background: 'rgba(0,0,0,0.52)',
-          border: '1px solid rgba(255,255,255,0.22)',
-          color: '#ffffff',
+          background: '#ffffff',
+          border: 'none',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backdropFilter: 'blur(6px)',
-          transition: 'background 0.2s ease',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
+          transition: 'transform 0.15s ease, box-shadow 0.15s ease',
         }}
-        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.78)')}
-        onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.52)')}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-50%) scale(1.08)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(0,0,0,0.45)' }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(-50%) scale(1)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.35)' }}
       >
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M13 15L8 10L13 5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 20L9 13L16 6" stroke="#111111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 
@@ -432,28 +431,27 @@ export default function HeroSlideshow() {
         aria-label="Next example"
         style={{
           position: 'absolute',
-          right: '1rem',
+          right: '1.25rem',
           top: '50%',
           transform: 'translateY(-50%)',
           zIndex: 30,
-          width: 48,
-          height: 48,
+          width: 64,
+          height: 64,
           borderRadius: '50%',
-          background: 'rgba(0,0,0,0.52)',
-          border: '1px solid rgba(255,255,255,0.22)',
-          color: '#ffffff',
+          background: '#ffffff',
+          border: 'none',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backdropFilter: 'blur(6px)',
-          transition: 'background 0.2s ease',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
+          transition: 'transform 0.15s ease, box-shadow 0.15s ease',
         }}
-        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.78)')}
-        onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.52)')}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-50%) scale(1.08)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(0,0,0,0.45)' }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(-50%) scale(1)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.35)' }}
       >
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M7 5L12 10L7 15" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 6L17 13L10 20" stroke="#111111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
     </div>
