@@ -13,6 +13,10 @@
   --color-muted:        90 82 74;   /* Darker for 5:1+ contrast on card bg */
   --color-dim:          128 120 112; /* Darker for 3:1+ contrast on card bg */
   --color-primary:      27 25 22;
+  /* Brand green tint surfaces — accent #00ff88 blended into near-white */
+  --color-green-panel:  240 251 245;   /* ~6% tint — client list sidebar */
+  --color-green-card:   230 247 238;   /* ~10% tint — stat cards & hover */
+  --color-green-border: 152 214 182;   /* muted sage green border */
 }
 
 /* ── Dark mode ───────────────────────────────────────── */
@@ -26,6 +30,10 @@ html.dark-mode {
   --color-muted:        119 119 119;
   --color-dim:          90 90 90;
   --color-primary:      240 240 240;
+  /* Brand green tint surfaces — accent blended into near-black */
+  --color-green-panel:  20 30 25;    /* slightly lighter + greener than nav card */
+  --color-green-card:   27 40 33;    /* elevated green-tinted card surface */
+  --color-green-border: 42 72 55;    /* dark sage border, visible not glowing */
 }
 
 * {

@@ -23,6 +23,10 @@ const config: Config = {
         muted: 'rgb(var(--color-muted) / <alpha-value>)',
         dim: 'rgb(var(--color-dim) / <alpha-value>)',
         primary: 'rgb(var(--color-primary) / <alpha-value>)',
+        // Brand green tint surfaces
+        'green-panel':  'rgb(var(--color-green-panel) / <alpha-value>)',
+        'green-card':   'rgb(var(--color-green-card) / <alpha-value>)',
+        'green-border': 'rgb(var(--color-green-border) / <alpha-value>)',
       },
       fontFamily: {
         heading: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
