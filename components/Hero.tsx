@@ -12,9 +12,13 @@ export default function Hero() {
           <h1 className="font-heading text-[clamp(2.5rem,6vw,4.5rem)] leading-tight text-primary mb-6">
             Your Business, Online.
           </h1>
-          <p className="text-base text-teal leading-relaxed mb-10 max-w-md mx-auto">
+          <p className="text-base text-teal leading-relaxed mb-4 max-w-md mx-auto">
             We build and manage everything your business needs on the web. You focus on your
             customers. We handle the rest.
+          </p>
+          <p className="font-mono text-xs text-muted tracking-wider mb-10 max-w-md mx-auto">
+            Boutique web agency delivering premium websites and digital services for businesses
+            that refuse to settle.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link

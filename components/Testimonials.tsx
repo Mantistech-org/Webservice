@@ -59,9 +59,6 @@ export default function Testimonials() {
           ))}
         </div>
 
-        <p className="text-center font-mono text-xs text-dim mt-10 tracking-wider">
-          These are testimonials from our founding clients.
-        </p>
       </div>
     </section>
   )

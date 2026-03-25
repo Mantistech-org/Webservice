@@ -13,16 +13,32 @@ export default function Footer() {
               <span className="w-2 h-2 rounded-full bg-accent" />
               <span className="font-heading text-xl text-primary">Mantis Tech</span>
             </div>
-            <p className="text-sm text-muted leading-relaxed max-w-xs">
-              Boutique web agency delivering premium websites and digital services for businesses
-              that refuse to settle.
-            </p>
-            <a
-              href="tel:+15016690488"
-              className="inline-block mt-4 font-mono text-sm text-primary hover:text-accent transition-colors tracking-wider"
-            >
-              (501) 669-0488
-            </a>
+            <div className="flex items-center gap-4 mt-4">
+              <a
+                href="tel:+15016690488"
+                className="font-mono text-sm text-primary hover:text-accent transition-colors tracking-wider"
+              >
+                (501) 669-0488
+              </a>
+              <a
+                href="https://www.facebook.com/profile.php?id=61578464746633"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted hover:text-accent transition-colors"
+                aria-label="Facebook"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                </svg>
+              </a>
+            </div>
           </div>
 
           {/* Services */}
