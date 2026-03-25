@@ -8,7 +8,7 @@ export default function DemoPromo() {
           Interactive Demo
         </p>
         <h2 className="font-heading text-[clamp(2rem,5vw,3.5rem)] leading-tight text-primary mb-6">
-          See It With Your Own Business Name.
+          Want to See It In Action?
         </h2>
         <p className="text-base text-muted leading-relaxed mb-10 max-w-lg mx-auto">
           Type in your business name and get a live, fully interactive preview of exactly what your
