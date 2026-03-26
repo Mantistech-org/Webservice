@@ -81,7 +81,7 @@ export default function AdminNav() {
 
   return (
     <div className="p-3">
-      <div className="font-mono text-xs text-white/40 tracking-widest uppercase px-3 py-2 mb-1">Navigation</div>
+      <div className="font-mono text-xs text-white/60 tracking-widest uppercase px-3 py-2 mb-1">Navigation</div>
       <nav className="space-y-1">
         {NAV_ITEMS.map((item) => {
           const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href)
@@ -92,10 +92,10 @@ export default function AdminNav() {
               className={`flex items-center gap-3 px-4 py-3 rounded font-mono text-sm tracking-wide transition-all ${
                 isActive
                   ? 'bg-accent/15 text-accent font-medium border border-accent/30'
-                  : 'text-white/70 hover:text-white hover:bg-white/10'
+                  : 'text-white hover:text-white hover:bg-white/10'
               }`}
             >
-              <span className={isActive ? 'text-accent' : 'text-white/50'}>
+              <span className={isActive ? 'text-accent' : 'text-white'}>
                 {item.icon}
               </span>
               {item.label}
