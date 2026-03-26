@@ -318,9 +318,9 @@ export default function AdminPage() {
       {/* Inner layout: project list sidebar + main content */}
       <div className="flex flex-1 items-start">
         {/* Project list sidebar */}
-        <aside className="w-64 shrink-0 sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto border-r border-black/10 dark:border-white/8 bg-[#c0c0c0] dark:bg-[#404040] flex flex-col">
+        <aside className="w-64 shrink-0 sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto border-r border-border bg-card flex flex-col">
           {/* Search */}
-          <div className="p-4 border-b border-black/10 dark:border-white/8">
+          <div className="p-4 border-b border-border">
             <input
               type="text" value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -334,7 +334,7 @@ export default function AdminPage() {
               const groupItems = searchFiltered.filter((p) => group.statuses.includes(p.status))
               const isCollapsed = collapsedGroups.has(group.key)
               return (
-                <div key={group.key} className="border-b border-black/10 dark:border-white/8 last:border-0">
+                <div key={group.key} className="border-b border-border last:border-0">
                   <button onClick={() => toggleGroup(group.key)}
                     className="w-full flex items-center justify-between px-4 py-3 hover:bg-black/8 dark:hover:bg-white/5 transition-colors">
                     <div className="flex items-center gap-2">
