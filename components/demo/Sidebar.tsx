@@ -205,7 +205,7 @@ export default function Sidebar({ expanded, activePage, onNavigate, darkMode }: 
                 className="w-full flex items-center gap-3 px-4 py-3 rounded font-mono text-sm tracking-wide transition-colors duration-150"
                 style={isActive
                   ? { backgroundColor: 'rgba(0,255,136,0.15)', color: '#00ff88' }
-                  : { color: 'rgba(255,255,255,0.7)' }
+                  : { color: '#ffffff' }
                 }
                 onMouseEnter={e => {
                   if (!isActive) {
@@ -216,7 +216,7 @@ export default function Sidebar({ expanded, activePage, onNavigate, darkMode }: 
                 onMouseLeave={e => {
                   if (!isActive) {
                     (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'
-                    ;(e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.7)'
+                    ;(e.currentTarget as HTMLElement).style.color = '#ffffff'
                   }
                 }}
               >
@@ -249,7 +249,7 @@ export default function Sidebar({ expanded, activePage, onNavigate, darkMode }: 
                       className="w-full flex items-center pl-12 pr-4 py-2.5 font-mono text-sm transition-colors"
                       style={activePage === child.id
                         ? { color: '#00ff88', backgroundColor: 'rgba(0,255,136,0.1)' }
-                        : { color: 'rgba(255,255,255,0.6)' }
+                        : { color: '#ffffff' }
                       }
                       onMouseEnter={e => {
                         if (activePage !== child.id) {
@@ -260,7 +260,7 @@ export default function Sidebar({ expanded, activePage, onNavigate, darkMode }: 
                       onMouseLeave={e => {
                         if (activePage !== child.id) {
                           (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'
-                          ;(e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.6)'
+                          ;(e.currentTarget as HTMLElement).style.color = '#ffffff'
                         }
                       }}
                     >
