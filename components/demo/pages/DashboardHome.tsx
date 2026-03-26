@@ -78,7 +78,7 @@ function LineChart({ darkMode }: LineChartProps) {
         const y = pad.top + ih * (1 - t)
         return (
           <g key={t}>
-            <line x1={pad.left} y1={y} x2={pad.left + iw} y2={y} stroke={darkMode ? '#4b5563' : '#e5e7eb'} strokeWidth="0.5" />
+            <line x1={pad.left} y1={y} x2={pad.left + iw} y2={y} stroke={darkMode ? '#333333' : '#e5e7eb'} strokeWidth="0.5" />
             <text x={pad.left - 6} y={y + 4} textAnchor="end" fontSize="8" fill={darkMode ? '#d1d5db' : '#374151'}>
               {Math.round(min + t * range)}
             </text>

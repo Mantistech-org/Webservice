@@ -108,32 +108,31 @@ body {
 
 /* ── Demo dark theme ─────────────────────────────── */
 .demo-dark {
-  --color-bg:           17 24 39;
-  --color-card:         31 41 55;
-  --color-card-hover:   37 47 63;
-  --color-border:       55 65 81;
-  --color-border-light: 75 85 99;
-  --color-teal:         209 213 219;
+  --color-bg:           15 15 15;
+  --color-card:         26 26 26;
+  --color-card-hover:   35 35 35;
+  --color-border:       51 51 51;
+  --color-border-light: 68 68 68;
+  --color-teal:         170 170 170;
   --color-muted:        209 213 219;
   --color-dim:          156 163 175;
   --color-primary:      249 250 251;
-  background-color: rgb(17 24 39);
+  background-color: rgb(15 15 15);
 }
 
 /* Demo dark — background overrides */
-.demo-dark .bg-white             { background-color: #1f2937 !important; }
-.demo-dark .bg-\[\#ffffff\]      { background-color: #1f2937 !important; }
-.demo-dark .bg-\[\#fafal8\]      { background-color: #0f172a !important; }
-.demo-dark .bg-\[\#fafaf8\]      { background-color: #0f172a !important; }
-.demo-dark .bg-\[\#f8f8f8\]      { background-color: #1a2332 !important; }
-.demo-dark .bg-\[\#f5f5f5\]      { background-color: #111827 !important; }
-.demo-dark .bg-\[\#f0f0f0\]      { background-color: #1f2937 !important; }
-.demo-dark .bg-\[\#efefef\]      { background-color: #111827 !important; }
-.demo-dark .bg-\[\#eeeeee\]      { background-color: #1f2937 !important; }
-.demo-dark .bg-\[\#e8e8e8\]      { background-color: #1f2937 !important; }
-.demo-dark .bg-\[\#e4e6eb\]      { background-color: #1f2937 !important; }
-.demo-dark .bg-\[\#e0e0e0\]      { background-color: #374151 !important; }
-.demo-dark .bg-\[\#dcdcdc\]      { background-color: #2d3748 !important; }
+.demo-dark .bg-white             { background-color: #1a1a1a !important; }
+.demo-dark .bg-\[\#ffffff\]      { background-color: #1a1a1a !important; }
+.demo-dark .bg-\[\#fafaf8\]      { background-color: #0f0f0f !important; }
+.demo-dark .bg-\[\#f8f8f8\]      { background-color: #1e1e1e !important; }
+.demo-dark .bg-\[\#f5f5f5\]      { background-color: #141414 !important; }
+.demo-dark .bg-\[\#f0f0f0\]      { background-color: #1a1a1a !important; }
+.demo-dark .bg-\[\#efefef\]      { background-color: #252525 !important; }
+.demo-dark .bg-\[\#eeeeee\]      { background-color: #1a1a1a !important; }
+.demo-dark .bg-\[\#e8e8e8\]      { background-color: #2a2a2a !important; }
+.demo-dark .bg-\[\#e4e6eb\]      { background-color: #2a2a2a !important; }
+.demo-dark .bg-\[\#e0e0e0\]      { background-color: #333333 !important; }
+.demo-dark .bg-\[\#dcdcdc\]      { background-color: #303030 !important; }
 
 /* Demo dark — text overrides */
 .demo-dark .text-\[\#1a1a1a\]    { color: #f9fafb !important; }
@@ -159,37 +158,36 @@ body {
 .demo-dark .text-\[\#4d5156\]    { color: #9ca3af !important; }
 
 /* Demo dark — border overrides */
-.demo-dark .border-\[\#d8d8d8\]     { border-color: #374151 !important; }
-.demo-dark .border-\[\#d0d0d0\]     { border-color: #374151 !important; }
-.demo-dark .border-\[\#e0e0e0\]     { border-color: #374151 !important; }
-.demo-dark .border-\[\#e8e8e8\]     { border-color: #1f2937 !important; }
-.demo-dark .border-\[\#cccccc\]     { border-color: #4b5563 !important; }
-.demo-dark .border-\[\#d0d0d0\]\/30 { border-color: rgba(55,65,81,0.3) !important; }
-.demo-dark .border-\[\#dadce0\]     { border-color: #374151 !important; }
-.demo-dark .border-\[\#ccd0d5\]     { border-color: #374151 !important; }
-.demo-dark .border-\[\#dbdbdb\]     { border-color: #374151 !important; }
+.demo-dark .border-\[\#d8d8d8\]     { border-color: #333333 !important; }
+.demo-dark .border-\[\#d0d0d0\]     { border-color: #3a3a3a !important; }
+.demo-dark .border-\[\#e0e0e0\]     { border-color: #333333 !important; }
+.demo-dark .border-\[\#e8e8e8\]     { border-color: #2a2a2a !important; }
+.demo-dark .border-\[\#cccccc\]     { border-color: #444444 !important; }
+.demo-dark .border-\[\#d0d0d0\]\/30 { border-color: rgba(51,51,51,0.3) !important; }
+.demo-dark .border-\[\#dadce0\]     { border-color: #3a3a3a !important; }
+.demo-dark .border-\[\#ccd0d5\]     { border-color: #3a3a3a !important; }
 
 /* Demo dark — inputs */
 .demo-dark input,
 .demo-dark textarea,
 .demo-dark select {
-  background-color: #111827 !important;
-  color: #f9fafb !important;
-  border-color: #374151 !important;
+  background-color: #252525 !important;
+  color: #f0f0f0 !important;
+  border-color: #3a3a3a !important;
 }
 .demo-dark input::placeholder,
 .demo-dark textarea::placeholder {
-  color: #6b7280 !important;
+  color: #666666 !important;
 }
 .demo-dark select option {
-  background-color: #111827;
-  color: #f9fafb;
+  background-color: #252525;
+  color: #f0f0f0;
 }
 
 /* Demo dark — hover overrides */
-.demo-dark .hover\:bg-\[\#f0f0f0\]:hover { background-color: #253347 !important; }
-.demo-dark .hover\:bg-\[\#e0e0e0\]:hover  { background-color: #374151 !important; }
-.demo-dark .hover\:bg-\[\#e4e4e4\]:hover  { background-color: #253347 !important; }
+.demo-dark .hover\:bg-\[\#f0f0f0\]:hover { background-color: #2a2a2a !important; }
+.demo-dark .hover\:bg-\[\#e0e0e0\]:hover  { background-color: #333333 !important; }
+.demo-dark .hover\:bg-\[\#e4e4e4\]:hover  { background-color: #2a2a2a !important; }
 
 /* Demo dark — toggle switch knob always white */
 .demo-dark button[role="switch"] > span {
