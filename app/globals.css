@@ -75,107 +75,121 @@ body {
   background: rgb(var(--color-muted));
 }
 
-/* ── Demo page theme (light mode, matches homepage) ─── */
+/* ── Demo page theme (light mode) ─────────────────── */
 .demo-page {
   --color-bg:           250 250 248;
-  --color-card:         239 239 239;
-  --color-card-hover:   232 232 232;
-  --color-border:       210 210 210;
-  --color-border-light: 188 188 188;
-  --color-teal:         70 65 60;
-  --color-muted:        110 110 110;
-  --color-dim:          165 165 165;
-  --color-primary:      26 26 26;
+  --color-card:         255 255 255;
+  --color-card-hover:   249 250 251;
+  --color-border:       229 231 235;
+  --color-border-light: 209 213 219;
+  --color-teal:         55 65 81;
+  --color-muted:        55 65 81;
+  --color-dim:          107 114 128;
+  --color-primary:      17 24 39;
   background-color: rgb(250 250 248);
 }
 
-/* Demo light — fix low-contrast text on card and page backgrounds */
-.demo-page .text-\[\#888888\] { color: #666666; }
-.demo-page .text-\[\#999999\] { color: #666666; }
-.demo-page .text-\[\#aaaaaa\] { color: #666666; }
-.demo-page .text-\[\#bbbbbb\] { color: #666666; }
-.demo-page .text-\[\#cccccc\] { color: #666666; }
-.demo-page .text-\[\#8a8d91\] { color: #666666; }
-.demo-page .text-\[\#666\]    { color: #555555; }
+/* Demo light — card backgrounds white, borders #e5e7eb, text contrast fixes */
+.demo-page .bg-\[\#e8e8e8\]      { background-color: #ffffff !important; }
+.demo-page .bg-\[\#efefef\]      { background-color: #f9fafb !important; }
+.demo-page .bg-\[\#f0f0f0\]      { background-color: #f3f4f6 !important; }
+.demo-page .border-\[\#d0d0d0\]  { border-color: #e5e7eb !important; }
+.demo-page .border-\[\#d8d8d8\]  { border-color: #e5e7eb !important; }
+.demo-page .border-\[\#e0e0e0\]  { border-color: #e5e7eb !important; }
+/* Section label text → #374151 (passes 10.5:1 on white) */
+.demo-page .text-\[\#888888\]    { color: #374151 !important; }
+.demo-page .text-\[\#666\]       { color: #374151 !important; }
+/* Secondary / subtext → #6b7280 (passes 4.6:1 on white) */
+.demo-page .text-\[\#999999\]    { color: #6b7280 !important; }
+.demo-page .text-\[\#aaaaaa\]    { color: #6b7280 !important; }
+.demo-page .text-\[\#bbbbbb\]    { color: #6b7280 !important; }
+.demo-page .text-\[\#cccccc\]    { color: #6b7280 !important; }
+.demo-page .text-\[\#8a8d91\]    { color: #6b7280 !important; }
 
 /* ── Demo dark theme ─────────────────────────────── */
 .demo-dark {
-  --color-bg:           15 15 15;
-  --color-card:         26 26 26;
-  --color-card-hover:   35 35 35;
-  --color-border:       51 51 51;
-  --color-border-light: 68 68 68;
-  --color-teal:         170 170 170;
-  --color-muted:        119 119 119;
-  --color-dim:          68 68 68;
-  --color-primary:      240 240 240;
-  background-color: rgb(15 15 15);
+  --color-bg:           17 24 39;
+  --color-card:         31 41 55;
+  --color-card-hover:   37 47 63;
+  --color-border:       55 65 81;
+  --color-border-light: 75 85 99;
+  --color-teal:         209 213 219;
+  --color-muted:        209 213 219;
+  --color-dim:          156 163 175;
+  --color-primary:      249 250 251;
+  background-color: rgb(17 24 39);
 }
 
-/* Demo dark — override hardcoded light colors */
-.demo-dark .bg-white { background-color: #1a1a1a !important; }
-.demo-dark .bg-\[\#ffffff\] { background-color: #1a1a1a !important; }
-.demo-dark .bg-\[\#f5f5f5\] { background-color: #141414 !important; }
-.demo-dark .bg-\[\#fafaf8\] { background-color: #0f0f0f !important; }
-.demo-dark .bg-\[\#f0f0f0\] { background-color: #1a1a1a !important; }
-.demo-dark .bg-\[\#efefef\] { background-color: #252525 !important; }
-.demo-dark .bg-\[\#e8e8e8\] { background-color: #2a2a2a !important; }
-.demo-dark .bg-\[\#e4e6eb\] { background-color: #2a2a2a !important; }
-.demo-dark .bg-\[\#e0e0e0\] { background-color: #333333 !important; }
-.demo-dark .bg-\[\#eeeeee\] { background-color: #1a1a1a !important; }
-.demo-dark .bg-\[\#dcdcdc\] { background-color: #303030 !important; }
-.demo-dark .bg-\[\#f8f8f8\] { background-color: #1e1e1e !important; }
+/* Demo dark — background overrides */
+.demo-dark .bg-white             { background-color: #1f2937 !important; }
+.demo-dark .bg-\[\#ffffff\]      { background-color: #1f2937 !important; }
+.demo-dark .bg-\[\#fafal8\]      { background-color: #0f172a !important; }
+.demo-dark .bg-\[\#fafaf8\]      { background-color: #0f172a !important; }
+.demo-dark .bg-\[\#f8f8f8\]      { background-color: #1a2332 !important; }
+.demo-dark .bg-\[\#f5f5f5\]      { background-color: #111827 !important; }
+.demo-dark .bg-\[\#f0f0f0\]      { background-color: #1f2937 !important; }
+.demo-dark .bg-\[\#efefef\]      { background-color: #111827 !important; }
+.demo-dark .bg-\[\#eeeeee\]      { background-color: #1f2937 !important; }
+.demo-dark .bg-\[\#e8e8e8\]      { background-color: #1f2937 !important; }
+.demo-dark .bg-\[\#e4e6eb\]      { background-color: #1f2937 !important; }
+.demo-dark .bg-\[\#e0e0e0\]      { background-color: #374151 !important; }
+.demo-dark .bg-\[\#dcdcdc\]      { background-color: #2d3748 !important; }
 
-.demo-dark .text-\[\#1a1a1a\] { color: #f0f0f0 !important; }
-.demo-dark .text-\[\#111111\] { color: #f0f0f0 !important; }
-.demo-dark .text-\[\#333333\] { color: #e0e0e0 !important; }
-.demo-dark .text-\[\#444444\] { color: #cccccc !important; }
-.demo-dark .text-\[\#555555\] { color: #aaaaaa !important; }
-.demo-dark .text-\[\#666666\] { color: #aaaaaa !important; }
-.demo-dark .text-\[\#888888\] { color: #aaaaaa !important; }
-.demo-dark .text-\[\#aaaaaa\] { color: #aaaaaa !important; }
-.demo-dark .text-\[\#bbbbbb\] { color: #aaaaaa !important; }
-.demo-dark .text-\[\#cccccc\] { color: #aaaaaa !important; }
-.demo-dark .text-\[\#999999\] { color: #aaaaaa !important; }
-.demo-dark .text-\[\#1c1e21\] { color: #f0f0f0 !important; }
+/* Demo dark — text overrides */
+.demo-dark .text-\[\#1a1a1a\]    { color: #f9fafb !important; }
+.demo-dark .text-\[\#111111\]    { color: #f9fafb !important; }
+.demo-dark .text-\[\#333333\]    { color: #e5e7eb !important; }
+.demo-dark .text-\[\#444444\]    { color: #d1d5db !important; }
+.demo-dark .text-\[\#555555\]    { color: #9ca3af !important; }
+.demo-dark .text-\[\#666666\]    { color: #9ca3af !important; }
+/* Section label text → #d1d5db */
+.demo-dark .text-\[\#888888\]    { color: #d1d5db !important; }
+/* Secondary / subtext → #9ca3af */
+.demo-dark .text-\[\#999999\]    { color: #9ca3af !important; }
+.demo-dark .text-\[\#aaaaaa\]    { color: #9ca3af !important; }
+.demo-dark .text-\[\#bbbbbb\]    { color: #9ca3af !important; }
+.demo-dark .text-\[\#cccccc\]    { color: #9ca3af !important; }
+.demo-dark .text-\[\#1c1e21\]    { color: #f9fafb !important; }
 /* Ad platform mockup and misc colors */
-.demo-dark .text-\[\#8a8d91\] { color: #aaaaaa !important; }
-.demo-dark .text-\[\#666\]     { color: #aaaaaa !important; }
-.demo-dark .text-\[\#202020\]  { color: #f0f0f0 !important; }
-.demo-dark .text-\[\#1a0dab\]  { color: #6699ff !important; }
-.demo-dark .text-\[\#188038\]  { color: #4ade80 !important; }
-.demo-dark .text-\[\#4d5156\]  { color: #aaaaaa !important; }
+.demo-dark .text-\[\#8a8d91\]    { color: #9ca3af !important; }
+.demo-dark .text-\[\#666\]       { color: #9ca3af !important; }
+.demo-dark .text-\[\#202020\]    { color: #f9fafb !important; }
+.demo-dark .text-\[\#1a0dab\]    { color: #6699ff !important; }
+.demo-dark .text-\[\#188038\]    { color: #4ade80 !important; }
+.demo-dark .text-\[\#4d5156\]    { color: #9ca3af !important; }
 
-.demo-dark .border-\[\#d8d8d8\] { border-color: #333333 !important; }
-.demo-dark .border-\[\#d0d0d0\] { border-color: #3a3a3a !important; }
-.demo-dark .border-\[\#e0e0e0\] { border-color: #333333 !important; }
-.demo-dark .border-\[\#e8e8e8\] { border-color: #2a2a2a !important; }
-.demo-dark .border-\[\#cccccc\] { border-color: #444444 !important; }
-.demo-dark .border-\[\#d0d0d0\]\/30 { border-color: rgba(51,51,51,0.3) !important; }
-.demo-dark .border-\[\#dadce0\] { border-color: #3a3a3a !important; }
-.demo-dark .border-\[\#ccd0d5\] { border-color: #3a3a3a !important; }
+/* Demo dark — border overrides */
+.demo-dark .border-\[\#d8d8d8\]     { border-color: #374151 !important; }
+.demo-dark .border-\[\#d0d0d0\]     { border-color: #374151 !important; }
+.demo-dark .border-\[\#e0e0e0\]     { border-color: #374151 !important; }
+.demo-dark .border-\[\#e8e8e8\]     { border-color: #1f2937 !important; }
+.demo-dark .border-\[\#cccccc\]     { border-color: #4b5563 !important; }
+.demo-dark .border-\[\#d0d0d0\]\/30 { border-color: rgba(55,65,81,0.3) !important; }
+.demo-dark .border-\[\#dadce0\]     { border-color: #374151 !important; }
+.demo-dark .border-\[\#ccd0d5\]     { border-color: #374151 !important; }
+.demo-dark .border-\[\#dbdbdb\]     { border-color: #374151 !important; }
 
 /* Demo dark — inputs */
 .demo-dark input,
 .demo-dark textarea,
 .demo-dark select {
-  background-color: #252525 !important;
-  color: #f0f0f0 !important;
-  border-color: #3a3a3a !important;
+  background-color: #111827 !important;
+  color: #f9fafb !important;
+  border-color: #374151 !important;
 }
 .demo-dark input::placeholder,
 .demo-dark textarea::placeholder {
-  color: #666666 !important;
+  color: #6b7280 !important;
 }
 .demo-dark select option {
-  background-color: #252525;
-  color: #f0f0f0;
+  background-color: #111827;
+  color: #f9fafb;
 }
 
 /* Demo dark — hover overrides */
-.demo-dark .hover\:bg-\[\#f0f0f0\]:hover { background-color: #2a2a2a !important; }
-.demo-dark .hover\:bg-\[\#e0e0e0\]:hover { background-color: #333333 !important; }
-.demo-dark .hover\:bg-\[\#e4e4e4\]:hover { background-color: #2a2a2a !important; }
+.demo-dark .hover\:bg-\[\#f0f0f0\]:hover { background-color: #253347 !important; }
+.demo-dark .hover\:bg-\[\#e0e0e0\]:hover  { background-color: #374151 !important; }
+.demo-dark .hover\:bg-\[\#e4e4e4\]:hover  { background-color: #253347 !important; }
 
 /* Demo dark — toggle switch knob always white */
 .demo-dark button[role="switch"] > span {
@@ -183,23 +197,21 @@ body {
 }
 
 /* Demo dark — calendar pill bg overrides (light status pills) */
-.demo-dark .bg-green-100 { background-color: rgba(74, 222, 128, 0.15) !important; }
-.demo-dark .bg-yellow-100 { background-color: rgba(250, 204, 21, 0.15) !important; }
-.demo-dark .bg-gray-100 { background-color: rgba(100, 100, 100, 0.15) !important; }
+.demo-dark .bg-green-100   { background-color: rgba(74, 222, 128, 0.15) !important; }
+.demo-dark .bg-yellow-100  { background-color: rgba(250, 204, 21, 0.15) !important; }
+.demo-dark .bg-gray-100    { background-color: rgba(100, 100, 100, 0.15) !important; }
 .demo-dark .text-green-700 { color: #4ade80 !important; }
 .demo-dark .text-yellow-700 { color: #facc15 !important; }
-.demo-dark .text-gray-500 { color: #888888 !important; }
+.demo-dark .text-gray-500  { color: #9ca3af !important; }
 .demo-dark .border-green-200 { border-color: rgba(74, 222, 128, 0.3) !important; }
 .demo-dark .border-yellow-200 { border-color: rgba(250, 204, 21, 0.3) !important; }
-.demo-dark .border-gray-200 { border-color: rgba(100, 100, 100, 0.3) !important; }
+.demo-dark .border-gray-200  { border-color: rgba(100, 100, 100, 0.3) !important; }
 
 /* Demo dark — notice boxes */
-.demo-dark .bg-green-50 { background-color: rgba(74, 222, 128, 0.08) !important; }
-.demo-dark .border-green-200 { border-color: rgba(74, 222, 128, 0.25) !important; }
-.demo-dark .text-green-700 { color: #4ade80 !important; }
-.demo-dark .bg-red-50 { background-color: rgba(248, 113, 113, 0.08) !important; }
+.demo-dark .bg-green-50    { background-color: rgba(74, 222, 128, 0.08) !important; }
+.demo-dark .bg-red-50      { background-color: rgba(248, 113, 113, 0.08) !important; }
 .demo-dark .border-red-200 { border-color: rgba(248, 113, 113, 0.25) !important; }
-.demo-dark .text-red-700 { color: #f87171 !important; }
+.demo-dark .text-red-700   { color: #f87171 !important; }
 
 /* ── Font weight hierarchy ────────────────────────────── */
 /* Main headings: 700–800 */
