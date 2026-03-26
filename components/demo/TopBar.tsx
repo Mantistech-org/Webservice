@@ -186,7 +186,7 @@ export default function TopBar({ onToggleSidebar, onNavigate, darkMode, onToggle
             <button
               onClick={() => setShowSupport(false)}
               className="w-full font-mono text-xs border px-4 py-2.5 rounded transition-colors"
-              style={{ borderColor: darkMode ? '#444444' : '#d0d0d0', color: '#888888' }}
+              style={{ borderColor: darkMode ? '#444444' : '#d0d0d0', color: darkMode ? '#aaaaaa' : '#666666' }}
             >
               Close
             </button>

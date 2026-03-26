@@ -142,7 +142,7 @@ export default function DemoView() {
               <span className="font-heading text-xl" style={{ color: darkMode ? '#f0f0f0' : '#1a1a1a' }}>Mantis Tech Demo</span>
             </div>
             <h1 className="font-heading text-4xl mb-3" style={{ color: darkMode ? '#f0f0f0' : '#1a1a1a' }}>Welcome to Your Demo</h1>
-            <p className="font-mono text-sm" style={{ color: '#888888' }}>
+            <p className="font-mono text-sm" style={{ color: darkMode ? '#aaaaaa' : '#555555' }}>
               Enter your business name to personalize the experience.
             </p>
           </div>
@@ -152,7 +152,7 @@ export default function DemoView() {
             style={{ backgroundColor: darkMode ? '#1a1a1a' : '#ffffff', borderColor: darkMode ? '#333333' : '#e0e0e0' }}
           >
             <div>
-              <label className="font-mono text-xs tracking-widest uppercase block mb-2" style={{ color: '#888888' }}>Business Name</label>
+              <label className="font-mono text-xs tracking-widest uppercase block mb-2" style={{ color: darkMode ? '#aaaaaa' : '#555555' }}>Business Name</label>
               <input
                 type="text"
                 value={gateInput}
@@ -169,7 +169,7 @@ export default function DemoView() {
               />
             </div>
             <div>
-              <label className="font-mono text-xs tracking-widest uppercase block mb-2" style={{ color: '#888888' }}>Business Type <span style={{ color: darkMode ? '#555555' : '#aaaaaa' }}>(optional)</span></label>
+              <label className="font-mono text-xs tracking-widest uppercase block mb-2" style={{ color: darkMode ? '#aaaaaa' : '#555555' }}>Business Type <span style={{ color: darkMode ? '#aaaaaa' : '#777777' }}>(optional)</span></label>
               <input
                 type="text"
                 value={gateType}
@@ -190,7 +190,7 @@ export default function DemoView() {
             >
               Enter Demo
             </button>
-            <p className="font-mono text-xs text-center" style={{ color: darkMode ? '#555555' : '#aaaaaa' }}>
+            <p className="font-mono text-xs text-center" style={{ color: darkMode ? '#aaaaaa' : '#666666' }}>
               No sign-up required. All tools are fully functional.
             </p>
           </form>

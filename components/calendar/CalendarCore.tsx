@@ -564,7 +564,7 @@ function SettingsPanel({
         </div>
         <div className="p-6 flex gap-3">
           {([30, 45, 60] as const).map(d => (
-            <button key={d} onClick={() => onSlotDuration(d)} className="font-mono text-sm px-5 py-2.5 rounded border transition-all" style={slotDuration === d ? { borderColor: '#1a1a1a', backgroundColor: '#1a1a1a', color: '#ffffff' } : { borderColor: darkMode ? '#3a3a3a' : '#d0d0d0', color: '#888888' }}>
+            <button key={d} onClick={() => onSlotDuration(d)} className="font-mono text-sm px-5 py-2.5 rounded border transition-all" style={slotDuration === d ? { borderColor: '#1a1a1a', backgroundColor: '#1a1a1a', color: '#ffffff' } : { borderColor: darkMode ? '#3a3a3a' : '#d0d0d0', color: darkMode ? '#aaaaaa' : '#555555' }}>
               {d} min
             </button>
           ))}
