@@ -31,15 +31,15 @@ export default function TopBar({ onToggleSidebar, onNavigate, darkMode, onToggle
       <header
         className="fixed top-0 left-0 right-0 h-14 z-50 flex items-center px-4 gap-4 border-b transition-colors"
         style={{
-          backgroundColor: darkMode ? '#1a1a1a' : '#f5f5f5',
-          borderColor: darkMode ? '#333333' : '#d8d8d8',
+          backgroundColor: '#0d6b3c',
+          borderColor: 'rgba(0,0,0,0.15)',
         }}
       >
         {/* Hamburger */}
         <button
           onClick={onToggleSidebar}
           className="p-2 rounded transition-colors"
-          style={{ color: darkMode ? '#f0f0f0' : '#1a1a1a' }}
+          style={{ color: '#ffffff' }}
           aria-label="Toggle sidebar"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -54,7 +54,7 @@ export default function TopBar({ onToggleSidebar, onNavigate, darkMode, onToggle
           <span className="w-2 h-2 rounded-full bg-[#00ff88]" />
           <span
             className="font-mono font-bold text-sm tracking-widest"
-            style={{ color: darkMode ? '#f0f0f0' : '#1a1a1a' }}
+            style={{ color: '#ffffff' }}
           >
             MANTIS TECH
           </span>
@@ -66,7 +66,7 @@ export default function TopBar({ onToggleSidebar, onNavigate, darkMode, onToggle
         <button
           onClick={onToggleDark}
           className="p-2 rounded transition-colors"
-          style={{ color: darkMode ? '#f0f0f0' : '#1a1a1a' }}
+          style={{ color: 'rgba(255,255,255,0.8)' }}
           aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
         >

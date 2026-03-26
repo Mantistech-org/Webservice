@@ -179,8 +179,8 @@ export default function Sidebar({ expanded, activePage, onNavigate, darkMode }: 
       className="fixed top-14 left-0 bottom-0 overflow-y-auto overflow-x-hidden z-40 transition-all duration-200 border-r"
       style={{
         width: expanded ? 240 : 64,
-        backgroundColor: darkMode ? '#1a1a1a' : '#eeeeee',
-        borderColor: darkMode ? '#333333' : '#d8d8d8',
+        backgroundColor: darkMode ? '#303030' : '#555555',
+        borderColor: 'rgba(255,255,255,0.1)',
       }}
     >
       <nav className="py-3">
@@ -202,30 +202,30 @@ export default function Sidebar({ expanded, activePage, onNavigate, darkMode }: 
                   }
                 }}
                 title={!expanded ? item.label : undefined}
-                className="w-full flex items-center gap-3 px-4 py-2.5 transition-colors duration-150"
+                className="w-full flex items-center gap-3 px-4 py-3 transition-colors duration-150"
                 style={isActive
-                  ? { backgroundColor: darkMode ? 'rgba(0,255,136,0.10)' : 'rgba(0,255,136,0.15)', color: darkMode ? '#f0f0f0' : '#1a1a1a' }
-                  : { color: darkMode ? '#aaaaaa' : '#555555' }
+                  ? { backgroundColor: 'rgba(0,255,136,0.15)', color: '#00ff88' }
+                  : { color: 'rgba(255,255,255,0.7)' }
                 }
                 onMouseEnter={e => {
                   if (!isActive) {
-                    (e.currentTarget as HTMLElement).style.backgroundColor = darkMode ? '#2a2a2a' : '#e4e4e4'
-                    ;(e.currentTarget as HTMLElement).style.color = darkMode ? '#f0f0f0' : '#1a1a1a'
+                    (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.1)'
+                    ;(e.currentTarget as HTMLElement).style.color = '#ffffff'
                   }
                 }}
                 onMouseLeave={e => {
                   if (!isActive) {
                     (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'
-                    ;(e.currentTarget as HTMLElement).style.color = darkMode ? '#aaaaaa' : '#555555'
+                    ;(e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.7)'
                   }
                 }}
               >
-                <span className={`shrink-0 ${isActive ? 'text-[#00aa55]' : ''}`}>
+                <span className={`shrink-0 ${isActive ? 'text-[#00ff88]' : ''}`}>
                   {item.icon}
                 </span>
                 {expanded && (
                   <>
-                    <span className="font-mono text-xs tracking-wide flex-1 text-left truncate">
+                    <span className="font-mono text-sm tracking-wide flex-1 text-left truncate">
                       {item.label}
                     </span>
                     {hasChildren && <ChevronDown open={isOpen} />}
@@ -241,26 +241,26 @@ export default function Sidebar({ expanded, activePage, onNavigate, darkMode }: 
 
               {/* Children */}
               {hasChildren && expanded && isOpen && (
-                <div style={{ backgroundColor: darkMode ? '#141414' : '#e8e8e8' }}>
+                <div style={{ backgroundColor: 'rgba(0,0,0,0.15)' }}>
                   {item.children!.map((child) => (
                     <button
                       key={child.label}
                       onClick={() => onNavigate(child.id)}
-                      className="w-full flex items-center pl-12 pr-4 py-2 font-mono text-xs transition-colors"
+                      className="w-full flex items-center pl-12 pr-4 py-2.5 font-mono text-sm transition-colors"
                       style={activePage === child.id
-                        ? { color: darkMode ? '#f0f0f0' : '#1a1a1a', backgroundColor: darkMode ? '#222222' : '#dcdcdc' }
-                        : { color: darkMode ? '#888888' : '#666666' }
+                        ? { color: '#00ff88', backgroundColor: 'rgba(0,255,136,0.1)' }
+                        : { color: 'rgba(255,255,255,0.6)' }
                       }
                       onMouseEnter={e => {
                         if (activePage !== child.id) {
-                          (e.currentTarget as HTMLElement).style.backgroundColor = darkMode ? '#2a2a2a' : '#e0e0e0'
-                          ;(e.currentTarget as HTMLElement).style.color = darkMode ? '#f0f0f0' : '#1a1a1a'
+                          (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.1)'
+                          ;(e.currentTarget as HTMLElement).style.color = '#ffffff'
                         }
                       }}
                       onMouseLeave={e => {
                         if (activePage !== child.id) {
                           (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'
-                          ;(e.currentTarget as HTMLElement).style.color = darkMode ? '#888888' : '#666666'
+                          ;(e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.6)'
                         }
                       }}
                     >
