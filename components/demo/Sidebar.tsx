@@ -202,7 +202,7 @@ export default function Sidebar({ expanded, activePage, onNavigate, darkMode }: 
                   }
                 }}
                 title={!expanded ? item.label : undefined}
-                className="w-full flex items-center gap-3 px-4 py-3 transition-colors duration-150"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded font-mono text-sm tracking-wide transition-colors duration-150"
                 style={isActive
                   ? { backgroundColor: 'rgba(0,255,136,0.15)', color: '#00ff88' }
                   : { color: 'rgba(255,255,255,0.7)' }
@@ -225,7 +225,7 @@ export default function Sidebar({ expanded, activePage, onNavigate, darkMode }: 
                 </span>
                 {expanded && (
                   <>
-                    <span className="font-mono text-sm tracking-wide flex-1 text-left truncate">
+                    <span className="flex-1 text-left truncate">
                       {item.label}
                     </span>
                     {hasChildren && <ChevronDown open={isOpen} />}
