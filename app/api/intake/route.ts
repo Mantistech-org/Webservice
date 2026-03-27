@@ -5,6 +5,7 @@ import path from 'path'
 import { Project, Plan } from '@/types'
 import { saveProject } from '@/lib/db'
 import { sendAdminNewProjectEmail, sendIntakeConfirmationEmail } from '@/lib/resend'
+import { getApiKey } from '@/lib/api-keys'
 
 // No maxDuration needed — response returns immediately now
 export const maxDuration = 30
@@ -75,8 +76,8 @@ export async function POST(req: NextRequest) {
   }
   console.log('[intake] Plan valid:', plan)
 
-  // Log env key presence (never log the value)
-  console.log('[intake] ANTHROPIC_API_KEY present:', !!process.env.ANTHROPIC_API_KEY)
+  // Log key presence (never log the value)
+  void getApiKey('anthropic').then((k) => console.log('[intake] ANTHROPIC_API_KEY present:', !!k))
 
   // ── Generate IDs ────────────────────────────────────────────────────────────
   const projectId = uuidv4()
@@ -185,7 +186,7 @@ export async function POST(req: NextRequest) {
   // response is sent. Both sends are fast (<500ms) so we await them here before
   // returning. The project is already saved so the user's data is never at risk.
 
-  console.log('[intake] RESEND_API_KEY present:', !!process.env.RESEND_API_KEY)
+  void getApiKey('resend').then((k) => console.log('[intake] RESEND_API_KEY present:', !!k))
   console.log('[intake] EMAIL_FROM:', process.env.EMAIL_FROM ?? '(not set, using default)')
 
   // 3a: Client confirmation

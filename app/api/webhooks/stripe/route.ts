@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { getProject, updateProject } from '@/lib/db'
 import { sendConfirmationEmail } from '@/lib/resend'
+import { getApiKey } from '@/lib/api-keys'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,9 +14,10 @@ export async function POST(req: NextRequest) {
     return new NextResponse('Missing stripe-signature header', { status: 400 })
   }
 
+  const webhookSecret = await getApiKey('stripe_webhook_secret')
   let event
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET ?? '')
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret)
   } catch (err) {
     console.error('Stripe webhook signature verification failed:', err)
     return new NextResponse('Webhook signature verification failed', { status: 400 })

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query, pgEnabled } from '@/lib/pg'
 import { Resend } from 'resend'
+import { getApiKey } from '@/lib/api-keys'
 
 // POST /api/admin/leads/process-campaigns
 // Called by Vercel Cron (see vercel.json) to process scheduled and drip campaigns.
@@ -38,7 +39,7 @@ function buildEmailHtml(body: string): string {
 
 export async function POST(req: NextRequest) {
   // Verify cron secret
-  const secret = process.env.CRON_SECRET
+  const secret = await getApiKey('cron_secret')
   const authHeader = req.headers.get('authorization')
   if (secret && authHeader !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Database not configured.' })
   }
 
-  const resendKey = process.env.RESEND_API_KEY
+  const resendKey = await getApiKey('resend')
   if (!resendKey) {
     return NextResponse.json({ message: 'RESEND_API_KEY not configured.' })
   }

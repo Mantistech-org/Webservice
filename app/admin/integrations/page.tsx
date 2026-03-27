@@ -192,6 +192,50 @@ function StatusDot({ connected }: { connected: boolean }) {
   )
 }
 
+function SeedFromEnvButton() {
+  const [state, setState] = useState<'idle' | 'seeding' | 'done' | 'error'>('idle')
+  const [count, setCount] = useState(0)
+
+  async function seed() {
+    setState('seeding')
+    try {
+      const res = await fetch('/api/admin/integrations/seed', { method: 'POST' })
+      const data = await res.json()
+      if (res.ok) {
+        setCount(data.seeded ?? 0)
+        setState('done')
+      } else {
+        setState('error')
+      }
+    } catch {
+      setState('error')
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-4 mb-8 max-w-3xl">
+      <button
+        onClick={seed}
+        disabled={state === 'seeding'}
+        className="font-mono text-xs border border-border text-muted px-4 py-2 rounded hover:border-border-light hover:text-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        {state === 'seeding' ? 'Seeding...' : 'Seed from Railway Environment'}
+      </button>
+      {state === 'done' && (
+        <span className="font-mono text-xs text-emerald-700 dark:text-accent">
+          {count} {count === 1 ? 'key' : 'keys'} seeded from environment variables
+        </span>
+      )}
+      {state === 'error' && (
+        <span className="font-mono text-xs text-red-600 dark:text-red-400">Seed failed</span>
+      )}
+      <span className="font-mono text-xs text-muted">
+        Inserts any keys present in Railway env vars that are not already in the database.
+      </span>
+    </div>
+  )
+}
+
 function ServiceCard({
   service,
   statusMap,
@@ -337,12 +381,15 @@ export default function IntegrationsPage() {
         <p className="font-mono text-sm text-muted">Manage API keys and external service connections.</p>
       </div>
 
-      <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded p-4 mb-8 max-w-3xl">
+      <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded p-4 mb-4 max-w-3xl">
         <p className="font-mono text-xs text-amber-800 dark:text-amber-400">
-          Saved values are applied to the current process immediately but will be lost on redeploy.
-          To persist across deployments, add or update each variable in your Railway project settings and redeploy.
+          Keys are stored in the Supabase <span className="font-medium">api_keys</span> table and read at runtime.
+          Railway environment variables remain as fallback — no outage risk if the table is empty.
+          Run the SQL migration in <span className="font-medium">scripts/api-keys-migration.sql</span> once before using this page.
         </p>
       </div>
+
+      <SeedFromEnvButton />
 
       {loading ? (
         <div className="font-mono text-sm text-muted animate-pulse">Loading status...</div>

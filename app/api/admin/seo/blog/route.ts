@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/auth'
 import { query, pgEnabled } from '@/lib/pg'
 import Anthropic from '@anthropic-ai/sdk'
+import { getApiKey } from '@/lib/api-keys'
 
 let _client: Anthropic | null = null
-function getClient(): Anthropic {
+async function getClient(): Promise<Anthropic> {
   if (!_client) {
-    const apiKey = process.env.ANTHROPIC_API_KEY
+    const apiKey = await getApiKey('anthropic')
     if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not set')
     _client = new Anthropic({ apiKey })
   }
@@ -106,7 +107,8 @@ export async function POST(req: NextRequest) {
   const prompt = buildBlogPrompt(keyword)
 
   try {
-    const message = await getClient().messages.create({
+    const client = await getClient()
+    const message = await client.messages.create({
       model: 'claude-sonnet-4-5',
       max_tokens: 3000,
       messages: [{ role: 'user', content: prompt }],

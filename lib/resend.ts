@@ -1,22 +1,27 @@
 import { Resend } from 'resend'
 import { Project, ADDONS, PLANS } from '@/types'
+import { getApiKey } from '@/lib/api-keys'
 
 const FROM = process.env.EMAIL_FROM ?? 'onboarding@resend.dev'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? ''
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
 
-function getResend() {
-  const key = process.env.RESEND_API_KEY
-  if (!key) {
-    console.error('[resend] FATAL: RESEND_API_KEY is not set — all email sends will fail')
+let _resend: Resend | null = null
+async function getResend(): Promise<Resend> {
+  if (!_resend) {
+    const key = await getApiKey('resend')
+    if (!key) {
+      console.error('[resend] FATAL: RESEND_API_KEY is not set — all email sends will fail')
+    }
+    _resend = new Resend(key ?? 'missing-key')
   }
-  return new Resend(key ?? 'missing-key')
+  return _resend
 }
 
 // ── Wrapper that turns Resend's { data, error } return into a real throw ──────
 async function send(payload: Parameters<Resend['emails']['send']>[0]): Promise<string> {
   console.log(`[resend] send() from="${payload.from}" to="${Array.isArray(payload.to) ? payload.to.join(',') : payload.to}" subject="${payload.subject}"`)
-  const { data, error } = await getResend().emails.send({
+  const { data, error } = await (await getResend()).emails.send({
     ...payload,
     ...(ADMIN_EMAIL ? { reply_to: ADMIN_EMAIL } : {}),
   })

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/auth'
 import { query, pgEnabled } from '@/lib/pg'
+import { getApiKey } from '@/lib/api-keys'
 
 interface PlacesResult {
   place_id: string
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const apiKey = process.env.GOOGLE_PLACES_API_KEY
+  const apiKey = await getApiKey('google_places')
   if (!apiKey) {
     return NextResponse.json({ error: 'GOOGLE_PLACES_API_KEY is not configured.' }, { status: 500 })
   }

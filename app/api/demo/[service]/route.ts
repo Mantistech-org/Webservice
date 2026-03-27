@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { logDemoActivity } from '@/lib/demo-db'
+import { getApiKey } from '@/lib/api-keys'
 
 export const maxDuration = 60
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+let _client: Anthropic | null = null
+async function getClient(): Promise<Anthropic> {
+  if (!_client) {
+    const apiKey = await getApiKey('anthropic')
+    _client = new Anthropic({ apiKey })
+  }
+  return _client
+}
 
 function parseClaudeJson(text: string): unknown {
   let cleaned = text.trim()
@@ -37,6 +45,7 @@ function parseClaudeJson(text: string): unknown {
 }
 
 async function callClaude(prompt: string, maxTokens: number): Promise<string> {
+  const client = await getClient()
   const message = await client.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: maxTokens,

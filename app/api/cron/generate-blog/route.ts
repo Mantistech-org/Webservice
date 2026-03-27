@@ -3,11 +3,12 @@ import { query, pgEnabled } from '@/lib/pg'
 import { gscEnabled } from '@/lib/google-search-console'
 import Anthropic from '@anthropic-ai/sdk'
 import { buildBlogPrompt } from '@/app/api/admin/seo/blog/route'
+import { getApiKey } from '@/lib/api-keys'
 
 let _client: Anthropic | null = null
-function getClient(): Anthropic {
+async function getClient(): Promise<Anthropic> {
   if (!_client) {
-    const apiKey = process.env.ANTHROPIC_API_KEY
+    const apiKey = await getApiKey('anthropic')
     if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not set')
     _client = new Anthropic({ apiKey })
   }
@@ -18,7 +19,7 @@ function getClient(): Anthropic {
 // Called weekly by a cron scheduler (e.g. Vercel Cron or Railway Cron).
 // Protected by CRON_SECRET via Authorization: Bearer <secret> header.
 export async function POST(req: NextRequest) {
-  const secret = process.env.CRON_SECRET
+  const secret = await getApiKey('cron_secret')
   const authHeader = req.headers.get('authorization')
   if (secret && authHeader !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -31,7 +32,8 @@ export async function POST(req: NextRequest) {
   const prompt = buildBlogPrompt() // no keyword — picks a random topic
 
   try {
-    const message = await getClient().messages.create({
+    const client = await getClient()
+    const message = await client.messages.create({
       model: 'claude-sonnet-4-5',
       max_tokens: 3000,
       messages: [{ role: 'user', content: prompt }],

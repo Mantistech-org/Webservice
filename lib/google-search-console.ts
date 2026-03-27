@@ -1,4 +1,5 @@
 import * as crypto from 'crypto'
+import { getApiKey } from '@/lib/api-keys'
 
 type ServiceAccountKey = {
   client_email: string
@@ -7,8 +8,8 @@ type ServiceAccountKey = {
 
 export const gscEnabled = !!process.env.GOOGLE_SEARCH_CONSOLE_KEY
 
-function getServiceAccount(): ServiceAccountKey {
-  const raw = process.env.GOOGLE_SEARCH_CONSOLE_KEY
+async function getServiceAccount(): Promise<ServiceAccountKey> {
+  const raw = await getApiKey('google_search_console')
   if (!raw) throw new Error('GOOGLE_SEARCH_CONSOLE_KEY is not set')
   try {
     return JSON.parse(raw) as ServiceAccountKey
@@ -23,7 +24,7 @@ function base64url(input: string | Buffer): string {
 }
 
 async function getAccessToken(scope: string): Promise<string> {
-  const sa = getServiceAccount()
+  const sa = await getServiceAccount()
   const now = Math.floor(Date.now() / 1000)
 
   const header = base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))

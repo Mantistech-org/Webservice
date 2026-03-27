@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/auth'
 import { query, pgEnabled } from '@/lib/pg'
 import { Resend } from 'resend'
+import { getApiKey } from '@/lib/api-keys'
 
 const OUTREACH_FROM = 'Mantis Tech <support@mantistech.org>'
 
@@ -46,7 +47,7 @@ export async function POST(
     return NextResponse.json({ error: 'Database not configured.' }, { status: 503 })
   }
 
-  const resendKey = process.env.RESEND_API_KEY
+  const resendKey = await getApiKey('resend')
   if (!resendKey) {
     return NextResponse.json({ error: 'RESEND_API_KEY is not configured.' }, { status: 500 })
   }

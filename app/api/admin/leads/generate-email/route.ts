@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/auth'
 import Anthropic from '@anthropic-ai/sdk'
+import { getApiKey } from '@/lib/api-keys'
 
 export async function POST(req: NextRequest) {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
+  const apiKey = await getApiKey('anthropic')
   if (!apiKey) {
     return NextResponse.json({ error: 'ANTHROPIC_API_KEY is not configured.' }, { status: 500 })
   }

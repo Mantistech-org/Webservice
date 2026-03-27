@@ -1,12 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { Project, PLAN_PAGE_LIMITS } from '@/types'
+import { getApiKey } from '@/lib/api-keys'
 
 let _client: Anthropic | null = null
-function getClient(): Anthropic {
+async function getClient(): Promise<Anthropic> {
   if (!_client) {
-    const apiKey = process.env.ANTHROPIC_API_KEY
+    const apiKey = await getApiKey('anthropic')
     if (!apiKey) {
-      throw new Error('ANTHROPIC_API_KEY environment variable is not set')
+      throw new Error('ANTHROPIC_API_KEY is not configured')
     }
     _client = new Anthropic({ apiKey })
   }
@@ -158,7 +159,8 @@ OUTPUT: Respond with ONLY the complete HTML file starting with <!DOCTYPE html> a
   console.log(`[anthropic] Starting website generation for project ${project.id} (${project.businessName})`)
 
   // 120-second timeout on the API call
-  const message = await getClient().messages.create(
+  const client = await getClient()
+  const message = await client.messages.create(
     {
       model: 'claude-sonnet-4-5',
       max_tokens: 16000,
