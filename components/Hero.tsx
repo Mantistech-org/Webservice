@@ -30,8 +30,8 @@ export default function Hero() {
       </div>
 
       {/* Slideshow section bar */}
-      <div className="flex justify-center items-center py-4 bg-[#d1d5db]">
-        <p className="font-mono text-xs text-[#1f2937] tracking-widest uppercase">
+      <div className="flex justify-center items-center py-4 bg-[#111111]">
+        <p className="font-mono text-xs text-white tracking-widest uppercase">
           Example Sites We Build
         </p>
       </div>
