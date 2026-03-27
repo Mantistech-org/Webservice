@@ -6,7 +6,14 @@ type ServiceAccountKey = {
   private_key: string
 }
 
+// Synchronous flag — only reflects env vars present at startup.
+// Use isGscEnabled() for checks that must include Supabase-stored keys.
 export const gscEnabled = !!process.env.GOOGLE_SEARCH_CONSOLE_KEY
+
+export async function isGscEnabled(): Promise<boolean> {
+  const key = await getApiKey('google_search_console')
+  return !!key
+}
 
 async function getServiceAccount(): Promise<ServiceAccountKey> {
   const raw = await getApiKey('google_search_console')

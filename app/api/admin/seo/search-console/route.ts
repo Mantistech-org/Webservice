@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/auth'
-import { gscEnabled, getSearchAnalytics } from '@/lib/google-search-console'
+import { isGscEnabled, getSearchAnalytics } from '@/lib/google-search-console'
 
 // GET /api/admin/seo/search-console?days=28
 export async function GET(req: NextRequest) {
@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  if (!gscEnabled) {
+  if (!(await isGscEnabled())) {
     return NextResponse.json(
       { error: 'Google Search Console is not configured. Add GOOGLE_SEARCH_CONSOLE_KEY to your environment.' },
       { status: 503 }

@@ -1,6 +1,28 @@
+// POST /api/cron/generate-blog
+//
+// Weekly cron — generates a random-topic blog post draft and saves it with status='draft'.
+// The post requires manual review and publishing in the admin SEO > Blog panel.
+//
+// ── Scheduling with cron-job.org ──────────────────────────────────────────────
+// Since this project does not use railway.toml or Vercel cron, schedule via https://cron-job.org:
+//
+//   1. Create a free account at https://cron-job.org
+//   2. Click "Create Cronjob"
+//   3. Title:     Generate weekly blog post
+//      URL:       https://<your-domain>/api/cron/generate-blog
+//      Method:    POST
+//      Schedule:  Custom — every Monday at 08:00 UTC
+//                 Cron expression: 0 8 * * 1
+//   4. Under "Headers", add:
+//        Authorization: Bearer <value of CRON_SECRET from Supabase api_keys or Railway env>
+//   5. Save and enable.
+//
+// To test: click "Run now" in the cron-job.org dashboard and check the execution log.
+// ──────────────────────────────────────────────────────────────────────────────
+
 import { NextRequest, NextResponse } from 'next/server'
 import { query, pgEnabled } from '@/lib/pg'
-import { gscEnabled } from '@/lib/google-search-console'
+import { isGscEnabled } from '@/lib/google-search-console'
 import Anthropic from '@anthropic-ai/sdk'
 import { buildBlogPrompt } from '@/app/api/admin/seo/blog/route'
 import { getApiKey } from '@/lib/api-keys'
@@ -15,9 +37,6 @@ async function getClient(): Promise<Anthropic> {
   return _client
 }
 
-// POST /api/cron/generate-blog
-// Called weekly by a cron scheduler (e.g. Vercel Cron or Railway Cron).
-// Protected by CRON_SECRET via Authorization: Bearer <secret> header.
 export async function POST(req: NextRequest) {
   const secret = await getApiKey('cron_secret')
   const authHeader = req.headers.get('authorization')
@@ -75,8 +94,7 @@ export async function POST(req: NextRequest) {
     console.log(`[cron/generate-blog] Draft created: "${post.title}" (${post.slug})`)
 
     // Sitemap submission is deferred to the publish step (PUT /api/admin/seo/blog/[id]).
-    // gscEnabled is referenced here to keep the import live if tree-shaking is aggressive.
-    console.log(`[cron/generate-blog] GSC enabled: ${gscEnabled}`)
+    isGscEnabled().then((enabled) => console.log(`[cron/generate-blog] GSC enabled: ${enabled}`))
 
     return NextResponse.json({ created: true, post })
   } catch (err) {
