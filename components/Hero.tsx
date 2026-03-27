@@ -30,7 +30,7 @@ export default function Hero() {
       </div>
 
       {/* Slideshow section bar */}
-      <div className="flex justify-center items-center py-4 bg-[#111111]">
+      <div className="flex justify-center items-center py-4 bg-[#111111] dark:bg-[#3a3a3a]">
         <p className="font-mono text-xs text-white tracking-widest uppercase">
           Example Sites We Build
         </p>
