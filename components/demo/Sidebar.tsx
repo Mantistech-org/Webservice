@@ -179,7 +179,7 @@ export default function Sidebar({ expanded, activePage, onNavigate, darkMode }: 
       className="fixed top-14 left-0 bottom-0 overflow-y-auto overflow-x-hidden z-40 transition-all duration-200 border-r"
       style={{
         width: expanded ? 240 : 64,
-        backgroundColor: darkMode ? '#303030' : '#555555',
+        backgroundColor: '#303030',
         borderColor: 'rgba(255,255,255,0.1)',
       }}
     >
