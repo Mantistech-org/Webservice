@@ -1,9 +1,101 @@
 import Link from 'next/link'
-import { PLANS, Plan } from '@/types'
+import { getPublicPricing, type PublicPlan } from '@/lib/pricing'
 
-const planKeys: Plan[] = ['starter', 'mid', 'pro']
+// Revalidate every 60 seconds so price and promotion changes propagate quickly
+export const revalidate = 60
 
-export default function Pricing() {
+function PlanCard({ plan, highlight }: { plan: PublicPlan; highlight: boolean }) {
+  const { promotion } = plan
+
+  return (
+    <div
+      className={`relative rounded border flex flex-col ${
+        highlight ? 'border-accent bg-card' : 'border-border bg-card'
+      }`}
+    >
+      {highlight && (
+        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-accent text-black font-mono text-xs tracking-widest rounded-full">
+          MOST POPULAR
+        </div>
+      )}
+
+      <div className="p-8 flex-1 flex flex-col">
+        <div className="font-mono text-xs text-muted tracking-widest uppercase mb-3">
+          {plan.name} Plan
+        </div>
+
+        {/* Upfront fee */}
+        <div className="font-heading text-5xl text-primary leading-none mb-1">
+          ${plan.upfront}
+          <span className="font-mono text-sm text-muted ml-2 font-normal">upfront</span>
+        </div>
+
+        {/* Monthly price - with or without active promotion */}
+        {promotion ? (
+          <div className="mb-2">
+            <div className="flex items-baseline gap-2">
+              <span className="font-mono text-base text-muted line-through">
+                ${plan.monthly}/mo
+              </span>
+            </div>
+            <div className="font-heading text-2xl text-teal leading-none">
+              ${promotion.discounted_monthly}
+              <span className="font-mono text-sm text-muted ml-1 font-normal">/mo</span>
+            </div>
+            <div className="font-mono text-xs text-accent tracking-wider mt-1">
+              {promotion.label}
+              {promotion.duration_months
+                ? `, first ${promotion.duration_months} month${promotion.duration_months === 1 ? '' : 's'}`
+                : ''}
+            </div>
+          </div>
+        ) : (
+          <div className="font-heading text-2xl text-teal leading-none mb-2">
+            ${plan.monthly}
+            <span className="font-mono text-sm text-muted ml-2 font-normal">/month</span>
+          </div>
+        )}
+
+        <div className="font-mono text-xs text-muted mb-6">Up to {plan.pages} pages</div>
+
+        <ul className="space-y-3 flex-1">
+          {plan.features.map((feature) => (
+            <li key={feature} className="flex items-start gap-3 text-sm">
+              <span className="text-accent mt-0.5 shrink-0">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </span>
+              <span className="text-teal">{feature}</span>
+            </li>
+          ))}
+        </ul>
+
+        <Link
+          href={`/intake?plan=${plan.plan_key}`}
+          className={`mt-8 block text-center font-mono text-sm py-3 px-6 rounded tracking-wider transition-opacity duration-200 ${
+            highlight
+              ? 'bg-accent text-black hover:opacity-90'
+              : 'border border-border text-teal hover:border-accent hover:text-accent'
+          }`}
+        >
+          Get Started
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+export default async function Pricing() {
+  const plans = await getPublicPricing()
+
   return (
     <section id="pricing" className="py-24 px-6 bg-card border-t border-border">
       <div className="max-w-7xl mx-auto">
@@ -20,94 +112,14 @@ export default function Pricing() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {planKeys.map((key) => {
-            const plan = PLANS[key]
-            const isHighlight = key === 'mid'
-            return (
-              <div
-                key={key}
-                className={`relative rounded border flex flex-col ${
-                  isHighlight
-                    ? 'border-accent bg-card'
-                    : 'border-border bg-card'
-                }`}
-              >
-                {isHighlight && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-accent text-black font-mono text-xs tracking-widest rounded-full">
-                    MOST POPULAR
-                  </div>
-                )}
-
-                <div className="p-8 flex-1 flex flex-col">
-                  <div className="font-mono text-xs text-muted tracking-widest uppercase mb-3">
-                    {plan.name} Plan
-                  </div>
-
-                  <div className="font-heading text-5xl text-primary leading-none mb-1">
-                    ${plan.upfront}
-                    <span className="font-mono text-sm text-muted ml-2 font-normal">upfront</span>
-                  </div>
-
-                  {key === 'mid' ? (
-                    <div className="mb-2">
-                      <div className="flex items-baseline gap-2">
-                        <span className="font-mono text-base text-muted line-through">${plan.monthly}/mo</span>
-                      </div>
-                      <div className="font-heading text-2xl text-teal leading-none">
-                        $87.50<span className="font-mono text-sm text-muted ml-1 font-normal">/mo</span>
-                      </div>
-                      <div className="font-mono text-xs text-accent tracking-wider mt-1">Launch Pricing, first 3 months</div>
-                    </div>
-                  ) : key === 'pro' ? (
-                    <div className="mb-2">
-                      <div className="flex items-baseline gap-2">
-                        <span className="font-mono text-base text-muted line-through">${plan.monthly}/mo</span>
-                      </div>
-                      <div className="font-heading text-2xl text-teal leading-none">
-                        $175<span className="font-mono text-sm text-muted ml-1 font-normal">/mo</span>
-                      </div>
-                      <div className="font-mono text-xs text-accent tracking-wider mt-1">Launch Pricing, first 3 months</div>
-                    </div>
-                  ) : (
-                    <div className="font-heading text-2xl text-teal leading-none mb-2">
-                      ${plan.monthly}
-                      <span className="font-mono text-sm text-muted ml-2 font-normal">/month</span>
-                    </div>
-                  )}
-
-                  <div className="font-mono text-xs text-muted mb-6">Up to {plan.pages} pages</div>
-
-                  <ul className="space-y-3 flex-1">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-3 text-sm">
-                        <span className="text-accent mt-0.5 shrink-0">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        </span>
-                        <span className="text-teal">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Link
-                    href={`/intake?plan=${key}`}
-                    className={`mt-8 block text-center font-mono text-sm py-3 px-6 rounded tracking-wider transition-opacity duration-200 ${
-                      isHighlight
-                        ? 'bg-accent text-black hover:opacity-90'
-                        : 'border border-border text-teal hover:border-accent hover:text-accent'
-                    }`}
-                  >
-                    Get Started
-                  </Link>
-                </div>
-              </div>
-            )
-          })}
+          {plans.map((plan, idx) => (
+            <PlanCard key={plan.plan_key} plan={plan} highlight={idx === 1} />
+          ))}
         </div>
 
         <p className="text-center font-mono text-xs text-muted mt-8 tracking-wider">
-          All plans include a custom-built website, SSL, and managed hosting. Add-ons available separately.
+          All plans include a custom-built website, SSL, and managed hosting. Add-ons available
+          separately.
         </p>
       </div>
     </section>

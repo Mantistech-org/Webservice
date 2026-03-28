@@ -61,6 +61,9 @@ export default function AdminProjectPage() {
   const [copiedId, setCopiedId] = useState(false)
   const [activating, setActivating] = useState(false)
   const [activateMsg, setActivateMsg] = useState('')
+  const [discountCouponId, setDiscountCouponId] = useState('')
+  const [applyingDiscount, setApplyingDiscount] = useState(false)
+  const [discountMsg, setDiscountMsg] = useState('')
 
   const fetchProject = useCallback(async () => {
     try {
@@ -270,6 +273,30 @@ export default function AdminProjectPage() {
       setRegenMsg(err instanceof Error ? err.message : 'Regeneration failed.')
     } finally {
       setRegenerating(false)
+    }
+  }
+
+  const handleApplyDiscount = async () => {
+    if (!discountCouponId.trim()) return
+    setApplyingDiscount(true)
+    setDiscountMsg('')
+    try {
+      const res = await fetch(`/api/admin/projects/${id}/discount`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ coupon_id: discountCouponId.trim() }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setDiscountMsg('Discount applied to client account.')
+        setDiscountCouponId('')
+      } else {
+        setDiscountMsg(data.error ?? 'Failed to apply discount.')
+      }
+    } catch {
+      setDiscountMsg('Network error.')
+    } finally {
+      setApplyingDiscount(false)
     }
   }
 
@@ -842,6 +869,37 @@ export default function AdminProjectPage() {
                 )}
               </div>
             )}
+
+            {/* Apply Discount */}
+            <div className="bg-card border border-border rounded p-6">
+              <h3 className="font-mono text-xs text-emerald-700 dark:text-accent tracking-widest uppercase mb-4">Apply Discount</h3>
+              <p className="font-mono text-xs text-muted mb-3">
+                Enter a Stripe Coupon ID to apply a discount to this client&apos;s subscription.
+                Coupon IDs are listed in the{' '}
+                <a href="/admin/pricing" className="text-accent hover:underline">Pricing Manager</a>.
+              </p>
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  value={discountCouponId}
+                  onChange={(e) => setDiscountCouponId(e.target.value)}
+                  placeholder="Stripe Coupon ID (e.g. XwYz1234)"
+                  className="form-input text-xs w-full font-mono"
+                />
+                <button
+                  onClick={handleApplyDiscount}
+                  disabled={applyingDiscount || !discountCouponId.trim()}
+                  className="w-full font-mono text-xs bg-accent text-black py-2.5 rounded hover:bg-white transition-all disabled:opacity-60"
+                >
+                  {applyingDiscount ? 'Applying...' : 'Apply Discount'}
+                </button>
+                {discountMsg && (
+                  <p className={`font-mono text-xs ${discountMsg.startsWith('Discount applied') ? 'text-emerald-700 dark:text-accent' : 'text-red-400'}`}>
+                    {discountMsg}
+                  </p>
+                )}
+              </div>
+            </div>
 
             {/* Send Notification */}
             <div className="bg-card border border-border rounded p-6">
