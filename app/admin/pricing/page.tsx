@@ -223,12 +223,20 @@ export default function PricingPage() {
       const res = await fetch('/api/admin/pricing/sync', { method: 'POST' })
       const data = await res.json()
       if (res.ok) {
-        const { synced, results, message } = data as {
+        const {
+          synced,
+          results,
+          skipped,
+          orphaned,
+          message,
+        } = data as {
           synced: number
-          results: { plan_key: string; name: string; action: string }[]
+          results: { plan_key: string; name: string; action: string; upfront: number; monthly: number }[]
+          skipped: { id: string; name: string; reason: string }[]
+          orphaned: { plan_key: string }[]
           message?: string
         }
-        if (synced === 0) {
+        if (synced === 0 && (!skipped || skipped.length === 0)) {
           setSyncMsg({ text: message ?? 'No products found in Stripe.', ok: false })
         } else {
           const inserted = results.filter((r) => r.action === 'inserted').length
@@ -236,6 +244,8 @@ export default function PricingPage() {
           const parts: string[] = []
           if (inserted > 0) parts.push(`${inserted} added`)
           if (updated > 0) parts.push(`${updated} updated`)
+          if (skipped?.length > 0) parts.push(`${skipped.length} skipped (no USD prices)`)
+          if (orphaned?.length > 0) parts.push(`${orphaned.length} orphaned`)
           setSyncMsg({ text: `Sync complete — ${parts.join(', ')}.`, ok: true })
           await Promise.all([fetchPlans(), fetchStripeProducts()])
         }
