@@ -10,7 +10,8 @@ export type PricingPlan = {
   monthly: number
   pages: number
   features: string[]
-  stripe_product_id: string | null
+  stripe_setup_product_id: string | null      // one-time/setup Stripe product
+  stripe_monthly_product_id: string | null    // recurring Stripe product
   stripe_monthly_price_id: string | null
   stripe_upfront_price_id: string | null
   visible: boolean

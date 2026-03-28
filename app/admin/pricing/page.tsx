@@ -12,11 +12,19 @@ type PricingPlan = {
   monthly: number
   pages: number
   features: string[]
-  stripe_product_id: string | null
+  stripe_setup_product_id: string | null
+  stripe_monthly_product_id: string | null
   stripe_monthly_price_id: string | null
   stripe_upfront_price_id: string | null
   visible: boolean
   sort_order: number
+}
+
+type StripeProductOption = {
+  id: string
+  name: string
+  price: number
+  price_id: string
 }
 
 type PricingCoupon = {
@@ -48,7 +56,7 @@ type CustomAddon = {
   updated_at: string
 }
 
-type PlanEdits = { monthly: number; upfront: number; stripe_product_id: string }
+type PlanEdits = { stripe_setup_product_id: string; stripe_monthly_product_id: string }
 
 type CouponForm = {
   code: string
@@ -94,11 +102,13 @@ export default function PricingPage() {
   const [plans, setPlans] = useState<PricingPlan[]>([])
   const [plansLoading, setPlansLoading] = useState(true)
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null)
-  const [planEdits, setPlanEdits] = useState<PlanEdits>({ monthly: 0, upfront: 0, stripe_product_id: '' })
+  const [planEdits, setPlanEdits] = useState<PlanEdits>({ stripe_setup_product_id: '', stripe_monthly_product_id: '' })
   const [savingPlan, setSavingPlan] = useState(false)
   const [planMsg, setPlanMsg] = useState<{ id: string; text: string; ok: boolean } | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState<{ text: string; ok: boolean } | null>(null)
+  const [stripeProducts, setStripeProducts] = useState<{ setup: StripeProductOption[]; monthly: StripeProductOption[] }>({ setup: [], monthly: [] })
+  const [stripeProductsLoading, setStripeProductsLoading] = useState(false)
 
   // Custom Add-ons
   const [customAddons, setCustomAddons] = useState<CustomAddon[]>([])
@@ -131,6 +141,19 @@ export default function PricingPage() {
     }
   }, [])
 
+  const fetchStripeProducts = useCallback(async () => {
+    setStripeProductsLoading(true)
+    try {
+      const res = await fetch('/api/admin/pricing/stripe-products')
+      if (res.ok) {
+        const data = await res.json()
+        setStripeProducts({ setup: data.setup_products ?? [], monthly: data.monthly_products ?? [] })
+      }
+    } finally {
+      setStripeProductsLoading(false)
+    }
+  }, [])
+
   const fetchAddons = useCallback(async () => {
     setAddonsLoading(true)
     try {
@@ -152,6 +175,7 @@ export default function PricingPage() {
   }, [])
 
   useEffect(() => { fetchPlans() }, [fetchPlans])
+  useEffect(() => { fetchStripeProducts() }, [fetchStripeProducts])
   useEffect(() => { if (tab === 'addons') fetchAddons() }, [tab, fetchAddons])
   useEffect(() => { if (tab === 'discounts') fetchCoupons() }, [tab, fetchCoupons])
 
@@ -159,7 +183,10 @@ export default function PricingPage() {
 
   function startEditPlan(plan: PricingPlan) {
     setEditingPlanId(plan.id)
-    setPlanEdits({ monthly: plan.monthly, upfront: plan.upfront, stripe_product_id: plan.stripe_product_id ?? '' })
+    setPlanEdits({
+      stripe_setup_product_id: plan.stripe_setup_product_id ?? '',
+      stripe_monthly_product_id: plan.stripe_monthly_product_id ?? '',
+    })
     setPlanMsg(null)
   }
 
@@ -208,7 +235,7 @@ export default function PricingPage() {
           if (inserted > 0) parts.push(`${inserted} added`)
           if (updated > 0) parts.push(`${updated} updated`)
           setSyncMsg({ text: `Sync complete — ${parts.join(', ')}.`, ok: true })
-          await fetchPlans()
+          await Promise.all([fetchPlans(), fetchStripeProducts()])
         }
       } else {
         setSyncMsg({ text: data.error ?? 'Sync failed.', ok: false })
@@ -622,56 +649,92 @@ export default function PricingPage() {
                   </div>
 
                   {isEditing ? (
-                    <div className="pt-4 border-t border-border grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div>
-                        <L>Upfront Fee ($)</L>
-                        <input type="number" min="0" value={planEdits.upfront}
-                          onChange={(e) => setPlanEdits((p) => ({ ...p, upfront: parseInt(e.target.value, 10) || 0 }))}
-                          className="form-input text-sm w-full" />
-                      </div>
-                      <div>
-                        <L>Monthly Price ($)</L>
-                        <input type="number" min="0" value={planEdits.monthly}
-                          onChange={(e) => setPlanEdits((p) => ({ ...p, monthly: parseInt(e.target.value, 10) || 0 }))}
-                          className="form-input text-sm w-full" />
-                      </div>
-                      <div>
-                        <L>Stripe Product ID</L>
-                        <input type="text" value={planEdits.stripe_product_id}
-                          onChange={(e) => setPlanEdits((p) => ({ ...p, stripe_product_id: e.target.value }))}
-                          className="form-input text-sm w-full font-mono" placeholder="prod_..." />
+                    <div className="pt-4 border-t border-border space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <L>
+                            Setup / One-Time Product
+                            {stripeProductsLoading && <span className="text-dim normal-case tracking-normal ml-1">(loading...)</span>}
+                          </L>
+                          <select
+                            value={planEdits.stripe_setup_product_id}
+                            onChange={(e) => setPlanEdits((p) => ({ ...p, stripe_setup_product_id: e.target.value }))}
+                            className="form-input text-sm w-full"
+                          >
+                            <option value="">-- No setup product --</option>
+                            {stripeProducts.setup.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.name} (${p.price} one-time)
+                              </option>
+                            ))}
+                          </select>
+                          <p className="font-mono text-xs text-dim mt-1">
+                            One-time products from Stripe. Selecting one auto-sets the setup fee.
+                          </p>
+                        </div>
+                        <div>
+                          <L>
+                            Monthly Subscription Product
+                            {stripeProductsLoading && <span className="text-dim normal-case tracking-normal ml-1">(loading...)</span>}
+                          </L>
+                          <select
+                            value={planEdits.stripe_monthly_product_id}
+                            onChange={(e) => setPlanEdits((p) => ({ ...p, stripe_monthly_product_id: e.target.value }))}
+                            className="form-input text-sm w-full"
+                          >
+                            <option value="">-- No monthly product --</option>
+                            {stripeProducts.monthly.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.name} (${p.price}/mo)
+                              </option>
+                            ))}
+                          </select>
+                          <p className="font-mono text-xs text-dim mt-1">
+                            Recurring monthly products from Stripe. Selecting one auto-sets the monthly fee.
+                          </p>
+                        </div>
                       </div>
                       {planMsg?.id === plan.id && (
-                        <p className={`sm:col-span-3 font-mono text-xs ${planMsg.ok ? 'text-emerald-700 dark:text-accent' : 'text-red-400'}`}>
+                        <p className={`font-mono text-xs ${planMsg.ok ? 'text-emerald-700 dark:text-accent' : 'text-red-400'}`}>
                           {planMsg.text}
                         </p>
                       )}
-                      <p className="sm:col-span-3 font-mono text-xs text-muted">
-                        {plan.stripe_product_id || planEdits.stripe_product_id
-                          ? 'Price changes will create a new Stripe Price object and archive the previous one automatically.'
-                          : 'No Stripe Product ID linked — price changes update the display only.'}
-                      </p>
                     </div>
                   ) : (
-                    <div className="flex flex-wrap gap-8">
-                      <div>
-                        <div className="font-mono text-xs text-muted tracking-widest uppercase mb-0.5">Upfront</div>
-                        <div className="font-heading text-2xl text-primary">${plan.upfront}</div>
-                      </div>
-                      <div>
-                        <div className="font-mono text-xs text-muted tracking-widest uppercase mb-0.5">Monthly</div>
-                        <div className="font-heading text-2xl text-primary">${plan.monthly}/mo</div>
-                      </div>
-                      <div>
-                        <div className="font-mono text-xs text-muted tracking-widest uppercase mb-0.5">Stripe Product</div>
-                        <div className="font-mono text-xs text-teal break-all">
-                          {plan.stripe_product_id ?? <span className="text-dim">Not linked</span>}
+                    <div>
+                      {/* Package pricing display */}
+                      {(plan.upfront > 0 || plan.monthly > 0) ? (
+                        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                          {plan.upfront > 0 && (
+                            <span className="font-heading text-xl text-primary">
+                              ${plan.upfront}
+                              <span className="font-mono text-xs text-muted ml-1.5">one-time setup fee</span>
+                            </span>
+                          )}
+                          {plan.upfront > 0 && plan.monthly > 0 && (
+                            <span className="font-mono text-xs text-dim">+</span>
+                          )}
+                          {plan.monthly > 0 && (
+                            <span className="font-heading text-xl text-primary">
+                              ${plan.monthly}
+                              <span className="font-mono text-xs text-muted ml-1">/month</span>
+                            </span>
+                          )}
                         </div>
-                        {plan.stripe_monthly_price_id && (
-                          <div className="font-mono text-xs text-dim mt-0.5">Monthly: {plan.stripe_monthly_price_id}</div>
+                      ) : (
+                        <p className="font-mono text-xs text-dim">No prices set — link Stripe products to set pricing.</p>
+                      )}
+                      {/* Linked product IDs */}
+                      <div className="mt-3 space-y-0.5">
+                        {plan.stripe_setup_product_id ? (
+                          <div className="font-mono text-xs text-dim">Setup: {plan.stripe_setup_product_id}</div>
+                        ) : (
+                          <div className="font-mono text-xs text-dim">Setup: not linked</div>
                         )}
-                        {plan.stripe_upfront_price_id && (
-                          <div className="font-mono text-xs text-dim mt-0.5">Upfront: {plan.stripe_upfront_price_id}</div>
+                        {plan.stripe_monthly_product_id ? (
+                          <div className="font-mono text-xs text-dim">Monthly: {plan.stripe_monthly_product_id}</div>
+                        ) : (
+                          <div className="font-mono text-xs text-dim">Monthly: not linked</div>
                         )}
                       </div>
                     </div>

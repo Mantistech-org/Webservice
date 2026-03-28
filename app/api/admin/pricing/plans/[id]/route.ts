@@ -4,17 +4,32 @@ import { query, pgEnabled } from '@/lib/pg'
 import { getStripe } from '@/lib/stripe'
 import { supabase, supabaseEnabled } from '@/lib/supabase'
 import { invalidateApiKeyCache } from '@/lib/api-keys'
+import Stripe from 'stripe'
 import type { PricingPlan } from '@/app/api/admin/pricing/plans/route'
 
 type PatchBody = {
-  monthly?: number
-  upfront?: number
   visible?: boolean
-  stripe_product_id?: string
+  stripe_setup_product_id?: string | null
+  stripe_monthly_product_id?: string | null
+}
+
+// Fetch all pages of a Stripe list resource
+async function listAll<T>(
+  fetcher: (startingAfter?: string) => Promise<Stripe.ApiList<T & { id: string }>>
+): Promise<T[]> {
+  const results: T[] = []
+  let startingAfter: string | undefined
+  while (true) {
+    const page = await fetcher(startingAfter)
+    results.push(...(page.data as T[]))
+    if (!page.has_more || page.data.length === 0) break
+    startingAfter = (page.data[page.data.length - 1] as { id: string }).id
+  }
+  return results
 }
 
 // PATCH /api/admin/pricing/plans/[id]
-// Handles: visibility toggle, price updates (with Stripe sync), product ID linking
+// Handles: visibility toggle, setup/monthly product linking (auto-fetches prices from Stripe)
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -39,12 +54,6 @@ export async function PATCH(
   }
   const plan = rows[0]
 
-  // Effective product ID — use new value from body if provided, otherwise existing
-  const effectiveProductId =
-    typeof body.stripe_product_id === 'string'
-      ? body.stripe_product_id.trim() || null
-      : plan.stripe_product_id
-
   const updates: Record<string, unknown> = {}
 
   // Visibility toggle — no Stripe interaction needed
@@ -52,99 +61,110 @@ export async function PATCH(
     updates.visible = body.visible
   }
 
-  // Stripe product ID link — just a DB update
-  if (
-    typeof body.stripe_product_id === 'string' &&
-    body.stripe_product_id.trim() !== (plan.stripe_product_id ?? '')
-  ) {
-    updates.stripe_product_id = effectiveProductId
-  }
+  // Setup product link — look up one-time price from Stripe
+  if ('stripe_setup_product_id' in body) {
+    const productId = typeof body.stripe_setup_product_id === 'string'
+      ? body.stripe_setup_product_id.trim() || null
+      : null
 
-  // Monthly price change
-  if (typeof body.monthly === 'number' && body.monthly !== plan.monthly) {
-    if (effectiveProductId) {
+    if (productId === null) {
+      // Unlinking: clear setup fields
+      updates.stripe_setup_product_id = null
+      updates.upfront = 0
+      updates.stripe_upfront_price_id = null
+    } else if (productId !== plan.stripe_setup_product_id) {
+      // New product: fetch its one-time price from Stripe
       try {
         const stripe = await getStripe()
+        const prices = await listAll<Stripe.Price>((startingAfter) =>
+          stripe.prices.list({
+            product: productId,
+            active: true,
+            limit: 100,
+            ...(startingAfter ? { starting_after: startingAfter } : {}),
+          })
+        )
+        const oneTimePrices = prices
+          .filter((p) => p.type === 'one_time' && p.currency === 'usd')
+          .sort((a, b) => b.created - a.created)
 
-        const newPrice = await stripe.prices.create({
-          product: effectiveProductId,
-          currency: 'usd',
-          unit_amount: body.monthly * 100,
-          recurring: { interval: 'month' },
-          nickname: `${plan.name} Monthly (updated ${new Date().toISOString().slice(0, 10)})`,
-        })
-
-        // Archive old price (non-fatal if it fails)
-        if (plan.stripe_monthly_price_id) {
-          await stripe.prices
-            .update(plan.stripe_monthly_price_id, { active: false })
-            .catch((e) =>
-              console.warn('[pricing/plans] Could not archive old monthly price:', e)
-            )
-        }
-
-        updates.stripe_monthly_price_id = newPrice.id
-
-        // Keep api_keys table in sync so the checkout flow picks up the new ID
-        if (supabaseEnabled) {
-          await supabase.from('api_keys').upsert(
-            {
-              scope: 'admin',
-              service: `stripe_price_${plan.plan_key}_monthly`,
-              key_value: newPrice.id,
-            },
-            { onConflict: 'scope,service' }
+        if (oneTimePrices.length === 0) {
+          return NextResponse.json(
+            { error: 'Selected setup product has no active one-time USD price.' },
+            { status: 422 }
           )
-          invalidateApiKeyCache(`stripe_price_${plan.plan_key}_monthly`)
-        }
-      } catch (err) {
-        console.error('[pricing/plans] Stripe monthly price creation failed:', err)
-        return NextResponse.json({ error: 'Failed to create new Stripe price.' }, { status: 500 })
-      }
-    }
-    updates.monthly = body.monthly
-  }
-
-  // Upfront price change
-  if (typeof body.upfront === 'number' && body.upfront !== plan.upfront) {
-    if (effectiveProductId) {
-      try {
-        const stripe = await getStripe()
-
-        const newPrice = await stripe.prices.create({
-          product: effectiveProductId,
-          currency: 'usd',
-          unit_amount: body.upfront * 100,
-          nickname: `${plan.name} Upfront (updated ${new Date().toISOString().slice(0, 10)})`,
-        })
-
-        if (plan.stripe_upfront_price_id) {
-          await stripe.prices
-            .update(plan.stripe_upfront_price_id, { active: false })
-            .catch((e) =>
-              console.warn('[pricing/plans] Could not archive old upfront price:', e)
-            )
         }
 
-        updates.stripe_upfront_price_id = newPrice.id
+        const price = oneTimePrices[0]
+        updates.stripe_setup_product_id = productId
+        updates.upfront = Math.round((price.unit_amount ?? 0) / 100)
+        updates.stripe_upfront_price_id = price.id
 
         if (supabaseEnabled) {
           await supabase.from('api_keys').upsert(
-            {
-              scope: 'admin',
-              service: `stripe_price_${plan.plan_key}_upfront`,
-              key_value: newPrice.id,
-            },
+            { scope: 'admin', service: `stripe_price_${plan.plan_key}_upfront`, key_value: price.id },
             { onConflict: 'scope,service' }
           )
           invalidateApiKeyCache(`stripe_price_${plan.plan_key}_upfront`)
         }
       } catch (err) {
-        console.error('[pricing/plans] Stripe upfront price creation failed:', err)
-        return NextResponse.json({ error: 'Failed to create new Stripe price.' }, { status: 500 })
+        console.error('[pricing/plans] Setup product lookup failed:', err)
+        return NextResponse.json({ error: 'Failed to fetch setup product prices from Stripe.' }, { status: 500 })
       }
     }
-    updates.upfront = body.upfront
+  }
+
+  // Monthly product link — look up recurring price from Stripe
+  if ('stripe_monthly_product_id' in body) {
+    const productId = typeof body.stripe_monthly_product_id === 'string'
+      ? body.stripe_monthly_product_id.trim() || null
+      : null
+
+    if (productId === null) {
+      // Unlinking: clear monthly fields
+      updates.stripe_monthly_product_id = null
+      updates.monthly = 0
+      updates.stripe_monthly_price_id = null
+    } else if (productId !== plan.stripe_monthly_product_id) {
+      // New product: fetch its recurring price from Stripe
+      try {
+        const stripe = await getStripe()
+        const prices = await listAll<Stripe.Price>((startingAfter) =>
+          stripe.prices.list({
+            product: productId,
+            active: true,
+            limit: 100,
+            ...(startingAfter ? { starting_after: startingAfter } : {}),
+          })
+        )
+        const recurringPrices = prices
+          .filter((p) => p.type === 'recurring' && p.recurring?.interval === 'month' && p.currency === 'usd')
+          .sort((a, b) => b.created - a.created)
+
+        if (recurringPrices.length === 0) {
+          return NextResponse.json(
+            { error: 'Selected monthly product has no active recurring monthly USD price.' },
+            { status: 422 }
+          )
+        }
+
+        const price = recurringPrices[0]
+        updates.stripe_monthly_product_id = productId
+        updates.monthly = Math.round((price.unit_amount ?? 0) / 100)
+        updates.stripe_monthly_price_id = price.id
+
+        if (supabaseEnabled) {
+          await supabase.from('api_keys').upsert(
+            { scope: 'admin', service: `stripe_price_${plan.plan_key}_monthly`, key_value: price.id },
+            { onConflict: 'scope,service' }
+          )
+          invalidateApiKeyCache(`stripe_price_${plan.plan_key}_monthly`)
+        }
+      } catch (err) {
+        console.error('[pricing/plans] Monthly product lookup failed:', err)
+        return NextResponse.json({ error: 'Failed to fetch monthly product prices from Stripe.' }, { status: 500 })
+      }
+    }
   }
 
   if (Object.keys(updates).length === 0) {
@@ -154,7 +174,8 @@ export async function PATCH(
   // Build parameterized SET clause from safe, code-controlled keys only
   const allowed = new Set([
     'visible', 'monthly', 'upfront',
-    'stripe_product_id', 'stripe_monthly_price_id', 'stripe_upfront_price_id',
+    'stripe_setup_product_id', 'stripe_monthly_product_id',
+    'stripe_monthly_price_id', 'stripe_upfront_price_id',
   ])
   const setEntries = Object.entries(updates).filter(([k]) => allowed.has(k))
   const setClauses = setEntries.map(([k], i) => `${k} = $${i + 2}`).join(', ')
