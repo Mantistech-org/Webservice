@@ -1,13 +1,15 @@
 -- Pricing Plans: stores plan metadata, Stripe references, and public visibility
+-- Plans are populated by syncing from Stripe in the admin Pricing Manager,
+-- not seeded from hardcoded values.
 CREATE TABLE IF NOT EXISTS public.pricing_plans (
   id                      uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  plan_key                text NOT NULL UNIQUE,             -- 'starter' | 'mid' | 'pro'
+  plan_key                text NOT NULL UNIQUE,             -- slugified product name or metadata.plan_key
   name                    text NOT NULL,
-  upfront                 integer NOT NULL,                 -- dollars
-  monthly                 integer NOT NULL,                 -- dollars
-  pages                   integer NOT NULL,
-  features                jsonb NOT NULL DEFAULT '[]',
-  stripe_product_id       text,                            -- prod_xxx (links to Stripe Product)
+  upfront                 integer NOT NULL DEFAULT 0,       -- dollars
+  monthly                 integer NOT NULL DEFAULT 0,       -- dollars
+  pages                   integer NOT NULL DEFAULT 1,       -- from product metadata.pages
+  features                jsonb NOT NULL DEFAULT '[]',      -- from product metadata.features (JSON array)
+  stripe_product_id       text,                            -- prod_xxx
   stripe_monthly_price_id text,                            -- price_xxx for recurring monthly
   stripe_upfront_price_id text,                            -- price_xxx for one-time upfront
   visible                 boolean NOT NULL DEFAULT true,   -- show on public pricing page
@@ -19,35 +21,24 @@ CREATE TABLE IF NOT EXISTS public.pricing_plans (
 -- Pricing Promotions: discount codes backed by Stripe Coupons
 CREATE TABLE IF NOT EXISTS public.pricing_promotions (
   id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  stripe_coupon_id      text NOT NULL,                          -- Stripe Coupon ID
-  stripe_promo_code_id  text,                                   -- Stripe PromotionCode ID
-  code                  text NOT NULL UNIQUE,                   -- e.g. LAUNCH50
-  label                 text,                                   -- e.g. "Launch Pricing"
+  stripe_coupon_id      text NOT NULL,
+  stripe_promo_code_id  text,
+  code                  text NOT NULL UNIQUE,
+  label                 text,
   discount_type         text NOT NULL CHECK (discount_type IN ('percent', 'amount')),
-  discount_value        numeric NOT NULL,                       -- percent: 0-100, amount: dollars
-  applies_to            text NOT NULL DEFAULT 'all',            -- 'all' | 'starter' | 'mid' | 'pro'
-  duration_months       integer,                               -- null = forever
-  max_redemptions       integer,                               -- null = unlimited
+  discount_value        numeric NOT NULL,
+  applies_to            text NOT NULL DEFAULT 'all',
+  duration_months       integer,
+  max_redemptions       integer,
   times_redeemed        integer NOT NULL DEFAULT 0,
   expires_at            timestamptz,
   active                boolean NOT NULL DEFAULT true,
-  display_on_pricing    boolean NOT NULL DEFAULT false,        -- show label on public pricing card
+  display_on_pricing    boolean NOT NULL DEFAULT false,
   created_at            timestamptz NOT NULL DEFAULT now(),
   updated_at            timestamptz NOT NULL DEFAULT now()
 );
 
--- Seed initial plan data (safe to re-run — ON CONFLICT DO NOTHING)
-INSERT INTO public.pricing_plans (plan_key, name, upfront, monthly, pages, features, sort_order)
-VALUES
-  ('starter', 'Starter', 100, 40,  4,
-   '["Booking Calendar included free","Custom website","Hosting and domain","Monthly performance report"]', 1),
-  ('mid',     'Growth',  150, 125, 6,
-   '["Booking Calendar included free","Everything in Starter","Social Media Automation","Review Management","SEO Optimization","Ad Creative Generation"]', 2),
-  ('pro',     'Pro',     200, 250, 9,
-   '["Booking Calendar included free","Everything in Growth","E-Commerce Automation","Automated Lead Generation","Website Chatbot","Automated Email Marketing"]', 3)
-ON CONFLICT (plan_key) DO NOTHING;
-
--- updated_at trigger function (shared)
+-- updated_at trigger function (shared by both tables)
 CREATE OR REPLACE FUNCTION public.set_pricing_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN

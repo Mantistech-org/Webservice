@@ -74,6 +74,8 @@ export default function PricingPage() {
   const [planEdits, setPlanEdits] = useState<PlanEdits>({ monthly: 0, upfront: 0, stripe_product_id: '' })
   const [savingPlan, setSavingPlan] = useState(false)
   const [planMsg, setPlanMsg] = useState<{ id: string; text: string; ok: boolean } | null>(null)
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState<{ text: string; ok: boolean } | null>(null)
 
   // Discounts state
   const [coupons, setCoupons] = useState<PricingCoupon[]>([])
@@ -146,6 +148,39 @@ export default function PricingPage() {
       setPlanMsg({ id: planId, text: 'Network error.', ok: false })
     } finally {
       setSavingPlan(false)
+    }
+  }
+
+  async function handleSyncFromStripe() {
+    setSyncing(true)
+    setSyncMsg(null)
+    try {
+      const res = await fetch('/api/admin/pricing/sync', { method: 'POST' })
+      const data = await res.json()
+      if (res.ok) {
+        const { synced, results, message } = data as {
+          synced: number
+          results: { plan_key: string; name: string; action: string }[]
+          message?: string
+        }
+        if (synced === 0) {
+          setSyncMsg({ text: message ?? 'No products found in Stripe.', ok: false })
+        } else {
+          const inserted = results.filter((r) => r.action === 'inserted').length
+          const updated = results.filter((r) => r.action === 'updated').length
+          const parts: string[] = []
+          if (inserted > 0) parts.push(`${inserted} added`)
+          if (updated > 0) parts.push(`${updated} updated`)
+          setSyncMsg({ text: `Sync complete — ${parts.join(', ')}.`, ok: true })
+          await fetchPlans()
+        }
+      } else {
+        setSyncMsg({ text: data.error ?? 'Sync failed.', ok: false })
+      }
+    } catch {
+      setSyncMsg({ text: 'Network error.', ok: false })
+    } finally {
+      setSyncing(false)
     }
   }
 
@@ -241,10 +276,44 @@ export default function PricingPage() {
       {/* ── Plans Tab ─────────────────────────────────────────────────────────── */}
       {tab === 'plans' && (
         <div className="space-y-4">
+          {/* Sync toolbar */}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleSyncFromStripe}
+              disabled={syncing || plansLoading}
+              className="font-mono text-xs border border-border px-4 py-2 rounded text-muted hover:border-accent hover:text-accent transition-all disabled:opacity-60 flex items-center gap-2"
+            >
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className={syncing ? 'animate-spin' : ''}
+              >
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+              </svg>
+              {syncing ? 'Syncing from Stripe...' : 'Sync from Stripe'}
+            </button>
+            {syncMsg && (
+              <span className={`font-mono text-xs ${syncMsg.ok ? 'text-emerald-700 dark:text-accent' : 'text-red-400'}`}>
+                {syncMsg.text}
+              </span>
+            )}
+          </div>
+
           {plansLoading ? (
             <p className="font-mono text-xs text-muted animate-pulse">Loading plans...</p>
           ) : plans.length === 0 ? (
-            <p className="font-mono text-xs text-muted">No plans found. Run the pricing migration SQL first.</p>
+            <div className="bg-card border border-border rounded p-8 text-center">
+              <p className="font-mono text-xs text-muted mb-2">No plans found.</p>
+              <p className="font-mono text-xs text-dim">
+                Click &ldquo;Sync from Stripe&rdquo; to import all active products and their prices from Stripe automatically.
+              </p>
+            </div>
           ) : (
             plans.map((plan) => {
               const isEditing = editingPlanId === plan.id
