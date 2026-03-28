@@ -8,10 +8,11 @@ export type PricingPlan = {
   name: string
   upfront: number
   monthly: number
+  monthly_original: number | null             // regular/display price when a launch discount is active (shown with strikethrough)
   pages: number
   features: string[]
   stripe_setup_product_id: string | null      // one-time/setup Stripe product
-  stripe_monthly_product_id: string | null    // recurring Stripe product
+  stripe_monthly_product_id: string | null    // recurring Stripe product (discount product when launch pricing is active)
   stripe_monthly_price_id: string | null
   stripe_upfront_price_id: string | null
   product_type: 'plan' | 'addon'

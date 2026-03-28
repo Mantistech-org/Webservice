@@ -10,6 +10,7 @@ type PricingPlan = {
   name: string
   upfront: number
   monthly: number
+  monthly_original: number | null  // regular price shown with strikethrough when launch pricing is active
   pages: number
   features: string[]
   product_type: 'plan' | 'addon'
@@ -779,9 +780,17 @@ export default function PricingPage() {
                             <span className="font-mono text-xs text-dim">+</span>
                           )}
                           {plan.monthly > 0 && (
-                            <span className="font-heading text-xl text-primary">
+                            <span className="font-heading text-xl text-primary flex items-baseline gap-2">
+                              {plan.monthly_original != null && plan.monthly_original > 0 && (
+                                <span className="line-through text-muted font-heading text-lg">
+                                  ${plan.monthly_original}
+                                </span>
+                              )}
                               ${plan.monthly}
-                              <span className="font-mono text-xs text-muted ml-1">/month</span>
+                              <span className="font-mono text-xs text-muted">/month</span>
+                              {plan.monthly_original != null && plan.monthly_original > 0 && (
+                                <span className="font-mono text-xs text-accent">launch price</span>
+                              )}
                             </span>
                           )}
                         </div>
@@ -790,15 +799,12 @@ export default function PricingPage() {
                       )}
                       {/* Linked product IDs */}
                       <div className="mt-3 space-y-0.5">
-                        {(plan.stripe_setup_product_id || plan.upfront > 0) && (
-                          plan.stripe_setup_product_id
-                            ? <div className="font-mono text-xs text-dim">Setup: {plan.stripe_setup_product_id}</div>
-                            : <div className="font-mono text-xs text-dim">Setup: not linked</div>
+                        {plan.stripe_setup_product_id && (
+                          <div className="font-mono text-xs text-dim">Setup: {plan.stripe_setup_product_id}</div>
                         )}
-                        {plan.stripe_monthly_product_id
-                          ? <div className="font-mono text-xs text-dim">Monthly: {plan.stripe_monthly_product_id}</div>
-                          : <div className="font-mono text-xs text-dim">Monthly: not linked</div>
-                        }
+                        {plan.stripe_monthly_product_id && (
+                          <div className="font-mono text-xs text-dim">Monthly: {plan.stripe_monthly_product_id}</div>
+                        )}
                       </div>
                     </div>
                   )}

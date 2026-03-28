@@ -113,13 +113,19 @@ export async function POST() {
       `ALTER TABLE public.pricing_plans ALTER COLUMN monthly TYPE numeric(10,2)`
     )
 
-    // 5 — Confirm final state
+    // 5 — Add monthly_original for storing the regular display price when a launch/discount price is active
+    await step(
+      'Add monthly_original column',
+      `ALTER TABLE public.pricing_plans ADD COLUMN IF NOT EXISTS monthly_original numeric(10,2) DEFAULT NULL`
+    )
+
+    // 6 — Confirm final state
     const finalCols = await query<{ column_name: string; data_type: string; numeric_precision: number | null; numeric_scale: number | null }>(`
       SELECT column_name, data_type, numeric_precision, numeric_scale
       FROM information_schema.columns
       WHERE table_schema = 'public'
         AND table_name   = 'pricing_plans'
-        AND column_name IN ('stripe_product_id', 'stripe_setup_product_id', 'stripe_monthly_product_id', 'product_type', 'upfront', 'monthly')
+        AND column_name IN ('stripe_product_id', 'stripe_setup_product_id', 'stripe_monthly_product_id', 'product_type', 'upfront', 'monthly', 'monthly_original')
       ORDER BY column_name
     `)
     const finalNames = finalCols.map((r) => r.column_name)
@@ -138,6 +144,7 @@ export async function POST() {
         product_type: finalNames.includes('product_type') ? 'present' : 'missing',
         upfront: colType('upfront'),
         monthly: colType('monthly'),
+        monthly_original: colType('monthly_original'),
       },
     })
   } catch (err) {
