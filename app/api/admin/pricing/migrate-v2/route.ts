@@ -102,16 +102,31 @@ export async function POST() {
       `ALTER TABLE public.pricing_plans ADD COLUMN IF NOT EXISTS product_type text NOT NULL DEFAULT 'plan'`
     )
 
-    // 4 — Confirm final state
-    const finalCols = await query<{ column_name: string }>(`
-      SELECT column_name
+    // 4 — Change upfront/monthly from integer to numeric(10,2) to support decimal prices
+    await step(
+      'Change upfront to numeric(10,2)',
+      `ALTER TABLE public.pricing_plans ALTER COLUMN upfront TYPE numeric(10,2)`
+    )
+
+    await step(
+      'Change monthly to numeric(10,2)',
+      `ALTER TABLE public.pricing_plans ALTER COLUMN monthly TYPE numeric(10,2)`
+    )
+
+    // 5 — Confirm final state
+    const finalCols = await query<{ column_name: string; data_type: string; numeric_precision: number | null; numeric_scale: number | null }>(`
+      SELECT column_name, data_type, numeric_precision, numeric_scale
       FROM information_schema.columns
       WHERE table_schema = 'public'
         AND table_name   = 'pricing_plans'
-        AND column_name IN ('stripe_product_id', 'stripe_setup_product_id', 'stripe_monthly_product_id', 'product_type')
+        AND column_name IN ('stripe_product_id', 'stripe_setup_product_id', 'stripe_monthly_product_id', 'product_type', 'upfront', 'monthly')
       ORDER BY column_name
     `)
     const finalNames = finalCols.map((r) => r.column_name)
+    const colType = (name: string) => {
+      const col = finalCols.find((r) => r.column_name === name)
+      return col ? `${col.data_type}(${col.numeric_precision},${col.numeric_scale})` : 'missing'
+    }
 
     return NextResponse.json({
       success: true,
@@ -121,6 +136,8 @@ export async function POST() {
         stripe_setup_product_id: finalNames.includes('stripe_setup_product_id') ? 'present' : 'missing',
         stripe_monthly_product_id: finalNames.includes('stripe_monthly_product_id') ? 'present' : 'missing',
         product_type: finalNames.includes('product_type') ? 'present' : 'missing',
+        upfront: colType('upfront'),
+        monthly: colType('monthly'),
       },
     })
   } catch (err) {
