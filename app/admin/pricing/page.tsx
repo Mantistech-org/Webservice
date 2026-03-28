@@ -88,6 +88,42 @@ type AutoLinkReport = {
   summary: string
 }
 
+type SmartLinkLinked = {
+  plan_name: string
+  stripe_products_matched: string[]
+  setup_price_id: string | null
+  setup_amount: number | null
+  monthly_price_id: string | null
+  monthly_amount: number | null
+}
+
+type SmartLinkSkipped = {
+  plan_name: string
+  reason: string
+}
+
+type SmartLinkCataloguePrice = {
+  id: string
+  type: string
+  interval: string | null
+  amount_cents: number | null
+  amount_dollars: number | null
+}
+
+type SmartLinkCatalogueProduct = {
+  id: string
+  name: string
+  default_price: string | null
+  prices: SmartLinkCataloguePrice[]
+}
+
+type SmartLinkReport = {
+  summary: string
+  linked: SmartLinkLinked[]
+  skipped: SmartLinkSkipped[]
+  stripe_catalogue: SmartLinkCatalogueProduct[]
+}
+
 type CouponForm = {
   code: string
   label: string
@@ -141,6 +177,8 @@ export default function PricingPage() {
   const [togglingCardId, setTogglingCardId] = useState<string | null>(null)
   const [autoLinking, setAutoLinking] = useState(false)
   const [autoLinkReport, setAutoLinkReport] = useState<AutoLinkReport | null>(null)
+  const [smartLinking, setSmartLinking] = useState(false)
+  const [smartLinkReport, setSmartLinkReport] = useState<SmartLinkReport | null>(null)
 
   // ── Pricing Plans (Add-ons tab Stripe section only) ────────────────────────
   const [plans, setPlans] = useState<PricingPlan[]>([])
@@ -315,6 +353,25 @@ export default function PricingPage() {
       setAutoLinkReport({ linked: [], skipped: [], summary: 'Network error.' })
     } finally {
       setAutoLinking(false)
+    }
+  }
+
+  async function handleSmartLink() {
+    setSmartLinking(true)
+    setSmartLinkReport(null)
+    try {
+      const res = await fetch('/api/admin/pricing/plan-cards/auto-link-smart', { method: 'POST' })
+      const data = await res.json()
+      if (res.ok) {
+        setSmartLinkReport(data as SmartLinkReport)
+        await fetchPlanCards()
+      } else {
+        setSmartLinkReport({ summary: data.error ?? 'Smart auto-link failed.', linked: [], skipped: [], stripe_catalogue: [] })
+      }
+    } catch {
+      setSmartLinkReport({ summary: 'Network error.', linked: [], skipped: [], stripe_catalogue: [] })
+    } finally {
+      setSmartLinking(false)
     }
   }
 
@@ -648,25 +705,110 @@ export default function PricingPage() {
       {/* ── Plans Tab ────────────────────────────────────────────────────────── */}
       {tab === 'plans' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
             <p className="font-mono text-xs text-muted">
               Link Stripe Price IDs to each plan. Prices are confirmed directly from Stripe —
               only exact amounts from Stripe are stored and displayed.
             </p>
-            <button
-              onClick={handleAutoLink}
-              disabled={autoLinking || planCardsLoading}
-              className="font-mono text-xs border border-border px-4 py-2 rounded text-muted hover:border-accent hover:text-accent transition-all disabled:opacity-60 shrink-0 flex items-center gap-2"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                className={autoLinking ? 'animate-spin' : ''}>
-                <polyline points="23 4 23 10 17 10" />
-                <polyline points="1 20 1 14 7 14" />
-                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
-              </svg>
-              {autoLinking ? 'Linking from Stripe...' : 'Auto-link from Stripe'}
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={handleSmartLink}
+                disabled={smartLinking || planCardsLoading}
+                className="font-mono text-xs bg-accent text-black px-4 py-2 rounded hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center gap-2"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                  className={smartLinking ? 'animate-spin' : ''}>
+                  <polyline points="23 4 23 10 17 10" />
+                  <polyline points="1 20 1 14 7 14" />
+                  <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                </svg>
+                {smartLinking ? 'Matching...' : 'Smart Auto-link'}
+              </button>
+              <button
+                onClick={handleAutoLink}
+                disabled={autoLinking || planCardsLoading}
+                className="font-mono text-xs border border-border px-4 py-2 rounded text-muted hover:border-accent hover:text-accent transition-all disabled:opacity-60 flex items-center gap-2"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                  className={autoLinking ? 'animate-spin' : ''}>
+                  <polyline points="23 4 23 10 17 10" />
+                  <polyline points="1 20 1 14 7 14" />
+                  <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                </svg>
+                {autoLinking ? 'Linking...' : 'Auto-link (exact)'}
+              </button>
+            </div>
           </div>
+
+          {/* Smart Auto-link report */}
+          {smartLinkReport && (
+            <div className="bg-card border border-border rounded p-4 space-y-4">
+              <p className={`font-mono text-xs font-medium ${smartLinkReport.linked.length > 0 ? 'text-emerald-700 dark:text-accent' : 'text-red-400'}`}>
+                Smart Auto-link: {smartLinkReport.summary}
+              </p>
+
+              {smartLinkReport.linked.length > 0 && (
+                <div>
+                  <p className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Linked</p>
+                  <div className="space-y-2">
+                    {smartLinkReport.linked.map((l, i) => (
+                      <div key={i} className="font-mono text-xs space-y-0.5">
+                        <div>
+                          <span className="text-primary">{l.plan_name}</span>
+                          <span className="text-dim"> matched: {l.stripe_products_matched.join(', ')}</span>
+                        </div>
+                        {l.setup_price_id && (
+                          <div className="pl-4 text-teal">
+                            setup: ${l.setup_amount?.toFixed(2)} &mdash; <span className="text-dim">{l.setup_price_id}</span>
+                          </div>
+                        )}
+                        {l.monthly_price_id && (
+                          <div className="pl-4 text-teal">
+                            monthly: ${l.monthly_amount?.toFixed(2)}/month &mdash; <span className="text-dim">{l.monthly_price_id}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {smartLinkReport.skipped.length > 0 && (
+                <div>
+                  <p className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Skipped</p>
+                  <div className="space-y-1">
+                    {smartLinkReport.skipped.map((s, i) => (
+                      <div key={i} className="font-mono text-xs">
+                        <span className="text-primary">{s.plan_name}</span>
+                        <span className="text-dim"> — {s.reason}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {smartLinkReport.stripe_catalogue.length > 0 && (
+                <details className="group">
+                  <summary className="font-mono text-xs text-muted cursor-pointer hover:text-primary transition-colors">
+                    All Stripe products ({smartLinkReport.stripe_catalogue.length})
+                  </summary>
+                  <div className="mt-2 space-y-2 pl-2 border-l border-border">
+                    {smartLinkReport.stripe_catalogue.map((p) => (
+                      <div key={p.id} className="font-mono text-xs space-y-0.5">
+                        <div className="text-primary">{p.name} <span className="text-dim">({p.id})</span></div>
+                        {p.prices.map((pr) => (
+                          <div key={pr.id} className="pl-4 text-dim">
+                            {pr.type === 'one_time' ? 'one-time' : `recurring/${pr.interval}`}
+                            {' '}${pr.amount_dollars?.toFixed(2)} &mdash; {pr.id}
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
+            </div>
+          )}
 
           {/* Auto-link report */}
           {autoLinkReport && (
