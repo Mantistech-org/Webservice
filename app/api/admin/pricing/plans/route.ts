@@ -14,6 +14,7 @@ export type PricingPlan = {
   stripe_monthly_product_id: string | null    // recurring Stripe product
   stripe_monthly_price_id: string | null
   stripe_upfront_price_id: string | null
+  product_type: 'plan' | 'addon'
   visible: boolean
   sort_order: number
   created_at: string

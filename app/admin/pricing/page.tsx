@@ -12,6 +12,7 @@ type PricingPlan = {
   monthly: number
   pages: number
   features: string[]
+  product_type: 'plan' | 'addon'
   stripe_setup_product_id: string | null
   stripe_monthly_product_id: string | null
   stripe_monthly_price_id: string | null
@@ -659,15 +660,17 @@ export default function PricingPage() {
 
           {plansLoading ? (
             <p className="font-mono text-xs text-muted animate-pulse">Loading plans...</p>
-          ) : plans.length === 0 ? (
+          ) : plans.filter((p) => p.product_type === 'plan').length === 0 ? (
             <div className="bg-card border border-border rounded p-8 text-center">
               <p className="font-mono text-xs text-muted mb-2">No plans found.</p>
               <p className="font-mono text-xs text-dim">
-                Click &ldquo;Sync from Stripe&rdquo; to import all active products and their prices automatically.
+                Click &ldquo;Sync from Stripe&rdquo; to import active products. Products are classified as plans
+                via Stripe metadata (<code className="font-mono">metadata.type = plan</code>) or by name
+                keywords (starter, growth, pro, etc.).
               </p>
             </div>
           ) : (
-            plans.map((plan) => {
+            plans.filter((p) => p.product_type === 'plan').map((plan) => {
               const isEditing = editingPlanId === plan.id
               return (
                 <div key={plan.id} className="bg-card border border-border rounded p-6">
@@ -787,16 +790,15 @@ export default function PricingPage() {
                       )}
                       {/* Linked product IDs */}
                       <div className="mt-3 space-y-0.5">
-                        {plan.stripe_setup_product_id ? (
-                          <div className="font-mono text-xs text-dim">Setup: {plan.stripe_setup_product_id}</div>
-                        ) : (
-                          <div className="font-mono text-xs text-dim">Setup: not linked</div>
+                        {(plan.stripe_setup_product_id || plan.upfront > 0) && (
+                          plan.stripe_setup_product_id
+                            ? <div className="font-mono text-xs text-dim">Setup: {plan.stripe_setup_product_id}</div>
+                            : <div className="font-mono text-xs text-dim">Setup: not linked</div>
                         )}
-                        {plan.stripe_monthly_product_id ? (
-                          <div className="font-mono text-xs text-dim">Monthly: {plan.stripe_monthly_product_id}</div>
-                        ) : (
-                          <div className="font-mono text-xs text-dim">Monthly: not linked</div>
-                        )}
+                        {plan.stripe_monthly_product_id
+                          ? <div className="font-mono text-xs text-dim">Monthly: {plan.stripe_monthly_product_id}</div>
+                          : <div className="font-mono text-xs text-dim">Monthly: not linked</div>
+                        }
                       </div>
                     </div>
                   )}
@@ -972,6 +974,58 @@ export default function PricingPage() {
                   </div>
                 )
               })}
+            </div>
+          )}
+
+          {/* Stripe Add-ons — synced from Stripe, product_type = 'addon' */}
+          {plans.filter((p) => p.product_type === 'addon').length > 0 && (
+            <div className="space-y-4 pt-4 border-t border-border">
+              <div>
+                <h2 className="font-heading text-xl text-primary">Stripe Add-ons</h2>
+                <p className="font-mono text-xs text-muted mt-0.5">
+                  Add-on products synced from Stripe. Classified via{' '}
+                  <code className="font-mono">metadata.type = addon</code> or name keywords.
+                </p>
+              </div>
+              {plans.filter((p) => p.product_type === 'addon').map((addon) => (
+                <div key={addon.id} className={`bg-card border border-border rounded p-5 ${!addon.visible ? 'opacity-60' : ''}`}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="font-heading text-lg text-primary leading-snug">{addon.name}</div>
+                      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mt-1">
+                        {addon.upfront > 0 && (
+                          <span className="font-mono text-sm text-teal">${addon.upfront} one-time</span>
+                        )}
+                        {addon.upfront > 0 && addon.monthly > 0 && (
+                          <span className="font-mono text-xs text-dim">+</span>
+                        )}
+                        {addon.monthly > 0 && (
+                          <span className="font-mono text-sm text-teal">${addon.monthly}/mo</span>
+                        )}
+                        {addon.upfront === 0 && addon.monthly === 0 && (
+                          <span className="font-mono text-xs text-dim">No price set</span>
+                        )}
+                      </div>
+                      <div className="font-mono text-xs text-dim mt-1">{addon.plan_key}</div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`font-mono text-xs px-2 py-0.5 rounded border ${
+                        addon.visible
+                          ? 'text-emerald-700 dark:text-accent border-emerald-700/30 dark:border-accent/30'
+                          : 'text-muted border-border'
+                      }`}>
+                        {addon.visible ? 'Visible' : 'Hidden'}
+                      </span>
+                      <button
+                        onClick={() => handleToggleVisibility(addon)}
+                        className="font-mono text-xs border border-border px-3 py-1.5 rounded text-muted hover:border-accent hover:text-accent transition-all"
+                      >
+                        {addon.visible ? 'Hide' : 'Show'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

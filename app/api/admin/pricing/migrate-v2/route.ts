@@ -96,13 +96,19 @@ export async function POST() {
       results.push({ step: 'Migrate existing data', status: 'skipped', detail: 'stripe_product_id column not found — already migrated' })
     }
 
-    // 3 — Confirm final state
+    // 3 — Add product_type column for plan vs addon classification
+    await step(
+      'Add product_type column',
+      `ALTER TABLE public.pricing_plans ADD COLUMN IF NOT EXISTS product_type text NOT NULL DEFAULT 'plan'`
+    )
+
+    // 4 — Confirm final state
     const finalCols = await query<{ column_name: string }>(`
       SELECT column_name
       FROM information_schema.columns
       WHERE table_schema = 'public'
         AND table_name   = 'pricing_plans'
-        AND column_name IN ('stripe_product_id', 'stripe_setup_product_id', 'stripe_monthly_product_id')
+        AND column_name IN ('stripe_product_id', 'stripe_setup_product_id', 'stripe_monthly_product_id', 'product_type')
       ORDER BY column_name
     `)
     const finalNames = finalCols.map((r) => r.column_name)
@@ -114,6 +120,7 @@ export async function POST() {
         stripe_product_id: finalNames.includes('stripe_product_id') ? 'still exists (unexpected)' : 'removed',
         stripe_setup_product_id: finalNames.includes('stripe_setup_product_id') ? 'present' : 'missing',
         stripe_monthly_product_id: finalNames.includes('stripe_monthly_product_id') ? 'present' : 'missing',
+        product_type: finalNames.includes('product_type') ? 'present' : 'missing',
       },
     })
   } catch (err) {

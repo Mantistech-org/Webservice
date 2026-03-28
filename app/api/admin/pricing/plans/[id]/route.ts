@@ -9,6 +9,7 @@ import type { PricingPlan } from '@/app/api/admin/pricing/plans/route'
 
 type PatchBody = {
   visible?: boolean
+  product_type?: 'plan' | 'addon'
   stripe_setup_product_id?: string | null
   stripe_monthly_product_id?: string | null
 }
@@ -55,6 +56,11 @@ export async function PATCH(
   const plan = rows[0]
 
   const updates: Record<string, unknown> = {}
+
+  // product_type reclassification — no Stripe interaction needed
+  if (body.product_type === 'plan' || body.product_type === 'addon') {
+    updates.product_type = body.product_type
+  }
 
   // Visibility toggle — no Stripe interaction needed
   if (typeof body.visible === 'boolean') {
@@ -173,7 +179,7 @@ export async function PATCH(
 
   // Build parameterized SET clause from safe, code-controlled keys only
   const allowed = new Set([
-    'visible', 'monthly', 'upfront',
+    'visible', 'monthly', 'upfront', 'product_type',
     'stripe_setup_product_id', 'stripe_monthly_product_id',
     'stripe_monthly_price_id', 'stripe_upfront_price_id',
   ])
