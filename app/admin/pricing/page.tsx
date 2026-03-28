@@ -107,6 +107,8 @@ export default function PricingPage() {
   const [planMsg, setPlanMsg] = useState<{ id: string; text: string; ok: boolean } | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState<{ text: string; ok: boolean } | null>(null)
+  const [migrating, setMigrating] = useState(false)
+  const [migrateMsg, setMigrateMsg] = useState<{ text: string; ok: boolean } | null>(null)
   const [stripeProducts, setStripeProducts] = useState<{ setup: StripeProductOption[]; monthly: StripeProductOption[] }>({ setup: [], monthly: [] })
   const [stripeProductsLoading, setStripeProductsLoading] = useState(false)
 
@@ -244,6 +246,29 @@ export default function PricingPage() {
       setSyncMsg({ text: 'Network error.', ok: false })
     } finally {
       setSyncing(false)
+    }
+  }
+
+  async function handleRunMigration() {
+    setMigrating(true)
+    setMigrateMsg(null)
+    try {
+      const res = await fetch('/api/admin/pricing/migrate-v2', { method: 'POST' })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        const cols = data.columns as Record<string, string>
+        setMigrateMsg({
+          text: `Migration complete. setup: ${cols.stripe_setup_product_id}, monthly: ${cols.stripe_monthly_product_id}, old: ${cols.stripe_product_id}.`,
+          ok: true,
+        })
+        await fetchPlans()
+      } else {
+        setMigrateMsg({ text: data.error ?? 'Migration failed.', ok: false })
+      }
+    } catch {
+      setMigrateMsg({ text: 'Network error.', ok: false })
+    } finally {
+      setMigrating(false)
     }
   }
 
@@ -575,25 +600,51 @@ export default function PricingPage() {
       {/* ── Plans Tab ─────────────────────────────────────────────────────────── */}
       {tab === 'plans' && (
         <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleSyncFromStripe}
-              disabled={syncing || plansLoading}
-              className="font-mono text-xs border border-border px-4 py-2 rounded text-muted hover:border-accent hover:text-accent transition-all disabled:opacity-60 flex items-center gap-2"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                className={syncing ? 'animate-spin' : ''}>
-                <polyline points="23 4 23 10 17 10" />
-                <polyline points="1 20 1 14 7 14" />
-                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
-              </svg>
-              {syncing ? 'Syncing from Stripe...' : 'Sync from Stripe'}
-            </button>
-            {syncMsg && (
-              <span className={`font-mono text-xs ${syncMsg.ok ? 'text-emerald-700 dark:text-accent' : 'text-red-400'}`}>
-                {syncMsg.text}
-              </span>
-            )}
+          <div className="space-y-3">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleSyncFromStripe}
+                disabled={syncing || plansLoading}
+                className="font-mono text-xs border border-border px-4 py-2 rounded text-muted hover:border-accent hover:text-accent transition-all disabled:opacity-60 flex items-center gap-2"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                  className={syncing ? 'animate-spin' : ''}>
+                  <polyline points="23 4 23 10 17 10" />
+                  <polyline points="1 20 1 14 7 14" />
+                  <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                </svg>
+                {syncing ? 'Syncing from Stripe...' : 'Sync from Stripe'}
+              </button>
+              {syncMsg && (
+                <span className={`font-mono text-xs ${syncMsg.ok ? 'text-emerald-700 dark:text-accent' : 'text-red-400'}`}>
+                  {syncMsg.text}
+                </span>
+              )}
+            </div>
+
+            {/* One-time schema migration banner */}
+            <div className="flex items-center gap-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded px-4 py-3">
+              <div className="flex-1 min-w-0">
+                <p className="font-mono text-xs text-amber-800 dark:text-amber-400">
+                  <span className="font-medium">One-time migration required</span> — run once to add the{' '}
+                  <code className="font-mono">stripe_setup_product_id</code> and{' '}
+                  <code className="font-mono">stripe_monthly_product_id</code> columns.
+                  Safe to re-run; skips steps already completed.
+                </p>
+                {migrateMsg && (
+                  <p className={`font-mono text-xs mt-1 ${migrateMsg.ok ? 'text-emerald-700 dark:text-accent' : 'text-red-500'}`}>
+                    {migrateMsg.text}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={handleRunMigration}
+                disabled={migrating}
+                className="font-mono text-xs border border-amber-400 dark:border-amber-700 text-amber-800 dark:text-amber-400 px-4 py-1.5 rounded hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all disabled:opacity-60 shrink-0"
+              >
+                {migrating ? 'Running...' : 'Run Migration'}
+              </button>
+            </div>
           </div>
 
           {plansLoading ? (
