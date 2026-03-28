@@ -202,6 +202,36 @@ export default function PricingPage() {
   const [createMsg, setCreateMsg] = useState('')
   const [couponForm, setCouponForm] = useState<CouponForm>(BLANK_COUPON)
 
+  // ── Password modal ─────────────────────────────────────────────────────────
+  const [pwModal, setPwModal] = useState<{ onConfirm: () => void } | null>(null)
+  const [pwInput, setPwInput] = useState('')
+  const [pwError, setPwError] = useState('')
+  const [pwVerifying, setPwVerifying] = useState(false)
+
+  // ── Plan price editing (amount-based for already-linked prices) ────────────
+  const [newAmountInput, setNewAmountInput] = useState('')
+  const [updatingPrice, setUpdatingPrice] = useState(false)
+  const [priceUpdateResult, setPriceUpdateResult] = useState<{
+    cardId: string
+    old_price_id: string
+    old_amount: number
+    new_price_id: string
+    new_amount: number
+  } | null>(null)
+
+  // ── Stripe add-on editing ──────────────────────────────────────────────────
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null)
+  const [planAmountInput, setPlanAmountInput] = useState('')
+  const [updatingPlan, setUpdatingPlan] = useState(false)
+  const [planUpdateMsg, setPlanUpdateMsg] = useState<{ planId: string; text: string; ok: boolean } | null>(null)
+
+  // ── Verification ───────────────────────────────────────────────────────────
+  const [verifying, setVerifying] = useState(false)
+  const [verifyReport, setVerifyReport] = useState<{
+    ok: boolean
+    mismatches: Array<{ name: string; field: string; price_id: string; supabase_amount: number; stripe_amount: number | null }>
+  } | null>(null)
+
   // ── Fetchers ───────────────────────────────────────────────────────────────
 
   const fetchPlanCards = useCallback(async () => {
@@ -247,6 +277,41 @@ export default function PricingPage() {
   useEffect(() => { if (tab === 'addons') fetchAddons() }, [tab, fetchAddons])
   useEffect(() => { if (tab === 'discounts') fetchCoupons() }, [tab, fetchCoupons])
 
+  // ── Password verification ──────────────────────────────────────────────────
+
+  function requirePassword(onConfirm: () => void) {
+    setPwInput('')
+    setPwError('')
+    setPwModal({ onConfirm })
+  }
+
+  async function handlePasswordSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!pwInput.trim()) return
+    setPwVerifying(true)
+    setPwError('')
+    try {
+      const res = await fetch('/api/admin/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pwInput }),
+      })
+      if (res.ok) {
+        const confirm = pwModal?.onConfirm
+        setPwModal(null)
+        setPwInput('')
+        confirm?.()
+      } else {
+        const data = await res.json()
+        setPwError(data.error ?? 'Incorrect password.')
+      }
+    } catch {
+      setPwError('Network error.')
+    } finally {
+      setPwVerifying(false)
+    }
+  }
+
   // ── Plan Cards handlers ────────────────────────────────────────────────────
 
   function toggleCardExpanded(cardId: string) {
@@ -258,10 +323,24 @@ export default function PricingPage() {
     })
   }
 
-  function startEditPrice(cardId: string, field: 'setup' | 'monthly') {
-    setEditingPrice({ cardId, field })
-    setPriceIdInput('')
-    setPriceMsg(null)
+  function startEditPrice(cardId: string, field: 'setup' | 'monthly', isLinked: boolean) {
+    if (isLinked) {
+      // Already linked — require password, then open amount-edit mode
+      requirePassword(() => {
+        setEditingPrice({ cardId, field })
+        setNewAmountInput('')
+        setPriceIdInput('')
+        setPriceMsg(null)
+        setPriceUpdateResult(null)
+      })
+    } else {
+      // Not linked yet — require password, then open price-ID link mode
+      requirePassword(() => {
+        setEditingPrice({ cardId, field })
+        setPriceIdInput('')
+        setPriceMsg(null)
+      })
+    }
   }
 
   function cancelEditPrice() {
@@ -375,6 +454,54 @@ export default function PricingPage() {
     }
   }
 
+  async function handleUpdatePrice(cardId: string, field: 'setup' | 'monthly') {
+    const amount = parseFloat(newAmountInput)
+    if (isNaN(amount) || amount <= 0) {
+      setPriceMsg({ cardId, text: 'Enter a valid positive amount.', ok: false })
+      return
+    }
+    setUpdatingPrice(true)
+    setPriceMsg(null)
+    try {
+      const res = await fetch(`/api/admin/pricing/plan-cards/${cardId}/update-price`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ field, amount_dollars: amount }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setPlanCards((prev) => prev.map((c) => (c.id === cardId ? data.card : c)))
+        setEditingPrice(null)
+        setNewAmountInput('')
+        setPriceUpdateResult({ cardId, ...data })
+      } else {
+        setPriceMsg({ cardId, text: data.error ?? 'Failed to update price.', ok: false })
+      }
+    } catch {
+      setPriceMsg({ cardId, text: 'Network error.', ok: false })
+    } finally {
+      setUpdatingPrice(false)
+    }
+  }
+
+  async function handleVerifyAll() {
+    setVerifying(true)
+    setVerifyReport(null)
+    try {
+      const res = await fetch('/api/admin/pricing/verify')
+      const data = await res.json()
+      if (res.ok) {
+        setVerifyReport(data)
+      } else {
+        setVerifyReport({ ok: false, mismatches: [{ name: 'Verify failed', field: '', price_id: '', supabase_amount: 0, stripe_amount: null }] })
+      }
+    } catch {
+      setVerifyReport({ ok: false, mismatches: [{ name: 'Network error', field: '', price_id: '', supabase_amount: 0, stripe_amount: null }] })
+    } finally {
+      setVerifying(false)
+    }
+  }
+
   // ── Stripe plan visibility (Add-ons tab only) ──────────────────────────────
 
   async function handleToggleVisibility(plan: PricingPlan) {
@@ -389,6 +516,52 @@ export default function PricingPage() {
     }
   }
 
+  // ── Stripe add-on edit handlers ────────────────────────────────────────────
+
+  function startEditPlan(planId: string) {
+    requirePassword(() => {
+      setEditingPlanId(planId)
+      setPlanAmountInput('')
+      setPlanUpdateMsg(null)
+    })
+  }
+
+  function cancelEditPlan() {
+    setEditingPlanId(null)
+    setPlanAmountInput('')
+    setPlanUpdateMsg(null)
+  }
+
+  async function handleUpdatePlanPrice(planId: string) {
+    const amount = parseFloat(planAmountInput)
+    if (isNaN(amount) || amount <= 0) {
+      setPlanUpdateMsg({ planId, text: 'Enter a valid positive amount.', ok: false })
+      return
+    }
+    setUpdatingPlan(true)
+    setPlanUpdateMsg(null)
+    try {
+      const res = await fetch(`/api/admin/pricing/plans/${planId}/update-price`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount_dollars: amount }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setPlans((prev) => prev.map((p) => (p.id === planId ? data.plan : p)))
+        setEditingPlanId(null)
+        setPlanAmountInput('')
+        setPlanUpdateMsg({ planId, text: `Updated to $${data.new_amount.toFixed(2)}/mo. Stripe Price ID: ${data.new_price_id}`, ok: true })
+      } else {
+        setPlanUpdateMsg({ planId, text: data.error ?? 'Failed to update price.', ok: false })
+      }
+    } catch {
+      setPlanUpdateMsg({ planId, text: 'Network error.', ok: false })
+    } finally {
+      setUpdatingPlan(false)
+    }
+  }
+
   // ── Custom Add-ons handlers ────────────────────────────────────────────────
 
   function startCreateAddon() {
@@ -399,17 +572,19 @@ export default function PricingPage() {
   }
 
   function startEditAddon(addon: CustomAddon) {
-    setShowAddonForm(false)
-    setEditingAddonId(addon.id)
-    setAddonForm({
-      name: addon.name,
-      client_name: addon.client_name ?? '',
-      description: addon.description,
-      one_time_fee: addon.one_time_fee != null ? String(addon.one_time_fee) : '',
-      monthly_fee: addon.monthly_fee != null ? String(addon.monthly_fee) : '',
-      active: addon.active,
+    requirePassword(() => {
+      setShowAddonForm(false)
+      setEditingAddonId(addon.id)
+      setAddonForm({
+        name: addon.name,
+        client_name: addon.client_name ?? '',
+        description: addon.description,
+        one_time_fee: addon.one_time_fee != null ? String(addon.one_time_fee) : '',
+        monthly_fee: addon.monthly_fee != null ? String(addon.monthly_fee) : '',
+        active: addon.active,
+      })
+      setAddonFormMsg('')
     })
-    setAddonFormMsg('')
   }
 
   function cancelAddonEdit() {
@@ -676,6 +851,47 @@ export default function PricingPage() {
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
+      {/* Password confirmation modal */}
+      {pwModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-card border border-border rounded p-6 w-full max-w-sm shadow-xl">
+            <h2 className="font-heading text-lg text-primary mb-1">Confirm Admin Password</h2>
+            <p className="font-mono text-xs text-muted mb-5">
+              Enter the admin password to proceed with this pricing change.
+            </p>
+            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+              <div>
+                <input
+                  type="password"
+                  value={pwInput}
+                  onChange={(e) => setPwInput(e.target.value)}
+                  className="form-input w-full"
+                  placeholder="Admin password"
+                  autoFocus
+                />
+              </div>
+              {pwError && <p className="font-mono text-xs text-red-400">{pwError}</p>}
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  disabled={pwVerifying || !pwInput.trim()}
+                  className="font-mono text-xs bg-accent text-black px-5 py-2.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60"
+                >
+                  {pwVerifying ? 'Verifying...' : 'Confirm'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setPwModal(null); setPwInput(''); setPwError('') }}
+                  className="font-mono text-xs border border-border text-muted px-4 py-2.5 rounded hover:border-border-light transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <h1 className="font-heading text-3xl text-primary mb-1">Pricing Manager</h1>
       <p className="font-mono text-xs text-muted mb-8">
         Manage plan prices, Stripe product links, custom add-ons, and discount codes.
@@ -711,6 +927,13 @@ export default function PricingPage() {
               only exact amounts from Stripe are stored and displayed.
             </p>
             <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={handleVerifyAll}
+                disabled={verifying}
+                className="font-mono text-xs border border-red-400/50 px-4 py-2 rounded text-red-400 hover:border-red-400 transition-all disabled:opacity-60"
+              >
+                {verifying ? 'Verifying...' : 'Verify All Prices'}
+              </button>
               <button
                 onClick={handleSmartLink}
                 disabled={smartLinking || planCardsLoading}
@@ -852,6 +1075,25 @@ export default function PricingPage() {
             </div>
           )}
 
+          {verifyReport && (
+            <div className={`border rounded p-4 space-y-3 ${verifyReport.ok ? 'border-border bg-card' : 'border-red-400/50 bg-red-950/20'}`}>
+              <p className={`font-mono text-xs font-medium ${verifyReport.ok ? 'text-accent' : 'text-red-400'}`}>
+                {verifyReport.ok
+                  ? 'All prices verified. Stripe and Supabase are in sync.'
+                  : `CRITICAL: ${verifyReport.mismatches.length} price mismatch${verifyReport.mismatches.length !== 1 ? 'es' : ''} detected.`}
+              </p>
+              {verifyReport.mismatches.length > 0 && (
+                <div className="space-y-1">
+                  {verifyReport.mismatches.map((m, i) => (
+                    <div key={i} className="font-mono text-xs text-red-400">
+                      {m.name} ({m.field}): Supabase=${m.supabase_amount?.toFixed(2)} / Stripe={m.stripe_amount != null ? `$${m.stripe_amount.toFixed(2)}` : 'fetch failed'} — {m.price_id}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {planCardsLoading ? (
             <p className="font-mono text-xs text-muted animate-pulse">Loading plans...</p>
           ) : planCards.length === 0 ? (
@@ -948,11 +1190,15 @@ export default function PricingPage() {
                         isEditing={editingPrice?.cardId === card.id && editingPrice?.field === 'setup'}
                         priceIdInput={priceIdInput}
                         onPriceIdInputChange={setPriceIdInput}
-                        onStartEdit={() => startEditPrice(card.id, 'setup')}
+                        onStartEdit={() => startEditPrice(card.id, 'setup', card.setup_price_id !== null && card.setup_amount !== null)}
                         onCancelEdit={cancelEditPrice}
                         onLink={() => handleLinkPrice(card.id, 'setup')}
                         onUnlink={() => handleUnlinkPrice(card.id, 'setup')}
                         linking={linkingPrice && editingPrice?.cardId === card.id && editingPrice?.field === 'setup'}
+                        newAmountInput={newAmountInput}
+                        onNewAmountInputChange={setNewAmountInput}
+                        onUpdatePrice={() => handleUpdatePrice(card.id, 'setup')}
+                        updating={updatingPrice && editingPrice?.cardId === card.id && editingPrice?.field === 'setup'}
                       />
 
                       {/* Monthly sub-card */}
@@ -965,17 +1211,29 @@ export default function PricingPage() {
                         isEditing={editingPrice?.cardId === card.id && editingPrice?.field === 'monthly'}
                         priceIdInput={priceIdInput}
                         onPriceIdInputChange={setPriceIdInput}
-                        onStartEdit={() => startEditPrice(card.id, 'monthly')}
+                        onStartEdit={() => startEditPrice(card.id, 'monthly', card.monthly_price_id !== null && card.monthly_amount !== null)}
                         onCancelEdit={cancelEditPrice}
                         onLink={() => handleLinkPrice(card.id, 'monthly')}
                         onUnlink={() => handleUnlinkPrice(card.id, 'monthly')}
                         linking={linkingPrice && editingPrice?.cardId === card.id && editingPrice?.field === 'monthly'}
+                        newAmountInput={newAmountInput}
+                        onNewAmountInputChange={setNewAmountInput}
+                        onUpdatePrice={() => handleUpdatePrice(card.id, 'monthly')}
+                        updating={updatingPrice && editingPrice?.cardId === card.id && editingPrice?.field === 'monthly'}
                       />
 
                       {cardMsg && (
                         <p className={`font-mono text-xs ${cardMsg.ok ? 'text-emerald-700 dark:text-accent' : 'text-red-400'}`}>
                           {cardMsg.text}
                         </p>
+                      )}
+
+                      {priceUpdateResult?.cardId === card.id && (
+                        <div className="bg-card border border-accent/30 rounded p-3 space-y-1">
+                          <p className="font-mono text-xs text-accent font-medium">Price updated and verified.</p>
+                          <p className="font-mono text-xs text-muted">Old: ${priceUpdateResult.old_amount.toFixed(2)} ({priceUpdateResult.old_price_id})</p>
+                          <p className="font-mono text-xs text-primary">New: ${priceUpdateResult.new_amount.toFixed(2)} ({priceUpdateResult.new_price_id})</p>
+                        </div>
                       )}
                     </div>
                   )}
@@ -1151,50 +1409,107 @@ export default function PricingPage() {
           {/* Stripe Add-ons — synced from Stripe, product_type = 'addon' */}
           {plans.filter((p) => p.product_type === 'addon').length > 0 && (
             <div className="space-y-4 pt-4 border-t border-border">
-              <div>
-                <h2 className="font-heading text-xl text-primary">Stripe Add-ons</h2>
-                <p className="font-mono text-xs text-muted mt-0.5">
-                  Add-on products synced from Stripe. Classified via{' '}
-                  <code className="font-mono">metadata.type = addon</code> or name keywords.
-                </p>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="font-heading text-xl text-primary">Stripe Add-ons</h2>
+                  <p className="font-mono text-xs text-muted mt-0.5">
+                    Add-on products synced from Stripe. All add-ons are monthly recurring only.
+                  </p>
+                </div>
+                <button
+                  onClick={handleVerifyAll}
+                  disabled={verifying}
+                  className="font-mono text-xs border border-red-400/50 px-4 py-2 rounded text-red-400 hover:border-red-400 transition-all disabled:opacity-60 shrink-0"
+                >
+                  {verifying ? 'Verifying...' : 'Verify All Add-ons'}
+                </button>
               </div>
               {plans.filter((p) => p.product_type === 'addon').map((addon) => (
                 <div key={addon.id} className={`bg-card border border-border rounded p-5 ${!addon.visible ? 'opacity-60' : ''}`}>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="font-heading text-lg text-primary leading-snug">{addon.name}</div>
-                      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mt-1">
-                        {addon.upfront > 0 && (
-                          <span className="font-mono text-sm text-teal">${addon.upfront} one-time</span>
-                        )}
-                        {addon.upfront > 0 && addon.monthly > 0 && (
-                          <span className="font-mono text-xs text-dim">+</span>
-                        )}
-                        {addon.monthly > 0 && (
-                          <span className="font-mono text-sm text-teal">${addon.monthly}/mo</span>
-                        )}
-                        {addon.upfront === 0 && addon.monthly === 0 && (
-                          <span className="font-mono text-xs text-dim">No price set</span>
+                  {editingPlanId === addon.id ? (
+                    <div className="space-y-3">
+                      <h3 className="font-heading text-lg text-primary">{addon.name}</h3>
+                      <p className="font-mono text-xs text-muted">Current monthly: ${addon.monthly}/mo</p>
+                      <div>
+                        <span className="font-mono text-xs text-muted block mb-1.5">New Monthly Amount ($)</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-xs text-muted">$</span>
+                          <input
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            value={planAmountInput}
+                            onChange={(e) => setPlanAmountInput(e.target.value)}
+                            className="form-input w-48 font-mono text-xs"
+                            autoFocus
+                          />
+                          <span className="font-mono text-xs text-muted">/month</span>
+                        </div>
+                        <p className="font-mono text-xs text-dim mt-1.5">
+                          A new Stripe Price will be created, the old price archived, and the result verified before saving.
+                        </p>
+                      </div>
+                      {planUpdateMsg?.planId === addon.id && (
+                        <p className={`font-mono text-xs ${planUpdateMsg.ok ? 'text-accent' : 'text-red-400'}`}>
+                          {planUpdateMsg.text}
+                        </p>
+                      )}
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleUpdatePlanPrice(addon.id)}
+                          disabled={updatingPlan || !planAmountInput.trim()}
+                          className="font-mono text-xs bg-accent text-black px-4 py-2 rounded hover:opacity-90 transition-opacity disabled:opacity-60"
+                        >
+                          {updatingPlan ? 'Updating...' : 'Update Price'}
+                        </button>
+                        <button
+                          onClick={cancelEditPlan}
+                          disabled={updatingPlan}
+                          className="font-mono text-xs border border-border px-3 py-2 rounded text-muted hover:border-border-light transition-all disabled:opacity-60"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="font-heading text-lg text-primary leading-snug">{addon.name}</div>
+                        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mt-1">
+                          {addon.monthly > 0 ? (
+                            <span className="font-mono text-sm text-teal">${addon.monthly}/mo</span>
+                          ) : (
+                            <span className="font-mono text-xs text-dim">No monthly price set</span>
+                          )}
+                        </div>
+                        <div className="font-mono text-xs text-dim mt-1">{addon.plan_key}</div>
+                        {planUpdateMsg?.planId === addon.id && planUpdateMsg.ok && (
+                          <p className="font-mono text-xs text-accent mt-1">{planUpdateMsg.text}</p>
                         )}
                       </div>
-                      <div className="font-mono text-xs text-dim mt-1">{addon.plan_key}</div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className={`font-mono text-xs px-2 py-0.5 rounded border ${
+                          addon.visible
+                            ? 'text-emerald-700 dark:text-accent border-emerald-700/30 dark:border-accent/30'
+                            : 'text-muted border-border'
+                        }`}>
+                          {addon.visible ? 'Visible' : 'Hidden'}
+                        </span>
+                        <button
+                          onClick={() => handleToggleVisibility(addon)}
+                          className="font-mono text-xs border border-border px-3 py-1.5 rounded text-muted hover:border-accent hover:text-accent transition-all"
+                        >
+                          {addon.visible ? 'Hide' : 'Show'}
+                        </button>
+                        <button
+                          onClick={() => startEditPlan(addon.id)}
+                          className="font-mono text-xs border border-border px-3 py-1.5 rounded text-muted hover:border-accent hover:text-accent transition-all"
+                        >
+                          Edit
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className={`font-mono text-xs px-2 py-0.5 rounded border ${
-                        addon.visible
-                          ? 'text-emerald-700 dark:text-accent border-emerald-700/30 dark:border-accent/30'
-                          : 'text-muted border-border'
-                      }`}>
-                        {addon.visible ? 'Visible' : 'Hidden'}
-                      </span>
-                      <button
-                        onClick={() => handleToggleVisibility(addon)}
-                        className="font-mono text-xs border border-border px-3 py-1.5 rounded text-muted hover:border-accent hover:text-accent transition-all"
-                      >
-                        {addon.visible ? 'Hide' : 'Show'}
-                      </button>
-                    </div>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -1389,6 +1704,10 @@ function PriceSubCard({
   onLink,
   onUnlink,
   linking,
+  newAmountInput,
+  onNewAmountInputChange,
+  onUpdatePrice,
+  updating,
 }: {
   label: string
   priceId: string | null
@@ -1403,6 +1722,10 @@ function PriceSubCard({
   onLink: () => void
   onUnlink: () => void
   linking: boolean
+  newAmountInput: string
+  onNewAmountInputChange: (v: string) => void
+  onUpdatePrice: () => void
+  updating: boolean
 }) {
   const isLinked = priceId !== null && amount !== null
   const amountDisplay = isLinked ? `$${Number(amount).toFixed(2)}${field === 'monthly' ? '/month' : ' one-time'}` : 'Not linked'
@@ -1444,34 +1767,75 @@ function PriceSubCard({
       {/* Edit input */}
       {isEditing && (
         <div className="mt-3 space-y-2">
-          <input
-            type="text"
-            value={priceIdInput}
-            onChange={(e) => onPriceIdInputChange(e.target.value)}
-            placeholder="price_xxxxxxxxxxxxxxxxxxxxxxxx"
-            className="form-input w-full font-mono text-xs"
-            autoFocus
-          />
-          <p className="font-mono text-xs text-dim">
-            Paste a Stripe Price ID. The amount will be confirmed directly from Stripe and saved.
-            Nothing is saved if Stripe returns an error.
-          </p>
-          <div className="flex gap-2">
-            <button
-              onClick={onLink}
-              disabled={linking || !priceIdInput.trim()}
-              className="font-mono text-xs bg-accent text-black px-4 py-1.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60"
-            >
-              {linking ? 'Confirming...' : 'Confirm and Save'}
-            </button>
-            <button
-              onClick={onCancelEdit}
-              disabled={linking}
-              className="font-mono text-xs border border-border px-3 py-1.5 rounded text-muted hover:border-border-light transition-all disabled:opacity-60"
-            >
-              Cancel
-            </button>
-          </div>
+          {isLinked ? (
+            // Amount-based edit mode for already-linked prices
+            <>
+              <div className="flex items-center gap-1.5">
+                <span className="font-mono text-xs text-muted">$</span>
+                <input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={newAmountInput}
+                  onChange={(e) => onNewAmountInputChange(e.target.value)}
+                  placeholder="0.00"
+                  className="form-input w-full font-mono text-xs"
+                  autoFocus
+                />
+                {field === 'monthly' && <span className="font-mono text-xs text-muted shrink-0">/month</span>}
+              </div>
+              <p className="font-mono text-xs text-dim">
+                Enter the new amount. A new Stripe Price will be created at this amount, the old price will be archived, and the result will be verified against Stripe before saving.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={onUpdatePrice}
+                  disabled={updating || !newAmountInput.trim()}
+                  className="font-mono text-xs bg-accent text-black px-4 py-1.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60"
+                >
+                  {updating ? 'Updating...' : 'Update Price'}
+                </button>
+                <button
+                  onClick={onCancelEdit}
+                  disabled={updating}
+                  className="font-mono text-xs border border-border px-3 py-1.5 rounded text-muted hover:border-border-light transition-all disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+              </div>
+            </>
+          ) : (
+            // Price ID link mode for unlinked prices
+            <>
+              <input
+                type="text"
+                value={priceIdInput}
+                onChange={(e) => onPriceIdInputChange(e.target.value)}
+                placeholder="price_xxxxxxxxxxxxxxxxxxxxxxxx"
+                className="form-input w-full font-mono text-xs"
+                autoFocus
+              />
+              <p className="font-mono text-xs text-dim">
+                Paste a Stripe Price ID. The amount will be confirmed directly from Stripe and saved. Nothing is saved if Stripe returns an error.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={onLink}
+                  disabled={linking || !priceIdInput.trim()}
+                  className="font-mono text-xs bg-accent text-black px-4 py-1.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60"
+                >
+                  {linking ? 'Confirming...' : 'Confirm and Save'}
+                </button>
+                <button
+                  onClick={onCancelEdit}
+                  disabled={linking}
+                  className="font-mono text-xs border border-border px-3 py-1.5 rounded text-muted hover:border-border-light transition-all disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
