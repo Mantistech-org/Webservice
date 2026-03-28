@@ -4,13 +4,31 @@ import { useState, useEffect, useCallback } from 'react'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+// PlanCard — from the plan_cards table.
+// Amounts are only stored after being confirmed via a read-only Stripe price
+// retrieval. null means "not linked" — never display $0 when null.
+type PlanCard = {
+  id: string
+  plan_name: string
+  is_discount: boolean
+  setup_price_id: string | null
+  setup_amount: number | null
+  monthly_price_id: string | null
+  monthly_amount: number | null
+  visible: boolean
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+// PricingPlan — from pricing_plans; used only in the Add-ons tab Stripe section.
 type PricingPlan = {
   id: string
   plan_key: string
   name: string
   upfront: number
   monthly: number
-  monthly_original: number | null  // regular price shown with strikethrough when launch pricing is active
+  monthly_original: number | null
   pages: number
   features: string[]
   product_type: 'plan' | 'addon'
@@ -20,13 +38,6 @@ type PricingPlan = {
   stripe_upfront_price_id: string | null
   visible: boolean
   sort_order: number
-}
-
-type StripeProductOption = {
-  id: string
-  name: string
-  price: number
-  price_id: string
 }
 
 type PricingCoupon = {
@@ -57,8 +68,6 @@ type CustomAddon = {
   created_at: string
   updated_at: string
 }
-
-type PlanEdits = { stripe_setup_product_id: string; stripe_monthly_product_id: string }
 
 type CouponForm = {
   code: string
@@ -100,21 +109,22 @@ const DESCRIPTION_PREVIEW_LENGTH = 180
 export default function PricingPage() {
   const [tab, setTab] = useState<'plans' | 'addons' | 'discounts'>('plans')
 
-  // Plans
-  const [plans, setPlans] = useState<PricingPlan[]>([])
-  const [plansLoading, setPlansLoading] = useState(true)
-  const [editingPlanId, setEditingPlanId] = useState<string | null>(null)
-  const [planEdits, setPlanEdits] = useState<PlanEdits>({ stripe_setup_product_id: '', stripe_monthly_product_id: '' })
-  const [savingPlan, setSavingPlan] = useState(false)
-  const [planMsg, setPlanMsg] = useState<{ id: string; text: string; ok: boolean } | null>(null)
-  const [syncing, setSyncing] = useState(false)
-  const [syncMsg, setSyncMsg] = useState<{ text: string; ok: boolean } | null>(null)
-  const [migrating, setMigrating] = useState(false)
-  const [migrateMsg, setMigrateMsg] = useState<{ text: string; ok: boolean } | null>(null)
-  const [stripeProducts, setStripeProducts] = useState<{ setup: StripeProductOption[]; monthly: StripeProductOption[] }>({ setup: [], monthly: [] })
-  const [stripeProductsLoading, setStripeProductsLoading] = useState(false)
+  // ── Plan Cards (Plans tab) ─────────────────────────────────────────────────
+  const [planCards, setPlanCards] = useState<PlanCard[]>([])
+  const [planCardsLoading, setPlanCardsLoading] = useState(true)
+  // Which cards have the "Show Price IDs" section expanded
+  const [expandedCardIds, setExpandedCardIds] = useState<Set<string>>(new Set())
+  // Which sub-card is currently in edit mode
+  const [editingPrice, setEditingPrice] = useState<{ cardId: string; field: 'setup' | 'monthly' } | null>(null)
+  const [priceIdInput, setPriceIdInput] = useState('')
+  const [linkingPrice, setLinkingPrice] = useState(false)
+  const [priceMsg, setPriceMsg] = useState<{ cardId: string; text: string; ok: boolean } | null>(null)
+  const [togglingCardId, setTogglingCardId] = useState<string | null>(null)
 
-  // Custom Add-ons
+  // ── Pricing Plans (Add-ons tab Stripe section only) ────────────────────────
+  const [plans, setPlans] = useState<PricingPlan[]>([])
+
+  // ── Custom Add-ons ────────────────────────────────────────────────────────
   const [customAddons, setCustomAddons] = useState<CustomAddon[]>([])
   const [addonsLoading, setAddonsLoading] = useState(false)
   const [showAddonForm, setShowAddonForm] = useState(false)
@@ -125,7 +135,7 @@ export default function PricingPage() {
   const [deletingAddonId, setDeletingAddonId] = useState<string | null>(null)
   const [expandedAddonIds, setExpandedAddonIds] = useState<Set<string>>(new Set())
 
-  // Discounts
+  // ── Discounts ─────────────────────────────────────────────────────────────
   const [coupons, setCoupons] = useState<PricingCoupon[]>([])
   const [couponsLoading, setCouponsLoading] = useState(false)
   const [showCouponForm, setShowCouponForm] = useState(false)
@@ -133,29 +143,24 @@ export default function PricingPage() {
   const [createMsg, setCreateMsg] = useState('')
   const [couponForm, setCouponForm] = useState<CouponForm>(BLANK_COUPON)
 
-  // ── Fetchers ────────────────────────────────────────────────────────────────
+  // ── Fetchers ───────────────────────────────────────────────────────────────
 
-  const fetchPlans = useCallback(async () => {
-    setPlansLoading(true)
+  const fetchPlanCards = useCallback(async () => {
+    setPlanCardsLoading(true)
     try {
-      const res = await fetch('/api/admin/pricing/plans')
-      if (res.ok) setPlans((await res.json()).plans ?? [])
+      const res = await fetch('/api/admin/pricing/plan-cards')
+      if (res.ok) setPlanCards((await res.json()).cards ?? [])
     } finally {
-      setPlansLoading(false)
+      setPlanCardsLoading(false)
     }
   }, [])
 
-  const fetchStripeProducts = useCallback(async () => {
-    setStripeProductsLoading(true)
+  // Pricing plans fetched only for the Add-ons tab Stripe section
+  const fetchPlans = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/pricing/stripe-products')
-      if (res.ok) {
-        const data = await res.json()
-        setStripeProducts({ setup: data.setup_products ?? [], monthly: data.monthly_products ?? [] })
-      }
-    } finally {
-      setStripeProductsLoading(false)
-    }
+      const res = await fetch('/api/admin/pricing/plans')
+      if (res.ok) setPlans((await res.json()).plans ?? [])
+    } catch { /* ignore */ }
   }, [])
 
   const fetchAddons = useCallback(async () => {
@@ -178,111 +183,98 @@ export default function PricingPage() {
     }
   }, [])
 
+  useEffect(() => { fetchPlanCards() }, [fetchPlanCards])
   useEffect(() => { fetchPlans() }, [fetchPlans])
-  useEffect(() => { fetchStripeProducts() }, [fetchStripeProducts])
   useEffect(() => { if (tab === 'addons') fetchAddons() }, [tab, fetchAddons])
   useEffect(() => { if (tab === 'discounts') fetchCoupons() }, [tab, fetchCoupons])
 
-  // ── Plans handlers ──────────────────────────────────────────────────────────
+  // ── Plan Cards handlers ────────────────────────────────────────────────────
 
-  function startEditPlan(plan: PricingPlan) {
-    setEditingPlanId(plan.id)
-    setPlanEdits({
-      stripe_setup_product_id: plan.stripe_setup_product_id ?? '',
-      stripe_monthly_product_id: plan.stripe_monthly_product_id ?? '',
+  function toggleCardExpanded(cardId: string) {
+    setExpandedCardIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(cardId)) next.delete(cardId)
+      else next.add(cardId)
+      return next
     })
-    setPlanMsg(null)
   }
 
-  async function handleSavePlan(planId: string) {
-    setSavingPlan(true)
-    setPlanMsg(null)
+  function startEditPrice(cardId: string, field: 'setup' | 'monthly') {
+    setEditingPrice({ cardId, field })
+    setPriceIdInput('')
+    setPriceMsg(null)
+  }
+
+  function cancelEditPrice() {
+    setEditingPrice(null)
+    setPriceIdInput('')
+  }
+
+  async function handleLinkPrice(cardId: string, field: 'setup' | 'monthly') {
+    const trimmed = priceIdInput.trim()
+    if (!trimmed) return
+    setLinkingPrice(true)
+    setPriceMsg(null)
     try {
-      const res = await fetch(`/api/admin/pricing/plans/${planId}`, {
+      const res = await fetch(`/api/admin/pricing/plan-cards/${cardId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(planEdits),
+        body: JSON.stringify({ field, price_id: trimmed }),
       })
       const data = await res.json()
       if (res.ok) {
-        setPlans((prev) => prev.map((p) => (p.id === planId ? data.plan : p)))
-        setEditingPlanId(null)
-        setPlanMsg({ id: planId, text: 'Saved successfully.', ok: true })
+        setPlanCards((prev) => prev.map((c) => (c.id === cardId ? data.card : c)))
+        setEditingPrice(null)
+        setPriceIdInput('')
+        setPriceMsg({ cardId, text: 'Price linked successfully.', ok: true })
       } else {
-        setPlanMsg({ id: planId, text: data.error ?? 'Save failed.', ok: false })
+        setPriceMsg({ cardId, text: data.error ?? 'Failed to link price.', ok: false })
       }
     } catch {
-      setPlanMsg({ id: planId, text: 'Network error.', ok: false })
+      setPriceMsg({ cardId, text: 'Network error.', ok: false })
     } finally {
-      setSavingPlan(false)
+      setLinkingPrice(false)
     }
   }
 
-  async function handleSyncFromStripe() {
-    setSyncing(true)
-    setSyncMsg(null)
+  async function handleUnlinkPrice(cardId: string, field: 'setup' | 'monthly') {
+    setPriceMsg(null)
     try {
-      const res = await fetch('/api/admin/pricing/sync', { method: 'POST' })
+      const res = await fetch(`/api/admin/pricing/plan-cards/${cardId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ field, unlink: true }),
+      })
       const data = await res.json()
       if (res.ok) {
-        const {
-          synced,
-          results,
-          skipped,
-          orphaned,
-          message,
-        } = data as {
-          synced: number
-          results: { plan_key: string; name: string; action: string; upfront: number; monthly: number }[]
-          skipped: { id: string; name: string; reason: string }[]
-          orphaned: { plan_key: string }[]
-          message?: string
-        }
-        if (synced === 0 && (!skipped || skipped.length === 0)) {
-          setSyncMsg({ text: message ?? 'No products found in Stripe.', ok: false })
-        } else {
-          const inserted = results.filter((r) => r.action === 'inserted').length
-          const updated = results.filter((r) => r.action === 'updated').length
-          const parts: string[] = []
-          if (inserted > 0) parts.push(`${inserted} added`)
-          if (updated > 0) parts.push(`${updated} updated`)
-          if (skipped?.length > 0) parts.push(`${skipped.length} skipped (no USD prices)`)
-          if (orphaned?.length > 0) parts.push(`${orphaned.length} orphaned`)
-          setSyncMsg({ text: `Sync complete — ${parts.join(', ')}.`, ok: true })
-          await Promise.all([fetchPlans(), fetchStripeProducts()])
-        }
+        setPlanCards((prev) => prev.map((c) => (c.id === cardId ? data.card : c)))
+        setPriceMsg({ cardId, text: `${field === 'setup' ? 'Setup' : 'Monthly'} price unlinked.`, ok: true })
       } else {
-        setSyncMsg({ text: data.error ?? 'Sync failed.', ok: false })
+        setPriceMsg({ cardId, text: data.error ?? 'Failed to unlink.', ok: false })
       }
     } catch {
-      setSyncMsg({ text: 'Network error.', ok: false })
-    } finally {
-      setSyncing(false)
+      setPriceMsg({ cardId, text: 'Network error.', ok: false })
     }
   }
 
-  async function handleRunMigration() {
-    setMigrating(true)
-    setMigrateMsg(null)
+  async function handleTogglePlanCardVisibility(card: PlanCard) {
+    setTogglingCardId(card.id)
     try {
-      const res = await fetch('/api/admin/pricing/migrate-v2', { method: 'POST' })
-      const data = await res.json()
-      if (res.ok && data.success) {
-        const cols = data.columns as Record<string, string>
-        setMigrateMsg({
-          text: `Migration complete. setup: ${cols.stripe_setup_product_id}, monthly: ${cols.stripe_monthly_product_id}, old: ${cols.stripe_product_id}.`,
-          ok: true,
-        })
-        await fetchPlans()
-      } else {
-        setMigrateMsg({ text: data.error ?? 'Migration failed.', ok: false })
+      const res = await fetch(`/api/admin/pricing/plan-cards/${card.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visible: !card.visible }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setPlanCards((prev) => prev.map((c) => (c.id === card.id ? data.card : c)))
       }
-    } catch {
-      setMigrateMsg({ text: 'Network error.', ok: false })
     } finally {
-      setMigrating(false)
+      setTogglingCardId(null)
     }
   }
+
+  // ── Stripe plan visibility (Add-ons tab only) ──────────────────────────────
 
   async function handleToggleVisibility(plan: PricingPlan) {
     const res = await fetch(`/api/admin/pricing/plans/${plan.id}`, {
@@ -296,7 +288,7 @@ export default function PricingPage() {
     }
   }
 
-  // ── Custom Add-ons handlers ─────────────────────────────────────────────────
+  // ── Custom Add-ons handlers ────────────────────────────────────────────────
 
   function startCreateAddon() {
     setEditingAddonId(null)
@@ -405,7 +397,7 @@ export default function PricingPage() {
     })
   }
 
-  // ── Coupons handlers ────────────────────────────────────────────────────────
+  // ── Coupons handlers ───────────────────────────────────────────────────────
 
   async function handleCreateCoupon(e: React.FormEvent) {
     e.preventDefault()
@@ -454,7 +446,7 @@ export default function PricingPage() {
     }
   }
 
-  // ── Shared form field label ─────────────────────────────────────────────────
+  // ── Shared form field label ────────────────────────────────────────────────
 
   const L = ({ children }: { children: React.ReactNode }) => (
     <span className="font-mono text-xs text-muted tracking-widest uppercase block mb-1.5">
@@ -462,7 +454,7 @@ export default function PricingPage() {
     </span>
   )
 
-  // ── Addon form (shared between create and inline edit) ──────────────────────
+  // ── Addon form (shared between create and inline edit) ────────────────────
 
   function AddonFormFields({
     form,
@@ -579,7 +571,7 @@ export default function PricingPage() {
     )
   }
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
@@ -609,210 +601,140 @@ export default function PricingPage() {
         ))}
       </div>
 
-      {/* ── Plans Tab ─────────────────────────────────────────────────────────── */}
+      {/* ── Plans Tab ────────────────────────────────────────────────────────── */}
       {tab === 'plans' && (
         <div className="space-y-4">
-          <div className="space-y-3">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={handleSyncFromStripe}
-                disabled={syncing || plansLoading}
-                className="font-mono text-xs border border-border px-4 py-2 rounded text-muted hover:border-accent hover:text-accent transition-all disabled:opacity-60 flex items-center gap-2"
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                  className={syncing ? 'animate-spin' : ''}>
-                  <polyline points="23 4 23 10 17 10" />
-                  <polyline points="1 20 1 14 7 14" />
-                  <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
-                </svg>
-                {syncing ? 'Syncing from Stripe...' : 'Sync from Stripe'}
-              </button>
-              {syncMsg && (
-                <span className={`font-mono text-xs ${syncMsg.ok ? 'text-emerald-700 dark:text-accent' : 'text-red-400'}`}>
-                  {syncMsg.text}
-                </span>
-              )}
-            </div>
+          <p className="font-mono text-xs text-muted">
+            Link Stripe Price IDs to each plan. Prices are confirmed by retrieving the price
+            directly from Stripe — only exact amounts from Stripe are stored and displayed.
+          </p>
 
-            {/* One-time schema migration banner */}
-            <div className="flex items-center gap-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded px-4 py-3">
-              <div className="flex-1 min-w-0">
-                <p className="font-mono text-xs text-amber-800 dark:text-amber-400">
-                  <span className="font-medium">One-time migration required</span> — run once to add the{' '}
-                  <code className="font-mono">stripe_setup_product_id</code> and{' '}
-                  <code className="font-mono">stripe_monthly_product_id</code> columns.
-                  Safe to re-run; skips steps already completed.
-                </p>
-                {migrateMsg && (
-                  <p className={`font-mono text-xs mt-1 ${migrateMsg.ok ? 'text-emerald-700 dark:text-accent' : 'text-red-500'}`}>
-                    {migrateMsg.text}
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={handleRunMigration}
-                disabled={migrating}
-                className="font-mono text-xs border border-amber-400 dark:border-amber-700 text-amber-800 dark:text-amber-400 px-4 py-1.5 rounded hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all disabled:opacity-60 shrink-0"
-              >
-                {migrating ? 'Running...' : 'Run Migration'}
-              </button>
-            </div>
-          </div>
-
-          {plansLoading ? (
+          {planCardsLoading ? (
             <p className="font-mono text-xs text-muted animate-pulse">Loading plans...</p>
-          ) : plans.filter((p) => p.product_type === 'plan').length === 0 ? (
+          ) : planCards.length === 0 ? (
             <div className="bg-card border border-border rounded p-8 text-center">
-              <p className="font-mono text-xs text-muted mb-2">No plans found.</p>
+              <p className="font-mono text-xs text-muted mb-2">No plan cards found.</p>
               <p className="font-mono text-xs text-dim">
-                Click &ldquo;Sync from Stripe&rdquo; to import active products. Products are classified as plans
-                via Stripe metadata (<code className="font-mono">metadata.type = plan</code>) or by name
-                keywords (starter, growth, pro, etc.).
+                Run the <code className="font-mono">scripts/plan-cards-migration.sql</code> migration
+                in Supabase to create and seed the 6 plan cards.
               </p>
             </div>
           ) : (
-            plans.filter((p) => p.product_type === 'plan').map((plan) => {
-              const isEditing = editingPlanId === plan.id
+            planCards.map((card) => {
+              const isExpanded = expandedCardIds.has(card.id)
+              const isTogglingThis = togglingCardId === card.id
+              const cardMsg = priceMsg?.cardId === card.id ? priceMsg : null
+
+              const setupDisplay = card.setup_amount != null
+                ? `$${Number(card.setup_amount).toFixed(2)}`
+                : 'Not linked'
+
+              const monthlyDisplay = card.monthly_amount != null
+                ? `$${Number(card.monthly_amount).toFixed(2)}`
+                : 'Not linked'
+
               return (
-                <div key={plan.id} className="bg-card border border-border rounded p-6">
+                <div key={card.id} className={`bg-card border border-border rounded p-6 transition-opacity ${!card.visible ? 'opacity-60' : ''}`}>
+                  {/* Card header */}
                   <div className="flex items-start justify-between gap-4 mb-4">
                     <div className="flex items-center gap-3 flex-wrap">
-                      <span className="font-heading text-xl text-primary">{plan.name}</span>
-                      <span className="font-mono text-xs text-muted uppercase tracking-widest">{plan.plan_key}</span>
-                      <span className="font-mono text-xs text-muted">{plan.pages} pages</span>
+                      <span className="font-heading text-xl text-primary">{card.plan_name}</span>
+                      {card.is_discount && (
+                        <span className="font-mono text-xs px-2 py-0.5 rounded border border-accent/30 text-accent bg-accent/5">
+                          Discount
+                        </span>
+                      )}
                       <span className={`font-mono text-xs px-2 py-0.5 rounded border ${
-                        plan.visible
+                        card.visible
                           ? 'text-emerald-700 dark:text-accent border-emerald-700/30 dark:border-accent/30 bg-emerald-700/5 dark:bg-accent/5'
                           : 'text-muted border-border'
                       }`}>
-                        {plan.visible ? 'Visible' : 'Hidden'}
+                        {card.visible ? 'Visible' : 'Hidden'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button onClick={() => handleToggleVisibility(plan)}
-                        className="font-mono text-xs border border-border px-3 py-1.5 rounded text-muted hover:border-accent hover:text-accent transition-all">
-                        {plan.visible ? 'Hide' : 'Show'}
-                      </button>
-                      {isEditing ? (
-                        <>
-                          <button onClick={() => handleSavePlan(plan.id)} disabled={savingPlan}
-                            className="font-mono text-xs bg-accent text-black px-4 py-1.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60">
-                            {savingPlan ? 'Saving...' : 'Save'}
-                          </button>
-                          <button onClick={() => { setEditingPlanId(null); setPlanMsg(null) }}
-                            className="font-mono text-xs border border-border px-3 py-1.5 rounded text-muted hover:border-border-light transition-all">
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <button onClick={() => startEditPlan(plan)}
-                          className="font-mono text-xs border border-border px-3 py-1.5 rounded text-muted hover:border-accent hover:text-accent transition-all">
-                          Edit
-                        </button>
-                      )}
+                    <button
+                      onClick={() => handleTogglePlanCardVisibility(card)}
+                      disabled={isTogglingThis}
+                      className="font-mono text-xs border border-border px-3 py-1.5 rounded text-muted hover:border-accent hover:text-accent transition-all disabled:opacity-60 shrink-0"
+                    >
+                      {isTogglingThis ? '...' : card.visible ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+
+                  {/* Price summary */}
+                  <div className="space-y-1 mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs text-muted w-20 shrink-0">Setup Fee</span>
+                      <span className={`font-mono text-sm ${card.setup_amount != null ? 'text-primary' : 'text-dim'}`}>
+                        {setupDisplay}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs text-muted w-20 shrink-0">Monthly</span>
+                      <span className={`font-mono text-sm ${card.monthly_amount != null ? 'text-primary' : 'text-dim'}`}>
+                        {monthlyDisplay}{card.monthly_amount != null ? '/month' : ''}
+                      </span>
                     </div>
                   </div>
 
-                  {isEditing ? (
-                    <div className="pt-4 border-t border-border space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <L>
-                            Setup / One-Time Product
-                            {stripeProductsLoading && <span className="text-dim normal-case tracking-normal ml-1">(loading...)</span>}
-                          </L>
-                          <select
-                            value={planEdits.stripe_setup_product_id}
-                            onChange={(e) => setPlanEdits((p) => ({ ...p, stripe_setup_product_id: e.target.value }))}
-                            className="form-input text-sm w-full"
-                          >
-                            <option value="">-- No setup product --</option>
-                            {stripeProducts.setup.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.name} (${p.price} one-time)
-                              </option>
-                            ))}
-                          </select>
-                          <p className="font-mono text-xs text-dim mt-1">
-                            One-time products from Stripe. Selecting one auto-sets the setup fee.
-                          </p>
-                        </div>
-                        <div>
-                          <L>
-                            Monthly Subscription Product
-                            {stripeProductsLoading && <span className="text-dim normal-case tracking-normal ml-1">(loading...)</span>}
-                          </L>
-                          <select
-                            value={planEdits.stripe_monthly_product_id}
-                            onChange={(e) => setPlanEdits((p) => ({ ...p, stripe_monthly_product_id: e.target.value }))}
-                            className="form-input text-sm w-full"
-                          >
-                            <option value="">-- No monthly product --</option>
-                            {stripeProducts.monthly.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.name} (${p.price}/mo)
-                              </option>
-                            ))}
-                          </select>
-                          <p className="font-mono text-xs text-dim mt-1">
-                            Recurring monthly products from Stripe. Selecting one auto-sets the monthly fee.
-                          </p>
-                        </div>
-                      </div>
-                      {planMsg?.id === plan.id && (
-                        <p className={`font-mono text-xs ${planMsg.ok ? 'text-emerald-700 dark:text-accent' : 'text-red-400'}`}>
-                          {planMsg.text}
+                  {/* Show Price IDs toggle */}
+                  <button
+                    onClick={() => toggleCardExpanded(card.id)}
+                    className="flex items-center gap-2 font-mono text-xs text-muted hover:text-primary transition-colors"
+                  >
+                    <svg
+                      width="12" height="12" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" strokeWidth="2"
+                      className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                    >
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                    {isExpanded ? 'Hide Price IDs' : 'Show Price IDs'}
+                  </button>
+
+                  {/* Sub-cards */}
+                  {isExpanded && (
+                    <div className="mt-4 space-y-3 pt-4 border-t border-border">
+                      {/* Setup sub-card */}
+                      <PriceSubCard
+                        label={`${card.plan_name} Setup Fee`}
+                        priceId={card.setup_price_id}
+                        amount={card.setup_amount}
+                        field="setup"
+                        cardId={card.id}
+                        isEditing={editingPrice?.cardId === card.id && editingPrice?.field === 'setup'}
+                        priceIdInput={priceIdInput}
+                        onPriceIdInputChange={setPriceIdInput}
+                        onStartEdit={() => startEditPrice(card.id, 'setup')}
+                        onCancelEdit={cancelEditPrice}
+                        onLink={() => handleLinkPrice(card.id, 'setup')}
+                        onUnlink={() => handleUnlinkPrice(card.id, 'setup')}
+                        linking={linkingPrice && editingPrice?.cardId === card.id && editingPrice?.field === 'setup'}
+                      />
+
+                      {/* Monthly sub-card */}
+                      <PriceSubCard
+                        label={`${card.plan_name} Monthly Fee`}
+                        priceId={card.monthly_price_id}
+                        amount={card.monthly_amount}
+                        field="monthly"
+                        cardId={card.id}
+                        isEditing={editingPrice?.cardId === card.id && editingPrice?.field === 'monthly'}
+                        priceIdInput={priceIdInput}
+                        onPriceIdInputChange={setPriceIdInput}
+                        onStartEdit={() => startEditPrice(card.id, 'monthly')}
+                        onCancelEdit={cancelEditPrice}
+                        onLink={() => handleLinkPrice(card.id, 'monthly')}
+                        onUnlink={() => handleUnlinkPrice(card.id, 'monthly')}
+                        linking={linkingPrice && editingPrice?.cardId === card.id && editingPrice?.field === 'monthly'}
+                      />
+
+                      {cardMsg && (
+                        <p className={`font-mono text-xs ${cardMsg.ok ? 'text-emerald-700 dark:text-accent' : 'text-red-400'}`}>
+                          {cardMsg.text}
                         </p>
                       )}
                     </div>
-                  ) : (
-                    <div>
-                      {/* Package pricing display */}
-                      {(plan.upfront > 0 || plan.monthly > 0) ? (
-                        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                          {plan.upfront > 0 && (
-                            <span className="font-heading text-xl text-primary">
-                              ${plan.upfront}
-                              <span className="font-mono text-xs text-muted ml-1.5">one-time setup fee</span>
-                            </span>
-                          )}
-                          {plan.upfront > 0 && plan.monthly > 0 && (
-                            <span className="font-mono text-xs text-dim">+</span>
-                          )}
-                          {plan.monthly > 0 && (
-                            <span className="font-heading text-xl text-primary flex items-baseline gap-2">
-                              {plan.monthly_original != null && plan.monthly_original > 0 && (
-                                <span className="line-through text-muted font-heading text-lg">
-                                  ${plan.monthly_original}
-                                </span>
-                              )}
-                              ${plan.monthly}
-                              <span className="font-mono text-xs text-muted">/month</span>
-                              {plan.monthly_original != null && plan.monthly_original > 0 && (
-                                <span className="font-mono text-xs text-accent">launch price</span>
-                              )}
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <p className="font-mono text-xs text-dim">No prices set — link Stripe products to set pricing.</p>
-                      )}
-                      {/* Linked product IDs */}
-                      <div className="mt-3 space-y-0.5">
-                        {plan.stripe_setup_product_id && (
-                          <div className="font-mono text-xs text-dim">Setup: {plan.stripe_setup_product_id}</div>
-                        )}
-                        {plan.stripe_monthly_product_id && (
-                          <div className="font-mono text-xs text-dim">Monthly: {plan.stripe_monthly_product_id}</div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {!isEditing && planMsg?.id === plan.id && (
-                    <p className={`mt-3 font-mono text-xs ${planMsg.ok ? 'text-emerald-700 dark:text-accent' : 'text-red-400'}`}>
-                      {planMsg.text}
-                    </p>
                   )}
                 </div>
               )
@@ -1201,6 +1123,112 @@ export default function PricingPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── PriceSubCard ──────────────────────────────────────────────────────────────
+// Renders one price slot (setup or monthly) within a plan card's expanded section.
+
+function PriceSubCard({
+  label,
+  priceId,
+  amount,
+  field,
+  cardId,
+  isEditing,
+  priceIdInput,
+  onPriceIdInputChange,
+  onStartEdit,
+  onCancelEdit,
+  onLink,
+  onUnlink,
+  linking,
+}: {
+  label: string
+  priceId: string | null
+  amount: number | null
+  field: 'setup' | 'monthly'
+  cardId: string
+  isEditing: boolean
+  priceIdInput: string
+  onPriceIdInputChange: (v: string) => void
+  onStartEdit: () => void
+  onCancelEdit: () => void
+  onLink: () => void
+  onUnlink: () => void
+  linking: boolean
+}) {
+  const isLinked = priceId !== null && amount !== null
+  const amountDisplay = isLinked ? `$${Number(amount).toFixed(2)}${field === 'monthly' ? '/month' : ' one-time'}` : 'Not linked'
+
+  return (
+    <div className="bg-bg border border-border rounded p-4">
+      <div className="flex items-start justify-between gap-4 mb-2">
+        <span className="font-mono text-xs text-muted tracking-widest uppercase">{label}</span>
+        <div className="flex items-center gap-2 shrink-0">
+          {isLinked && !isEditing && (
+            <button
+              onClick={onUnlink}
+              className="font-mono text-xs text-dim hover:text-red-400 transition-colors"
+            >
+              Unlink
+            </button>
+          )}
+          {!isEditing && (
+            <button
+              onClick={onStartEdit}
+              className="font-mono text-xs border border-border px-2.5 py-1 rounded text-muted hover:border-accent hover:text-accent transition-all"
+            >
+              {isLinked ? 'Change' : 'Link Price ID'}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Confirmed amount */}
+      <div className={`font-mono text-sm mb-1 ${isLinked ? 'text-primary' : 'text-dim'}`}>
+        {amountDisplay}
+      </div>
+
+      {/* Price ID */}
+      {isLinked && (
+        <div className="font-mono text-xs text-dim break-all">{priceId}</div>
+      )}
+
+      {/* Edit input */}
+      {isEditing && (
+        <div className="mt-3 space-y-2">
+          <input
+            type="text"
+            value={priceIdInput}
+            onChange={(e) => onPriceIdInputChange(e.target.value)}
+            placeholder="price_xxxxxxxxxxxxxxxxxxxxxxxx"
+            className="form-input w-full font-mono text-xs"
+            autoFocus
+          />
+          <p className="font-mono text-xs text-dim">
+            Paste a Stripe Price ID. The amount will be confirmed directly from Stripe and saved.
+            Nothing is saved if Stripe returns an error.
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={onLink}
+              disabled={linking || !priceIdInput.trim()}
+              className="font-mono text-xs bg-accent text-black px-4 py-1.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60"
+            >
+              {linking ? 'Confirming...' : 'Confirm and Save'}
+            </button>
+            <button
+              onClick={onCancelEdit}
+              disabled={linking}
+              className="font-mono text-xs border border-border px-3 py-1.5 rounded text-muted hover:border-border-light transition-all disabled:opacity-60"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
     </div>

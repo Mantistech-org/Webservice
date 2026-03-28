@@ -24,11 +24,13 @@ function PlanCard({ plan, highlight }: { plan: PublicPlan; highlight: boolean })
           {plan.name} Plan
         </div>
 
-        {/* Upfront fee */}
-        <div className="font-heading text-5xl text-primary leading-none mb-1">
-          ${plan.upfront}
-          <span className="font-mono text-sm text-muted ml-2 font-normal">upfront</span>
-        </div>
+        {/* Upfront fee — only rendered when a confirmed amount exists */}
+        {plan.upfront != null && (
+          <div className="font-heading text-5xl text-primary leading-none mb-1">
+            ${plan.upfront}
+            <span className="font-mono text-sm text-muted ml-2 font-normal">upfront</span>
+          </div>
+        )}
 
         {/* Monthly price - with or without active promotion */}
         {promotion ? (
