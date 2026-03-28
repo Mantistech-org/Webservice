@@ -1086,7 +1086,7 @@ export default function PricingPage() {
                 <div className="space-y-1">
                   {verifyReport.mismatches.map((m, i) => (
                     <div key={i} className="font-mono text-xs text-red-400">
-                      {m.name} ({m.field}): Supabase=${m.supabase_amount?.toFixed(2)} / Stripe={m.stripe_amount != null ? `$${m.stripe_amount.toFixed(2)}` : 'fetch failed'} — {m.price_id}
+                      {m.name} ({m.field}): Supabase=${Number(m.supabase_amount).toFixed(2)} / Stripe={m.stripe_amount != null ? `$${m.stripe_amount.toFixed(2)}` : 'fetch failed'} — {m.price_id}
                     </div>
                   ))}
                 </div>
@@ -1231,7 +1231,7 @@ export default function PricingPage() {
                       {priceUpdateResult?.cardId === card.id && (
                         <div className="bg-card border border-accent/30 rounded p-3 space-y-1">
                           <p className="font-mono text-xs text-accent font-medium">Price updated and verified.</p>
-                          <p className="font-mono text-xs text-muted">Old: ${priceUpdateResult.old_amount.toFixed(2)} ({priceUpdateResult.old_price_id})</p>
+                          <p className="font-mono text-xs text-muted">Old: ${Number(priceUpdateResult.old_amount).toFixed(2)} ({priceUpdateResult.old_price_id})</p>
                           <p className="font-mono text-xs text-primary">New: ${priceUpdateResult.new_amount.toFixed(2)} ({priceUpdateResult.new_price_id})</p>
                         </div>
                       )}

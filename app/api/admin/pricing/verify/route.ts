@@ -48,12 +48,14 @@ export async function GET() {
       } catch (err) {
         console.error(`[pricing/verify] Failed to fetch setup price ${card.setup_price_id}:`, err)
       }
-      if (stripeAmount === null || stripeAmount !== card.setup_amount) {
+      // pg returns numeric(10,2) columns as strings — coerce before comparing
+      const dbSetupAmount = parseFloat(String(card.setup_amount))
+      if (stripeAmount === null || stripeAmount !== dbSetupAmount) {
         mismatches.push({
           name: card.plan_name,
           field: 'setup',
           price_id: card.setup_price_id,
-          supabase_amount: card.setup_amount,
+          supabase_amount: dbSetupAmount,
           stripe_amount: stripeAmount,
         })
       }
@@ -67,12 +69,14 @@ export async function GET() {
       } catch (err) {
         console.error(`[pricing/verify] Failed to fetch monthly price ${card.monthly_price_id}:`, err)
       }
-      if (stripeAmount === null || stripeAmount !== card.monthly_amount) {
+      // pg returns numeric(10,2) columns as strings — coerce before comparing
+      const dbMonthlyAmount = parseFloat(String(card.monthly_amount))
+      if (stripeAmount === null || stripeAmount !== dbMonthlyAmount) {
         mismatches.push({
           name: card.plan_name,
           field: 'monthly',
           price_id: card.monthly_price_id,
-          supabase_amount: card.monthly_amount,
+          supabase_amount: dbMonthlyAmount,
           stripe_amount: stripeAmount,
         })
       }
@@ -89,12 +93,14 @@ export async function GET() {
       } catch (err) {
         console.error(`[pricing/verify] Failed to fetch plan price ${plan.stripe_monthly_price_id}:`, err)
       }
-      if (stripeAmount === null || stripeAmount !== plan.monthly) {
+      // pg returns numeric(10,2) columns as strings — coerce before comparing
+      const dbMonthly = parseFloat(String(plan.monthly))
+      if (stripeAmount === null || stripeAmount !== dbMonthly) {
         mismatches.push({
           name: plan.name,
           field: 'monthly',
           price_id: plan.stripe_monthly_price_id,
-          supabase_amount: plan.monthly,
+          supabase_amount: dbMonthly,
           stripe_amount: stripeAmount,
         })
       }

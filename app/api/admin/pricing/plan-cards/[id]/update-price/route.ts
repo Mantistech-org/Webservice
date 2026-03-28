@@ -198,7 +198,7 @@ export async function POST(
   return NextResponse.json({
     card: updatedCard,
     old_price_id: oldPriceId,
-    old_amount: oldAmount,
+    old_amount: parseFloat(String(oldAmount)),
     new_price_id: newPriceId,
     new_amount: verifiedAmount,
   })
