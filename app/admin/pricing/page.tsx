@@ -69,6 +69,25 @@ type CustomAddon = {
   updated_at: string
 }
 
+type AutoLinkLinked = {
+  plan_name: string
+  field: 'setup' | 'monthly'
+  price_id: string
+  amount: number
+  stripe_product_name: string
+}
+
+type AutoLinkSkipped = {
+  plan_name: string
+  reason: string
+}
+
+type AutoLinkReport = {
+  linked: AutoLinkLinked[]
+  skipped: AutoLinkSkipped[]
+  summary: string
+}
+
 type CouponForm = {
   code: string
   label: string
@@ -120,6 +139,8 @@ export default function PricingPage() {
   const [linkingPrice, setLinkingPrice] = useState(false)
   const [priceMsg, setPriceMsg] = useState<{ cardId: string; text: string; ok: boolean } | null>(null)
   const [togglingCardId, setTogglingCardId] = useState<string | null>(null)
+  const [autoLinking, setAutoLinking] = useState(false)
+  const [autoLinkReport, setAutoLinkReport] = useState<AutoLinkReport | null>(null)
 
   // ── Pricing Plans (Add-ons tab Stripe section only) ────────────────────────
   const [plans, setPlans] = useState<PricingPlan[]>([])
@@ -271,6 +292,29 @@ export default function PricingPage() {
       }
     } finally {
       setTogglingCardId(null)
+    }
+  }
+
+  async function handleAutoLink() {
+    setAutoLinking(true)
+    setAutoLinkReport(null)
+    try {
+      const res = await fetch('/api/admin/pricing/plan-cards/auto-link', { method: 'POST' })
+      const data = await res.json()
+      if (res.ok) {
+        setAutoLinkReport(data as AutoLinkReport)
+        await fetchPlanCards()
+      } else {
+        setAutoLinkReport({
+          linked: [],
+          skipped: [],
+          summary: data.error ?? 'Auto-link failed.',
+        })
+      }
+    } catch {
+      setAutoLinkReport({ linked: [], skipped: [], summary: 'Network error.' })
+    } finally {
+      setAutoLinking(false)
     }
   }
 
@@ -604,10 +648,67 @@ export default function PricingPage() {
       {/* ── Plans Tab ────────────────────────────────────────────────────────── */}
       {tab === 'plans' && (
         <div className="space-y-4">
-          <p className="font-mono text-xs text-muted">
-            Link Stripe Price IDs to each plan. Prices are confirmed by retrieving the price
-            directly from Stripe — only exact amounts from Stripe are stored and displayed.
-          </p>
+          <div className="flex items-center justify-between gap-4">
+            <p className="font-mono text-xs text-muted">
+              Link Stripe Price IDs to each plan. Prices are confirmed directly from Stripe —
+              only exact amounts from Stripe are stored and displayed.
+            </p>
+            <button
+              onClick={handleAutoLink}
+              disabled={autoLinking || planCardsLoading}
+              className="font-mono text-xs border border-border px-4 py-2 rounded text-muted hover:border-accent hover:text-accent transition-all disabled:opacity-60 shrink-0 flex items-center gap-2"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                className={autoLinking ? 'animate-spin' : ''}>
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+              </svg>
+              {autoLinking ? 'Linking from Stripe...' : 'Auto-link from Stripe'}
+            </button>
+          </div>
+
+          {/* Auto-link report */}
+          {autoLinkReport && (
+            <div className="bg-card border border-border rounded p-4 space-y-3">
+              <p className={`font-mono text-xs font-medium ${autoLinkReport.linked.length > 0 ? 'text-emerald-700 dark:text-accent' : 'text-muted'}`}>
+                {autoLinkReport.summary}
+              </p>
+
+              {autoLinkReport.linked.length > 0 && (
+                <div>
+                  <p className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Linked</p>
+                  <div className="space-y-1">
+                    {autoLinkReport.linked.map((l, i) => (
+                      <div key={i} className="font-mono text-xs text-teal">
+                        <span className="text-primary">{l.plan_name}</span>
+                        {' '}&mdash;{' '}
+                        <span className="text-muted">{l.field === 'setup' ? 'Setup' : 'Monthly'}:</span>
+                        {' '}${l.amount.toFixed(2)}{l.field === 'monthly' ? '/month' : ' one-time'}
+                        {' '}
+                        <span className="text-dim">({l.price_id})</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {autoLinkReport.skipped.length > 0 && (
+                <div>
+                  <p className="font-mono text-xs text-muted tracking-widest uppercase mb-2">Skipped</p>
+                  <div className="space-y-1">
+                    {autoLinkReport.skipped.map((s, i) => (
+                      <div key={i} className="font-mono text-xs">
+                        <span className="text-primary">{s.plan_name}</span>
+                        {' '}&mdash;{' '}
+                        <span className="text-dim">{s.reason}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {planCardsLoading ? (
             <p className="font-mono text-xs text-muted animate-pulse">Loading plans...</p>
