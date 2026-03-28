@@ -81,7 +81,6 @@ const CATEGORIES: { label: string; services: Service[] }[] = [
         fields: [
           { key: 'STRIPE_SECRET_KEY', label: 'Secret Key' },
           { key: 'STRIPE_WEBHOOK_SECRET', label: 'Webhook Secret' },
-          { key: 'STRIPE_PRICE_ID', label: 'Price ID' },
         ],
         docsUrl: 'https://dashboard.stripe.com/apikeys',
         docsLabel: 'dashboard.stripe.com',
