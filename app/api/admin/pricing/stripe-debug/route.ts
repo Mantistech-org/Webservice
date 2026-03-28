@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { isAdminAuthenticated } from '@/lib/auth'
 import { getStripe } from '@/lib/stripe'
 import Stripe from 'stripe'
 
@@ -23,10 +22,6 @@ async function listAll<T>(
 // and all active USD price IDs and amounts. Used to verify name mapping
 // before auto-linking plan cards.
 export async function GET() {
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   const stripe = await getStripe()
 
   const products = await listAll<Stripe.Product>((startingAfter) =>
