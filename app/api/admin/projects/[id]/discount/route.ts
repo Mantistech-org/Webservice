@@ -7,13 +7,13 @@ import { getStripe } from '@/lib/stripe'
 // Applies a Stripe coupon to a specific client's customer or subscription.
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { id } = params
+  const { id } = await params
   const { coupon_id } = (await req.json()) as { coupon_id?: string }
 
   if (!coupon_id?.trim()) {

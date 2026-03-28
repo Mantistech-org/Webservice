@@ -17,7 +17,7 @@ type PatchBody = {
 // Handles: visibility toggle, price updates (with Stripe sync), product ID linking
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -27,7 +27,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Database not configured.' }, { status: 503 })
   }
 
-  const { id } = params
+  const { id } = await params
   const body = (await req.json()) as PatchBody
 
   const rows = await query<PricingPlan>(
