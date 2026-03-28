@@ -6,55 +6,40 @@ import { supabase, supabaseEnabled } from '@/lib/supabase'
 import { invalidateApiKeyCache } from '@/lib/api-keys'
 import Stripe from 'stripe'
 
-// Minimum one-time price in cents to be treated as a real setup fee.
-// Prices at or below this value (e.g. Stripe's $1 test placeholder) are ignored.
-const MIN_SETUP_FEE_CENTS = 200  // $2.00
+// One-time prices at or below this threshold are treated as Stripe placeholders and ignored.
+// $1.00 = 100 cents. Any price > $1 is treated as a real setup fee.
+const PLACEHOLDER_THRESHOLD_CENTS = 100
 
-// Keywords in the product name that identify main subscription plans.
-const PLAN_NAME_KEYWORDS = [
-  'starter', 'growth', 'pro', 'basic', 'business', 'enterprise',
-  'standard', 'premium', 'essential', 'ultimate', 'plus', 'advanced',
-  'professional', ' plan', 'package', 'tier',
-]
-
-// Keywords in the product name that identify add-on services.
-const ADDON_NAME_KEYWORDS = [
-  'add-on', 'addon', 'generation', 'automation', 'management',
-  'optimization', 'monitoring', 'analytics', 'support', 'module', 'extra',
-]
+// Product names containing any of these keywords (case-insensitive) are classified as 'plan'.
+// Everything else is classified as 'addon'.
+const PLAN_NAME_KEYWORDS = ['starter', 'growth', 'pro', 'basic', 'standard', 'premium', 'enterprise']
 
 // Classify a Stripe product as 'plan' or 'addon'.
-// Order of precedence: metadata.type → metadata.category → name keywords → default 'plan'.
+// Precedence: metadata.type → name keywords → default 'addon'.
 function classifyProduct(product: Stripe.Product): 'plan' | 'addon' {
   const metaType = (product.metadata?.type as string | undefined)?.toLowerCase().trim()
-  const metaCategory = (product.metadata?.category as string | undefined)?.toLowerCase().trim()
-
-  if (metaType === 'addon' || metaType === 'add-on' || metaType === 'add_on') return 'addon'
-  if (metaCategory === 'addon' || metaCategory === 'add-on' || metaCategory === 'add_on') return 'addon'
   if (metaType === 'plan') return 'plan'
-  if (metaCategory === 'plan') return 'plan'
+  if (metaType === 'addon' || metaType === 'add-on' || metaType === 'add_on') return 'addon'
 
   const name = product.name.toLowerCase()
-  if (ADDON_NAME_KEYWORDS.some((kw) => name.includes(kw))) return 'addon'
   if (PLAN_NAME_KEYWORDS.some((kw) => name.includes(kw))) return 'plan'
 
-  // Default: treat as a plan so nothing is silently hidden
-  return 'plan'
+  return 'addon'
 }
 
 type ExistingPlan = {
   id: string
   plan_key: string
-  visible: boolean
-  pages: number
-  features: string[]
-  upfront: number
-  monthly: number
-  product_type: 'plan' | 'addon'
   stripe_setup_product_id: string | null
   stripe_monthly_product_id: string | null
   stripe_upfront_price_id: string | null
   stripe_monthly_price_id: string | null
+  upfront: number
+  monthly: number
+  product_type: 'plan' | 'addon'
+  visible: boolean
+  pages: number
+  features: string[]
   sort_order: number
 }
 
@@ -62,12 +47,11 @@ type SyncResult = {
   plan_key: string
   name: string
   product_id: string
-  action: 'updated' | 'inserted'
+  action: 'inserted' | 'updated'
   product_type: 'plan' | 'addon'
   classified_by: 'metadata' | 'name' | 'default'
-  price_type: 'setup' | 'monthly' | 'mixed'
-  upfront: number | null
-  monthly: number | null
+  upfront: number
+  monthly: number
   upfront_price_id: string | null
   monthly_price_id: string | null
 }
@@ -90,49 +74,45 @@ function slugify(name: string): string {
 async function listAll<T>(
   fetcher: (startingAfter?: string) => Promise<Stripe.ApiList<T & { id: string }>>
 ): Promise<T[]> {
-  const results: T[] = []
+  const items: T[] = []
   let startingAfter: string | undefined
-
   while (true) {
     const page = await fetcher(startingAfter)
-    results.push(...(page.data as T[]))
+    items.push(...(page.data as T[]))
     if (!page.has_more || page.data.length === 0) break
     startingAfter = (page.data[page.data.length - 1] as { id: string }).id
   }
-
-  return results
+  return items
 }
 
-// Select the best price: prefer product.default_price, then most recently created.
+// Prefer default_price if present in the list, otherwise pick most recently created.
 function pickPrice(prices: Stripe.Price[], defaultPriceId: string | null): Stripe.Price | null {
   if (prices.length === 0) return null
   if (defaultPriceId) {
     const def = prices.find((p) => p.id === defaultPriceId)
     if (def) return def
   }
-  return prices.sort((a, b) => b.created - a.created)[0]
+  return [...prices].sort((a, b) => b.created - a.created)[0]
 }
 
-// Convert Stripe unit_amount (cents) to dollars — exact, no rounding.
+// Convert Stripe unit_amount (integer cents) to dollars — exact, no rounding.
 function centsToDollars(unitAmount: number | null): number {
   return unitAmount != null ? unitAmount / 100 : 0
 }
 
-// Describe how a product was classified (for the response report)
-function classificationSource(product: Stripe.Product): 'metadata' | 'name' | 'default' {
+function classifiedBy(product: Stripe.Product): 'metadata' | 'name' | 'default' {
   const metaType = (product.metadata?.type as string | undefined)?.toLowerCase().trim()
-  const metaCategory = (product.metadata?.category as string | undefined)?.toLowerCase().trim()
-  if (metaType || metaCategory) return 'metadata'
+  if (metaType) return 'metadata'
   const name = product.name.toLowerCase()
-  if ([...PLAN_NAME_KEYWORDS, ...ADDON_NAME_KEYWORDS].some((kw) => name.includes(kw))) return 'name'
+  if (PLAN_NAME_KEYWORDS.some((kw) => name.includes(kw))) return 'name'
   return 'default'
 }
 
 // POST /api/admin/pricing/sync
-// Fetches all active Stripe products, classifies them as 'plan' or 'addon' based on
-// Stripe metadata (metadata.type / metadata.category) then name keywords, then default 'plan'.
-// Ignores one-time prices ≤ $2 (likely Stripe test/placeholder prices).
-// Preserves: visible, pages, features, plan_key, sort_order for existing records.
+// Fetches all active Stripe products and upserts them into pricing_plans.
+// Classification: metadata.type → name keywords → default 'addon'.
+// One-time prices ≤ $1 are treated as Stripe placeholders and ignored.
+// Preserves: visible, pages, features, sort_order for existing records.
 export async function POST() {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -145,7 +125,7 @@ export async function POST() {
   try {
     const stripe = await getStripe()
 
-    // 1 — Load all active Stripe products
+    // 1 — Fetch all active Stripe products
     const products = await listAll<Stripe.Product>((startingAfter) =>
       stripe.products.list({
         active: true,
@@ -161,22 +141,20 @@ export async function POST() {
       })
     }
 
-    // 2 — Load existing DB records
+    // 2 — Load existing DB records for matching and orphan detection
     const existing = await query<ExistingPlan>(
-      `SELECT id, plan_key, visible, pages, features,
-              upfront, monthly, product_type,
-              stripe_setup_product_id, stripe_monthly_product_id,
+      `SELECT id, plan_key, stripe_setup_product_id, stripe_monthly_product_id,
               stripe_upfront_price_id, stripe_monthly_price_id,
-              sort_order
+              upfront, monthly, product_type, visible, pages, features, sort_order
        FROM public.pricing_plans`
     )
 
-    const existingBySetupId = new Map<string, ExistingPlan>()
-    const existingByMonthlyId = new Map<string, ExistingPlan>()
+    const bySetupId = new Map<string, ExistingPlan>()
+    const byMonthlyId = new Map<string, ExistingPlan>()
     const usedPlanKeys = new Set<string>()
     for (const row of existing) {
-      if (row.stripe_setup_product_id) existingBySetupId.set(row.stripe_setup_product_id, row)
-      if (row.stripe_monthly_product_id) existingByMonthlyId.set(row.stripe_monthly_product_id, row)
+      if (row.stripe_setup_product_id) bySetupId.set(row.stripe_setup_product_id, row)
+      if (row.stripe_monthly_product_id) byMonthlyId.set(row.stripe_monthly_product_id, row)
       usedPlanKeys.add(row.plan_key)
     }
 
@@ -192,7 +170,7 @@ export async function POST() {
           ? product.default_price
           : (product.default_price as Stripe.Price | null)?.id ?? null
 
-      const prices = await listAll<Stripe.Price>((startingAfter) =>
+      const allPrices = await listAll<Stripe.Price>((startingAfter) =>
         stripe.prices.list({
           product: product.id,
           active: true,
@@ -201,15 +179,16 @@ export async function POST() {
         })
       )
 
-      const usdPrices = prices.filter((p) => p.currency === 'usd')
+      const usdPrices = allPrices.filter((p) => p.currency === 'usd')
 
+      // Recurring monthly prices (any amount)
       const monthlyPrices = usdPrices.filter(
         (p) => p.type === 'recurring' && p.recurring?.interval === 'month'
       )
 
-      // Exclude one-time prices at or below the minimum threshold (Stripe test/placeholder prices)
+      // One-time prices strictly greater than the placeholder threshold
       const oneTimePrices = usdPrices.filter(
-        (p) => p.type === 'one_time' && (p.unit_amount ?? 0) > MIN_SETUP_FEE_CENTS
+        (p) => p.type === 'one_time' && (p.unit_amount ?? 0) > PLACEHOLDER_THRESHOLD_CENTS
       )
 
       const hasMonthly = monthlyPrices.length > 0
@@ -218,32 +197,31 @@ export async function POST() {
       if (!hasMonthly && !hasOneTime) {
         const allOneTime = usdPrices.filter((p) => p.type === 'one_time')
         const reason = allOneTime.length > 0
-          ? `all one-time prices are ≤ $${MIN_SETUP_FEE_CENTS / 100} (placeholder) and no recurring prices`
-          : 'no active USD prices found'
+          ? `all one-time prices are $${centsToDollars(Math.max(...allOneTime.map((p) => p.unit_amount ?? 0)))} or less (placeholder)`
+          : 'no active USD prices'
         skipped.push({ id: product.id, name: product.name, reason })
         continue
       }
 
-      const monthlyPrice = hasMonthly ? pickPrice(monthlyPrices, defaultPriceId) : null
-      const upfrontPrice = hasOneTime ? pickPrice(oneTimePrices, defaultPriceId) : null
-
-      const monthly = monthlyPrice ? centsToDollars(monthlyPrice.unit_amount) : null
-      const upfront = upfrontPrice ? centsToDollars(upfrontPrice.unit_amount) : null
-
-      const priceType: 'setup' | 'monthly' | 'mixed' =
-        hasOneTime && hasMonthly ? 'mixed' : hasOneTime ? 'setup' : 'monthly'
+      const monthlyPrice = pickPrice(monthlyPrices, defaultPriceId)
+      const upfrontPrice = pickPrice(oneTimePrices, defaultPriceId)
+      const monthly = monthlyPrice ? centsToDollars(monthlyPrice.unit_amount) : 0
+      const upfront = upfrontPrice ? centsToDollars(upfrontPrice.unit_amount) : 0
 
       const productType = classifyProduct(product)
-      const classifiedBy = classificationSource(product)
+      const source = classifiedBy(product)
 
       syncedProductIds.add(product.id)
 
-      const existingRecord =
-        existingBySetupId.get(product.id) ?? existingByMonthlyId.get(product.id)
+      const existingRecord = bySetupId.get(product.id) ?? byMonthlyId.get(product.id)
 
       if (existingRecord) {
-        // Update only the fields this product type covers; preserve the other side from the DB.
-        if (priceType === 'setup') {
+        // Determine which product role this Stripe product plays for the existing record
+        const isSetupProduct = existingRecord.stripe_setup_product_id === product.id
+        const isMonthlyProduct = existingRecord.stripe_monthly_product_id === product.id
+
+        if (isSetupProduct && !isMonthlyProduct) {
+          // This product only covers the setup side — update setup fields only
           await query(
             `UPDATE public.pricing_plans
              SET name                    = $2,
@@ -253,9 +231,10 @@ export async function POST() {
                  product_type            = $6,
                  updated_at              = now()
              WHERE id = $1`,
-            [existingRecord.id, product.name, upfront!, upfrontPrice!.id, product.id, productType]
+            [existingRecord.id, product.name, upfront || existingRecord.upfront, upfrontPrice?.id ?? existingRecord.stripe_upfront_price_id, product.id, productType]
           )
-        } else if (priceType === 'monthly') {
+        } else if (isMonthlyProduct && !isSetupProduct) {
+          // This product only covers the monthly side — update monthly fields only
           await query(
             `UPDATE public.pricing_plans
              SET name                      = $2,
@@ -265,10 +244,10 @@ export async function POST() {
                  product_type              = $6,
                  updated_at                = now()
              WHERE id = $1`,
-            [existingRecord.id, product.name, monthly!, monthlyPrice!.id, product.id, productType]
+            [existingRecord.id, product.name, monthly || existingRecord.monthly, monthlyPrice?.id ?? existingRecord.stripe_monthly_price_id, product.id, productType]
           )
         } else {
-          // mixed — update both sides
+          // Same product covers both sides (or is newly matched) — update all price fields
           await query(
             `UPDATE public.pricing_plans
              SET name                      = $2,
@@ -284,12 +263,12 @@ export async function POST() {
             [
               existingRecord.id,
               product.name,
-              upfront!,
-              monthly!,
-              upfrontPrice!.id,
-              monthlyPrice!.id,
-              product.id,
-              product.id,
+              upfront || existingRecord.upfront,
+              monthly || existingRecord.monthly,
+              upfrontPrice?.id ?? existingRecord.stripe_upfront_price_id,
+              monthlyPrice?.id ?? existingRecord.stripe_monthly_price_id,
+              hasOneTime ? product.id : existingRecord.stripe_setup_product_id,
+              hasMonthly ? product.id : existingRecord.stripe_monthly_product_id,
               productType,
             ]
           )
@@ -302,28 +281,27 @@ export async function POST() {
           product_id: product.id,
           action: 'updated',
           product_type: productType,
-          classified_by: classifiedBy,
-          price_type: priceType,
-          upfront: upfront ?? existingRecord.upfront,
-          monthly: monthly ?? existingRecord.monthly,
-          upfront_price_id: upfrontPrice?.id ?? existingRecord.stripe_upfront_price_id,
-          monthly_price_id: monthlyPrice?.id ?? existingRecord.stripe_monthly_price_id,
+          classified_by: source,
+          upfront,
+          monthly,
+          upfront_price_id: upfrontPrice?.id ?? null,
+          monthly_price_id: monthlyPrice?.id ?? null,
         })
       } else {
-        // New product — generate a unique plan_key
+        // New product — generate unique plan_key and insert
         let planKey: string =
           (product.metadata?.plan_key as string | undefined)?.trim() || slugify(product.name)
-
         if (usedPlanKeys.has(planKey)) {
-          let counter = 2
-          while (usedPlanKeys.has(`${planKey}_${counter}`)) counter++
-          planKey = `${planKey}_${counter}`
+          let n = 2
+          while (usedPlanKeys.has(`${planKey}_${n}`)) n++
+          planKey = `${planKey}_${n}`
         }
         usedPlanKeys.add(planKey)
 
         const pages = product.metadata?.pages
           ? parseInt(product.metadata.pages as string, 10) || 1
           : 1
+
         let features: string[] = []
         if (product.metadata?.features) {
           try { features = JSON.parse(product.metadata.features as string) as string[] } catch { /* ignore */ }
@@ -334,14 +312,11 @@ export async function POST() {
 
         sortCounter++
 
-        const setupProductId = priceType === 'setup' || priceType === 'mixed' ? product.id : null
-        const monthlyProductId = priceType === 'monthly' || priceType === 'mixed' ? product.id : null
-
         await query(
           `INSERT INTO public.pricing_plans
              (plan_key, name, upfront, monthly, pages, features,
               stripe_setup_product_id, stripe_monthly_product_id,
-              stripe_monthly_price_id, stripe_upfront_price_id,
+              stripe_upfront_price_id, stripe_monthly_price_id,
               product_type, visible, sort_order)
            VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, $11, true, $12)
            ON CONFLICT (plan_key) DO UPDATE SET
@@ -350,21 +325,21 @@ export async function POST() {
              monthly                   = EXCLUDED.monthly,
              stripe_setup_product_id   = COALESCE(EXCLUDED.stripe_setup_product_id,   pricing_plans.stripe_setup_product_id),
              stripe_monthly_product_id = COALESCE(EXCLUDED.stripe_monthly_product_id, pricing_plans.stripe_monthly_product_id),
-             stripe_monthly_price_id   = COALESCE(EXCLUDED.stripe_monthly_price_id,   pricing_plans.stripe_monthly_price_id),
              stripe_upfront_price_id   = COALESCE(EXCLUDED.stripe_upfront_price_id,   pricing_plans.stripe_upfront_price_id),
+             stripe_monthly_price_id   = COALESCE(EXCLUDED.stripe_monthly_price_id,   pricing_plans.stripe_monthly_price_id),
              product_type              = EXCLUDED.product_type,
              updated_at                = now()`,
           [
             planKey,
             product.name,
-            upfront ?? 0,
-            monthly ?? 0,
+            upfront,
+            monthly,
             pages,
             JSON.stringify(features),
-            setupProductId,
-            monthlyProductId,
-            monthlyPrice?.id ?? null,
+            hasOneTime ? product.id : null,
+            hasMonthly ? product.id : null,
             upfrontPrice?.id ?? null,
+            monthlyPrice?.id ?? null,
             productType,
             sortCounter,
           ]
@@ -377,27 +352,23 @@ export async function POST() {
           product_id: product.id,
           action: 'inserted',
           product_type: productType,
-          classified_by: classifiedBy,
-          price_type: priceType,
-          upfront: upfront ?? 0,
-          monthly: monthly ?? 0,
+          classified_by: source,
+          upfront,
+          monthly,
           upfront_price_id: upfrontPrice?.id ?? null,
           monthly_price_id: monthlyPrice?.id ?? null,
         })
       }
     }
 
-    // 4 — Detect orphaned DB plans (linked product no longer active in Stripe)
+    // 4 — Detect orphaned DB records (linked product no longer active in Stripe)
     const orphaned = existing
       .filter((row) => {
-        const setupActive = row.stripe_setup_product_id
-          ? syncedProductIds.has(row.stripe_setup_product_id)
-          : false
-        const monthlyActive = row.stripe_monthly_product_id
-          ? syncedProductIds.has(row.stripe_monthly_product_id)
-          : false
         const isLinked = !!(row.stripe_setup_product_id || row.stripe_monthly_product_id)
-        return isLinked && !setupActive && !monthlyActive
+        if (!isLinked) return false
+        const setupOk = row.stripe_setup_product_id ? syncedProductIds.has(row.stripe_setup_product_id) : false
+        const monthlyOk = row.stripe_monthly_product_id ? syncedProductIds.has(row.stripe_monthly_product_id) : false
+        return !setupOk && !monthlyOk
       })
       .map((row) => ({
         plan_key: row.plan_key,
@@ -408,12 +379,14 @@ export async function POST() {
     return NextResponse.json({ synced: results.length, results, skipped, orphaned })
   } catch (err) {
     console.error('[pricing/sync] POST failed:', err)
-    const msg = err instanceof Error ? err.message : 'Sync failed.'
-    return NextResponse.json({ error: msg }, { status: 500 })
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'Sync failed.' },
+      { status: 500 }
+    )
   }
 }
 
-// Keep api_keys in sync so the Stripe checkout flow stays current.
+// Keep api_keys table in sync so the Stripe checkout flow has current price IDs.
 async function syncApiKeys(
   planKey: string,
   monthlyPriceId: string | undefined | null,
