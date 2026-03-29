@@ -143,7 +143,10 @@ export default function AdminPage() {
     })
     const data = await res.json()
     if (res.ok) {
-      setAuthed(true); loadProjects(); loadDemoSessions()
+      // Full reload so AdminLayout re-checks the new session cookie and
+      // immediately renders the green header and sidebar chrome.
+      window.location.reload()
+      return
     } else if (data.type === 'no_code') {
       setMfaPending(false); setMfaCode(''); setLoginError('Session expired. Please log in again.')
     } else {

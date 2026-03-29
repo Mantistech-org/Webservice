@@ -28,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       return
     }
     checkAuth()
-  }, [isPublic, checkAuth])
+  }, [isPublic, checkAuth, pathname])
 
   const handleLogout = async () => {
     await fetch('/api/admin/logout', { method: 'POST' })
