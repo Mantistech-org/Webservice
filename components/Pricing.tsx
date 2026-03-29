@@ -26,15 +26,7 @@ function PlanCard({ plan, highlight }: { plan: PublicPlan; highlight: boolean })
           {plan.name}
         </div>
 
-        {/* Upfront fee — only rendered when a confirmed amount exists */}
-        {plan.upfront != null && (
-          <div className="font-heading text-5xl text-primary leading-none mb-1">
-            ${fmt(plan.upfront)}
-            <span className="font-mono text-sm text-muted ml-2 font-normal">upfront</span>
-          </div>
-        )}
-
-        {/* Monthly price - with or without active promotion */}
+        {/* Monthly price — primary price, shown large */}
         {promotion ? (
           <div className="mb-2">
             <div className="flex items-baseline gap-2">
@@ -42,11 +34,11 @@ function PlanCard({ plan, highlight }: { plan: PublicPlan; highlight: boolean })
                 ${fmt(plan.monthly)}/mo
               </span>
             </div>
-            <div className="font-heading text-2xl text-teal leading-none">
+            <div className="font-heading text-5xl text-primary leading-none">
               ${fmt(promotion.discounted_monthly)}
               <span className="font-mono text-sm text-muted ml-1 font-normal">/mo</span>
             </div>
-            <div className="font-mono text-xs text-accent tracking-wider mt-1">
+            <div className="font-mono text-xs text-accent tracking-wider mt-1 mb-1">
               {promotion.label}
               {promotion.duration_months
                 ? `, first ${promotion.duration_months} month${promotion.duration_months === 1 ? '' : 's'}`
@@ -54,9 +46,17 @@ function PlanCard({ plan, highlight }: { plan: PublicPlan; highlight: boolean })
             </div>
           </div>
         ) : (
-          <div className="font-heading text-2xl text-teal leading-none mb-2">
+          <div className="font-heading text-5xl text-primary leading-none mb-1">
             ${fmt(plan.monthly)}
             <span className="font-mono text-sm text-muted ml-2 font-normal">/month</span>
+          </div>
+        )}
+
+        {/* Upfront fee — secondary, shown smaller below monthly */}
+        {plan.upfront != null && (
+          <div className="font-heading text-2xl text-teal leading-none mb-2">
+            ${fmt(plan.upfront)}
+            <span className="font-mono text-sm text-muted ml-2 font-normal">upfront</span>
           </div>
         )}
 
