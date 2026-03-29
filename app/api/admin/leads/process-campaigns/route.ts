@@ -38,10 +38,12 @@ function buildEmailHtml(body: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  // Verify cron secret
+  // Verify cron secret — required unconditionally.
+  // If the secret is not yet configured the endpoint must stay locked,
+  // not fall open, to prevent unauthenticated mass email sending.
   const secret = await getApiKey('cron_secret')
   const authHeader = req.headers.get('authorization')
-  if (secret && authHeader !== `Bearer ${secret}`) {
+  if (!secret || authHeader !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

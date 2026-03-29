@@ -40,7 +40,9 @@ async function getClient(): Promise<Anthropic> {
 export async function POST(req: NextRequest) {
   const secret = await getApiKey('cron_secret')
   const authHeader = req.headers.get('authorization')
-  if (secret && authHeader !== `Bearer ${secret}`) {
+  // Require auth unconditionally — if the secret is not configured the
+  // endpoint must stay locked, not fall open.
+  if (!secret || authHeader !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
