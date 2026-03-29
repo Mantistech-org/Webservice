@@ -10,6 +10,11 @@ import FAQ from '@/components/FAQ'
 import Footer from '@/components/Footer'
 import CookieBanner from '@/components/CookieBanner'
 
+// ISR: regenerate every 60 seconds so pricing and promotions stay current.
+// Without this the page is statically built at Docker build time when the
+// database is unavailable, baking in an empty pricing section permanently.
+export const revalidate = 60
+
 export const metadata: Metadata = {
   title: 'Mantis Tech | Premium Websites and Digital Services',
   description: 'Mantis Tech builds and manages everything your business needs online. Custom websites, marketing automation, SEO, and more. Get started today.',

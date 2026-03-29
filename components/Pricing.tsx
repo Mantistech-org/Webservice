@@ -1,9 +1,6 @@
 import Link from 'next/link'
 import { getPublicPricing, type PublicPlan } from '@/lib/pricing'
 
-// Revalidate every 60 seconds so price and promotion changes propagate quickly
-export const revalidate = 60
-
 function PlanCard({ plan, highlight }: { plan: PublicPlan; highlight: boolean }) {
   const { promotion } = plan
 
@@ -113,11 +110,17 @@ export default async function Pricing() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans.map((plan, idx) => (
-            <PlanCard key={plan.plan_key} plan={plan} highlight={idx === 1} />
-          ))}
-        </div>
+        {plans.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="font-mono text-sm text-muted">Pricing plans are loading — check back shortly.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {plans.map((plan, idx) => (
+              <PlanCard key={plan.plan_key} plan={plan} highlight={idx === 1} />
+            ))}
+          </div>
+        )}
 
         <p className="text-center font-mono text-xs text-muted mt-8 tracking-wider">
           All plans include a custom-built website, SSL, and managed hosting. Add-ons available
