@@ -6,11 +6,15 @@ import { Project, Plan } from '@/types'
 import { saveProject } from '@/lib/db'
 import { sendAdminNewProjectEmail, sendIntakeConfirmationEmail } from '@/lib/resend'
 import { getApiKey } from '@/lib/api-keys'
+import { rateLimit } from '@/lib/rate-limit'
 
 // No maxDuration needed — response returns immediately now
 export const maxDuration = 30
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, 10, 60 * 60 * 1000) // 10/IP/hour
+  if (limited) return limited
+
   console.log('[intake] POST /api/intake — start', new Date().toISOString())
 
   // ── Parse body ─────────────────────────────────────────────────────────────

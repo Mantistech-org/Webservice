@@ -20,7 +20,11 @@
 
 ## Medium Severity — Open Issues
 
-### M1 — No Rate Limiting on Public Endpoints
+### ~~M1 — No Rate Limiting on Public Endpoints~~ ✅ Fixed
+
+**Fixed:** `lib/rate-limit.ts` in-memory rate limiter (10 req/IP/hour) applied to `/api/intake`, `/api/client/login`, and `/api/leads/[clientToken]`.
+
+### M1 (remaining) — No Rate Limiting on Admin Login
 
 **Affected routes:**
 - `POST /api/intake` — project inquiry form (no brute-force or spam protection)
@@ -34,7 +38,11 @@
 
 ---
 
-### M2 — Wide-Open CORS on Lead Capture Endpoint
+### ~~M2 — Wide-Open CORS on Lead Capture Endpoint~~ ✅ Fixed
+
+**Fixed:** `app/api/leads/[clientToken]/route.ts` now restricts `Access-Control-Allow-Origin` to `mantistech.org` and `www.mantistech.org` only.
+
+### M2 (historical reference)
 
 **File:** `app/api/leads/[clientToken]/route.ts`
 **Issue:** `Access-Control-Allow-Origin: *` allows any website to POST leads to any client's endpoint. A malicious site could submit fake lead data to any client's dashboard just by knowing their `clientToken`.
@@ -43,7 +51,16 @@
 
 ---
 
-### M3 — Plaintext Admin Password Storage
+### ~~M3 — Plaintext Admin Password Storage~~ ✅ Fixed
+
+**Fixed:** `lib/auth.ts` now exports `verifyAdminPassword()` which uses `bcrypt.compare()` when `ADMIN_PASSWORD_HASH` is set. Login, activate, and verify-password routes all updated. Legacy plaintext fallback retained for existing deployments upgrading gradually.
+
+**Required action:** Set `ADMIN_PASSWORD_HASH` in Railway environment variables. Generate the hash with:
+```
+node -e "require('bcryptjs').hash('YOUR_PASSWORD', 12).then(h => console.log(h))"
+```
+
+### M3 (historical reference)
 
 **File:** `lib/auth.ts`, `data/admin-config.json`
 **Issue:** The admin password is stored in plaintext in `data/admin-config.json` and compared with `===`. If the file or environment variable is ever exposed (logs, container snapshot, volume mount), the password is immediately usable.
@@ -87,7 +104,11 @@ if (a.length !== b.length || !timingSafeEqual(a, b)) { /* reject */ }
 
 ## Low Severity — Open Issues
 
-### L1 — No Admin Audit Log
+### ~~L1 — No Admin Audit Log~~ ✅ Fixed
+
+**Fixed:** `lib/audit-log.ts` + `public.audit_log` table (see `scripts/audit-log-migration.sql`). Logs admin logins, pricing price updates, client approved/activated/changes-requested events.
+
+### L1 (historical reference)
 
 There is no record of which admin user performed actions (approve project, change price, activate client, etc.). All mutations happen without attribution.
 **Recommended fix:** Add an `admin_audit_log` table and insert a row on every state-changing admin API call.

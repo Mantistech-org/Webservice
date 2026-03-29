@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { isAdminAuthenticated } from '@/lib/auth'
 import { query, pgEnabled } from '@/lib/pg'
 import { getStripe } from '@/lib/stripe'
+import { logAudit } from '@/lib/audit-log'
 import type { PlanCard } from '@/app/api/admin/pricing/plan-cards/route'
 
 type Body = {
@@ -194,7 +195,17 @@ export async function POST(
   // 10. Revalidate public pricing
   revalidatePath('/')
 
-  // 11. Return success
+  // 11. Audit log
+  logAudit('plan_card_price_updated', 'plan_card', id, {
+    field: body.field,
+    old_price_id: oldPriceId,
+    old_amount: parseFloat(String(oldAmount)),
+    new_price_id: newPriceId,
+    new_amount: verifiedAmount,
+    plan_name: card.plan_name,
+  })
+
+  // 12. Return success
   return NextResponse.json({
     card: updatedCard,
     old_price_id: oldPriceId,

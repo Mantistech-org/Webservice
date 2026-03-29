@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/auth'
 import { getProject, updateProject } from '@/lib/db'
 import { sendClientReviewEmail } from '@/lib/resend'
+import { logAudit } from '@/lib/audit-log'
 
 export async function POST(
   req: NextRequest,
@@ -18,6 +19,11 @@ export async function POST(
   }
 
   const updated = await updateProject(id, { status: 'client_review' })
+  logAudit('client_approved', 'project', id, {
+    business_name: project.businessName,
+    from_status: project.status,
+    to_status: 'client_review',
+  })
 
   sendClientReviewEmail({
     clientToken: project.clientToken,

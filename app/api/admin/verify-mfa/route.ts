@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { COOKIE_NAME, getAdminToken } from '@/lib/auth'
 import { cookies } from 'next/headers'
+import { logAudit } from '@/lib/audit-log'
 import fs from 'fs'
 import path from 'path'
 
@@ -41,6 +42,11 @@ export async function POST(req: NextRequest) {
   delete config.mfaCode
   delete config.mfaExpires
   writeConfig(config)
+
+  // Audit: record successful admin login
+  logAudit('admin_login', 'admin', 'admin', {
+    ip: req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown',
+  })
 
   // Set session cookie
   const cookieStore = await cookies()

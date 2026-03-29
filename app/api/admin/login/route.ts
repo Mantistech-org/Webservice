@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getEffectiveAdminPassword } from '@/lib/auth'
+import { verifyAdminPassword } from '@/lib/auth'
 import { sendAdminMfaCodeEmail } from '@/lib/resend'
 import fs from 'fs'
 import path from 'path'
@@ -24,9 +24,8 @@ function writeConfig(config: Record<string, string>) {
 export async function POST(req: NextRequest) {
   try {
     const { password } = await req.json()
-    const expectedPassword = getEffectiveAdminPassword()
 
-    if (!password || password !== expectedPassword) {
+    if (!password || !(await verifyAdminPassword(password))) {
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
     }
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/auth'
 import { getProject, updateProject } from '@/lib/db'
 import { sendChangesRequestedEmail } from '@/lib/resend'
+import { logAudit } from '@/lib/audit-log'
 
 export async function POST(
   req: NextRequest,
@@ -23,6 +24,11 @@ export async function POST(
   const updated = await updateProject(id, {
     status: 'changes_requested',
     adminNotes,
+  })
+  logAudit('changes_requested', 'project', id, {
+    business_name: project.businessName,
+    from_status: project.status,
+    to_status: 'changes_requested',
   })
 
   sendChangesRequestedEmail({
