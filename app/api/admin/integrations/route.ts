@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/auth'
-import { supabase, supabaseEnabled } from '@/lib/supabase'
+import { supabase, supabaseEnabled, isConnectionError, DB_UNAVAILABLE_MSG } from '@/lib/supabase'
 import { ENV_FALLBACKS, invalidateApiKeyCache } from '@/lib/api-keys'
 import { parseServiceAccountJson } from '@/lib/google-search-console'
 
@@ -33,15 +33,19 @@ export async function GET() {
   const dbMap: Record<string, string> = {}
   if (supabaseEnabled) {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('api_keys')
         .select('service, key_value')
         .eq('scope', 'admin')
+      if (error) {
+        console.error('[integrations] GET Supabase error:', error.message)
+      }
       for (const row of data ?? []) {
         dbMap[row.service] = row.key_value
       }
-    } catch {
-      // Fall through to env vars only
+    } catch (err) {
+      // ENOTFOUND / connection errors are logged; fall through to env vars
+      console.error('[integrations] GET Supabase threw:', err instanceof Error ? err.message : err)
     }
   }
 
@@ -105,11 +109,20 @@ export async function POST(req: NextRequest) {
     )
 
   if (upsertError) {
-    // Surface the actual Postgres/Supabase error so the user can diagnose
+    console.error('[integrations] Supabase upsert failed:', upsertError)
+
+    // Connection / DNS failures get a specific actionable message
+    if (isConnectionError(upsertError)) {
+      return NextResponse.json(
+        { error: `Cannot save — database is unreachable. ${DB_UNAVAILABLE_MSG}` },
+        { status: 503 }
+      )
+    }
+
+    // All other database errors: surface the actual Postgres message
     const detail = [upsertError.message, upsertError.details, upsertError.hint]
       .filter(Boolean)
       .join(' | ')
-    console.error('[integrations] Supabase upsert failed:', upsertError)
     return NextResponse.json(
       { error: `Database error: ${detail || JSON.stringify(upsertError)}` },
       { status: 500 }
