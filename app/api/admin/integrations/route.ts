@@ -87,21 +87,38 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  if (supabaseEnabled) {
-    const { error } = await supabase
-      .from('api_keys')
-      .upsert(
-        { scope: 'admin', service, key_value: trimmedValue },
-        { onConflict: 'scope,service' }
-      )
-    if (error) {
-      console.error('[integrations] Supabase upsert failed:', error)
-      return NextResponse.json({ error: 'Failed to save key' }, { status: 500 })
-    }
-    invalidateApiKeyCache(service)
+  if (!supabaseEnabled) {
+    // Supabase not configured — key will only live in this process and be lost on restart
+    console.warn('[integrations] Supabase not configured — key saved in-process only (will not persist)')
+    process.env[key] = trimmedValue
+    return NextResponse.json({
+      ok: true,
+      warning: 'Supabase is not configured (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing). Key saved in memory only and will be lost on restart.',
+    })
   }
 
-  // Apply to current process immediately as well
+  const { error: upsertError } = await supabase
+    .from('api_keys')
+    .upsert(
+      { scope: 'admin', service, key_value: trimmedValue },
+      { onConflict: 'scope,service' }
+    )
+
+  if (upsertError) {
+    // Surface the actual Postgres/Supabase error so the user can diagnose
+    const detail = [upsertError.message, upsertError.details, upsertError.hint]
+      .filter(Boolean)
+      .join(' | ')
+    console.error('[integrations] Supabase upsert failed:', upsertError)
+    return NextResponse.json(
+      { error: `Database error: ${detail || JSON.stringify(upsertError)}` },
+      { status: 500 }
+    )
+  }
+
+  invalidateApiKeyCache(service)
+
+  // Mirror into process env so in-flight requests pick it up immediately
   process.env[key] = trimmedValue
 
   return NextResponse.json({ ok: true })

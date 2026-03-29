@@ -22,6 +22,8 @@ export async function isGscEnabled(): Promise<boolean> {
 /**
  * Parse and validate a service account JSON string.
  * Throws a descriptive error if the JSON is invalid or missing required fields.
+ * Also normalises the private_key: Railway env vars can double-escape \n as \\n,
+ * which breaks PEM parsing. We convert \\n → actual newline here.
  */
 export function parseServiceAccountJson(raw: string): ServiceAccountKey {
   let sa: ServiceAccountKey
@@ -34,6 +36,10 @@ export function parseServiceAccountJson(raw: string): ServiceAccountKey {
   const missing = required.filter((f) => !sa[f])
   if (missing.length > 0) {
     throw new Error(`Service account JSON is missing required fields: ${missing.join(', ')}`)
+  }
+  // Normalise: if the key was stored via env var, \n may have been double-escaped to \\n
+  if (sa.private_key.includes('\\n')) {
+    sa.private_key = sa.private_key.replace(/\\n/g, '\n')
   }
   return sa
 }

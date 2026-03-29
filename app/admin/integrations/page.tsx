@@ -25,6 +25,8 @@ interface Service {
   docsUrl: string
   docsLabel: string
   infoOnly?: boolean
+  /** Service name to pass to GET /api/admin/integrations/test?service=... */
+  testService?: string
 }
 
 const CATEGORIES: { label: string; services: Service[] }[] = [
@@ -106,6 +108,7 @@ const CATEGORIES: { label: string; services: Service[] }[] = [
         fields: [{ key: 'GOOGLE_SEARCH_CONSOLE_KEY', label: 'Service Account JSON', inputType: 'textarea' }],
         docsUrl: 'https://console.cloud.google.com/apis/credentials',
         docsLabel: 'console.cloud.google.com',
+        testService: 'google_search_console',
       },
     ],
   },
@@ -239,10 +242,78 @@ function SeedFromEnvButton() {
 type FieldResult =
   | { status: 'saved' }
   | { status: 'testing' }
-  | { status: 'connected' }
+  | { status: 'connected'; message?: string }
+  | { status: 'warning'; message: string }
   | { status: 'error'; message: string }
 
 const GSC_REQUIRED_FIELDS = ['type', 'project_id', 'private_key', 'client_email'] as const
+
+type TestState =
+  | { status: 'idle' }
+  | { status: 'testing' }
+  | { status: 'ok'; siteCount: number; sites: string[]; detail: string }
+  | { status: 'error'; error: string; detail?: string }
+
+function ServiceTestPanel({ testService }: { testService: string }) {
+  const [state, setState] = useState<TestState>({ status: 'idle' })
+
+  async function runTest() {
+    setState({ status: 'testing' })
+    try {
+      const res = await fetch(`/api/admin/integrations/test?service=${encodeURIComponent(testService)}`)
+      const data = await res.json()
+      if (data.ok) {
+        setState({ status: 'ok', siteCount: data.siteCount ?? 0, sites: data.sites ?? [], detail: data.detail ?? '' })
+      } else {
+        setState({ status: 'error', error: data.error ?? 'Unknown error', detail: data.detail })
+      }
+    } catch (err) {
+      setState({ status: 'error', error: err instanceof Error ? err.message : 'Network error' })
+    }
+  }
+
+  return (
+    <div className="mt-3 pt-3 border-t border-border">
+      <div className="flex items-center gap-3 mb-2">
+        <button
+          onClick={runTest}
+          disabled={state.status === 'testing'}
+          className="font-mono text-xs border border-border text-muted px-3 py-1.5 rounded hover:border-border-light hover:text-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {state.status === 'testing' ? 'Testing...' : 'Test GSC Connection'}
+        </button>
+        {state.status === 'ok' && (
+          <span className="font-mono text-xs text-emerald-700 dark:text-accent">
+            Connected — {state.siteCount} site{state.siteCount !== 1 ? 's' : ''} accessible
+          </span>
+        )}
+        {state.status === 'error' && (
+          <span className="font-mono text-xs text-red-600 dark:text-red-400">{state.error}</span>
+        )}
+      </div>
+      {state.status === 'ok' && state.sites.length > 0 && (
+        <ul className="ml-1 space-y-0.5">
+          {state.sites.map((s) => (
+            <li key={s} className="font-mono text-xs text-muted">{s}</li>
+          ))}
+        </ul>
+      )}
+      {state.status === 'error' && state.detail && (
+        <pre className="mt-1 font-mono text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/40 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all max-h-40">
+          {state.detail}
+        </pre>
+      )}
+      {state.status === 'ok' && state.detail && (
+        <details className="mt-1">
+          <summary className="font-mono text-xs text-muted cursor-pointer hover:text-primary">Raw Google API response</summary>
+          <pre className="mt-1 font-mono text-xs text-muted bg-bg border border-border rounded p-2 overflow-x-auto whitespace-pre-wrap break-all max-h-40">
+            {state.detail}
+          </pre>
+        </details>
+      )}
+    </div>
+  )
+}
 
 function ServiceCard({
   service,
@@ -314,6 +385,12 @@ function ServiceCard({
       setInputs((p) => ({ ...p, [field.key]: '' }))
       onStatusUpdate(field.key)
 
+      // Surface Supabase-disabled warning
+      if (data?.warning) {
+        setResult((p) => ({ ...p, [field.key]: { status: 'warning', message: data.warning } }))
+        return
+      }
+
       // For JSON fields, auto-test the connection immediately after saving
       if (field.inputType === 'textarea') {
         setResult((p) => ({ ...p, [field.key]: { status: 'testing' } }))
@@ -325,15 +402,17 @@ function ServiceCard({
           })
           const testData = await testRes.json()
           if (testData.ok) {
-            setResult((p) => ({ ...p, [field.key]: { status: 'connected' } }))
+            const siteCount: number = testData.siteCount ?? 0
+            setResult((p) => ({ ...p, [field.key]: { status: 'connected', message: `${siteCount} site${siteCount !== 1 ? 's' : ''} accessible` } as FieldResult }))
           } else {
             const msg = testData.error ?? 'Connection test failed'
-            console.error('[integrations] connection test failed:', msg)
-            setResult((p) => ({ ...p, [field.key]: { status: 'error', message: `Saved, but connection test failed: ${msg}` } }))
+            const detail = testData.detail ? ` — ${testData.detail}` : ''
+            console.error('[integrations] connection test failed:', msg, testData.detail)
+            setResult((p) => ({ ...p, [field.key]: { status: 'error', message: `Saved — but Google rejected the credentials: ${msg}${detail}` } }))
           }
         } catch (err) {
           console.error('[integrations] connection test error:', err)
-          setResult((p) => ({ ...p, [field.key]: { status: 'error', message: 'Saved, but connection test threw an error' } }))
+          setResult((p) => ({ ...p, [field.key]: { status: 'error', message: 'Saved, but the connection test request failed (network error)' } }))
         }
       } else {
         setResult((p) => ({ ...p, [field.key]: { status: 'saved' } }))
@@ -360,6 +439,7 @@ function ServiceCard({
       {!service.infoOnly && service.fields.length > 0 && (
         <div className="space-y-3 mb-4">
           {service.fields.map((field) => {
+
             const isConnected = localConnected[field.key]
             const last4 = statusMap[field.key]?.last4
             const placeholder = isConnected && last4 ? `••••••••••••${last4}` : 'Enter value'
@@ -392,6 +472,9 @@ function ServiceCard({
                   {fieldResult?.status === 'error' && (
                     <p className="font-mono text-xs text-red-600 dark:text-red-400 break-words">{fieldResult.message}</p>
                   )}
+                  {fieldResult?.status === 'warning' && (
+                    <p className="font-mono text-xs text-amber-700 dark:text-amber-400 break-words">{fieldResult.message}</p>
+                  )}
                 </div>
                 <div className={`flex items-center gap-2 shrink-0 ${isTextarea ? 'pt-1' : ''}`}>
                   <button
@@ -408,7 +491,12 @@ function ServiceCard({
                     <span className="font-mono text-xs text-muted animate-pulse">Testing...</span>
                   )}
                   {fieldResult?.status === 'connected' && (
-                    <span className="font-mono text-xs text-emerald-700 dark:text-accent">Connected</span>
+                    <span className="font-mono text-xs text-emerald-700 dark:text-accent">
+                      Connected{fieldResult.message ? ` — ${fieldResult.message}` : ''}
+                    </span>
+                  )}
+                  {fieldResult?.status === 'warning' && (
+                    <span className="font-mono text-xs text-amber-700 dark:text-amber-400">Saved (in-memory only)</span>
                   )}
                 </div>
               </div>
@@ -417,7 +505,11 @@ function ServiceCard({
         </div>
       )}
 
-      <div className={`${!service.infoOnly && service.fields.length > 0 ? 'border-t border-border pt-3' : ''}`}>
+      {service.testService && service.fields.some((f) => localConnected[f.key]) && (
+        <ServiceTestPanel testService={service.testService} />
+      )}
+
+      <div className={`${!service.infoOnly && service.fields.length > 0 ? 'border-t border-border pt-3 mt-3' : ''}`}>
         <a
           href={service.docsUrl}
           target="_blank"
