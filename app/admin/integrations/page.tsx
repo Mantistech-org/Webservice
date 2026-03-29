@@ -236,6 +236,14 @@ function SeedFromEnvButton() {
   )
 }
 
+type FieldResult =
+  | { status: 'saved' }
+  | { status: 'testing' }
+  | { status: 'connected' }
+  | { status: 'error'; message: string }
+
+const GSC_REQUIRED_FIELDS = ['type', 'project_id', 'private_key', 'client_email'] as const
+
 function ServiceCard({
   service,
   statusMap,
@@ -247,7 +255,7 @@ function ServiceCard({
 }) {
   const [inputs, setInputs] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState<Record<string, boolean>>({})
-  const [result, setResult] = useState<Record<string, 'saved' | 'error' | 'invalid-json'>>({})
+  const [result, setResult] = useState<Record<string, FieldResult>>({})
   const [localConnected, setLocalConnected] = useState<Record<string, boolean>>(
     Object.fromEntries(service.fields.map((f) => [f.key, statusMap[f.key]?.set ?? false]))
   )
@@ -270,11 +278,18 @@ function ServiceCard({
     const value = inputs[field.key]?.trim()
     if (!value) return
 
+    // Client-side validation for JSON fields
     if (field.inputType === 'textarea') {
+      let parsed: Record<string, unknown>
       try {
-        JSON.parse(value)
+        parsed = JSON.parse(value)
       } catch {
-        setResult((p) => ({ ...p, [field.key]: 'invalid-json' }))
+        setResult((p) => ({ ...p, [field.key]: { status: 'error', message: 'Not valid JSON — paste the full service account JSON object' } }))
+        return
+      }
+      const missing = GSC_REQUIRED_FIELDS.filter((k) => !parsed[k])
+      if (missing.length > 0) {
+        setResult((p) => ({ ...p, [field.key]: { status: 'error', message: `Missing required fields: ${missing.join(', ')}` } }))
         return
       }
     }
@@ -287,16 +302,45 @@ function ServiceCard({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key: field.key, value }),
       })
-      if (res.ok) {
-        setResult((p) => ({ ...p, [field.key]: 'saved' }))
-        setLocalConnected((p) => ({ ...p, [field.key]: true }))
-        setInputs((p) => ({ ...p, [field.key]: '' }))
-        onStatusUpdate(field.key)
-      } else {
-        setResult((p) => ({ ...p, [field.key]: 'error' }))
+      const data = await res.json()
+      if (!res.ok) {
+        const msg = data?.error ?? `Save failed (${res.status})`
+        console.error('[integrations] save error:', msg)
+        setResult((p) => ({ ...p, [field.key]: { status: 'error', message: msg } }))
+        return
       }
-    } catch {
-      setResult((p) => ({ ...p, [field.key]: 'error' }))
+
+      setLocalConnected((p) => ({ ...p, [field.key]: true }))
+      setInputs((p) => ({ ...p, [field.key]: '' }))
+      onStatusUpdate(field.key)
+
+      // For JSON fields, auto-test the connection immediately after saving
+      if (field.inputType === 'textarea') {
+        setResult((p) => ({ ...p, [field.key]: { status: 'testing' } }))
+        try {
+          const testRes = await fetch('/api/admin/integrations/test', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: field.key, value }),
+          })
+          const testData = await testRes.json()
+          if (testData.ok) {
+            setResult((p) => ({ ...p, [field.key]: { status: 'connected' } }))
+          } else {
+            const msg = testData.error ?? 'Connection test failed'
+            console.error('[integrations] connection test failed:', msg)
+            setResult((p) => ({ ...p, [field.key]: { status: 'error', message: `Saved, but connection test failed: ${msg}` } }))
+          }
+        } catch (err) {
+          console.error('[integrations] connection test error:', err)
+          setResult((p) => ({ ...p, [field.key]: { status: 'error', message: 'Saved, but connection test threw an error' } }))
+        }
+      } else {
+        setResult((p) => ({ ...p, [field.key]: { status: 'saved' } }))
+      }
+    } catch (err) {
+      console.error('[integrations] save threw:', err)
+      setResult((p) => ({ ...p, [field.key]: { status: 'error', message: 'Network error — could not reach server' } }))
     } finally {
       setSaving((p) => ({ ...p, [field.key]: false }))
     }
@@ -320,29 +364,35 @@ function ServiceCard({
             const last4 = statusMap[field.key]?.last4
             const placeholder = isConnected && last4 ? `••••••••••••${last4}` : 'Enter value'
             const isTextarea = field.inputType === 'textarea'
+            const fieldResult = result[field.key]
             return (
               <div key={field.key} className={`flex gap-3 ${isTextarea ? 'items-start' : 'items-center'}`}>
                 <StatusDot connected={isConnected} />
                 <span className={`font-mono text-xs text-muted w-40 shrink-0 ${isTextarea ? 'pt-2' : ''}`}>{field.label}</span>
-                {isTextarea ? (
-                  <textarea
-                    value={inputs[field.key] ?? ''}
-                    onChange={(e) => setInputs((p) => ({ ...p, [field.key]: e.target.value }))}
-                    placeholder={isConnected && last4 ? `Service account JSON already set (••••${last4})` : 'Paste service account JSON'}
-                    rows={5}
-                    spellCheck={false}
-                    className="flex-1 font-mono text-xs bg-bg border border-border rounded px-3 py-2 text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 min-w-0 resize-y"
-                  />
-                ) : (
-                  <input
-                    type="password"
-                    value={inputs[field.key] ?? ''}
-                    onChange={(e) => setInputs((p) => ({ ...p, [field.key]: e.target.value }))}
-                    onKeyDown={(e) => { if (e.key === 'Enter') save(field) }}
-                    placeholder={placeholder}
-                    className="flex-1 font-mono text-xs bg-bg border border-border rounded px-3 py-2 text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 min-w-0"
-                  />
-                )}
+                <div className="flex-1 min-w-0 flex flex-col gap-1">
+                  {isTextarea ? (
+                    <textarea
+                      value={inputs[field.key] ?? ''}
+                      onChange={(e) => setInputs((p) => ({ ...p, [field.key]: e.target.value }))}
+                      placeholder={isConnected && last4 ? `Service account JSON already set (••••${last4})` : 'Paste service account JSON'}
+                      rows={5}
+                      spellCheck={false}
+                      className="w-full font-mono text-xs bg-bg border border-border rounded px-3 py-2 text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 resize-y"
+                    />
+                  ) : (
+                    <input
+                      type="password"
+                      value={inputs[field.key] ?? ''}
+                      onChange={(e) => setInputs((p) => ({ ...p, [field.key]: e.target.value }))}
+                      onKeyDown={(e) => { if (e.key === 'Enter') save(field) }}
+                      placeholder={placeholder}
+                      className="w-full font-mono text-xs bg-bg border border-border rounded px-3 py-2 text-primary placeholder:text-muted focus:outline-none focus:border-accent/50"
+                    />
+                  )}
+                  {fieldResult?.status === 'error' && (
+                    <p className="font-mono text-xs text-red-600 dark:text-red-400 break-words">{fieldResult.message}</p>
+                  )}
+                </div>
                 <div className={`flex items-center gap-2 shrink-0 ${isTextarea ? 'pt-1' : ''}`}>
                   <button
                     onClick={() => save(field)}
@@ -351,14 +401,14 @@ function ServiceCard({
                   >
                     {saving[field.key] ? 'Saving...' : 'Save'}
                   </button>
-                  {result[field.key] === 'saved' && (
+                  {fieldResult?.status === 'saved' && (
                     <span className="font-mono text-xs text-emerald-700 dark:text-accent">Saved</span>
                   )}
-                  {result[field.key] === 'error' && (
-                    <span className="font-mono text-xs text-red-600 dark:text-red-400">Error</span>
+                  {fieldResult?.status === 'testing' && (
+                    <span className="font-mono text-xs text-muted animate-pulse">Testing...</span>
                   )}
-                  {result[field.key] === 'invalid-json' && (
-                    <span className="font-mono text-xs text-red-600 dark:text-red-400">Invalid JSON</span>
+                  {fieldResult?.status === 'connected' && (
+                    <span className="font-mono text-xs text-emerald-700 dark:text-accent">Connected</span>
                   )}
                 </div>
               </div>

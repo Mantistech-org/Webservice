@@ -1,9 +1,13 @@
-import * as crypto from 'crypto'
+import { JWT } from 'google-auth-library'
 import { getApiKey } from '@/lib/api-keys'
 
-type ServiceAccountKey = {
-  client_email: string
+export type ServiceAccountKey = {
+  type: string
+  project_id: string
+  private_key_id?: string
   private_key: string
+  client_email: string
+  client_id?: string
 }
 
 // Synchronous flag — only reflects env vars present at startup.
@@ -15,58 +19,37 @@ export async function isGscEnabled(): Promise<boolean> {
   return !!key
 }
 
-async function getServiceAccount(): Promise<ServiceAccountKey> {
-  const raw = await getApiKey('google_search_console')
-  if (!raw) throw new Error('GOOGLE_SEARCH_CONSOLE_KEY is not set')
+/**
+ * Parse and validate a service account JSON string.
+ * Throws a descriptive error if the JSON is invalid or missing required fields.
+ */
+export function parseServiceAccountJson(raw: string): ServiceAccountKey {
+  let sa: ServiceAccountKey
   try {
-    return JSON.parse(raw) as ServiceAccountKey
+    sa = JSON.parse(raw)
   } catch {
-    throw new Error('GOOGLE_SEARCH_CONSOLE_KEY is not valid JSON')
+    throw new Error('Value is not valid JSON')
   }
+  const required = ['type', 'project_id', 'private_key', 'client_email'] as const
+  const missing = required.filter((f) => !sa[f])
+  if (missing.length > 0) {
+    throw new Error(`Service account JSON is missing required fields: ${missing.join(', ')}`)
+  }
+  return sa
 }
 
-function base64url(input: string | Buffer): string {
-  const buf = typeof input === 'string' ? Buffer.from(input, 'utf8') : input
-  return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
-}
-
-async function getAccessToken(scope: string): Promise<string> {
-  const sa = await getServiceAccount()
-  const now = Math.floor(Date.now() / 1000)
-
-  const header = base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))
-  const payload = base64url(
-    JSON.stringify({
-      iss: sa.client_email,
-      scope,
-      aud: 'https://oauth2.googleapis.com/token',
-      exp: now + 3600,
-      iat: now,
-    })
-  )
-
-  const signingInput = `${header}.${payload}`
-  const sign = crypto.createSign('RSA-SHA256')
-  sign.update(signingInput)
-  const signature = base64url(sign.sign(sa.private_key))
-  const jwt = `${signingInput}.${signature}`
-
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion: jwt,
-    }),
+/**
+ * Build a google-auth-library JWT client from the stored service account JSON.
+ */
+async function getAuthClient(scope: string): Promise<JWT> {
+  const raw = await getApiKey('google_search_console')
+  if (!raw) throw new Error('Google Search Console key is not configured')
+  const sa = parseServiceAccountJson(raw)
+  return new JWT({
+    email: sa.client_email,
+    key: sa.private_key,
+    scopes: [scope],
   })
-
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`GSC auth failed: ${text}`)
-  }
-
-  const data = (await res.json()) as { access_token: string }
-  return data.access_token
 }
 
 export type SearchAnalyticsRow = {
@@ -84,7 +67,9 @@ export async function getSearchAnalytics(params: {
   rowLimit?: number
 }): Promise<SearchAnalyticsRow[]> {
   const siteUrl = process.env.NEXT_PUBLIC_BASE_URL ?? ''
-  const token = await getAccessToken('https://www.googleapis.com/auth/webmasters.readonly')
+  const client = await getAuthClient('https://www.googleapis.com/auth/webmasters.readonly')
+  const { token } = await client.getAccessToken()
+  if (!token) throw new Error('Failed to obtain access token from Google')
 
   const res = await fetch(
     `https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`,
@@ -118,7 +103,9 @@ export async function submitSitemap(sitemapUrl: string): Promise<void> {
     const siteUrl = process.env.NEXT_PUBLIC_BASE_URL ?? ''
     if (!siteUrl) return
 
-    const token = await getAccessToken('https://www.googleapis.com/auth/webmasters')
+    const client = await getAuthClient('https://www.googleapis.com/auth/webmasters')
+    const { token } = await client.getAccessToken()
+    if (!token) return
 
     await fetch(
       `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl)}/sitemaps/${encodeURIComponent(sitemapUrl)}`,

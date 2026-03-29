@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/auth'
 import { supabase, supabaseEnabled } from '@/lib/supabase'
 import { ENV_FALLBACKS, invalidateApiKeyCache } from '@/lib/api-keys'
+import { parseServiceAccountJson } from '@/lib/google-search-console'
 
 // Reverse map: env var name → service name
 const ENV_TO_SERVICE = Object.fromEntries(
@@ -74,6 +75,17 @@ export async function POST(req: NextRequest) {
   }
 
   const trimmedValue = value.trim()
+
+  // Validate service-specific formats before storing
+  if (service === 'google_search_console') {
+    try {
+      parseServiceAccountJson(trimmedValue)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Invalid service account JSON'
+      console.error('[integrations] GSC validation failed:', msg)
+      return NextResponse.json({ error: msg }, { status: 400 })
+    }
+  }
 
   if (supabaseEnabled) {
     const { error } = await supabase
