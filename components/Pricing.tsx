@@ -1,6 +1,11 @@
 import Link from 'next/link'
 import { getPublicPricing, type PublicPlan } from '@/lib/pricing'
 
+// Format a price to exactly 2 decimal places: 87.5 → "87.50", 97 → "97.00"
+function fmt(amount: number): string {
+  return amount.toFixed(2)
+}
+
 function PlanCard({ plan, highlight }: { plan: PublicPlan; highlight: boolean }) {
   const { promotion } = plan
 
@@ -18,13 +23,13 @@ function PlanCard({ plan, highlight }: { plan: PublicPlan; highlight: boolean })
 
       <div className="p-8 flex-1 flex flex-col">
         <div className="font-mono text-xs text-muted tracking-widest uppercase mb-3">
-          {plan.name} Plan
+          {plan.name}
         </div>
 
         {/* Upfront fee — only rendered when a confirmed amount exists */}
         {plan.upfront != null && (
           <div className="font-heading text-5xl text-primary leading-none mb-1">
-            ${plan.upfront}
+            ${fmt(plan.upfront)}
             <span className="font-mono text-sm text-muted ml-2 font-normal">upfront</span>
           </div>
         )}
@@ -34,11 +39,11 @@ function PlanCard({ plan, highlight }: { plan: PublicPlan; highlight: boolean })
           <div className="mb-2">
             <div className="flex items-baseline gap-2">
               <span className="font-mono text-base text-muted line-through">
-                ${plan.monthly}/mo
+                ${fmt(plan.monthly)}/mo
               </span>
             </div>
             <div className="font-heading text-2xl text-teal leading-none">
-              ${promotion.discounted_monthly}
+              ${fmt(promotion.discounted_monthly)}
               <span className="font-mono text-sm text-muted ml-1 font-normal">/mo</span>
             </div>
             <div className="font-mono text-xs text-accent tracking-wider mt-1">
@@ -50,7 +55,7 @@ function PlanCard({ plan, highlight }: { plan: PublicPlan; highlight: boolean })
           </div>
         ) : (
           <div className="font-heading text-2xl text-teal leading-none mb-2">
-            ${plan.monthly}
+            ${fmt(plan.monthly)}
             <span className="font-mono text-sm text-muted ml-2 font-normal">/month</span>
           </div>
         )}
