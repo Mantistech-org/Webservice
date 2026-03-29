@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/auth'
-import { supabase, supabaseEnabled, isConnectionError, DB_UNAVAILABLE_MSG } from '@/lib/supabase'
+import { supabase, supabaseEnabled, isConnectionError, DB_UNAVAILABLE_MSG, withDbRetry } from '@/lib/supabase'
 
 // GET /api/admin/db-health
 // Returns { ok, latency_ms, error? }
@@ -20,11 +20,11 @@ export async function GET() {
   const start = Date.now()
 
   try {
-    // Lightweight query — just tests TCP + TLS + auth connectivity
-    const { error } = await supabase
-      .from('api_keys')
-      .select('service')
-      .limit(1)
+    // Lightweight query — just tests TCP + TLS + auth connectivity.
+    // withDbRetry retries up to 3× on transient connection errors.
+    const { error } = await withDbRetry(() =>
+      supabase.from('api_keys').select('service').limit(1)
+    )
 
     const latency_ms = Date.now() - start
 

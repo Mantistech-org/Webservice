@@ -109,3 +109,36 @@ export function isConnectionError(err: unknown): boolean {
 export const DB_UNAVAILABLE_MSG =
   'Database unavailable — your Supabase project may be paused or the URL is misconfigured. ' +
   'Check the project status at supabase.com/dashboard.'
+
+/**
+ * Retries a Supabase operation up to `maxAttempts` times when the failure
+ * looks like a transient connection error (ENOTFOUND, ECONNREFUSED, etc.).
+ *
+ * Non-connection errors (e.g. Postgres constraint violations) are re-thrown
+ * immediately without retrying.
+ *
+ * Usage:
+ *   const { data, error } = await withDbRetry(() =>
+ *     supabase.from('api_keys').select('*')
+ *   )
+ */
+export async function withDbRetry<T>(
+  fn: () => Promise<T>,
+  maxAttempts = 3
+): Promise<T> {
+  let lastErr: unknown
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn()
+    } catch (err) {
+      lastErr = err
+      if (!isConnectionError(err)) throw err
+      if (attempt < maxAttempts) {
+        const delay = attempt * 500 // 500 ms, 1000 ms
+        console.warn(`[supabase] connection error (attempt ${attempt}/${maxAttempts}), retrying in ${delay} ms...`)
+        await new Promise((r) => setTimeout(r, delay))
+      }
+    }
+  }
+  throw lastErr
+}

@@ -16,7 +16,7 @@ const securityHeaders = [
 ]
 
 const nextConfig = {
-  serverExternalPackages: ['@anthropic-ai/sdk'],
+  serverExternalPackages: ['@anthropic-ai/sdk', 'undici'],
   async headers() {
     return [
       {
