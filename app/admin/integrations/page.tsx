@@ -14,6 +14,7 @@ interface StatusMap {
 interface EnvField {
   key: string
   label: string
+  inputType?: 'password' | 'textarea'
 }
 
 interface Service {
@@ -102,7 +103,7 @@ const CATEGORIES: { label: string; services: Service[] }[] = [
         id: 'google-search-console',
         name: 'Google Search Console',
         description: 'Used for SEO monitoring and organic search performance tracking.',
-        fields: [{ key: 'GOOGLE_SEARCH_CONSOLE_KEY', label: 'API Key' }],
+        fields: [{ key: 'GOOGLE_SEARCH_CONSOLE_KEY', label: 'Service Account JSON', inputType: 'textarea' }],
         docsUrl: 'https://console.cloud.google.com/apis/credentials',
         docsLabel: 'console.cloud.google.com',
       },
@@ -246,7 +247,7 @@ function ServiceCard({
 }) {
   const [inputs, setInputs] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState<Record<string, boolean>>({})
-  const [result, setResult] = useState<Record<string, 'saved' | 'error'>>({})
+  const [result, setResult] = useState<Record<string, 'saved' | 'error' | 'invalid-json'>>({})
   const [localConnected, setLocalConnected] = useState<Record<string, boolean>>(
     Object.fromEntries(service.fields.map((f) => [f.key, statusMap[f.key]?.set ?? false]))
   )
@@ -268,6 +269,16 @@ function ServiceCard({
   async function save(field: EnvField) {
     const value = inputs[field.key]?.trim()
     if (!value) return
+
+    if (field.inputType === 'textarea') {
+      try {
+        JSON.parse(value)
+      } catch {
+        setResult((p) => ({ ...p, [field.key]: 'invalid-json' }))
+        return
+      }
+    }
+
     setSaving((p) => ({ ...p, [field.key]: true }))
     setResult((p) => { const n = { ...p }; delete n[field.key]; return n })
     try {
@@ -308,31 +319,48 @@ function ServiceCard({
             const isConnected = localConnected[field.key]
             const last4 = statusMap[field.key]?.last4
             const placeholder = isConnected && last4 ? `••••••••••••${last4}` : 'Enter value'
+            const isTextarea = field.inputType === 'textarea'
             return (
-              <div key={field.key} className="flex items-center gap-3">
+              <div key={field.key} className={`flex gap-3 ${isTextarea ? 'items-start' : 'items-center'}`}>
                 <StatusDot connected={isConnected} />
-                <span className="font-mono text-xs text-muted w-40 shrink-0">{field.key}</span>
-                <input
-                  type="password"
-                  value={inputs[field.key] ?? ''}
-                  onChange={(e) => setInputs((p) => ({ ...p, [field.key]: e.target.value }))}
-                  onKeyDown={(e) => { if (e.key === 'Enter') save(field) }}
-                  placeholder={placeholder}
-                  className="flex-1 font-mono text-xs bg-bg border border-border rounded px-3 py-2 text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 min-w-0"
-                />
-                <button
-                  onClick={() => save(field)}
-                  disabled={saving[field.key] || !inputs[field.key]?.trim()}
-                  className="font-mono text-xs border border-border text-muted px-3 py-2 rounded hover:border-border-light hover:text-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-                >
-                  {saving[field.key] ? 'Saving...' : 'Save'}
-                </button>
-                {result[field.key] === 'saved' && (
-                  <span className="font-mono text-xs text-emerald-700 dark:text-accent shrink-0">Saved</span>
+                <span className={`font-mono text-xs text-muted w-40 shrink-0 ${isTextarea ? 'pt-2' : ''}`}>{field.label}</span>
+                {isTextarea ? (
+                  <textarea
+                    value={inputs[field.key] ?? ''}
+                    onChange={(e) => setInputs((p) => ({ ...p, [field.key]: e.target.value }))}
+                    placeholder={isConnected && last4 ? `Service account JSON already set (••••${last4})` : 'Paste service account JSON'}
+                    rows={5}
+                    spellCheck={false}
+                    className="flex-1 font-mono text-xs bg-bg border border-border rounded px-3 py-2 text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 min-w-0 resize-y"
+                  />
+                ) : (
+                  <input
+                    type="password"
+                    value={inputs[field.key] ?? ''}
+                    onChange={(e) => setInputs((p) => ({ ...p, [field.key]: e.target.value }))}
+                    onKeyDown={(e) => { if (e.key === 'Enter') save(field) }}
+                    placeholder={placeholder}
+                    className="flex-1 font-mono text-xs bg-bg border border-border rounded px-3 py-2 text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 min-w-0"
+                  />
                 )}
-                {result[field.key] === 'error' && (
-                  <span className="font-mono text-xs text-red-600 dark:text-red-400 shrink-0">Error</span>
-                )}
+                <div className={`flex items-center gap-2 shrink-0 ${isTextarea ? 'pt-1' : ''}`}>
+                  <button
+                    onClick={() => save(field)}
+                    disabled={saving[field.key] || !inputs[field.key]?.trim()}
+                    className="font-mono text-xs border border-border text-muted px-3 py-2 rounded hover:border-border-light hover:text-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {saving[field.key] ? 'Saving...' : 'Save'}
+                  </button>
+                  {result[field.key] === 'saved' && (
+                    <span className="font-mono text-xs text-emerald-700 dark:text-accent">Saved</span>
+                  )}
+                  {result[field.key] === 'error' && (
+                    <span className="font-mono text-xs text-red-600 dark:text-red-400">Error</span>
+                  )}
+                  {result[field.key] === 'invalid-json' && (
+                    <span className="font-mono text-xs text-red-600 dark:text-red-400">Invalid JSON</span>
+                  )}
+                </div>
               </div>
             )
           })}
