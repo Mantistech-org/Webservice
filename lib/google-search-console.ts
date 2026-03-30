@@ -66,13 +66,17 @@ export type SearchAnalyticsRow = {
   position: number
 }
 
+// The Search Console property is registered as 'https://mantistech.org/' (without www).
+// Using www or omitting the trailing slash results in a 403.
+const GSC_SITE_URL = 'https://mantistech.org/'
+
 export async function getSearchAnalytics(params: {
   startDate: string
   endDate: string
   dimensions: ('query' | 'page' | 'country' | 'device')[]
   rowLimit?: number
 }): Promise<SearchAnalyticsRow[]> {
-  const siteUrl = process.env.NEXT_PUBLIC_BASE_URL ?? ''
+  const siteUrl = GSC_SITE_URL
   const client = await getAuthClient('https://www.googleapis.com/auth/webmasters.readonly')
   const { token } = await client.getAccessToken()
   if (!token) throw new Error('Failed to obtain access token from Google')
@@ -106,8 +110,7 @@ export async function getSearchAnalytics(params: {
 // Best-effort sitemap submission — never throws.
 export async function submitSitemap(sitemapUrl: string): Promise<void> {
   try {
-    const siteUrl = process.env.NEXT_PUBLIC_BASE_URL ?? ''
-    if (!siteUrl) return
+    const siteUrl = GSC_SITE_URL
 
     const client = await getAuthClient('https://www.googleapis.com/auth/webmasters')
     const { token } = await client.getAccessToken()
