@@ -148,7 +148,7 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
             </p>
             <p className="font-mono text-xs text-muted leading-relaxed">
               {selectedPlan === 'starter'
-                ? `The Growth plan includes Review Management, Social Media Automation, SEO Optimization, and Ad Creative Generation — all bundled. You get far more for $${nextPlanData.monthly}/mo than adding extras to Starter.`
+                ? `The Growth plan includes Review Management, Social Media Automation, SEO Optimization, and Missed Call Auto-Reply — all bundled. You get far more for $${nextPlanData.monthly}/mo than adding extras to Starter.`
                 : `You're close to Pro pricing. For $${nextPlanData.monthly}/mo, Pro includes every add-on — Lead Generation, E-Commerce Automation, Website Chatbot, Email Marketing, and more. Nothing left to add.`}
             </p>
           </div>

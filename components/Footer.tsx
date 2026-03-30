@@ -50,12 +50,15 @@ export default function Footer() {
               {[
                 'Review Management',
                 'Social Media Automation',
-                'Lead Generation',
+                'Automated Lead Generation',
                 'SEO Optimization',
                 'E-Commerce Automation',
-                'Ad Creative Generation',
                 'Website Chatbot',
                 'Automated Email Marketing',
+                'SMS/Text Marketing',
+                'Missed Call Auto-Reply',
+                'Custom Referral System',
+                'Online Payments and Invoicing',
                 'Booking Calendar',
                 'Email with Domain',
               ].map((s) => (

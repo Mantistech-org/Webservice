@@ -182,7 +182,6 @@ const ALL_SIDEBAR_ITEMS: SidebarNavItem[] = [
       { id: 'ecommerce-automations', label: 'Automated Emails' },
     ],
   },
-  { id: 'ads',      label: 'Ad Creative',         icon: <ImageIcon />,       addonId: 'ad-creative-generation' },
   { id: 'chatbot',  label: 'Website Chatbot',      icon: <ChatIcon />,        addonId: 'website-chatbot' },
   { id: 'calendar', label: 'Calendar',             icon: <CalendarIcon /> },
   { id: 'billing',  label: 'Billing',              icon: <CardIcon /> },

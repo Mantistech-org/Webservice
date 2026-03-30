@@ -38,12 +38,17 @@ function PlanCard({ plan, highlight }: { plan: PublicPlan; highlight: boolean })
               ${fmt(promotion.discounted_monthly)}
               <span className="font-mono text-sm text-muted ml-1 font-normal">/mo</span>
             </div>
-            <div className="font-mono text-xs text-accent tracking-wider mt-1 mb-1">
+            <div className="font-mono text-xs text-accent tracking-wider mt-1">
               {promotion.label}
               {promotion.duration_months
                 ? `, first ${promotion.duration_months} month${promotion.duration_months === 1 ? '' : 's'}`
                 : ''}
             </div>
+            {(plan.plan_key === 'mid' || plan.plan_key === 'pro') && (
+              <div className="font-mono text-xs text-muted tracking-wider mb-1">
+                Launch pricing ends June 30, 2026
+              </div>
+            )}
           </div>
         ) : (
           <div className="font-heading text-5xl text-primary leading-none mb-1">
