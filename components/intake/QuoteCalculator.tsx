@@ -25,20 +25,15 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
   const baseMonthly = launchMonthly ?? plan.monthly
   const monthlyTotal = baseMonthly + extraAddonTotal
 
-  // Upsell logic — suggest the next plan when the current total approaches its price
+  // Upsell logic — suggest the next plan when extra add-on spend reaches the next tier's price
   const nextPlan: Plan | null =
     selectedPlan === 'starter' ? 'mid' :
     selectedPlan === 'mid' ? 'pro' :
     null
   const nextPlanData = nextPlan ? PLANS[nextPlan] : null
-  // Starter: trigger whenever any paid extra is selected (max possible is $52, far below mid's $125,
-  //   but any extra spend is a signal that Growth's bundled addons are a better deal).
-  // Mid: trigger at 80% of Pro's price ($200) — reachable with 3+ extras like lead-gen+ecommerce+chatbot.
-  const showUpsell = nextPlanData !== null && (
-    selectedPlan === 'starter'
-      ? extraAddons.length > 0
-      : monthlyTotal >= PLANS.pro.monthly * 0.8
-  )
+  const nextPlanMonthly = nextPlan ? (LAUNCH_MONTHLY[nextPlan] ?? PLANS[nextPlan].monthly) : null
+  const showUpsell = nextPlanData !== null && nextPlanMonthly !== null &&
+    extraAddonTotal >= nextPlanMonthly
 
   return (
     <div className="sticky top-20 bg-card border border-border rounded overflow-hidden">
@@ -144,12 +139,12 @@ export default function QuoteCalculator({ selectedAddons, selectedPlan }: QuoteC
               </span>
             </div>
             <p className="text-sm text-primary font-medium leading-snug">
-              Upgrade to {nextPlanData.name} for ${nextPlanData.monthly}/mo
+              Upgrade to {nextPlanData.name} for ${nextPlanMonthly}/mo
             </p>
             <p className="font-mono text-xs text-muted leading-relaxed">
               {selectedPlan === 'starter'
-                ? `The Growth plan includes Review Management, Social Media Automation, SEO Optimization, and Missed Call Auto-Reply — all bundled. You get far more for $${nextPlanData.monthly}/mo than adding extras to Starter.`
-                : `You're close to Pro pricing. For $${nextPlanData.monthly}/mo, Pro includes every add-on — Lead Generation, E-Commerce Automation, Website Chatbot, Email Marketing, and more. Nothing left to add.`}
+                ? `These add-ons cost as much as our Growth plan, which includes Review Management, Social Media Automation, SEO Optimization, and Missed Call Auto-Reply — more services for the same price.`
+                : `These add-ons cost as much as our Pro plan, which includes every service — Automated Lead Generation, SMS/Text Marketing, Online Payments and Invoicing, and more — all bundled.`}
             </p>
           </div>
         ) : extraAddons.length > 0 ? (

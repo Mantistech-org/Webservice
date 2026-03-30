@@ -99,10 +99,9 @@ function getRecommendedPlan(employeeCount: string): Plan | null {
   return null
 }
 
-function getAddonTierStatus(addonId: string, plan: Plan): 'included' | 'available' | 'locked' {
+function getAddonTierStatus(addonId: string, plan: Plan): 'included' | 'available' {
   if (PLAN_INCLUDED_ADDONS[plan].includes(addonId)) return 'included'
   if (plan === 'pro') return 'included'
-  if (plan === 'starter' && addonId !== 'email-with-domain') return 'locked'
   return 'available'
 }
 
@@ -189,19 +188,12 @@ export default function IntakeForm() {
     setForm((f) => ({
       ...f,
       plan: newPlan,
-      // Remove from extra addons any that are now included or locked in the new plan
-      addons: f.addons.filter((id) => {
-        if (nowIncluded.includes(id)) return false
-        if (getAddonTierStatus(id, newPlan) === 'locked') return false
-        if (getAddonTierStatus(id, newPlan) === 'included') return false
-        return true
-      }),
+      // Drop any extras that are now included in the new plan
+      addons: f.addons.filter((id) => !nowIncluded.includes(id)),
     }))
   }
 
   const toggleAddon = (id: string) => {
-    if (PLAN_INCLUDED_ADDONS[form.plan].includes(id)) return
-    if (getAddonTierStatus(id, form.plan) === 'locked') return
     if (getAddonTierStatus(id, form.plan) === 'included') return
     setForm((f) => ({
       ...f,
@@ -772,10 +764,7 @@ export default function IntakeForm() {
               </div>
 
               {ADDONS.map((addon) => {
-                const tierStatus = getAddonTierStatus(addon.id, form.plan)
-                const isIncluded = tierStatus === 'included'
-                const isLocked = tierStatus === 'locked'
-                const isAvailable = tierStatus === 'available'
+                const isIncluded = getAddonTierStatus(addon.id, form.plan) === 'included'
                 const checked = isIncluded || form.addons.includes(addon.id)
 
                 if (isIncluded) {
@@ -800,25 +789,6 @@ export default function IntakeForm() {
                   )
                 }
 
-                if (isLocked) {
-                  return (
-                    <div
-                      key={addon.id}
-                      className="flex items-center gap-4 p-4 rounded border border-border bg-card opacity-50 cursor-not-allowed"
-                    >
-                      <div className="w-5 h-5 rounded border-2 border-dim flex items-center justify-center shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm text-primary font-medium">{addon.label}</div>
-                        <div className="text-xs text-muted mt-0.5">{addon.description}</div>
-                      </div>
-                      <div className="font-mono text-sm shrink-0 text-muted">
-                        Upgrade to Growth
-                      </div>
-                    </div>
-                  )
-                }
-
-                // Available
                 return (
                   <label
                     key={addon.id}
