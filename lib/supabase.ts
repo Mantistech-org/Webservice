@@ -1,35 +1,4 @@
 import { createClient } from '@supabase/supabase-js'
-import dns from 'dns'
-
-// ── DNS reliability fix ────────────────────────────────────────────────────
-// node:20-alpine uses musl libc which, inside Docker, gets assigned the
-// container's internal DNS resolver (typically 127.0.0.11). That resolver
-// occasionally fails to resolve external hostnames (ENOTFOUND) when the
-// Docker network is under load or when Railway's DNS is slow.
-//
-// Fix 1: prefer IPv4 results — Supabase hostnames have both A and AAAA records
-// and the IPv6 paths can be unreachable inside Docker.
-dns.setDefaultResultOrder('ipv4first')
-
-// Fix 2: append public DNS servers as fallback alongside the Docker resolver.
-// We READ the current servers (127.0.0.11 inside Docker) and ADD Google + CF
-// public DNS so that if the internal resolver returns NXDOMAIN we still
-// resolve correctly. Using setServers() replaces the list, so we preserve
-// whatever Docker assigned first.
-//
-// This restores the DNS reliability fix that was previously applied via
-// resolv.conf — that approach cannot work in containers because Docker
-// overwrites /etc/resolv.conf at container start-up regardless of image
-// contents.
-if (process.env.NODE_ENV === 'production') {
-  try {
-    const existing = dns.getServers()
-    const withFallback = Array.from(new Set([...existing, '8.8.8.8', '8.8.4.4', '1.1.1.1']))
-    dns.setServers(withFallback)
-  } catch {
-    // Best-effort — never break startup
-  }
-}
 
 // ── Environment variables ──────────────────────────────────────────────────
 // .trim() guards against accidental trailing newlines or spaces that can
@@ -69,7 +38,7 @@ export const supabaseEnabled = !!(supabaseUrl && supabaseServiceKey)
 /**
  * Returns true when the error is a network/DNS failure rather than an
  * application-level error. Covers:
- *  - ENOTFOUND  — hostname not resolvable (Supabase project paused or wrong URL)
+ *  - ENOTFOUND  — hostname not resolvable
  *  - ECONNREFUSED — port not open
  *  - ETIMEDOUT  — network timeout
  *  - "fetch failed" — Node fetch wrapper around the above
@@ -109,36 +78,3 @@ export function isConnectionError(err: unknown): boolean {
 export const DB_UNAVAILABLE_MSG =
   'Database unavailable — your Supabase project may be paused or the URL is misconfigured. ' +
   'Check the project status at supabase.com/dashboard.'
-
-/**
- * Retries a Supabase operation up to `maxAttempts` times when the failure
- * looks like a transient connection error (ENOTFOUND, ECONNREFUSED, etc.).
- *
- * Non-connection errors (e.g. Postgres constraint violations) are re-thrown
- * immediately without retrying.
- *
- * Usage:
- *   const { data, error } = await withDbRetry(() =>
- *     supabase.from('api_keys').select('*')
- *   )
- */
-export async function withDbRetry<T>(
-  fn: () => PromiseLike<T>,
-  maxAttempts = 3
-): Promise<T> {
-  let lastErr: unknown
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      return await fn()
-    } catch (err) {
-      lastErr = err
-      if (!isConnectionError(err)) throw err
-      if (attempt < maxAttempts) {
-        const delay = attempt * 500 // 500 ms, 1000 ms
-        console.warn(`[supabase] connection error (attempt ${attempt}/${maxAttempts}), retrying in ${delay} ms...`)
-        await new Promise((r) => setTimeout(r, delay))
-      }
-    }
-  }
-  throw lastErr
-}
