@@ -27,8 +27,8 @@ export async function register() {
 
   // Fix C: Configure dns.Resolver with public DNS servers.
   // IMPORTANT: dns.setServers() only affects dns.resolve*() calls, NOT dns.lookup()
-  // and NOT fetch()/undici. It's applied here for completeness but Fix D is
-  // the one that actually fixes fetch() in production.
+  // and NOT fetch()/undici. DNS resolution is handled by resolv.conf patching in
+  // docker-entrypoint.sh combined with the ipv4first fixes above.
   try {
     const existing = dns.getServers()
     // Public servers first so they're tried before Docker's 127.0.0.11
@@ -37,60 +37,6 @@ export async function register() {
     console.log('[instrumentation] dns.setServers:', dns.getServers().join(', '))
   } catch (err) {
     console.error('[instrumentation] dns.setServers failed:', err instanceof Error ? err.message : err)
-  }
-
-  // Fix D: Override undici's global dispatcher with a custom DNS lookup.
-  // This is the ONLY way to make Node.js built-in fetch() use public DNS servers,
-  // because fetch() -> undici -> dns.lookup() -> musl getaddrinfo() -> /etc/resolv.conf.
-  // By replacing undici's lookup function we bypass musl's concurrent-query behaviour
-  // (which lets Docker's 127.0.0.11 NXDOMAIN responses beat public DNS answers).
-  try {
-    const { setGlobalDispatcher, Agent } = await import('undici')
-
-    // Create a dedicated Resolver that uses public DNS (NOT musl / /etc/resolv.conf)
-    const resolver = new dns.Resolver()
-    resolver.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1'])
-
-    setGlobalDispatcher(
-      new Agent({
-        connect: {
-          /**
-           * Custom lookup function injected into every undici connection.
-           * Tries public DNS (via dns.Resolver) first, then falls back to
-           * the system resolver so internal Railway hostnames still work.
-           */
-          lookup(
-            hostname: string,
-            options: { family?: number | string },
-            callback: (err: NodeJS.ErrnoException | null, address: string, family: number) => void
-          ) {
-            resolver.resolve4(hostname, (err, addresses) => {
-              if (!err && addresses?.length) {
-                // Public DNS answered — use IPv4 address directly
-                callback(null, addresses[0], 4)
-                return
-              }
-              // Public DNS failed — fall back to system resolver
-              // (handles internal Docker/Railway service names)
-              dns.lookup(
-                hostname,
-                { ...options, family: 4 },
-                (sysErr: NodeJS.ErrnoException | null, addr: string, fam: number) => {
-                  callback(sysErr, addr, fam)
-                }
-              )
-            })
-          },
-        },
-      })
-    )
-
-    console.log('[instrumentation] ✓ undici setGlobalDispatcher: custom DNS resolver active (8.8.8.8 primary)')
-  } catch (err) {
-    console.error(
-      '[instrumentation] undici dispatcher override failed (non-fatal):',
-      err instanceof Error ? err.message : err
-    )
   }
 
   // ── Step 2: Startup diagnostics ───────────────────────────────────────
