@@ -6,8 +6,10 @@
  * Docs: https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation
  */
 export async function register() {
-  // Only run in the Node.js runtime (not Edge / Vercel Edge Functions)
-  if (process.env.NEXT_RUNTIME === 'edge') return
+  // Only run in the Node.js runtime (not Edge / Vercel Edge Functions).
+  // Using !== 'nodejs' (not just === 'edge') prevents Next.js from trying to
+  // bundle node:dns / undici for any non-Node runtime at build time.
+  if (process.env.NEXT_RUNTIME !== 'nodejs') return
 
   // ── Import Node.js DNS module ──────────────────────────────────────────
   const dns = await import('dns')
@@ -59,7 +61,7 @@ export async function register() {
            */
           lookup(
             hostname: string,
-            options: { family?: number },
+            options: { family?: number | string },
             callback: (err: NodeJS.ErrnoException | null, address: string, family: number) => void
           ) {
             resolver.resolve4(hostname, (err, addresses) => {

@@ -123,7 +123,7 @@ export const DB_UNAVAILABLE_MSG =
  *   )
  */
 export async function withDbRetry<T>(
-  fn: () => Promise<T>,
+  fn: () => PromiseLike<T>,
   maxAttempts = 3
 ): Promise<T> {
   let lastErr: unknown
