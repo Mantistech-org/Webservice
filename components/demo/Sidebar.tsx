@@ -13,9 +13,12 @@ export type DemoView =
   | 'ecommerce'
   | 'ecommerce-inventory'
   | 'ecommerce-automations'
-  | 'ads'
   | 'chatbot'
   | 'calendar'
+  | 'sms'
+  | 'missed-call'
+  | 'referral'
+  | 'payments'
   | 'billing'
 
 interface SidebarProps {
@@ -96,12 +99,39 @@ function BagIcon() {
     </svg>
   )
 }
-function ImageIcon() {
+function MessageSquareIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <circle cx="8.5" cy="8.5" r="1.5" />
-      <polyline points="21 15 16 10 5 21" />
+      <rect x="2" y="2" width="20" height="16" rx="2" />
+      <path d="M6 20l4-4h8" />
+    </svg>
+  )
+}
+function PhoneMissedIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="23" y1="1" x2="17" y2="7" />
+      <line x1="17" y1="1" x2="23" y2="7" />
+      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.1 12.72 19.79 19.79 0 01.06 4.1 2 2 0 012.03 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+    </svg>
+  )
+}
+function UsersIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 00-3-3.87" />
+      <path d="M16 3.13a4 4 0 010 7.75" />
+    </svg>
+  )
+}
+function ReceiptIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M4 2v20l3-2 2 2 2-2 2 2 2-2 3 2V2l-3 2-2-2-2 2-2-2-2 2z" />
+      <line x1="9" y1="9" x2="15" y2="9" />
+      <line x1="9" y1="13" x2="15" y2="13" />
     </svg>
   )
 }
@@ -142,13 +172,13 @@ function ChevronDown({ open }: { open: boolean }) {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'dashboard',  label: 'Dashboard',         icon: <HomeIcon /> },
-  { id: 'website',    label: 'My Website',         icon: <GlobeIcon /> },
-  { id: 'review',     label: 'Review Management',  icon: <StarIcon /> },
-  { id: 'social',     label: 'Social Media',       icon: <ShareIcon /> },
-  { id: 'leads',      label: 'Lead Generation',    icon: <TargetIcon /> },
-  { id: 'email',      label: 'Email Marketing',    icon: <EnvelopeIcon /> },
-  { id: 'seo',        label: 'SEO',                icon: <ChartIcon /> },
+  { id: 'dashboard',  label: 'Dashboard',                icon: <HomeIcon /> },
+  { id: 'website',    label: 'My Website',               icon: <GlobeIcon /> },
+  { id: 'review',     label: 'Review Management',        icon: <StarIcon /> },
+  { id: 'social',     label: 'Social Media',             icon: <ShareIcon /> },
+  { id: 'leads',      label: 'Automated Lead Generation',icon: <TargetIcon /> },
+  { id: 'email',      label: 'Email Marketing',          icon: <EnvelopeIcon /> },
+  { id: 'seo',        label: 'SEO',                      icon: <ChartIcon /> },
   {
     id: 'ecommerce', label: 'E-Commerce', icon: <BagIcon />,
     children: [
@@ -156,10 +186,13 @@ const NAV_ITEMS: NavItem[] = [
       { id: 'ecommerce-automations', label: 'Automated Emails' },
     ],
   },
-  { id: 'ads',      label: 'Ad Creative',    icon: <ImageIcon /> },
-  { id: 'chatbot',  label: 'Website Chatbot', icon: <ChatIcon /> },
-  { id: 'calendar', label: 'Calendar',        icon: <CalendarIcon /> },
-  { id: 'billing',  label: 'Billing',         icon: <CardIcon /> },
+  { id: 'chatbot',    label: 'Website Chatbot',          icon: <ChatIcon /> },
+  { id: 'sms',        label: 'SMS/Text Marketing',       icon: <MessageSquareIcon /> },
+  { id: 'missed-call',label: 'Missed Call Auto-Reply',   icon: <PhoneMissedIcon /> },
+  { id: 'referral',   label: 'Referral System',          icon: <UsersIcon /> },
+  { id: 'payments',   label: 'Payments & Invoicing',     icon: <ReceiptIcon /> },
+  { id: 'calendar',   label: 'Calendar',                 icon: <CalendarIcon /> },
+  { id: 'billing',    label: 'Billing',                  icon: <CardIcon /> },
 ]
 
 export default function Sidebar({ expanded, activePage, onNavigate, darkMode }: SidebarProps) {

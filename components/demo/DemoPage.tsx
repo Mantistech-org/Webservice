@@ -14,9 +14,12 @@ import LeadGeneration from './tabs/LeadGeneration'
 import EmailMarketing from './tabs/EmailMarketing'
 import SEOOptimization from './tabs/SEOOptimization'
 import ECommerceAutomation from './tabs/ECommerceAutomation'
-import AdCreative from './tabs/AdCreative'
 import WebsiteChatbot from './tabs/WebsiteChatbot'
 import CalendarPage from './tabs/CalendarPage'
+import SMSTextMarketing from './tabs/SMSTextMarketing'
+import MissedCallAutoReply from './tabs/MissedCallAutoReply'
+import CustomReferralSystem from './tabs/CustomReferralSystem'
+import OnlinePayments from './tabs/OnlinePayments'
 
 export interface DemoContact {
   name: string
@@ -121,8 +124,11 @@ export default function DemoView() {
             darkMode={darkMode}
           />
         )
-      case 'ads':        return <AdCreative sessionId={sessionId} darkMode={darkMode} />
       case 'chatbot':    return <WebsiteChatbot sessionId={sessionId} darkMode={darkMode} />
+      case 'sms':        return <SMSTextMarketing sessionId={sessionId} darkMode={darkMode} />
+      case 'missed-call':return <MissedCallAutoReply sessionId={sessionId} darkMode={darkMode} />
+      case 'referral':   return <CustomReferralSystem sessionId={sessionId} darkMode={darkMode} />
+      case 'payments':   return <OnlinePayments sessionId={sessionId} darkMode={darkMode} />
       case 'calendar':   return <CalendarPage darkMode={darkMode} />
       case 'billing':    return <BillingPage darkMode={darkMode} />
       default:           return <DashboardHome businessName={businessName} darkMode={darkMode} />
