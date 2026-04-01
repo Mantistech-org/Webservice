@@ -227,7 +227,7 @@ export default function DashboardAnimation() {
           ))}
 
           {/* ── Dashboard layout ──────────────────────────────────────────── */}
-          <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', transform: 'scale(1.17)', transformOrigin: 'center center' }}>
 
             {/* Sidebar */}
             <div style={{
