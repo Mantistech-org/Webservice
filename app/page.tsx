@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Nav from '@/components/Nav'
 import Hero from '@/components/Hero'
+import DashboardAnimation from '@/components/DashboardAnimation'
 import BeforeAfter from '@/components/BeforeAfter'
 import ServicesGrid from '@/components/ServicesGrid'
 import HowItWorks from '@/components/HowItWorks'
@@ -43,6 +44,7 @@ export default function HomePage() {
       <Nav />
       <main>
         <Hero />
+        <DashboardAnimation />
         <BeforeAfter />
         <ServicesGrid />
         <HowItWorks />
