@@ -31,6 +31,14 @@ const OVERLAY_LINES = [
   'You wake up to a full schedule.',
 ]
 
+const ACTIVITY_ITEMS = [
+  { label: 'SMS sent to 47 contacts',      time: '6:14 AM' },
+  { label: 'Google Ads activated',          time: '6:14 AM' },
+  { label: '3 new reviews received',        time: '7:02 AM' },
+  { label: 'Missed call auto-reply sent',   time: '7:48 AM' },
+  { label: 'Website banner updated',        time: '6:15 AM' },
+]
+
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
 function SidebarItem({ label, active }: { label: string; active: boolean }) {
@@ -173,7 +181,6 @@ export default function DashboardAnimation() {
 
   return (
     <section style={{ backgroundColor: '#0b0b0b', padding: '60px 0 72px' }}>
-      {/* Issue 1: container is now 85vw, capped at 1400px */}
       <div style={{ width: '85vw', maxWidth: 1400, margin: '0 auto' }}>
 
         {/* ── Animation window ─────────────────────────────────────────────── */}
@@ -285,14 +292,17 @@ export default function DashboardAnimation() {
                 {/* ── Dashboard view ──────────────────────────────────────── */}
                 <div style={{
                   position: 'absolute', inset: 0,
-                  padding: '16px 22px',
+                  padding: '14px 20px',
                   opacity: showBookings ? 0 : 1,
                   transition: 'opacity 0.4s ease',
                   pointerEvents: showBookings ? 'none' : 'auto',
                   overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
                 }}>
+
                   {/* Stats row */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 13 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 9, marginBottom: 10, flexShrink: 0 }}>
                     {[
                       { label: 'Jobs Booked',  val: bookedCount > 0 ? String(bookedCount) : '0', hot: bookedCount > 0 },
                       { label: 'Ads',          val: activated ? 'Active'  : 'Standby', hot: activated },
@@ -301,9 +311,9 @@ export default function DashboardAnimation() {
                     ].map(s => (
                       <div key={s.label} style={{
                         backgroundColor: '#fff', border: '1px solid #e6e6e4',
-                        borderRadius: 6, padding: '11px 13px',
+                        borderRadius: 6, padding: '10px 13px',
                       }}>
-                        <div style={{ fontSize: 11, color: '#999', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                        <div style={{ fontSize: 11, color: '#999', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
                           {s.label}
                         </div>
                         <div style={{
@@ -317,58 +327,133 @@ export default function DashboardAnimation() {
                     ))}
                   </div>
 
-                  {/* Activation panel */}
-                  <div style={{
-                    backgroundColor: '#fff', border: '1px solid #e6e6e4',
-                    borderRadius: 6, padding: '14px 16px', marginBottom: 13,
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 13 }}>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: '#111' }}>Weather Activation</span>
-                      <div style={{
-                        backgroundColor: activated ? '#00b857' : '#00ff88',
-                        color: '#000',
-                        fontSize: 11, fontWeight: 700,
-                        padding: '5px 15px', borderRadius: 5,
-                        letterSpacing: '0.07em',
-                        transition: 'background-color 0.25s ease',
-                        transform: activated ? 'scale(0.95)' : 'scale(1)',
-                      }}>
-                        {activated ? 'ACTIVATED' : 'ACTIVATE'}
+                  {/* Middle row: activation panel + right column */}
+                  <div style={{ flex: 1, display: 'flex', gap: 10, marginBottom: 10, overflow: 'hidden' }}>
+
+                    {/* Left: activation panel — fills full height */}
+                    <div style={{
+                      flex: '0 0 56%',
+                      backgroundColor: '#fff', border: '1px solid #e6e6e4',
+                      borderRadius: 6, padding: '13px 15px',
+                      display: 'flex', flexDirection: 'column', overflow: 'hidden',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexShrink: 0 }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: '#111' }}>Weather Activation</span>
+                        <div style={{
+                          backgroundColor: activated ? '#00b857' : '#00ff88',
+                          color: '#000',
+                          fontSize: 11, fontWeight: 700,
+                          padding: '5px 15px', borderRadius: 5,
+                          letterSpacing: '0.07em',
+                          transition: 'background-color 0.25s ease',
+                          transform: activated ? 'scale(0.95)' : 'scale(1)',
+                        }}>
+                          {activated ? 'ACTIVATED' : 'ACTIVATE'}
+                        </div>
                       </div>
+
+                      {ACTIVATION_ITEMS.map((item, i) => (
+                        <div key={item.label} style={{
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          paddingBottom: i < ACTIVATION_ITEMS.length - 1 ? 9 : 0,
+                          borderBottom: i < ACTIVATION_ITEMS.length - 1 ? '1px solid #f0f0ee' : 'none',
+                          marginBottom: i < ACTIVATION_ITEMS.length - 1 ? 9 : 0,
+                        }}>
+                          <div style={{
+                            width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+                            backgroundColor: checked.includes(i) ? '#00b857' : '#e6e6e4',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            transition: 'background-color 0.3s ease',
+                          }}>
+                            {checked.includes(i) && <Check />}
+                          </div>
+                          <span style={{ fontSize: 13, color: '#555', flex: 1 }}>{item.label}</span>
+                          <span style={{
+                            fontSize: 11, fontWeight: 600,
+                            color: checked.includes(i) ? '#00b857' : '#d0d0d0',
+                            transition: 'color 0.3s ease',
+                          }}>
+                            {checked.includes(i) ? item.status : '—'}
+                          </span>
+                        </div>
+                      ))}
                     </div>
 
-                    {ACTIVATION_ITEMS.map((item, i) => (
-                      <div key={item.label} style={{
-                        display: 'flex', alignItems: 'center', gap: 8,
-                        paddingBottom: i < ACTIVATION_ITEMS.length - 1 ? 6 : 0,
-                        borderBottom: i < ACTIVATION_ITEMS.length - 1 ? '1px solid #f0f0ee' : 'none',
-                        marginBottom: i < ACTIVATION_ITEMS.length - 1 ? 6 : 0,
+                    {/* Right column: activity feed + metrics */}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, overflow: 'hidden' }}>
+
+                      {/* Recent activity */}
+                      <div style={{
+                        flex: 1,
+                        backgroundColor: '#fff', border: '1px solid #e6e6e4',
+                        borderRadius: 6, padding: '13px 15px',
+                        display: 'flex', flexDirection: 'column', overflow: 'hidden',
                       }}>
-                        <div style={{
-                          width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
-                          backgroundColor: checked.includes(i) ? '#00b857' : '#e6e6e4',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          transition: 'background-color 0.3s ease',
-                        }}>
-                          {checked.includes(i) && <Check />}
+                        <div style={{ fontSize: 14, fontWeight: 600, color: '#111', marginBottom: 11, flexShrink: 0 }}>
+                          Recent Activity
                         </div>
-                        <span style={{ fontSize: 13, color: '#555', flex: 1 }}>{item.label}</span>
-                        <span style={{
-                          fontSize: 11, fontWeight: 600,
-                          color: checked.includes(i) ? '#00b857' : '#d0d0d0',
-                          transition: 'color 0.3s ease',
-                        }}>
-                          {checked.includes(i) ? item.status : '—'}
-                        </span>
+                        {ACTIVITY_ITEMS.map((item, i) => (
+                          <div key={i} style={{
+                            display: 'flex', alignItems: 'center', gap: 9,
+                            paddingBottom: i < ACTIVITY_ITEMS.length - 1 ? 8 : 0,
+                            borderBottom: i < ACTIVITY_ITEMS.length - 1 ? '1px solid #f0f0ee' : 'none',
+                            marginBottom: i < ACTIVITY_ITEMS.length - 1 ? 8 : 0,
+                          }}>
+                            <div style={{
+                              width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
+                              backgroundColor: activated ? '#00b857' : '#d0d0d0',
+                              transition: 'background-color 0.45s ease',
+                            }} />
+                            <span style={{ fontSize: 12, color: '#444', flex: 1, lineHeight: 1.35 }}>{item.label}</span>
+                            <span style={{ fontSize: 11, color: '#aaa', flexShrink: 0 }}>{item.time}</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+
+                      {/* Platform metrics */}
+                      <div style={{
+                        backgroundColor: '#fff', border: '1px solid #e6e6e4',
+                        borderRadius: 6, padding: '13px 15px',
+                        flexShrink: 0,
+                      }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: '#111', marginBottom: 11 }}>
+                          Platform Metrics
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6 }}>
+                          {[
+                            { label: 'Avg Response',    val: '48 sec' },
+                            { label: 'Jobs This Week',  val: activated ? '11' : '4' },
+                            { label: 'Google Rating',   val: '4.9' },
+                          ].map(m => (
+                            <div key={m.label} style={{ textAlign: 'center' }}>
+                              <div style={{
+                                fontSize: 18, fontWeight: 700,
+                                color: '#1a1a1a',
+                                lineHeight: 1.2,
+                                transition: 'color 0.45s ease',
+                              }}>
+                                {m.val}
+                              </div>
+                              <div style={{
+                                fontSize: 10, color: '#999',
+                                textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 3,
+                              }}>
+                                {m.label}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                    </div>
                   </div>
 
-                  {/* Success banner */}
+                  {/* Success banner — pinned at bottom */}
                   <div style={{
+                    flexShrink: 0,
                     backgroundColor: 'rgba(0,184,87,0.08)',
                     border: '1px solid rgba(0,184,87,0.28)',
-                    borderRadius: 6, padding: '11px 16px',
+                    borderRadius: 6, padding: '10px 16px',
                     display: 'flex', alignItems: 'center', gap: 11,
                     opacity: showBanner ? 1 : 0,
                     transform: showBanner ? 'translateY(0)' : 'translateY(5px)',
@@ -379,18 +464,21 @@ export default function DashboardAnimation() {
                       Platform running. {bookedCount} jobs booked. You did not touch your phone.
                     </span>
                   </div>
+
                 </div>
 
                 {/* ── Bookings view ────────────────────────────────────────── */}
                 <div style={{
                   position: 'absolute', inset: 0,
-                  padding: '16px 22px',
+                  padding: '14px 20px',
                   opacity: showBookings ? 1 : 0,
                   transition: 'opacity 0.4s ease',
                   pointerEvents: showBookings ? 'auto' : 'none',
                   overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 13 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 11, flexShrink: 0 }}>
                     <span style={{ fontSize: 14, fontWeight: 600, color: '#111' }}>Today&apos;s Schedule</span>
                     <div style={{
                       display: 'flex', alignItems: 'center', gap: 6,
@@ -403,48 +491,50 @@ export default function DashboardAnimation() {
                     </div>
                   </div>
 
-                  {BOOKING_SLOTS.map((slot, i) => {
-                    const filled = filledSlots.includes(i)
-                    return (
-                      <div key={slot.time} style={{
-                        display: 'flex', alignItems: 'center', gap: 11,
-                        backgroundColor: filled ? '#fff' : '#f2f2f0',
-                        border: `1px solid ${filled ? '#e0e0de' : '#eaeae8'}`,
-                        borderRadius: 5, padding: '8px 13px',
-                        marginBottom: i < BOOKING_SLOTS.length - 1 ? 6 : 0,
-                        opacity: filled ? 1 : 0.38,
-                        transition: 'opacity 0.45s ease, background-color 0.45s ease, border-color 0.45s ease',
-                      }}>
-                        <span style={{ fontSize: 13, color: '#888', width: 60, flexShrink: 0 }}>{slot.time}</span>
-                        <div style={{
-                          width: 3, height: 22, borderRadius: 1.5, flexShrink: 0,
-                          backgroundColor: filled ? '#00b857' : '#d4d4d2',
-                          transition: 'background-color 0.45s ease',
-                        }} />
-                        <span style={{
-                          fontSize: 13, flex: 1, fontWeight: filled ? 500 : 400,
-                          color: filled ? '#111' : '#aaa',
-                          transition: 'color 0.45s ease',
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                    {BOOKING_SLOTS.map((slot, i) => {
+                      const filled = filledSlots.includes(i)
+                      return (
+                        <div key={slot.time} style={{
+                          display: 'flex', alignItems: 'center', gap: 11,
+                          backgroundColor: filled ? '#fff' : '#f2f2f0',
+                          border: `1px solid ${filled ? '#e0e0de' : '#eaeae8'}`,
+                          borderRadius: 5, padding: '0 13px',
+                          flex: 1,
+                          marginBottom: i < BOOKING_SLOTS.length - 1 ? 6 : 0,
+                          opacity: filled ? 1 : 0.38,
+                          transition: 'opacity 0.45s ease, background-color 0.45s ease, border-color 0.45s ease',
                         }}>
-                          {filled ? slot.name : 'Available'}
-                        </span>
-                        <span style={{
-                          fontSize: 11, fontWeight: 600,
-                          color: filled ? '#00b857' : 'transparent',
-                          transition: 'color 0.45s ease',
-                        }}>
-                          Confirmed
-                        </span>
-                      </div>
-                    )
-                  })}
+                          <span style={{ fontSize: 13, color: '#888', width: 60, flexShrink: 0 }}>{slot.time}</span>
+                          <div style={{
+                            width: 3, height: 22, borderRadius: 1.5, flexShrink: 0,
+                            backgroundColor: filled ? '#00b857' : '#d4d4d2',
+                            transition: 'background-color 0.45s ease',
+                          }} />
+                          <span style={{
+                            fontSize: 13, flex: 1, fontWeight: filled ? 500 : 400,
+                            color: filled ? '#111' : '#aaa',
+                            transition: 'color 0.45s ease',
+                          }}>
+                            {filled ? slot.name : 'Available'}
+                          </span>
+                          <span style={{
+                            fontSize: 11, fontWeight: 600,
+                            color: filled ? '#00b857' : 'transparent',
+                            transition: 'color 0.45s ease',
+                          }}>
+                            Confirmed
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* ── Weather alert notification ─────────────────────────────────── */}
-          {/* Issue 2: now includes prominent Activate Now button with pulse   */}
           <div style={{
             position: 'absolute', top: '11%', zIndex: 10,
             right: alertIn ? '2%' : '-44%',
@@ -482,7 +572,7 @@ export default function DashboardAnimation() {
               </div>
             </div>
 
-            {/* Issue 2: Activate Now button — pulsing glow, cursor clicks here */}
+            {/* Activate Now button — pulsing glow, cursor clicks here */}
             <div style={{
               backgroundColor: activated ? '#00b857' : '#00ff88',
               color: '#000',
@@ -494,14 +584,13 @@ export default function DashboardAnimation() {
               letterSpacing: '0.05em',
               cursor: 'default',
               transition: 'background-color 0.25s ease',
-              // Pulse animation only while alert is visible and not yet clicked
               animation: alertPulse && !activated ? 'mt-activate-pulse 1.8s ease-in-out infinite' : 'none',
             }}>
               {activated ? 'Activating...' : 'Activate Now'}
             </div>
           </div>
 
-          {/* ── Cursor — z above vignette so it stays crisp ───────────────── */}
+          {/* ── Cursor ───────────────────────────────────────────────────────── */}
           <div style={{
             position: 'absolute', zIndex: 38, pointerEvents: 'none',
             left: `${cursorX}%`,
@@ -513,7 +602,6 @@ export default function DashboardAnimation() {
               `top ${cursorMs}ms cubic-bezier(0.25,0.46,0.45,0.94)`,
             ].join(', '),
           }}>
-            {/* Scaled-up cursor arrow to match larger container */}
             <svg width="28" height="36" viewBox="0 0 18 23" fill="none">
               <path
                 d="M1 1L1 18.5L6 13.5L9 21L11.5 20L8.5 12.5L15 12.5Z"
