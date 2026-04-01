@@ -1,27 +1,27 @@
 const steps = [
   {
     number: '01',
-    title: 'Submit Your Intake Form',
+    title: 'Tell us about your business',
     description:
-      'Tell us about your business, goals, and preferred style. Select add-ons that match your needs and choose a plan.',
+      'Fill out a quick intake form about your company, your service area, and your goals. Takes less than five minutes.',
   },
   {
     number: '02',
-    title: 'We Build Your Website',
+    title: 'We build your platform',
     description:
-      'Our team crafts a fully custom website tailored to your business. No templates, no cookie-cutter designs.',
+      'We set up your complete dashboard, connect your tools, and if you are on the Plus plan, build your custom HVAC website. Everything is live within 48 hours.',
   },
   {
     number: '03',
-    title: 'Review and Approve',
+    title: 'We configure your weather zones',
     description:
-      'Preview your site in full before committing. Our team reviews it first, then sends it to you for final approval.',
+      'You tell us your service area. We monitor the forecast for sudden temperature events — hard freezes, unexpected heat waves, rapid drops — the moments that overwhelm systems and flood phones. When those conditions appear in your market, your platform activates.',
   },
   {
     number: '04',
-    title: 'Launch and Scale',
+    title: 'Your platform runs',
     description:
-      'Once you approve and complete checkout, your site goes live. Add more features any time as your business grows.',
+      'When weather hits, everything activates automatically. Between events, your reviews build, your SEO grows, and your pipeline fills. You focus on the work.',
   },
 ]
 
@@ -31,10 +31,10 @@ export default function HowItWorks() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-14">
           <p className="font-mono text-xs text-accent tracking-widest uppercase mb-3">
-            The Process
+            Getting Started
           </p>
           <h2 className="font-heading text-[clamp(2rem,5vw,3.5rem)] leading-tight text-primary">
-            How It Works
+            Up and running before the next weather event.
           </h2>
         </div>
 

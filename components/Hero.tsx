@@ -1,44 +1,38 @@
 import Link from 'next/link'
-import HeroSlideshow from './HeroSlideshow'
 
 export default function Hero() {
   return (
-    <section className="min-h-screen flex flex-col">
-      {/* Text content area */}
-      <div className="flex items-center justify-center px-6 pt-20 pb-8 bg-bg">
-        <div className="text-center max-w-2xl">
-          <p className="font-mono text-xs text-accent tracking-widest uppercase mb-5">
-            Mantis Tech
-          </p>
-          <h1 className="font-heading text-[clamp(2.5rem,6vw,4.5rem)] leading-tight text-primary mb-6">
-            Your Business, On Autopilot.
-          </h1>
-          <p className="text-base text-teal leading-relaxed mb-10 max-w-lg mx-auto">
-            We don&apos;t just build websites. We build systems into your website that automatically
-            handle your client outreach, appointments, reviews, social media posts, and more. Let
-            your business run on autopilot.
-          </p>
-          <div className="flex items-center justify-center">
-            <Link
-              href="/intake"
-              className="inline-block font-mono text-sm bg-accent text-black px-8 py-4 rounded tracking-wider hover:opacity-90 transition-opacity"
-            >
-              Start Your Project
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Slideshow section bar */}
-      <div className="flex justify-center items-center py-4 bg-[#111111] dark:bg-[#4d4d4d]">
-        <p className="font-mono text-xs text-white tracking-widest uppercase">
-          Example Sites We Build
+    <section className="flex items-center justify-center px-6 pt-28 pb-24 bg-bg">
+      <div className="text-center max-w-2xl">
+        <p className="font-mono text-xs text-accent tracking-widest uppercase mb-5">
+          Mantis Tech
         </p>
-      </div>
-
-      {/* Business website slideshow */}
-      <div className="relative flex-1 min-h-[480px] overflow-hidden">
-        <HeroSlideshow />
+        <h1 className="font-heading text-[clamp(2.2rem,5.5vw,4rem)] leading-tight text-primary mb-6">
+          The HVAC contractor dominating your market has one thing you do not.
+        </h1>
+        <p className="text-lg text-primary leading-relaxed mb-4 max-w-xl mx-auto font-medium">
+          While every other contractor scrambles during a heat wave or cold snap, the ones with a system wake up to a full schedule.
+        </p>
+        <p className="text-base text-teal leading-relaxed mb-10 max-w-xl mx-auto">
+          Mantis Tech is a marketing platform built exclusively for HVAC contractors. When weather creates demand, it activates automatically. When it does not, it builds your pipeline. You just run the jobs.
+        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Link
+            href="/demo"
+            className="inline-block font-mono text-sm bg-accent text-black px-8 py-4 rounded tracking-wider hover:opacity-90 transition-opacity"
+          >
+            Show Me the System
+          </Link>
+          <Link
+            href="/consultation"
+            className="inline-block font-mono text-sm border border-border text-teal px-8 py-4 rounded tracking-wider hover:border-accent hover:text-accent transition-colors"
+          >
+            Schedule a Free Consultation
+          </Link>
+        </div>
+        <p className="mt-4 font-mono text-xs text-muted tracking-wide">
+          No signup required. No credit card. Takes 30 seconds.
+        </p>
       </div>
     </section>
   )

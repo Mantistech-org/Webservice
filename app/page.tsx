@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Nav from '@/components/Nav'
 import Hero from '@/components/Hero'
+import BeforeAfter from '@/components/BeforeAfter'
 import ServicesGrid from '@/components/ServicesGrid'
 import HowItWorks from '@/components/HowItWorks'
 import DemoPromo from '@/components/DemoPromo'
@@ -10,18 +11,24 @@ import FAQ from '@/components/FAQ'
 import Footer from '@/components/Footer'
 import CookieBanner from '@/components/CookieBanner'
 
-// ISR: regenerate every 60 seconds so pricing and promotions stay current.
-// Without this the page is statically built at Docker build time when the
-// database is unavailable, baking in an empty pricing section permanently.
-export const revalidate = 60
-
 export const metadata: Metadata = {
-  title: 'Mantis Tech | Premium Websites and Digital Services',
-  description: 'Mantis Tech builds and manages everything your business needs online. Custom websites, marketing automation, SEO, and more. Get started today.',
-  keywords: ['web design', 'web development', 'digital agency', 'Mantis Tech', 'business website', 'marketing automation', 'SEO'],
+  title: 'Mantis Tech | HVAC Marketing and Automation Platform',
+  description:
+    'Mantis Tech is a marketing and automation platform built exclusively for HVAC contractors. Weather-activated ads, automated reviews, SEO, SMS marketing, and more.',
+  keywords: [
+    'HVAC marketing',
+    'HVAC automation',
+    'HVAC contractor software',
+    'weather activation',
+    'HVAC lead generation',
+    'Mantis Tech',
+    'HVAC SEO',
+    'HVAC review management',
+  ],
   openGraph: {
-    title: 'Mantis Tech | Premium Websites and Digital Services',
-    description: 'Boutique web agency delivering premium websites and digital services for growing businesses.',
+    title: 'Mantis Tech | HVAC Marketing and Automation Platform',
+    description:
+      'A marketing and automation platform built exclusively for HVAC contractors. When weather creates demand, it activates automatically.',
     type: 'website',
     url: 'https://mantistech.io',
   },
@@ -36,6 +43,7 @@ export default function HomePage() {
       <Nav />
       <main>
         <Hero />
+        <BeforeAfter />
         <ServicesGrid />
         <HowItWorks />
         <DemoPromo />

@@ -8,18 +8,17 @@ export default function DemoPromo() {
           Interactive Demo
         </p>
         <h2 className="font-heading text-[clamp(2rem,5vw,3.5rem)] leading-tight text-primary mb-6">
-          Want to See It In Action?
+          See Your Business on the Platform
         </h2>
         <p className="text-base text-muted leading-relaxed mb-10 max-w-lg mx-auto">
-          Type in your business name and get a live, fully interactive preview of exactly what your
-          dashboard and website tools would look like. No signup, no credit card, no commitment.
-          Takes 30 seconds.
+          Enter your business name and get a live, fully interactive preview of exactly what your
+          HVAC platform would look like. No signup, no credit card, no commitment. Takes 30 seconds.
         </p>
         <Link
           href="/demo"
           className="inline-block font-mono text-sm bg-accent text-black px-10 py-4 rounded tracking-wider hover:opacity-90 transition-opacity"
         >
-          Try It Free
+          Show Me the System
         </Link>
       </div>
     </section>

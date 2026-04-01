@@ -4,39 +4,39 @@ import { useState } from 'react'
 
 const faqs = [
   {
-    question: 'Do I own my website?',
+    question: 'What exactly is the Weather Activation System?',
     answer:
-      'Yes, completely. Everything we build is yours. Your domain, your content, and your website files belong to you. If you ever decide to leave, we will hand everything over without question.',
+      'We monitor National Weather Service forecasts for your service area around the clock. When a significant temperature event is detected — a heat wave, hard freeze, or rapid temperature drop — your platform activates automatically. Your ads go live, your past customer list receives a text, your Google Business Profile updates, and any missed calls receive an instant text response. You do not have to do anything.',
   },
   {
-    question: 'Can I cancel anytime?',
+    question: 'How quickly does everything go live?',
     answer:
-      'Yes. There are no long-term contracts. You can cancel your monthly subscription at any time and your site will remain active through the end of the billing period.',
+      'Platform Only customers are typically live within 48 hours of submitting the intake form. Platform Plus customers have their custom HVAC website built and connected within the same 48-hour window.',
   },
   {
-    question: 'How long does it take to get my site built?',
+    question: 'Do I need to have a website already to use Platform Only?',
     answer:
-      'Most websites are ready for your review within 48 hours of submitting your intake form. More complex projects with many pages or custom features may take a bit longer, and we will let you know upfront.',
+      'Yes. Platform Only connects to your existing website. If you do not have a website or want to replace your current one, Platform Plus includes a custom HVAC website built specifically for your business.',
   },
   {
-    question: 'What if I want changes after my site is live?',
+    question: 'How does the missed call auto-reply work?',
     answer:
-      'Unlimited change requests are included on all plans. Just log in to your dashboard, describe what you want updated, and our team will handle it, typically within 24 to 48 hours.',
+      'When your phone goes unanswered, the caller receives an automatic text within 60 seconds letting them know you received their call and will be in touch shortly. This keeps the lead warm and significantly reduces the chance they call someone else before you get back to them.',
   },
   {
-    question: 'Do I need to buy a domain?',
+    question: 'How does the review system work?',
     answer:
-      'No. Domain registration and hosting are included on every plan. We take care of the technical setup so you never have to think about it.',
+      'After a job is completed, the platform automatically sends a review request to the homeowner. We also monitor your Google reviews and respond to incoming feedback on your behalf. You review and approve responses before they go out, or you can enable auto-responses for straightforward feedback.',
   },
   {
-    question: 'What happens after I submit the intake form?',
+    question: 'Is there a contract or long-term commitment?',
     answer:
-      'Our team reviews your submission and builds a fully custom website based on your answers. You will receive an email with a preview link within 48 hours so you can review and approve before anything goes live.',
+      'No. Both plans are month-to-month. You can cancel at any time and your platform will remain active through the end of your billing period.',
   },
   {
-    question: 'Do you work with any type of business?',
+    question: 'What does the free consultation involve?',
     answer:
-      'We work with local and service-based businesses of all kinds. Restaurants, law firms, gyms, salons, contractors, medical practices, real estate agents, and more. If you serve customers, we can help you grow online.',
+      'It is a 15-minute call. We take a look at your current online presence before the call so we can show you exactly what we would do differently for your business. No pressure, no pitch deck. Just an honest look at where you stand and what the platform would do for you specifically.',
   },
 ]
 
@@ -52,7 +52,7 @@ export default function FAQ() {
       <div className="max-w-3xl mx-auto">
         <div className="mb-12 text-center">
           <p className="font-mono text-xs text-accent tracking-widest uppercase mb-4">
-            Support
+            Questions
           </p>
           <h2 className="font-heading text-[clamp(2rem,5vw,3.5rem)] leading-tight text-primary">
             Frequently Asked Questions

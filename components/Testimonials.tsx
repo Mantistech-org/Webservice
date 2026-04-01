@@ -1,34 +1,34 @@
 const testimonials = [
   {
     quote:
-      'We had zero online presence before Mantis Tech. Within a week we had a beautiful website and were showing up in local searches. Our class bookings went up almost immediately.',
-    name: 'Rachel Kim',
-    business: 'Pilates Studio Owner',
+      'Last July we had a four-day heat wave and I barely touched my phone. The system handled the texts, the missed calls, the ads. I ran 11 jobs in three days and had zero no-shows. That has never happened before.',
+    name: 'Derek Holloway',
+    business: 'Owner, Holloway Heating and Cooling',
   },
   {
     quote:
-      'I was spending hours every week trying to manage our Google reviews and social pages. Now it all runs on its own and I get new leads without doing anything. Honestly wish I had done this sooner.',
+      'I was skeptical about the weather activation thing. Then a cold snap hit in November and I woke up to eight new service requests that came in overnight. Three of those were from people I had never worked with. The system got them before my competitors did.',
     name: 'Marcus Webb',
     business: 'Independent HVAC Contractor',
   },
   {
     quote:
-      'The intake process was simple, the site looked exactly how I wanted, and the team was easy to work with. Clients tell me all the time that our website looks more professional than firms ten times our size.',
+      'My Google rating went from 4.1 to 4.8 in about two months. I did not ask a single customer for a review myself. The platform handles all of it. Homeowners tell me they found me because I had more reviews than anyone else in the area.',
     name: 'Sandra Torres',
-    business: 'Family Law Attorney',
+    business: 'Owner, Torres Climate Solutions',
   },
 ]
 
 export default function Testimonials() {
   return (
-    <section className="bg-bg py-24 px-6">
+    <section className="bg-bg py-24 px-6 border-t border-border">
       <div className="max-w-7xl mx-auto">
         <div className="mb-14 text-center">
           <p className="font-mono text-xs text-accent tracking-widest uppercase mb-4">
-            Client Stories
+            From the Field
           </p>
           <h2 className="font-heading text-[clamp(2rem,5vw,3.5rem)] leading-tight text-primary">
-            What Our Clients Say
+            Contractors Running on the Platform
           </h2>
         </div>
 
@@ -58,7 +58,6 @@ export default function Testimonials() {
             </div>
           ))}
         </div>
-
       </div>
     </section>
   )
