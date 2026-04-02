@@ -49,19 +49,19 @@ const INITIAL_CONTACTS: Contact[] = [
 ]
 
 const INITIAL_CAMPAIGNS: Campaign[] = [
-  { id: 1, name: 'Spring Promo',         message: 'Spring is here! Get 20% off your next visit — this week only. Reply STOP to opt out.',   sent: 312, delivered: 307, replies: 41, date: 'Mar 15', status: 'sent'      },
-  { id: 2, name: 'Appointment Reminder', message: 'Hi, just a reminder that your appointment is tomorrow at 2 PM. Reply YES to confirm.',    sent: 88,  delivered: 88,  replies: 64, date: 'Mar 13', status: 'sent'      },
-  { id: 3, name: 'Loyalty Rewards',      message: "You've earned a free service after 5 visits. Come in this month to redeem your reward!", sent: 145, delivered: 142, replies: 19, date: 'Mar 10', status: 'sent'      },
-  { id: 4, name: 'Review Request',       message: 'Thanks for visiting! If you have a moment, we would love a quick Google review. [link]',  sent: 203, delivered: 199, replies: 22, date: 'Mar 7',  status: 'sent'      },
-  { id: 5, name: 'April Flash Sale',     message: 'Flash sale this Saturday only — 15% off everything. Show this text at checkout.',         sent: 0,   delivered: 0,   replies: 0,  date: 'Apr 1',  status: 'scheduled' },
+  { id: 1, name: 'Cold Snap Emergency Blast',  message: 'Heating emergency? We have same-day availability tonight. Call or reply to book now. Reply STOP to opt out.',  sent: 1247, delivered: 1231, replies: 94, date: 'Mar 15', status: 'sent'      },
+  { id: 2, name: 'Service Reminder',           message: 'Hi [Name], your HVAC tune-up is due this month. Book now and lock in our spring rate before it ends.',          sent: 312,  delivered: 308,  replies: 61, date: 'Mar 13', status: 'sent'      },
+  { id: 3, name: 'Maintenance Plan Offer',     message: 'Join our annual maintenance plan and get priority scheduling plus 10% off all repairs. Reply for details.',      sent: 188,  delivered: 185,  replies: 24, date: 'Mar 10', status: 'sent'      },
+  { id: 4, name: 'Review Request',             message: 'Thanks for trusting us with your HVAC. A quick Google review means a lot to our team. [link]',                  sent: 203,  delivered: 199,  replies: 22, date: 'Mar 7',  status: 'sent'      },
+  { id: 5, name: 'Summer AC Tune-Up Promo',    message: 'Summer is coming fast. Book your AC tune-up now and skip the rush — 10% off this month only.',                  sent: 0,    delivered: 0,    replies: 0,  date: 'Apr 1',  status: 'scheduled' },
 ]
 
 const TEMPLATES: Template[] = [
-  { id: 1, name: 'Appointment Reminder', category: 'Reminders',  body: 'Hi [Name], just a reminder that your appointment is tomorrow at [Time]. Reply YES to confirm or RESCHEDULE to change it.' },
-  { id: 2, name: 'Promotional Offer',    category: 'Promotions', body: 'Hi [Name]! For a limited time, [Business] is offering [Offer]. Use code [Code] or just show this text. Valid through [Date].' },
-  { id: 3, name: 'Follow-Up After Visit',category: 'Engagement', body: "Thanks for coming in, [Name]. Hope everything was great. If you have a moment, we'd love a quick review — it means a lot. [Link]" },
-  { id: 4, name: 'Loyalty Reward',       category: 'Retention',  body: "Great news, [Name]! You've earned a [Reward] after your recent visits. Come redeem it before [Date] — we appreciate your loyalty." },
-  { id: 5, name: 'Reactivation',         category: 'Win-Back',   body: "We miss you, [Name]! It has been a while since your last visit. Come back this month and get [Offer] — just show this text." },
+  { id: 1, name: 'Appointment Reminder',   category: 'Reminders',  body: 'Hi [Name], reminder that your HVAC service appointment is tomorrow at [Time]. Reply YES to confirm or call us to reschedule.' },
+  { id: 2, name: 'Emergency Availability', category: 'Urgent',     body: 'Hi [Name], we have same-day availability for heating and cooling emergencies. Call or reply to book a technician now.' },
+  { id: 3, name: 'Seasonal Offer',         category: 'Promotions', body: 'Hi [Name], [Season] is here. Book your HVAC tune-up before the rush and save [Discount]. Reply to schedule or visit [link].' },
+  { id: 4, name: 'Post-Service Follow-Up', category: 'Engagement', body: 'Hi [Name], thanks for having our team out. How is everything running? Reply with any questions and we will get right back to you.' },
+  { id: 5, name: 'Review Request',         category: 'Reviews',    body: 'Hi [Name], we hope you are staying comfortable! If you have a moment, a quick Google review means a great deal to our team. [link]' },
 ]
 
 const TAG_COLORS: Record<string, string> = {

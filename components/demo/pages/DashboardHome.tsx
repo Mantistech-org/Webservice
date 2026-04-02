@@ -1,201 +1,428 @@
 'use client'
 
-interface LineChartProps { darkMode?: boolean }
-interface DashboardProps { businessName?: string; darkMode?: boolean }
+interface DashboardProps {
+  businessName?: string
+  onNavigateToWeather?: () => void
+}
 
-const STATS = [
-  { label: 'Website Visitors', value: '2,847', change: '+12%', up: true },
-  { label: 'Leads Captured', value: '134', change: '+8%', up: true },
-  { label: 'Reviews This Month', value: '23', change: '+5', up: true },
-  { label: 'Email Open Rate', value: '34.2%', change: '+2.1%', up: true },
-  { label: 'Avg. SEO Position', value: '14.3', change: '-2.1', up: true },
-  { label: 'Ad Impressions', value: '18,420', change: '+31%', up: true },
+// ── Static data ────────────────────────────────────────────────────────────────
+
+const ACTIVATION_ITEMS = [
+  { label: 'Google Ads',              status: 'Active'                  },
+  { label: 'Customer SMS Blast',      status: 'Sent to 1,247 contacts'  },
+  { label: 'Google Business Profile', status: 'Updated'                 },
+  { label: 'Missed Call Auto-Reply',  status: 'Active'                  },
+  { label: 'Website Banner',          status: 'Live'                    },
 ]
 
-const CHART_DATA = [410, 620, 530, 780, 690, 920, 1040, 870, 1120, 980, 1310, 1480]
-const MONTHS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar']
-
-const TOP_PAGES = [
-  { page: '/home', views: 1204, pct: 100 },
-  { page: '/services', views: 618, pct: 51 },
-  { page: '/contact', views: 392, pct: 33 },
-  { page: '/about', views: 277, pct: 23 },
-  { page: '/blog', views: 144, pct: 12 },
+const ACTIVITY_FEED = [
+  { text: 'Cold snap activation fired automatically',   time: '11:47 PM' },
+  { text: 'SMS blast sent to 1,247 contacts',           time: '11:47 PM' },
+  { text: 'Google Ads campaign activated',              time: '11:48 PM' },
+  { text: 'Missed call auto-reply enabled',             time: '11:48 PM' },
+  { text: '3 new Google reviews received',              time: '8:22 AM'  },
+  { text: 'Booking confirmed — Ray Dominguez, 10:00 AM', time: '7:45 AM' },
 ]
 
-const ACTIVITY = [
-  {
-    title: 'Recent Leads',
-    items: [
-      { label: 'Sarah Mitchell', sub: 'sarah@example.com', time: '2h ago' },
-      { label: 'James Okafor', sub: 'james@example.com', time: '5h ago' },
-      { label: 'Priya Sharma', sub: 'priya@example.com', time: '1d ago' },
-      { label: 'Tom Nguyen', sub: 'tom@example.com', time: '2d ago' },
-    ],
-  },
-  {
-    title: 'Recent Reviews',
-    items: [
-      { label: '5 stars — Maria G.', sub: '"Incredible service, highly recommend!"', time: '1h ago' },
-      { label: '5 stars — Ben T.', sub: '"Fast and professional team."', time: '8h ago' },
-      { label: '4 stars — Linda K.', sub: '"Great work overall."', time: '2d ago' },
-      { label: '5 stars — Carlos M.', sub: '"Will definitely use again."', time: '3d ago' },
-    ],
-  },
-  {
-    title: 'Recent Campaigns',
-    items: [
-      { label: 'Spring Promo Email', sub: '62% open rate', time: '3h ago' },
-      { label: 'New Services Blast', sub: '48% open rate', time: '2d ago' },
-      { label: 'Follow-up Sequence', sub: '29% open rate', time: '5d ago' },
-      { label: 'Welcome Series', sub: '71% open rate', time: '1wk ago' },
-    ],
-  },
+const SCHEDULE = [
+  { time: '7:00 AM',  name: 'James Perkins'   },
+  { time: '8:30 AM',  name: 'Michelle Carter' },
+  { time: '10:00 AM', name: 'Ray Dominguez'   },
+  { time: '11:30 AM', name: 'Donna Howell'    },
+  { time: '1:00 PM',  name: 'Brian Stokes'    },
 ]
 
-function LineChart({ darkMode }: LineChartProps) {
-  const w = 480
-  const h = 140
-  const pad = { top: 12, right: 12, bottom: 24, left: 36 }
-  const iw = w - pad.left - pad.right
-  const ih = h - pad.top - pad.bottom
-  const max = Math.max(...CHART_DATA)
-  const min = Math.min(...CHART_DATA)
-  const range = max - min || 1
+// 30-day jobs per day — day 24 (index 23) is the cold snap spike
+const JOB_BARS = [
+  2, 1, 3, 2, 1, 3, 2, 2, 1, 3,
+  2, 3, 1, 2, 2, 3, 1, 2, 3, 2,
+  1, 2, 3, 11, 2, 3, 1, 2, 3, 2,
+]
 
-  const points = CHART_DATA.map((v, i) => ({
-    x: pad.left + (i / (CHART_DATA.length - 1)) * iw,
-    y: pad.top + ih - ((v - min) / range) * ih,
-  }))
+// ── Bar chart ─────────────────────────────────────────────────────────────────
 
-  const d = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
-  const fill = `${d} L${points[points.length - 1].x},${(pad.top + ih).toFixed(1)} L${points[0].x},${(pad.top + ih).toFixed(1)} Z`
+function BarChart() {
+  const W = 800
+  const H = 180
+  const pL = 44, pR = 20, pT = 32, pB = 28
+  const cW = W - pL - pR
+  const cH = H - pT - pB
+  const max = Math.max(...JOB_BARS)
+  const slotW = cW / JOB_BARS.length
+  const barW = Math.max(Math.floor(slotW * 0.72), 4)
 
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ height: 140 }}>
-      {/* Y grid lines */}
-      {[0, 0.25, 0.5, 0.75, 1].map((t) => {
-        const y = pad.top + ih * (1 - t)
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 180 }}>
+      {/* Y-axis label */}
+      <text
+        fontSize="9"
+        fill="#94a3b8"
+        textAnchor="middle"
+        transform={`translate(11,${pT + cH / 2}) rotate(-90)`}
+      >
+        Jobs
+      </text>
+
+      {/* Grid lines + Y tick labels */}
+      {[0, 0.33, 0.66, 1].map((t) => {
+        const y = pT + cH * (1 - t)
         return (
           <g key={t}>
-            <line x1={pad.left} y1={y} x2={pad.left + iw} y2={y} stroke={darkMode ? '#333333' : '#e5e7eb'} strokeWidth="0.5" />
-            <text x={pad.left - 6} y={y + 4} textAnchor="end" fontSize="8" fill={darkMode ? '#d1d5db' : '#374151'}>
-              {Math.round(min + t * range)}
+            <line
+              x1={pL} y1={y} x2={W - pR} y2={y}
+              stroke="#f1f5f9" strokeWidth="1"
+            />
+            <text
+              x={pL - 6} y={y + 3.5}
+              textAnchor="end" fontSize="9" fill="#94a3b8"
+            >
+              {Math.round(t * max)}
             </text>
           </g>
         )
       })}
-      {/* Area fill */}
-      <path d={fill} fill="#00ff88" fillOpacity="0.08" />
-      {/* Line */}
-      <path d={d} fill="none" stroke="#00cc66" strokeWidth="2" strokeLinejoin="round" />
-      {/* X labels */}
-      {MONTHS.map((m, i) => (
-        <text
-          key={m}
-          x={pad.left + (i / (MONTHS.length - 1)) * iw}
-          y={h - 4}
-          textAnchor="middle"
-          fontSize="8"
-          fill={darkMode ? '#d1d5db' : '#374151'}
-        >
-          {m}
-        </text>
-      ))}
-      {/* Dot at last point */}
-      <circle cx={points[points.length - 1].x} cy={points[points.length - 1].y} r="3" fill="#00cc66" />
+
+      {/* Bars */}
+      {JOB_BARS.map((val, i) => {
+        const isSpike = i === 23
+        const barH = Math.max((val / max) * cH, 2)
+        const x = pL + i * slotW + (slotW - barW) / 2
+        const y = pT + cH - barH
+        return (
+          <g key={i}>
+            <rect
+              x={x} y={y} width={barW} height={barH}
+              fill={isSpike ? '#22c55e' : '#86efac'}
+              rx="2"
+            />
+            {isSpike && (
+              <text
+                x={x + barW / 2}
+                y={y - 6}
+                textAnchor="middle"
+                fontSize="8"
+                fill="#16a34a"
+                fontWeight="700"
+              >
+                Cold snap *
+              </text>
+            )}
+          </g>
+        )
+      })}
+
+      {/* X-axis label */}
+      <text
+        x={pL + cW / 2}
+        y={H - 4}
+        textAnchor="middle"
+        fontSize="9"
+        fill="#94a3b8"
+      >
+        Last 30 Days
+      </text>
     </svg>
   )
 }
 
-export default function DashboardHome({ businessName, darkMode }: DashboardProps) {
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export default function DashboardHome({ businessName, onNavigateToWeather }: DashboardProps) {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-heading text-2xl text-[#1a1a1a]">{businessName ? `${businessName} — Dashboard` : 'Dashboard'}</h1>
-        <p className="font-mono text-xs text-[#888888] mt-0.5">Last 30 days overview</p>
-      </div>
+    <div className="space-y-5">
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        {STATS.map((s) => (
-          <div key={s.label} className="bg-[#e8e8e8] border border-[#d0d0d0] rounded p-5">
-            <div className="font-mono text-xs text-[#888888] tracking-wider uppercase mb-2">{s.label}</div>
-            <div className="font-heading text-3xl text-[#1a1a1a] leading-none mb-1">{s.value}</div>
-            <div className={`font-mono text-xs ${s.up ? 'text-[#00aa55]' : 'text-red-500'}`}>
-              {s.change} vs last month
+      {/* Weather activation banner */}
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{ backgroundColor: '#1e293b' }}
+      >
+        <div className="flex flex-col lg:flex-row items-start gap-8 p-7">
+
+          {/* Left */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: 8, height: 8,
+                  borderRadius: '50%',
+                  backgroundColor: '#00ff88',
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                className="font-mono text-xs tracking-widest uppercase"
+                style={{ color: '#00ff88' }}
+              >
+                Weather Event Active
+              </span>
             </div>
+            <h2
+              className="font-heading text-2xl font-bold mb-2"
+              style={{ color: '#ffffff' }}
+            >
+              Cold Snap Detected
+            </h2>
+            <p
+              className="font-mono text-sm leading-relaxed mb-5"
+              style={{ color: '#94a3b8' }}
+            >
+              28F forecast tonight in your service area.
+              <br />
+              Your platform activated automatically at 11:47 PM.
+            </p>
+            <button
+              onClick={onNavigateToWeather}
+              className="font-mono text-sm tracking-wider px-5 py-2.5 rounded-lg transition-opacity hover:opacity-80"
+              style={{ backgroundColor: '#00ff88', color: '#111827' }}
+            >
+              View Activation Details
+            </button>
           </div>
-        ))}
-      </div>
 
-      {/* Chart + Top Pages */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 bg-[#e8e8e8] border border-[#d0d0d0] rounded p-5">
-          <div className="font-mono text-xs text-[#888888] tracking-widest uppercase mb-4">
-            Website Traffic (12 months)
-          </div>
-          <LineChart darkMode={darkMode} />
-        </div>
-
-        <div className="bg-[#e8e8e8] border border-[#d0d0d0] rounded p-5">
-          <div className="font-mono text-xs text-[#888888] tracking-widest uppercase mb-4">Top Pages</div>
-          <div className="space-y-3">
-            {TOP_PAGES.map((p) => (
-              <div key={p.page}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-mono text-xs text-[#444444]">{p.page}</span>
-                  <span className="font-mono text-xs text-[#888888]">{p.views.toLocaleString()}</span>
+          {/* Right: activation checklist */}
+          <div
+            className="w-full lg:w-72 rounded-lg p-5"
+            style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
+          >
+            {ACTIVATION_ITEMS.map((item, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between py-2.5"
+                style={{
+                  borderBottom:
+                    i < ACTIVATION_ITEMS.length - 1
+                      ? '1px solid rgba(255,255,255,0.07)'
+                      : 'none',
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 18, height: 18,
+                      borderRadius: '50%',
+                      backgroundColor: '#00b857',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+                      <path
+                        d="M1 3.5L3.5 6L8 1"
+                        stroke="white"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
+                  <span
+                    className="font-mono text-xs"
+                    style={{ color: '#e2e8f0' }}
+                  >
+                    {item.label}
+                  </span>
                 </div>
-                <div className="h-1 bg-[#d0d0d0] rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full"
-                    style={{ width: `${p.pct}%`, backgroundColor: '#00cc66' }}
-                  />
-                </div>
+                <span
+                  className="font-mono text-xs font-semibold shrink-0 ml-2"
+                  style={{ color: '#00ff88' }}
+                >
+                  {item.status}
+                </span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Activity feeds */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {ACTIVITY.map((feed) => (
-          <div key={feed.title} className="bg-[#e8e8e8] border border-[#d0d0d0] rounded p-5">
-            <div className="font-mono text-xs text-[#888888] tracking-widest uppercase mb-4">
-              {feed.title}
+      {/* Stat cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[
+          {
+            label: 'Jobs Booked This Week',
+            value: '11',
+            sub: '3 booked during last night\'s activation',
+            subGreen: true,
+            star: false,
+          },
+          {
+            label: 'Calls Auto-Replied',
+            value: '24',
+            sub: 'Last 30 days',
+            subGreen: false,
+            star: false,
+          },
+          {
+            label: 'Google Rating',
+            value: '4.9',
+            sub: '47 reviews',
+            subGreen: false,
+            star: true,
+          },
+        ].map((card) => (
+          <div
+            key={card.label}
+            className="rounded-xl p-6"
+            style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0' }}
+          >
+            <div
+              className="font-mono text-xs uppercase tracking-widest mb-3"
+              style={{ color: '#94a3b8' }}
+            >
+              {card.label}
             </div>
-            <div className="space-y-3">
-              {feed.items.map((item, i) => (
-                <div key={i} className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="font-mono text-xs text-[#1a1a1a] truncate">{item.label}</div>
-                    <div className="font-mono text-xs text-[#999999] truncate mt-0.5">{item.sub}</div>
-                  </div>
-                  <span className="font-mono text-xs text-[#bbbbbb] shrink-0">{item.time}</span>
-                </div>
-              ))}
+            <div className="flex items-baseline gap-2 mb-2">
+              <span
+                className="font-heading font-bold"
+                style={{ fontSize: 42, lineHeight: 1, color: '#1a1a2e' }}
+              >
+                {card.value}
+              </span>
+              {card.star && (
+                <svg
+                  width="22" height="22" viewBox="0 0 24 24"
+                  fill="#facc15" stroke="#facc15" strokeWidth="1"
+                  style={{ marginBottom: 4 }}
+                >
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+              )}
+            </div>
+            <div
+              className="font-mono text-xs"
+              style={{ color: card.subGreen ? '#00aa55' : '#94a3b8' }}
+            >
+              {card.sub}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Website preview strip */}
-      <div className="bg-[#e8e8e8] border border-[#d0d0d0] rounded overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#d0d0d0] flex items-center justify-between">
-          <div className="font-mono text-xs text-[#888888] tracking-widest uppercase">Live Site Preview</div>
-          <span className="font-mono text-xs text-[#00aa55]">Active</span>
-        </div>
-        <div className="bg-[#f0f0f0] h-48 flex items-center justify-center">
-          <div className="text-center">
-            <div className="font-mono text-xs text-[#aaaaaa] mb-2">
-              Your website preview appears here once your site is live.
+      {/* Two-column row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        {/* Recent Activity */}
+        <div
+          className="rounded-xl p-6"
+          style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0' }}
+        >
+          <div
+            className="font-mono text-xs uppercase tracking-widest mb-5"
+            style={{ color: '#94a3b8' }}
+          >
+            Recent Activity
+          </div>
+          {ACTIVITY_FEED.map((item, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between py-3"
+              style={{
+                borderBottom:
+                  i < ACTIVITY_FEED.length - 1 ? '1px solid #f1f5f9' : 'none',
+              }}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <span
+                  style={{
+                    width: 7, height: 7,
+                    borderRadius: '50%',
+                    backgroundColor: '#00cc66',
+                    flexShrink: 0,
+                    display: 'inline-block',
+                  }}
+                />
+                <span
+                  className="font-mono text-xs truncate"
+                  style={{ color: '#374151' }}
+                >
+                  {item.text}
+                </span>
+              </div>
+              <span
+                className="font-mono text-xs shrink-0 ml-4"
+                style={{ color: '#9ca3af' }}
+              >
+                {item.time}
+              </span>
             </div>
-            <div className="font-mono text-xs text-[#cccccc]">mantistech.io/your-business</div>
+          ))}
+        </div>
+
+        {/* Today's Schedule */}
+        <div
+          className="rounded-xl p-6"
+          style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0' }}
+        >
+          <div
+            className="font-mono text-xs uppercase tracking-widest mb-5"
+            style={{ color: '#94a3b8' }}
+          >
+            Today&apos;s Schedule
+          </div>
+          {SCHEDULE.map((slot, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between py-3"
+              style={{ borderBottom: '1px solid #f1f5f9' }}
+            >
+              <div className="flex items-center gap-4">
+                <span
+                  className="font-mono text-xs shrink-0"
+                  style={{ color: '#9ca3af', width: 64 }}
+                >
+                  {slot.time}
+                </span>
+                <span
+                  style={{
+                    width: 3, height: 22,
+                    backgroundColor: '#00cc66',
+                    borderRadius: 2,
+                    flexShrink: 0,
+                    display: 'inline-block',
+                  }}
+                />
+                <span
+                  className="font-mono text-sm"
+                  style={{ color: '#1a1a2e' }}
+                >
+                  {slot.name}
+                </span>
+              </div>
+              <span
+                className="font-mono text-xs font-semibold"
+                style={{ color: '#00aa55' }}
+              >
+                Confirmed
+              </span>
+            </div>
+          ))}
+          <div
+            className="pt-4"
+            style={{ borderTop: '1px solid #f1f5f9', marginTop: 4 }}
+          >
+            <span className="font-mono text-xs" style={{ color: '#00aa55' }}>
+              2 more slots available today
+            </span>
           </div>
         </div>
       </div>
+
+      {/* Bar chart */}
+      <div
+        className="rounded-xl p-6"
+        style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0' }}
+      >
+        <div
+          className="font-mono text-xs uppercase tracking-widest mb-5"
+          style={{ color: '#94a3b8' }}
+        >
+          Jobs Booked — Last 30 Days
+        </div>
+        <BarChart />
+      </div>
+
     </div>
   )
 }

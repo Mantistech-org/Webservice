@@ -7,20 +7,20 @@ interface ReviewResult { response: string }
 
 const MOCK_REVIEWS = {
   google: [
-    { author: 'Sarah M.', stars: 5, date: 'Feb 28', text: 'Absolutely love this place. Best experience I have had in years. Will be back!', responded: true },
-    { author: 'James T.', stars: 2, date: 'Feb 24', text: 'Wait time was too long and the staff seemed disinterested. Expected better.', responded: false },
-    { author: 'Rachel K.', stars: 4, date: 'Feb 20', text: 'Really solid overall. A couple minor things could be improved but highly recommend.', responded: true },
-    { author: 'David L.', stars: 5, date: 'Feb 15', text: 'Outstanding service from start to finish. They went above and beyond.', responded: true },
+    { author: 'Frank D.',   stars: 5, date: 'Mar 18', text: 'Called at midnight when our furnace went out. Technician arrived in 45 minutes and had heat back by 2 AM. Absolutely outstanding.', responded: true  },
+    { author: 'Janet R.',   stars: 2, date: 'Mar 12', text: 'Technician showed up 3 hours late with no call. The repair itself was fine but communication really needs to improve.', responded: false },
+    { author: 'Marcus T.',  stars: 5, date: 'Feb 28', text: 'Replaced our entire HVAC system in one day. Clean, professional, and priced honestly. Would not use anyone else.', responded: true  },
+    { author: 'Cindy P.',   stars: 5, date: 'Feb 20', text: 'AC went out during a heat wave and they squeezed us in same day. Absolute lifesavers. Highly recommend.', responded: true  },
   ],
   yelp: [
-    { author: 'Mike R.', stars: 4, date: 'Mar 1', text: 'Great spot, friendly staff. Parking is a bit tricky but worth the hassle.', responded: true },
-    { author: 'Priya S.', stars: 1, date: 'Feb 26', text: 'Had a really disappointing visit. I hope management sees this and takes it seriously.', responded: false },
-    { author: 'Tom W.', stars: 5, date: 'Feb 18', text: 'One of my favorites in the area. Consistent quality every time.', responded: true },
+    { author: 'Bob H.',     stars: 4, date: 'Mar 1',  text: 'Great technicians, very knowledgeable about our older unit. Honest about what needed replacing versus what could wait.', responded: true  },
+    { author: 'Stacy W.',   stars: 1, date: 'Feb 26', text: 'Quoted one price and charged another at the end. Asked about the difference and felt brushed off. Very disappointing.', responded: false },
+    { author: 'Greg M.',    stars: 5, date: 'Feb 18', text: 'Have used them three times now. Always on time, always fair. Best HVAC company in the area by far.', responded: true  },
   ],
   facebook: [
-    { author: 'Lisa H.', stars: 5, date: 'Mar 2', text: 'Telling all my friends. This is the place to go! Amazing from start to finish.', responded: true },
-    { author: 'Carlos V.', stars: 3, date: 'Feb 27', text: 'Decent but not quite what I expected based on the reviews. Maybe just an off day.', responded: false },
-    { author: 'Amy F.', stars: 4, date: 'Feb 22', text: 'Good experience overall. Staff were helpful and knowledgeable.', responded: true },
+    { author: 'Donna K.',   stars: 5, date: 'Mar 2',  text: 'Fast, professional, and they cleaned up after themselves. My furnace is running better than it has in years.', responded: true  },
+    { author: 'Carlos V.',  stars: 3, date: 'Feb 27', text: 'Decent service but the tech seemed rushed. Repair was done correctly and the price was fair though.', responded: false },
+    { author: 'Amy F.',     stars: 4, date: 'Feb 22', text: 'Very happy with the heat pump tune-up. Explained everything clearly and no surprise charges at the end.', responded: true  },
   ],
 }
 
