@@ -121,8 +121,8 @@ export default function Sidebar({ expanded, activePage, onNavigate }: SidebarPro
       className="fixed top-14 left-0 bottom-0 overflow-y-auto overflow-x-hidden z-40 transition-all duration-200"
       style={{
         width: expanded ? 240 : 64,
-        backgroundColor: '#1a1f2e',
-        borderRight: '1px solid rgba(255,255,255,0.07)',
+        backgroundColor: '#303030',
+        borderRight: '1px solid rgba(255,255,255,0.1)',
       }}
     >
       <nav className="py-4">
@@ -136,7 +136,7 @@ export default function Sidebar({ expanded, activePage, onNavigate }: SidebarPro
 
           // Determine button style
           let btnBg = 'transparent'
-          let btnColor = 'rgba(255,255,255,0.65)'
+          let btnColor = '#ffffff'
           let leftBorder = '3px solid transparent'
 
           if (isActive) {
@@ -167,7 +167,7 @@ export default function Sidebar({ expanded, activePage, onNavigate }: SidebarPro
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive && !isFeatured) {
-                    (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.06)'
+                    (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.1)'
                     ;(e.currentTarget as HTMLElement).style.color = '#ffffff'
                   }
                 }}
@@ -202,7 +202,7 @@ export default function Sidebar({ expanded, activePage, onNavigate }: SidebarPro
                       }
                       onMouseEnter={(e) => {
                         if (activePage !== child.id) {
-                          (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.06)'
+                          (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.1)'
                           ;(e.currentTarget as HTMLElement).style.color = '#ffffff'
                         }
                       }}
