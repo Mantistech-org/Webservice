@@ -180,8 +180,8 @@ export default function DashboardAnimation() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <section style={{ backgroundColor: '#0b0b0b', padding: '20px 0' }}>
-      <div style={{ width: '92vw', maxWidth: 1600, margin: '0 auto' }}>
+    <section style={{ backgroundColor: '#0b0b0b', padding: '16px' }}>
+      <div style={{ width: '100%' }}>
 
         {/* ── Animation window ─────────────────────────────────────────────── */}
         <div style={{
@@ -227,7 +227,7 @@ export default function DashboardAnimation() {
           ))}
 
           {/* ── Dashboard layout ──────────────────────────────────────────── */}
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', transform: 'scale(0.7)', transformOrigin: 'center center' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', transform: 'scale(0.92)', transformOrigin: 'center center' }}>
 
             {/* Sidebar */}
             <div style={{
