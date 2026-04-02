@@ -187,7 +187,7 @@ export default function DashboardAnimation() {
         <div style={{
           position: 'relative',
           overflow: 'hidden',
-          aspectRatio: '16 / 6',
+          aspectRatio: '16 / 6.6',
           fontFamily: "'Inter', Arial, sans-serif",
           userSelect: 'none',
         }}>
