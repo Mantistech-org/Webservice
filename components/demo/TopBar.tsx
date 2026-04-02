@@ -49,15 +49,15 @@ export default function TopBar({ businessName, onToggleSidebar, onNavigate }: To
       <header
         className="fixed top-0 left-0 right-0 h-14 z-50 flex items-center px-4 gap-4"
         style={{
-          backgroundColor: '#111827',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          backgroundColor: '#0d6b3c',
+          borderBottom: '1px solid rgba(0,0,0,0.15)',
         }}
       >
         {/* Hamburger */}
         <button
           onClick={onToggleSidebar}
           className="p-2 rounded transition-colors shrink-0"
-          style={{ color: 'rgba(255,255,255,0.55)' }}
+          style={{ color: '#ffffff' }}
           aria-label="Toggle sidebar"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -148,7 +148,7 @@ export default function TopBar({ businessName, onToggleSidebar, onNavigate }: To
             <button
               onClick={() => setDropdownOpen((v) => !v)}
               className="w-9 h-9 rounded-full flex items-center justify-center font-mono font-bold text-xs hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: '#00ff88', color: '#111827' }}
+              style={{ backgroundColor: '#00ff88', color: '#000000' }}
               aria-label="Account menu"
             >
               {initials}
@@ -158,8 +158,8 @@ export default function TopBar({ businessName, onToggleSidebar, onNavigate }: To
               <div
                 className="absolute right-0 top-11 w-48 rounded-lg shadow-xl py-1 z-50"
                 style={{
-                  backgroundColor: '#1e293b',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #d8d8d8',
                 }}
               >
                 {[
@@ -177,19 +177,19 @@ export default function TopBar({ businessName, onToggleSidebar, onNavigate }: To
                     key={item.label}
                     onClick={item.action}
                     className="w-full text-left px-4 py-2.5 font-mono text-xs transition-colors"
-                    style={{ color: 'rgba(255,255,255,0.8)' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.07)')}
+                    style={{ color: '#1a1a1a' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0f0f0')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                   >
                     {item.label}
                   </button>
                 ))}
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', margin: '4px 0' }} />
+                <div style={{ borderTop: '1px solid #e8e8e8', margin: '4px 0' }} />
                 <Link
                   href="/"
                   className="block px-4 py-2.5 font-mono text-xs"
-                  style={{ color: 'rgba(255,255,255,0.8)' }}
-                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.07)')}
+                  style={{ color: '#1a1a1a' }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = '#f0f0f0')}
                   onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = 'transparent')}
                 >
                   Sign Out
@@ -204,31 +204,31 @@ export default function TopBar({ businessName, onToggleSidebar, onNavigate }: To
       {showSupport && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center px-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
         >
           <div
             className="rounded-xl w-full max-w-sm p-6 shadow-2xl"
-            style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0' }}
+            style={{ backgroundColor: '#ffffff', border: '1px solid #d8d8d8' }}
           >
-            <div className="font-mono text-xs text-[#94a3b8] tracking-widest uppercase mb-1">
+            <div className="font-mono text-xs text-[#888888] tracking-widest uppercase mb-1">
               Support
             </div>
-            <h2 className="font-heading text-xl text-[#1a1a2e] mb-3">Get Help</h2>
-            <p className="font-mono text-xs text-[#64748b] mb-5 leading-relaxed">
+            <h2 className="font-heading text-xl text-[#1a1a1a] mb-3">Get Help</h2>
+            <p className="font-mono text-xs text-[#555555] mb-5 leading-relaxed">
               Our team is available Monday through Friday, 9am to 6pm CT. For urgent
               issues, email us directly.
             </p>
             <a
               href="mailto:support@mantistech.io"
               className="block w-full text-center font-mono text-xs px-4 py-2.5 rounded-lg transition-opacity hover:opacity-80 mb-3"
-              style={{ backgroundColor: '#111827', color: '#ffffff' }}
+              style={{ backgroundColor: '#000000', color: '#ffffff' }}
             >
               Email support@mantistech.io
             </a>
             <button
               onClick={() => setShowSupport(false)}
               className="w-full font-mono text-xs px-4 py-2.5 rounded-lg transition-colors"
-              style={{ border: '1px solid #e2e8f0', color: '#64748b' }}
+              style={{ border: '1px solid #d8d8d8', color: '#555555' }}
             >
               Close
             </button>

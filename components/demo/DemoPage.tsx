@@ -92,29 +92,28 @@ export default function DemoView() {
           alignItems: 'center',
           justifyContent: 'center',
           padding: '0 1.5rem',
-          background: 'radial-gradient(ellipse at 0% 0%, rgba(186,210,235,0.3) 0%, transparent 55%), radial-gradient(ellipse at 100% 100%, rgba(186,210,235,0.2) 0%, transparent 55%), #f0f4f8',
         }}
       >
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-4">
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#00ff88' }} />
-              <span className="font-heading text-xl" style={{ color: '#1a1a2e' }}>Mantis Tech Demo</span>
+              <span className="font-heading text-xl" style={{ color: '#1a1a1a' }}>Mantis Tech Demo</span>
             </div>
-            <h1 className="font-heading text-4xl mb-3" style={{ color: '#1a1a2e' }}>Welcome to Your Demo</h1>
-            <p className="font-mono text-sm" style={{ color: '#64748b' }}>
+            <h1 className="font-heading text-4xl mb-3" style={{ color: '#1a1a1a' }}>Welcome to Your Demo</h1>
+            <p className="font-mono text-sm" style={{ color: '#555555' }}>
               Enter your business name to personalize the experience.
             </p>
           </div>
           <form
             onSubmit={handleGateSubmit}
             className="rounded-xl p-8 shadow-sm space-y-4"
-            style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0' }}
+            style={{ backgroundColor: '#ffffff', border: '1px solid #d0d0d0' }}
           >
             <div>
               <label
                 className="font-mono text-xs tracking-widest uppercase block mb-2"
-                style={{ color: '#64748b' }}
+                style={{ color: '#555555' }}
               >
                 Business Name
               </label>
@@ -127,28 +126,28 @@ export default function DemoView() {
                 autoFocus
                 className="w-full border rounded-lg px-4 py-3 font-mono text-sm focus:outline-none transition-colors"
                 style={{
-                  backgroundColor: '#f8fafc',
-                  borderColor: '#e2e8f0',
-                  color: '#1a1a2e',
+                  backgroundColor: '#f5f5f5',
+                  borderColor: '#d0d0d0',
+                  color: '#1a1a1a',
                 }}
               />
             </div>
             <div>
               <label
                 className="font-mono text-xs tracking-widest uppercase block mb-2"
-                style={{ color: '#64748b' }}
+                style={{ color: '#555555' }}
               >
                 Business Type{' '}
-                <span style={{ color: '#94a3b8' }}>(optional)</span>
+                <span style={{ color: '#777777' }}>(optional)</span>
               </label>
               <select
                 value={gateType}
                 onChange={(e) => setGateType(e.target.value)}
                 className="w-full border rounded-lg px-4 py-3 font-mono text-sm focus:outline-none transition-colors"
                 style={{
-                  backgroundColor: '#f8fafc',
-                  borderColor: '#e2e8f0',
-                  color: gateType ? '#1a1a2e' : '#94a3b8',
+                  backgroundColor: '#f5f5f5',
+                  borderColor: '#d0d0d0',
+                  color: gateType ? '#1a1a1a' : '#888888',
                 }}
               >
                 <option value="">Select a business type…</option>
@@ -160,11 +159,11 @@ export default function DemoView() {
             <button
               type="submit"
               className="w-full py-3 rounded-lg font-mono text-sm tracking-wider transition-opacity hover:opacity-80"
-              style={{ backgroundColor: '#111827', color: '#f0f0f0' }}
+              style={{ backgroundColor: '#000000', color: '#f0f0f0' }}
             >
               Enter Demo
             </button>
-            <p className="font-mono text-xs text-center" style={{ color: '#94a3b8' }}>
+            <p className="font-mono text-xs text-center" style={{ color: '#666666' }}>
               No sign-up required. All tools are fully functional.
             </p>
           </form>
@@ -194,30 +193,26 @@ export default function DemoView() {
           marginTop: 56,
           marginLeft: sidebarWidth,
           minHeight: 'calc(100vh - 56px)',
-          background:
-            'radial-gradient(ellipse at 0% 0%, rgba(186,210,235,0.28) 0%, transparent 50%),' +
-            'radial-gradient(ellipse at 100% 100%, rgba(186,210,235,0.2) 0%, transparent 50%),' +
-            '#f0f4f8',
         }}
       >
         {/* Free trial banner */}
-        <div style={{ backgroundColor: '#111827' }}>
+        <div style={{ backgroundColor: '#000000' }}>
           <div className="max-w-5xl mx-auto px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <span
                 className="font-mono text-xs tracking-widest uppercase px-2 py-0.5 rounded"
-                style={{ backgroundColor: '#00ff88', color: '#111827' }}
+                style={{ backgroundColor: '#00ff88', color: '#000000' }}
               >
                 Free Trial
               </span>
-              <p className="font-mono text-xs" style={{ color: '#94a3b8' }}>
+              <p className="font-mono text-xs" style={{ color: '#aaaaaa' }}>
                 Try all Mantis Tech tools at no cost. No sign-up required.
               </p>
             </div>
             <Link
               href="/intake"
               className="shrink-0 font-mono text-xs px-5 py-2 rounded-lg tracking-wider whitespace-nowrap transition-opacity hover:opacity-80"
-              style={{ backgroundColor: '#f0f0f0', color: '#111827' }}
+              style={{ backgroundColor: '#f0f0f0', color: '#000000' }}
             >
               Get Set Up Today
             </Link>

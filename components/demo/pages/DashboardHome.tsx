@@ -56,7 +56,7 @@ function BarChart() {
       {/* Y-axis label */}
       <text
         fontSize="9"
-        fill="#94a3b8"
+        fill="#888888"
         textAnchor="middle"
         transform={`translate(11,${pT + cH / 2}) rotate(-90)`}
       >
@@ -70,11 +70,11 @@ function BarChart() {
           <g key={t}>
             <line
               x1={pL} y1={y} x2={W - pR} y2={y}
-              stroke="#f1f5f9" strokeWidth="1"
+              stroke="#d0d0d0" strokeWidth="1"
             />
             <text
               x={pL - 6} y={y + 3.5}
-              textAnchor="end" fontSize="9" fill="#94a3b8"
+              textAnchor="end" fontSize="9" fill="#888888"
             >
               {Math.round(t * max)}
             </text>
@@ -117,7 +117,7 @@ function BarChart() {
         y={H - 4}
         textAnchor="middle"
         fontSize="9"
-        fill="#94a3b8"
+        fill="#888888"
       >
         Last 30 Days
       </text>
@@ -134,7 +134,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
       {/* Weather activation banner */}
       <div
         className="rounded-xl overflow-hidden"
-        style={{ backgroundColor: '#1e293b' }}
+        style={{ backgroundColor: '#1a1a1a' }}
       >
         <div className="flex flex-col lg:flex-row items-start gap-8 p-7">
 
@@ -165,7 +165,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             </h2>
             <p
               className="font-mono text-sm leading-relaxed mb-5"
-              style={{ color: '#94a3b8' }}
+              style={{ color: '#888888' }}
             >
               28F forecast tonight in your service area.
               <br />
@@ -174,7 +174,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             <button
               onClick={onNavigateToWeather}
               className="font-mono text-sm tracking-wider px-5 py-2.5 rounded-lg transition-opacity hover:opacity-80"
-              style={{ backgroundColor: '#00ff88', color: '#111827' }}
+              style={{ backgroundColor: '#00ff88', color: '#000000' }}
             >
               View Activation Details
             </button>
@@ -220,7 +220,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
                   </span>
                   <span
                     className="font-mono text-xs"
-                    style={{ color: '#e2e8f0' }}
+                    style={{ color: '#f0f0f0' }}
                   >
                     {item.label}
                   </span>
@@ -265,18 +265,18 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           <div
             key={card.label}
             className="rounded-xl p-6"
-            style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0' }}
+            style={{ backgroundColor: '#e8e8e8', border: '1px solid #d0d0d0' }}
           >
             <div
               className="font-mono text-xs uppercase tracking-widest mb-3"
-              style={{ color: '#94a3b8' }}
+              style={{ color: '#888888' }}
             >
               {card.label}
             </div>
             <div className="flex items-baseline gap-2 mb-2">
               <span
                 className="font-heading font-bold"
-                style={{ fontSize: 42, lineHeight: 1, color: '#1a1a2e' }}
+                style={{ fontSize: 42, lineHeight: 1, color: '#1a1a1a' }}
               >
                 {card.value}
               </span>
@@ -292,7 +292,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             </div>
             <div
               className="font-mono text-xs"
-              style={{ color: card.subGreen ? '#00aa55' : '#94a3b8' }}
+              style={{ color: card.subGreen ? '#00aa55' : '#888888' }}
             >
               {card.sub}
             </div>
@@ -306,11 +306,11 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         {/* Recent Activity */}
         <div
           className="rounded-xl p-6"
-          style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0' }}
+          style={{ backgroundColor: '#e8e8e8', border: '1px solid #d0d0d0' }}
         >
           <div
             className="font-mono text-xs uppercase tracking-widest mb-5"
-            style={{ color: '#94a3b8' }}
+            style={{ color: '#888888' }}
           >
             Recent Activity
           </div>
@@ -320,7 +320,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
               className="flex items-center justify-between py-3"
               style={{
                 borderBottom:
-                  i < ACTIVITY_FEED.length - 1 ? '1px solid #f1f5f9' : 'none',
+                  i < ACTIVITY_FEED.length - 1 ? '1px solid #d0d0d0' : 'none',
               }}
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -335,14 +335,14 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
                 />
                 <span
                   className="font-mono text-xs truncate"
-                  style={{ color: '#374151' }}
+                  style={{ color: '#444444' }}
                 >
                   {item.text}
                 </span>
               </div>
               <span
                 className="font-mono text-xs shrink-0 ml-4"
-                style={{ color: '#9ca3af' }}
+                style={{ color: '#999999' }}
               >
                 {item.time}
               </span>
@@ -353,11 +353,11 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         {/* Today's Schedule */}
         <div
           className="rounded-xl p-6"
-          style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0' }}
+          style={{ backgroundColor: '#e8e8e8', border: '1px solid #d0d0d0' }}
         >
           <div
             className="font-mono text-xs uppercase tracking-widest mb-5"
-            style={{ color: '#94a3b8' }}
+            style={{ color: '#888888' }}
           >
             Today&apos;s Schedule
           </div>
@@ -365,12 +365,12 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             <div
               key={i}
               className="flex items-center justify-between py-3"
-              style={{ borderBottom: '1px solid #f1f5f9' }}
+              style={{ borderBottom: '1px solid #d0d0d0' }}
             >
               <div className="flex items-center gap-4">
                 <span
                   className="font-mono text-xs shrink-0"
-                  style={{ color: '#9ca3af', width: 64 }}
+                  style={{ color: '#999999', width: 64 }}
                 >
                   {slot.time}
                 </span>
@@ -385,7 +385,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
                 />
                 <span
                   className="font-mono text-sm"
-                  style={{ color: '#1a1a2e' }}
+                  style={{ color: '#1a1a1a' }}
                 >
                   {slot.name}
                 </span>
@@ -400,7 +400,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           ))}
           <div
             className="pt-4"
-            style={{ borderTop: '1px solid #f1f5f9', marginTop: 4 }}
+            style={{ borderTop: '1px solid #d0d0d0', marginTop: 4 }}
           >
             <span className="font-mono text-xs" style={{ color: '#00aa55' }}>
               2 more slots available today
@@ -412,11 +412,11 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
       {/* Bar chart */}
       <div
         className="rounded-xl p-6"
-        style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0' }}
+        style={{ backgroundColor: '#e8e8e8', border: '1px solid #d0d0d0' }}
       >
         <div
           className="font-mono text-xs uppercase tracking-widest mb-5"
-          style={{ color: '#94a3b8' }}
+          style={{ color: '#888888' }}
         >
           Jobs Booked — Last 30 Days
         </div>

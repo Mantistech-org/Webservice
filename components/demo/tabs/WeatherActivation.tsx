@@ -72,16 +72,16 @@ export default function WeatherActivation({ businessName }: Props) {
 
       {/* Header */}
       <div>
-        <h1 className="font-heading text-2xl font-semibold mb-1" style={{ color: '#1a1a2e' }}>
+        <h1 className="font-heading text-2xl font-semibold mb-1" style={{ color: '#1a1a1a' }}>
           Weather Activation System
         </h1>
-        <p className="font-mono text-sm" style={{ color: '#64748b' }}>
+        <p className="font-mono text-sm" style={{ color: '#555555' }}>
           Automated campaign deployment triggered by real-time weather events.
         </p>
       </div>
 
       {/* Section 1 — Current activation status */}
-      <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#1e293b' }}>
+      <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#f0fff8', border: '1px solid #b2f0d4' }}>
         <div className="px-7 pt-7 pb-2">
           <div className="flex items-center gap-2 mb-3">
             <span
@@ -89,21 +89,21 @@ export default function WeatherActivation({ businessName }: Props) {
                 display: 'inline-block',
                 width: 9, height: 9,
                 borderRadius: '50%',
-                backgroundColor: '#00ff88',
+                backgroundColor: '#00aa55',
                 flexShrink: 0,
               }}
             />
             <span
               className="font-mono text-xs tracking-widest uppercase"
-              style={{ color: '#00ff88' }}
+              style={{ color: '#00aa55' }}
             >
               Active Weather Event
             </span>
           </div>
-          <h2 className="font-heading text-xl font-bold mb-2" style={{ color: '#ffffff' }}>
+          <h2 className="font-heading text-xl font-bold mb-2" style={{ color: '#1a1a1a' }}>
             Cold snap detected — 28F forecast tonight in your service area.
           </h2>
-          <p className="font-mono text-sm" style={{ color: '#94a3b8' }}>
+          <p className="font-mono text-sm" style={{ color: '#555555' }}>
             Activation triggered at 11:47 PM.
           </p>
         </div>
@@ -116,7 +116,7 @@ export default function WeatherActivation({ businessName }: Props) {
               style={{
                 borderBottom:
                   i < ACTIVATION_ITEMS.length - 1
-                    ? '1px solid rgba(255,255,255,0.07)'
+                    ? '1px solid rgba(0,0,0,0.08)'
                     : 'none',
               }}
             >
@@ -125,20 +125,20 @@ export default function WeatherActivation({ businessName }: Props) {
                 <div className="flex items-baseline justify-between gap-4 flex-wrap">
                   <span
                     className="font-mono text-sm font-semibold"
-                    style={{ color: '#e2e8f0' }}
+                    style={{ color: '#1a1a1a' }}
                   >
                     {item.label}
                   </span>
                   <span
                     className="font-mono text-xs font-bold shrink-0"
-                    style={{ color: '#00ff88' }}
+                    style={{ color: '#00aa55' }}
                   >
                     {item.status}
                   </span>
                 </div>
                 <p
                   className="font-mono text-xs mt-0.5"
-                  style={{ color: '#64748b' }}
+                  style={{ color: '#555555' }}
                 >
                   {item.desc}
                 </p>
@@ -151,24 +151,24 @@ export default function WeatherActivation({ businessName }: Props) {
       {/* Section 2 — Activation history */}
       <div
         className="rounded-xl"
-        style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0' }}
+        style={{ backgroundColor: '#e8e8e8', border: '1px solid #d0d0d0' }}
       >
         <div className="px-6 pt-6 pb-4">
           <div
             className="font-mono text-xs uppercase tracking-widest mb-5"
-            style={{ color: '#94a3b8' }}
+            style={{ color: '#888888' }}
           >
             Activation History
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <tr style={{ borderBottom: '1px solid #d0d0d0' }}>
                   {['Date', 'Event Type', 'Jobs Captured', 'Revenue Estimated'].map((h) => (
                     <th
                       key={h}
                       className="text-left pb-3 font-mono text-xs uppercase tracking-widest"
-                      style={{ color: '#94a3b8', paddingRight: 24 }}
+                      style={{ color: '#888888', paddingRight: 24 }}
                     >
                       {h}
                     </th>
@@ -181,24 +181,24 @@ export default function WeatherActivation({ businessName }: Props) {
                     key={i}
                     style={{
                       borderBottom:
-                        i < ACTIVATION_HISTORY.length - 1 ? '1px solid #f1f5f9' : 'none',
+                        i < ACTIVATION_HISTORY.length - 1 ? '1px solid #d0d0d0' : 'none',
                     }}
                   >
                     <td
                       className="py-4 font-mono text-sm"
-                      style={{ color: '#374151', paddingRight: 24 }}
+                      style={{ color: '#444444', paddingRight: 24 }}
                     >
                       {row.date}
                     </td>
                     <td
                       className="py-4 font-mono text-sm"
-                      style={{ color: '#374151', paddingRight: 24 }}
+                      style={{ color: '#444444', paddingRight: 24 }}
                     >
                       {row.event}
                     </td>
                     <td
                       className="py-4 font-heading text-lg font-bold"
-                      style={{ color: '#1a1a2e', paddingRight: 24 }}
+                      style={{ color: '#1a1a1a', paddingRight: 24 }}
                     >
                       {row.jobs}
                     </td>
@@ -219,11 +219,11 @@ export default function WeatherActivation({ businessName }: Props) {
       {/* Section 3 — Service area monitoring */}
       <div
         className="rounded-xl p-6"
-        style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0' }}
+        style={{ backgroundColor: '#e8e8e8', border: '1px solid #d0d0d0' }}
       >
         <div
           className="font-mono text-xs uppercase tracking-widest mb-5"
-          style={{ color: '#94a3b8' }}
+          style={{ color: '#888888' }}
         >
           Service Area Monitoring
         </div>
@@ -231,33 +231,33 @@ export default function WeatherActivation({ businessName }: Props) {
           <div>
             <div
               className="font-mono text-xs uppercase tracking-wide mb-1"
-              style={{ color: '#94a3b8' }}
+              style={{ color: '#888888' }}
             >
               Monitoring
             </div>
-            <div className="font-mono text-sm" style={{ color: '#1a1a2e' }}>
+            <div className="font-mono text-sm" style={{ color: '#1a1a1a' }}>
               {businessName ? `${businessName} service area` : 'Your service area'}
             </div>
           </div>
-          <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 16 }}>
+          <div style={{ borderTop: '1px solid #d0d0d0', paddingTop: 16 }}>
             <div
               className="font-mono text-xs uppercase tracking-wide mb-1"
-              style={{ color: '#94a3b8' }}
+              style={{ color: '#888888' }}
             >
               Next Forecast Check
             </div>
-            <div className="font-mono text-sm" style={{ color: '#1a1a2e' }}>
+            <div className="font-mono text-sm" style={{ color: '#1a1a1a' }}>
               In 47 minutes
             </div>
           </div>
-          <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 16 }}>
+          <div style={{ borderTop: '1px solid #d0d0d0', paddingTop: 16 }}>
             <div
               className="font-mono text-xs uppercase tracking-wide mb-1"
-              style={{ color: '#94a3b8' }}
+              style={{ color: '#888888' }}
             >
               Weather Threshold
             </div>
-            <div className="font-mono text-sm leading-relaxed" style={{ color: '#374151' }}>
+            <div className="font-mono text-sm leading-relaxed" style={{ color: '#444444' }}>
               Sudden temperature events — hard freezes, heat waves, rapid drops of
               20F or more within 48 hours.
             </div>
