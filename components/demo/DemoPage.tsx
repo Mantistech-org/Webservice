@@ -6,20 +6,12 @@ import TopBar from './TopBar'
 import Sidebar from './Sidebar'
 import type { DemoView } from './Sidebar'
 import DashboardHome from './pages/DashboardHome'
-import WebsitePage from './pages/WebsitePage'
 import BillingPage from './pages/BillingPage'
 import ReviewManagement from './tabs/ReviewManagement'
-import SocialMedia from './tabs/SocialMedia'
-import LeadGeneration from './tabs/LeadGeneration'
-import EmailMarketing from './tabs/EmailMarketing'
 import SEOOptimization from './tabs/SEOOptimization'
-import ECommerceAutomation from './tabs/ECommerceAutomation'
-import WebsiteChatbot from './tabs/WebsiteChatbot'
 import CalendarPage from './tabs/CalendarPage'
 import SMSTextMarketing from './tabs/SMSTextMarketing'
-import MissedCallAutoReply from './tabs/MissedCallAutoReply'
-import CustomReferralSystem from './tabs/CustomReferralSystem'
-import OnlinePayments from './tabs/OnlinePayments'
+import WeatherActivation from './tabs/WeatherActivation'
 
 export interface DemoContact {
   name: string
@@ -31,7 +23,6 @@ export default function DemoView() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true)
   const [activePage, setActivePage] = useState<DemoView>('dashboard')
   const [sessionId, setSessionId] = useState('')
-  const [contacts, setContacts] = useState<DemoContact[]>([])
   const [businessName, setBusinessName] = useState('')
   const [businessType, setBusinessType] = useState('')
   const [gateInput, setGateInput] = useState('')
@@ -76,28 +67,6 @@ export default function DemoView() {
     setGateSubmitted(true)
   }
 
-  const handleImportFromLeads = (leads: { businessName: string; email: string }[]) => {
-    const incoming: DemoContact[] = leads.map((l) => ({
-      name: l.businessName,
-      email: l.email,
-      source: 'leads',
-    }))
-    setContacts((prev) => {
-      const existing = new Set(prev.map((c) => c.email))
-      const unique = incoming.filter((c) => !existing.has(c.email))
-      return [...prev, ...unique]
-    })
-    setActivePage('email')
-  }
-
-  const handleAddContacts = (newContacts: DemoContact[]) => {
-    setContacts((prev) => {
-      const existing = new Set(prev.map((c) => c.email))
-      const unique = newContacts.filter((c) => !existing.has(c.email))
-      return [...prev, ...unique]
-    })
-  }
-
   const sidebarWidth = sidebarExpanded ? 240 : 64
 
   // Track mounted pages for lazy mount persistence
@@ -107,31 +76,15 @@ export default function DemoView() {
 
   const renderPage = (page: DemoView) => {
     switch (page) {
-      case 'dashboard':  return <DashboardHome businessName={businessName} darkMode={darkMode} />
-      case 'website':    return <WebsitePage darkMode={darkMode} />
-      case 'review':     return <ReviewManagement sessionId={sessionId} darkMode={darkMode} />
-      case 'social':     return <SocialMedia sessionId={sessionId} darkMode={darkMode} />
-      case 'leads':      return <LeadGeneration sessionId={sessionId} onImportContacts={handleImportFromLeads} darkMode={darkMode} />
-      case 'email':      return <EmailMarketing sessionId={sessionId} contacts={contacts} onAddContacts={handleAddContacts} darkMode={darkMode} />
-      case 'seo':        return <SEOOptimization sessionId={sessionId} darkMode={darkMode} />
-      case 'ecommerce':
-      case 'ecommerce-inventory':
-      case 'ecommerce-automations':
-        return (
-          <ECommerceAutomation
-            sessionId={sessionId}
-            initialSubTab={page === 'ecommerce-inventory' ? 'inventory' : 'automations'}
-            darkMode={darkMode}
-          />
-        )
-      case 'chatbot':    return <WebsiteChatbot sessionId={sessionId} darkMode={darkMode} />
-      case 'sms':        return <SMSTextMarketing sessionId={sessionId} darkMode={darkMode} />
-      case 'missed-call':return <MissedCallAutoReply sessionId={sessionId} darkMode={darkMode} />
-      case 'referral':   return <CustomReferralSystem sessionId={sessionId} darkMode={darkMode} />
-      case 'payments':   return <OnlinePayments sessionId={sessionId} darkMode={darkMode} />
-      case 'calendar':   return <CalendarPage darkMode={darkMode} />
-      case 'billing':    return <BillingPage darkMode={darkMode} />
-      default:           return <DashboardHome businessName={businessName} darkMode={darkMode} />
+      case 'dashboard': return <DashboardHome businessName={businessName} darkMode={darkMode} />
+      case 'weather':   return <WeatherActivation sessionId={sessionId} businessName={businessName} darkMode={darkMode} />
+      case 'bookings':  return <CalendarPage darkMode={darkMode} />
+      case 'review':    return <ReviewManagement sessionId={sessionId} darkMode={darkMode} />
+      case 'seo':       return <SEOOptimization sessionId={sessionId} darkMode={darkMode} />
+      case 'sms':       return <SMSTextMarketing sessionId={sessionId} darkMode={darkMode} />
+      case 'settings':
+      case 'billing':   return <BillingPage darkMode={darkMode} />
+      default:          return <DashboardHome businessName={businessName} darkMode={darkMode} />
     }
   }
 
@@ -163,7 +116,7 @@ export default function DemoView() {
                 type="text"
                 value={gateInput}
                 onChange={(e) => setGateInput(e.target.value)}
-                placeholder="e.g. Riverside Auto Repair"
+                placeholder="e.g. Riverside Heating & Cooling"
                 required
                 autoFocus
                 className="w-full border rounded px-4 py-3 font-mono text-sm focus:outline-none transition-colors"
@@ -175,19 +128,24 @@ export default function DemoView() {
               />
             </div>
             <div>
-              <label className="font-mono text-xs tracking-widest uppercase block mb-2" style={{ color: darkMode ? '#aaaaaa' : '#555555' }}>Business Type <span style={{ color: darkMode ? '#aaaaaa' : '#777777' }}>(optional)</span></label>
-              <input
-                type="text"
+              <label className="font-mono text-xs tracking-widest uppercase block mb-2" style={{ color: darkMode ? '#aaaaaa' : '#555555' }}>
+                Business Type <span style={{ color: darkMode ? '#aaaaaa' : '#777777' }}>(optional)</span>
+              </label>
+              <select
                 value={gateType}
                 onChange={(e) => setGateType(e.target.value)}
-                placeholder="e.g. Auto Repair, Restaurant, Law Firm"
                 className="w-full border rounded px-4 py-3 font-mono text-sm focus:outline-none transition-colors"
                 style={{
                   backgroundColor: darkMode ? '#252525' : '#f5f5f5',
                   borderColor: darkMode ? '#3a3a3a' : '#d0d0d0',
-                  color: darkMode ? '#f0f0f0' : '#1a1a1a',
+                  color: gateType ? (darkMode ? '#f0f0f0' : '#1a1a1a') : (darkMode ? '#666666' : '#aaaaaa'),
                 }}
-              />
+              >
+                <option value="">Select a business type…</option>
+                <option value="Residential HVAC">Residential HVAC</option>
+                <option value="Commercial HVAC">Commercial HVAC</option>
+                <option value="Both Residential and Commercial">Both Residential and Commercial</option>
+              </select>
             </div>
             <button
               type="submit"
