@@ -186,11 +186,8 @@ export default function DashboardAnimation() {
         {/* ── Animation window ─────────────────────────────────────────────── */}
         <div style={{
           position: 'relative',
-          borderRadius: 12,
           overflow: 'hidden',
-          border: '1px solid rgba(255,255,255,0.07)',
           aspectRatio: '16 / 6',
-          backgroundColor: '#141414',
           fontFamily: "'Inter', Arial, sans-serif",
           userSelect: 'none',
         }}>
