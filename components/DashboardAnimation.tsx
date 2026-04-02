@@ -189,7 +189,7 @@ export default function DashboardAnimation() {
           borderRadius: 12,
           overflow: 'hidden',
           border: '1px solid rgba(255,255,255,0.07)',
-          aspectRatio: '16 / 8',
+          aspectRatio: '16 / 3.2',
           backgroundColor: '#141414',
           fontFamily: "'Inter', Arial, sans-serif",
           userSelect: 'none',
