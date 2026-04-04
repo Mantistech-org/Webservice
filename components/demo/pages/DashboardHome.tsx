@@ -443,7 +443,6 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         gridTemplateColumns: '30fr 70fr',
         gap: 24,
         alignItems: 'stretch',
-        height: 380,
       }}>
 
         {/* Left: performance card */}
@@ -455,7 +454,6 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           padding: 32,
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden',
         }}>
           {/* Label */}
           <div style={{
@@ -530,16 +528,17 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           </div>
 
           {/* Divider */}
-          <div style={{ borderTop: '1px solid #E5E7EB', margin: '24px 0' }} />
+          <div style={{ borderTop: '1px solid #E5E7EB', margin: '24px 0 16px' }} />
 
           {/* Green activation note */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{
               display: 'inline-block',
-              width: 7, height: 7,
+              width: 8, height: 8,
               borderRadius: '50%',
               backgroundColor: '#00cc66',
               flexShrink: 0,
+              animation: 'dotPulse 2s ease-in-out infinite',
             }} />
             <span style={{
               fontSize: '0.85rem',
@@ -560,14 +559,17 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
               (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'
             }}
             style={{
+              display: 'block',
               width: '100%',
               backgroundColor: 'transparent',
               border: '1px solid #00cc66',
               color: '#00aa55',
               fontSize: '0.85rem',
-              padding: '10px',
+              padding: '10px 0',
               borderRadius: 6,
               cursor: 'pointer',
+              textAlign: 'center',
+              marginTop: 12,
             }}
           >
             View Monthly Performance Report
