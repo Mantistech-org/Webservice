@@ -238,7 +238,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         {[
           {
             label: 'Jobs Booked This Week',
@@ -312,7 +312,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
       </div>
 
       {/* Two-column row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: '55fr 45fr', gap: 16 }}>
 
         {/* Recent Activity */}
         <div

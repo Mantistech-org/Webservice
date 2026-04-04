@@ -197,7 +197,7 @@ export default function DemoView() {
       >
         {/* Free trial banner */}
         <div style={{ backgroundColor: '#000000' }}>
-          <div className="max-w-5xl mx-auto px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <span
                 className="font-mono text-xs tracking-widest uppercase px-2 py-0.5 rounded"
@@ -220,7 +220,7 @@ export default function DemoView() {
         </div>
 
         {/* Page content — lazy mount for persistence */}
-        <div className="max-w-5xl mx-auto px-6 py-8">
+        <div style={{ padding: 24 }}>
           {Array.from(mountedPages.current).map((page) => (
             <div key={page} style={{ display: page === activePage ? 'block' : 'none' }}>
               {renderPage(page)}
