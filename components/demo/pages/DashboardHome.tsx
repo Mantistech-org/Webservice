@@ -1,5 +1,7 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+
 interface DashboardProps {
   businessName?: string
   onNavigateToWeather?: () => void
@@ -8,11 +10,11 @@ interface DashboardProps {
 // ── Static data ────────────────────────────────────────────────────────────────
 
 const ACTIVATION_ITEMS = [
-  { label: 'Google Ads',              status: 'Active'                  },
-  { label: 'Customer SMS Blast',      status: 'Sent to 1,247 contacts'  },
-  { label: 'Google Business Profile', status: 'Updated'                 },
-  { label: 'Missed Call Auto-Reply',  status: 'Active'                  },
-  { label: 'Website Banner',          status: 'Live'                    },
+  { label: 'Google Ads'              },
+  { label: 'Customer SMS Blast'      },
+  { label: 'Google Business Profile' },
+  { label: 'Missed Call Auto-Reply'  },
+  { label: 'Website Banner'          },
 ]
 
 const ACTIVITY_FEED = [
@@ -128,6 +130,19 @@ function BarChart() {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function DashboardHome({ businessName, onNavigateToWeather }: DashboardProps) {
+  const [toastShown, setToastShown] = useState(false)
+  const [toastExiting, setToastExiting] = useState(false)
+
+  useEffect(() => {
+    const t = setTimeout(() => setToastShown(true), 1000)
+    return () => clearTimeout(t)
+  }, [])
+
+  const handleDismiss = () => {
+    setToastExiting(true)
+    setTimeout(() => setToastShown(false), 400)
+  }
+
   return (
     <div className="space-y-5">
       <style>{`
@@ -139,100 +154,45 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           0%, 100% { box-shadow: 0 0 10px 3px rgba(0,255,136,0.45); }
           50% { box-shadow: 0 0 24px 10px rgba(0,255,136,0.12); }
         }
+        @keyframes toastIn {
+          from { transform: translateY(80px); opacity: 0; }
+          to   { transform: translateY(0);   opacity: 1; }
+        }
+        @keyframes toastOut {
+          from { transform: translateY(0);   opacity: 1; }
+          to   { transform: translateY(80px); opacity: 0; }
+        }
       `}</style>
 
-      {/* Top row: stat cards (65%) + Cold Snap card (35%) */}
-      <div style={{ display: 'grid', gridTemplateColumns: '65fr 35fr', gap: 16, alignItems: 'stretch' }}>
-
-        {/* Left: three stat cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-          {[
-            {
-              label: 'Jobs Booked This Week',
-              value: '11',
-              sub: '3 booked during last night\'s activation',
-              subGreen: true,
-              star: false,
-            },
-            {
-              label: 'Calls Auto-Replied',
-              value: '24',
-              sub: 'Last 30 days',
-              subGreen: false,
-              star: false,
-            },
-            {
-              label: 'Google Rating',
-              value: '4.9',
-              sub: '47 reviews',
-              subGreen: false,
-              star: true,
-            },
-          ].map((card) => (
-            <div
-              key={card.label}
-              className="rounded-xl"
-              style={{
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E5E7EB',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-                padding: 24,
-              }}
-            >
-              <div
-                className="font-mono uppercase mb-3"
-                style={{ color: '#6B7280', fontSize: '0.7rem', letterSpacing: '0.1em' }}
-              >
-                {card.label}
-              </div>
-              <div className="flex items-baseline gap-2 mb-2">
-                <span
-                  className="font-heading"
-                  style={{ fontSize: '2.625rem', lineHeight: 1, color: '#1a1a1a', fontWeight: 700 }}
-                >
-                  {card.value}
-                </span>
-                {card.star && (
-                  <svg
-                    width="22" height="22" viewBox="0 0 24 24"
-                    fill="#facc15" stroke="#facc15" strokeWidth="1"
-                    style={{ marginBottom: 4 }}
-                  >
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                  </svg>
-                )}
-              </div>
-              <div
-                className="font-mono"
-                style={{
-                  fontSize: '0.8rem',
-                  color: card.subGreen ? '#00aa55' : '#888888',
-                  ...(card.subGreen
-                    ? { borderLeft: '2px solid #00cc66', paddingLeft: 8 }
-                    : {}),
-                }}
-              >
-                {card.sub}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Right: Cold Snap compact card */}
+      {/* Toast notification — fixed, bottom-right, outside normal flow */}
+      {toastShown && (
         <div
-          className="rounded-xl"
-          style={{ backgroundColor: '#1a1a1a', padding: 16, overflow: 'hidden' }}
+          style={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            width: 320,
+            zIndex: 50,
+            backgroundColor: '#1e1e1e',
+            borderRadius: 8,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3)',
+            padding: 16,
+            animation: toastExiting
+              ? 'toastOut 0.4s ease forwards'
+              : 'toastIn 0.4s ease forwards',
+          }}
         >
-          {/* Dot + label */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
+          {/* Top row: dot + label + close */}
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
             <span
               style={{
                 display: 'inline-block',
-                width: 6, height: 6,
+                width: 7, height: 7,
                 borderRadius: '50%',
                 backgroundColor: '#00ff88',
                 flexShrink: 0,
                 animation: 'dotPulse 2s ease-in-out infinite',
+                marginRight: 7,
               }}
             />
             <span
@@ -242,62 +202,98 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
                 color: '#00ff88',
+                flex: 1,
               }}
             >
               Weather Event Active
             </span>
+            <button
+              onClick={handleDismiss}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#666666',
+                fontSize: 14,
+                lineHeight: 1,
+                padding: '0 0 0 8px',
+                flexShrink: 0,
+              }}
+              aria-label="Dismiss"
+            >
+              ✕
+            </button>
           </div>
+
           {/* Heading */}
           <div
-            className="font-heading"
-            style={{ color: '#ffffff', fontWeight: 700, fontSize: 15, marginBottom: 4 }}
+            style={{
+              color: '#ffffff',
+              fontWeight: 700,
+              fontSize: '1rem',
+              marginBottom: 6,
+            }}
           >
             Cold Snap Detected
           </div>
+
           {/* Subtext */}
           <p
             style={{
               fontFamily: 'monospace',
-              fontSize: 9,
+              fontSize: '0.8rem',
               color: '#888888',
-              lineHeight: 1.45,
-              marginBottom: 8,
+              lineHeight: 1.5,
+              marginBottom: 12,
             }}
           >
             28F forecast tonight in your service area. Your platform is ready to activate.
           </p>
+
           {/* Activate Now button */}
           <button
             onClick={onNavigateToWeather}
             style={{
+              display: 'block',
+              width: '100%',
               backgroundColor: '#00ff88',
               color: '#000000',
               fontFamily: 'monospace',
               fontWeight: 700,
-              fontSize: 10,
+              fontSize: '0.8rem',
               letterSpacing: '0.05em',
-              padding: '5px 0',
+              padding: '9px 0',
               borderRadius: 6,
-              width: '100%',
-              animation: 'glowPulse 2s ease-in-out infinite',
-              marginBottom: 5,
-              cursor: 'pointer',
               border: 'none',
+              cursor: 'pointer',
+              animation: 'glowPulse 2s ease-in-out infinite',
+              marginBottom: 8,
             }}
           >
             Activate Now
           </button>
+
           {/* 5 tools label */}
           <p
             style={{
               fontFamily: 'monospace',
-              fontSize: 9,
+              fontSize: '0.7rem',
               color: '#555555',
-              marginBottom: 6,
+              textAlign: 'center',
+              marginBottom: 10,
             }}
           >
             5 tools will activate simultaneously
           </p>
+
+          {/* Divider */}
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.07)',
+              marginBottom: 8,
+            }}
+          />
+
           {/* Pending items */}
           <div>
             {ACTIVATION_ITEMS.map((item, i) => (
@@ -306,9 +302,9 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 6,
-                  paddingTop: 3,
-                  paddingBottom: 3,
+                  gap: 8,
+                  paddingTop: 5,
+                  paddingBottom: 5,
                   borderBottom:
                     i < ACTIVATION_ITEMS.length - 1
                       ? '1px solid rgba(255,255,255,0.05)'
@@ -318,14 +314,18 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
                 <span
                   style={{
                     display: 'inline-block',
-                    width: 10, height: 10,
+                    width: 11, height: 11,
                     borderRadius: '50%',
-                    border: '1px solid #444444',
+                    border: '1.5px solid #444444',
                     flexShrink: 0,
                   }}
                 />
                 <span
-                  style={{ fontFamily: 'monospace', fontSize: 9, color: '#555555' }}
+                  style={{
+                    fontFamily: 'monospace',
+                    fontSize: '0.72rem',
+                    color: '#555555',
+                  }}
                 >
                   {item.label}
                 </span>
@@ -333,6 +333,80 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             ))}
           </div>
         </div>
+      )}
+
+      {/* Stat cards — three equal columns, full width */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          {
+            label: 'Jobs Booked This Week',
+            value: '11',
+            sub: '3 booked during last night\'s activation',
+            subGreen: true,
+            star: false,
+          },
+          {
+            label: 'Calls Auto-Replied',
+            value: '24',
+            sub: 'Last 30 days',
+            subGreen: false,
+            star: false,
+          },
+          {
+            label: 'Google Rating',
+            value: '4.9',
+            sub: '47 reviews',
+            subGreen: false,
+            star: true,
+          },
+        ].map((card) => (
+          <div
+            key={card.label}
+            className="rounded-xl"
+            style={{
+              backgroundColor: '#FFFFFF',
+              border: '1px solid #E5E7EB',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+              padding: 24,
+            }}
+          >
+            <div
+              className="font-mono uppercase mb-3"
+              style={{ color: '#6B7280', fontSize: '0.7rem', letterSpacing: '0.1em' }}
+            >
+              {card.label}
+            </div>
+            <div className="flex items-baseline gap-2 mb-2">
+              <span
+                className="font-heading"
+                style={{ fontSize: '2.625rem', lineHeight: 1, color: '#1a1a1a', fontWeight: 700 }}
+              >
+                {card.value}
+              </span>
+              {card.star && (
+                <svg
+                  width="22" height="22" viewBox="0 0 24 24"
+                  fill="#facc15" stroke="#facc15" strokeWidth="1"
+                  style={{ marginBottom: 4 }}
+                >
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+              )}
+            </div>
+            <div
+              className="font-mono"
+              style={{
+                fontSize: '0.8rem',
+                color: card.subGreen ? '#00aa55' : '#888888',
+                ...(card.subGreen
+                  ? { borderLeft: '2px solid #00cc66', paddingLeft: 8 }
+                  : {}),
+              }}
+            >
+              {card.sub}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Two-column row */}
