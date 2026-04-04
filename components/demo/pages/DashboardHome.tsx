@@ -105,7 +105,7 @@ function CityMap() {
   const SAX = 265, SAY = 195, SAR = 132
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: 320 }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <svg
         viewBox={`0 0 ${W} ${H}`}
         style={{ display: 'block', width: '100%', height: '100%' }}
@@ -454,7 +454,6 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           padding: 32,
           display: 'flex',
           flexDirection: 'column',
-          alignSelf: 'start',
         }}>
           {/* Label */}
           <div style={{
