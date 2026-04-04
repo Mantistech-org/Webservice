@@ -443,6 +443,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         gridTemplateColumns: '30fr 70fr',
         gap: 24,
         alignItems: 'stretch',
+        height: 380,
       }}>
 
         {/* Left: performance card */}
@@ -454,6 +455,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           padding: 32,
           display: 'flex',
           flexDirection: 'column',
+          overflow: 'hidden',
         }}>
           {/* Label */}
           <div style={{
