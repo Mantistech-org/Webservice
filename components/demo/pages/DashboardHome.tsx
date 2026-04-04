@@ -459,13 +459,13 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         }}>
           {/* Label */}
           <div style={{
-                        fontSize: '0.68rem',
+            fontSize: '0.68rem',
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
             color: '#9CA3AF',
             marginBottom: 12,
           }}>
-            Platform Performance — This Month
+            Jobs Captured This Month
           </div>
 
           {/* Hero number */}
@@ -477,7 +477,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             marginBottom: 10,
             letterSpacing: '-0.02em',
           }}>
-            $14,200
+            11
           </div>
 
           {/* Subtitle */}
@@ -487,18 +487,18 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             lineHeight: 1.5,
             margin: 0,
           }}>
-            Estimated revenue captured across 11 booked jobs
+            Avg. job value $1,290 — platform total $14,200 this month
           </p>
 
           {/* Divider */}
           <div style={{ borderTop: '1px solid #E5E7EB', margin: '24px 0' }} />
 
-          {/* Three stats */}
+          {/* Stats */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {[
-              { label: 'Jobs Booked',        value: '11',  star: false },
-              { label: 'Calls Auto-Replied', value: '24',  star: false },
-              { label: 'Google Rating',      value: '4.9', star: true  },
+              { label: 'Jobs Booked',             value: '11' },
+              { label: 'Missed Calls Recovered',  value: '24' },
+              { label: 'New Reviews This Month',  value: '3'  },
             ].map((row, i, arr) => (
               <div
                 key={row.label}
@@ -511,7 +511,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
                 }}
               >
                 <span style={{
-                                    fontSize: '0.72rem',
+                  fontSize: '0.72rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
                   color: '#9CA3AF',
@@ -519,20 +519,11 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
                   {row.label}
                 </span>
                 <span style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4,
                   fontWeight: 600,
                   fontSize: '0.95rem',
                   color: '#1a1a1a',
                 }}>
                   {row.value}
-                  {row.star && (
-                    <svg width="14" height="14" viewBox="0 0 24 24"
-                      fill="#facc15" stroke="#facc15" strokeWidth="1">
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                    </svg>
-                  )}
                 </span>
               </div>
             ))}
@@ -542,7 +533,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           <div style={{ borderTop: '1px solid #E5E7EB', margin: '24px 0' }} />
 
           {/* Green activation note */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
             <span style={{
               display: 'inline-block',
               width: 7, height: 7,
@@ -558,6 +549,29 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
               3 booked during last night&apos;s cold snap activation
             </span>
           </div>
+
+          {/* Outlined report button */}
+          <button
+            onClick={() => {}}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(0,204,102,0.10)'
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'
+            }}
+            style={{
+              width: '100%',
+              backgroundColor: 'transparent',
+              border: '1px solid #00cc66',
+              color: '#00aa55',
+              fontSize: '0.85rem',
+              padding: '10px',
+              borderRadius: 6,
+              cursor: 'pointer',
+            }}
+          >
+            View Monthly Performance Report
+          </button>
         </div>
 
         {/* Right: map card */}
