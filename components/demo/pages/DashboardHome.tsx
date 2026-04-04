@@ -465,7 +465,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             color: '#9CA3AF',
             marginBottom: 12,
           }}>
-            Jobs Captured This Month
+            Platform Performance — This Month
           </div>
 
           {/* Hero number */}
@@ -477,7 +477,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             marginBottom: 10,
             letterSpacing: '-0.02em',
           }}>
-            11
+            $14,200
           </div>
 
           {/* Subtitle */}
@@ -487,7 +487,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             lineHeight: 1.5,
             margin: 0,
           }}>
-            Avg. job value $1,290 — platform total $14,200 this month
+            11 jobs booked through your platform this month
           </p>
 
           {/* Divider */}
