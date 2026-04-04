@@ -264,19 +264,24 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         ].map((card) => (
           <div
             key={card.label}
-            className="rounded-xl p-6"
-            style={{ backgroundColor: '#e8e8e8', border: '1px solid #d0d0d0' }}
+            className="rounded-xl"
+            style={{
+              backgroundColor: '#FFFFFF',
+              border: '1px solid #E5E7EB',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+              padding: 24,
+            }}
           >
             <div
-              className="font-mono text-xs uppercase tracking-widest mb-3"
-              style={{ color: '#888888' }}
+              className="font-mono uppercase mb-3"
+              style={{ color: '#6B7280', fontSize: '0.7rem', letterSpacing: '0.1em' }}
             >
               {card.label}
             </div>
             <div className="flex items-baseline gap-2 mb-2">
               <span
-                className="font-heading font-bold"
-                style={{ fontSize: 42, lineHeight: 1, color: '#1a1a1a' }}
+                className="font-heading"
+                style={{ fontSize: '2.625rem', lineHeight: 1, color: '#1a1a1a', fontWeight: 700 }}
               >
                 {card.value}
               </span>
@@ -291,8 +296,14 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
               )}
             </div>
             <div
-              className="font-mono text-xs"
-              style={{ color: card.subGreen ? '#00aa55' : '#888888' }}
+              className="font-mono"
+              style={{
+                fontSize: '0.8rem',
+                color: card.subGreen ? '#00aa55' : '#888888',
+                ...(card.subGreen
+                  ? { borderLeft: '2px solid #00cc66', paddingLeft: 8 }
+                  : {}),
+              }}
             >
               {card.sub}
             </div>
@@ -306,7 +317,11 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         {/* Recent Activity */}
         <div
           className="rounded-xl p-6"
-          style={{ backgroundColor: '#e8e8e8', border: '1px solid #d0d0d0' }}
+          style={{
+            backgroundColor: '#FFFFFF',
+            border: '1px solid #E5E7EB',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+          }}
         >
           <div
             className="font-mono text-xs uppercase tracking-widest mb-5"
@@ -320,7 +335,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
               className="flex items-center justify-between py-3"
               style={{
                 borderBottom:
-                  i < ACTIVITY_FEED.length - 1 ? '1px solid #d0d0d0' : 'none',
+                  i < ACTIVITY_FEED.length - 1 ? '1px solid #E5E7EB' : 'none',
               }}
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -353,7 +368,11 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         {/* Today's Schedule */}
         <div
           className="rounded-xl p-6"
-          style={{ backgroundColor: '#e8e8e8', border: '1px solid #d0d0d0' }}
+          style={{
+            backgroundColor: '#FFFFFF',
+            border: '1px solid #E5E7EB',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+          }}
         >
           <div
             className="font-mono text-xs uppercase tracking-widest mb-5"
@@ -365,7 +384,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             <div
               key={i}
               className="flex items-center justify-between py-3"
-              style={{ borderBottom: '1px solid #d0d0d0' }}
+              style={{ borderBottom: '1px solid #E5E7EB' }}
             >
               <div className="flex items-center gap-4">
                 <span
@@ -400,7 +419,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           ))}
           <div
             className="pt-4"
-            style={{ borderTop: '1px solid #d0d0d0', marginTop: 4 }}
+            style={{ borderTop: '1px solid #E5E7EB', marginTop: 4 }}
           >
             <span className="font-mono text-xs" style={{ color: '#00aa55' }}>
               2 more slots available today
