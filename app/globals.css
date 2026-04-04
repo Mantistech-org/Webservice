@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Global font enforcement — monospace must never appear anywhere ── */
+html, body, #__next, [class*="demo"] {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+body * {
+  font-family: inherit !important;
+}
+
 /* ── Light mode (default) ────────────────────────────── */
 :root {
   --color-bg:           250 250 248;

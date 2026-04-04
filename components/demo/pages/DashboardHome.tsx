@@ -462,7 +462,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             fontSize: '0.68rem',
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
-            color: '#6B7280',
+            color: '#374151',
             marginBottom: 12,
           }}>
             Platform Performance — This Month
@@ -514,7 +514,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
                   fontSize: '0.72rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
-                  color: '#6B7280',
+                  color: '#374151',
                 }}>
                   {row.label}
                 </span>
@@ -608,7 +608,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             fontSize: '0.68rem',
             textTransform: 'uppercase',
             letterSpacing: '0.1em',
-            color: '#6B7280',
+            color: '#374151',
             marginBottom: 20,
           }}>
             Recent Activity
@@ -663,10 +663,10 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           padding: 24,
         }}>
           <div style={{
-                        fontSize: '0.68rem',
+            fontSize: '0.68rem',
             textTransform: 'uppercase',
             letterSpacing: '0.1em',
-            color: '#9CA3AF',
+            color: '#374151',
             marginBottom: 20,
           }}>
             Today&apos;s Schedule
