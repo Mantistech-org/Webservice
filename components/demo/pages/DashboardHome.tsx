@@ -454,6 +454,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           padding: 32,
           display: 'flex',
           flexDirection: 'column',
+          alignSelf: 'start',
         }}>
           {/* Label */}
           <div style={{
