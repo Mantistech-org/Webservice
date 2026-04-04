@@ -443,6 +443,8 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         gridTemplateColumns: '30fr 70fr',
         gap: 24,
         alignItems: 'stretch',
+        height: 520,
+        overflow: 'hidden',
       }}>
 
         {/* Left: performance card */}
