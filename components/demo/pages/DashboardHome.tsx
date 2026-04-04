@@ -136,100 +136,92 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         className="rounded-xl overflow-hidden"
         style={{ backgroundColor: '#1a1a1a' }}
       >
-        <div className="flex flex-col lg:flex-row items-start gap-8 p-7">
-
-          {/* Left */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <span
-                style={{
-                  display: 'inline-block',
-                  width: 8, height: 8,
-                  borderRadius: '50%',
-                  backgroundColor: '#00ff88',
-                  flexShrink: 0,
-                }}
-              />
-              <span
-                className="font-mono text-xs tracking-widest uppercase"
-                style={{ color: '#00ff88' }}
-              >
-                Weather Event Active
-              </span>
-            </div>
-            <h2
-              className="font-heading text-2xl font-bold mb-2"
-              style={{ color: '#ffffff' }}
+        <style>{`
+          @keyframes dotPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+          }
+          @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 10px 3px rgba(0,255,136,0.45); }
+            50% { box-shadow: 0 0 24px 10px rgba(0,255,136,0.12); }
+          }
+        `}</style>
+        <div className="p-7">
+          <div className="flex items-center gap-2 mb-2">
+            <span
+              style={{
+                display: 'inline-block',
+                width: 8, height: 8,
+                borderRadius: '50%',
+                backgroundColor: '#00ff88',
+                flexShrink: 0,
+                animation: 'dotPulse 2s ease-in-out infinite',
+              }}
+            />
+            <span
+              className="font-mono text-xs tracking-widest uppercase"
+              style={{ color: '#00ff88' }}
             >
-              Cold Snap Detected
-            </h2>
-            <p
-              className="font-mono text-sm leading-relaxed mb-5"
-              style={{ color: '#888888' }}
-            >
-              28F forecast tonight in your service area.
-              <br />
-              Your platform activated automatically at 11:47 PM.
-            </p>
-            <button
-              onClick={onNavigateToWeather}
-              className="font-mono text-sm tracking-wider px-5 py-2.5 rounded-lg transition-opacity hover:opacity-80"
-              style={{ backgroundColor: '#00ff88', color: '#000000' }}
-            >
-              View Activation Details
-            </button>
+              Weather Event Active
+            </span>
           </div>
-
-          {/* Right: activation checklist */}
-          <div
-            className="w-full lg:w-72 rounded-lg p-5"
-            style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
+          <h2
+            className="font-heading text-2xl font-bold mb-2"
+            style={{ color: '#ffffff' }}
           >
+            Cold Snap Detected
+          </h2>
+          <p
+            className="font-mono text-sm leading-relaxed mb-5"
+            style={{ color: '#888888' }}
+          >
+            28F forecast tonight in your service area. Your platform is ready to activate.
+          </p>
+          <button
+            onClick={onNavigateToWeather}
+            className="font-mono text-sm tracking-wider px-6 py-3 rounded-lg transition-opacity hover:opacity-90 w-full sm:w-auto"
+            style={{
+              backgroundColor: '#00ff88',
+              color: '#000000',
+              fontWeight: 700,
+              fontSize: '0.95rem',
+              animation: 'glowPulse 2s ease-in-out infinite',
+            }}
+          >
+            Activate Now
+          </button>
+          <p
+            className="font-mono text-xs mt-3 mb-5"
+            style={{ color: '#555555' }}
+          >
+            5 tools will activate simultaneously
+          </p>
+          <div>
             {ACTIVATION_ITEMS.map((item, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between py-2.5"
+                className="flex items-center gap-3 py-2"
                 style={{
                   borderBottom:
                     i < ACTIVATION_ITEMS.length - 1
-                      ? '1px solid rgba(255,255,255,0.07)'
+                      ? '1px solid rgba(255,255,255,0.05)'
                       : 'none',
                 }}
               >
-                <div className="flex items-center gap-3">
-                  <span
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: 18, height: 18,
-                      borderRadius: '50%',
-                      backgroundColor: '#00b857',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-                      <path
-                        d="M1 3.5L3.5 6L8 1"
-                        stroke="white"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </span>
-                  <span
-                    className="font-mono text-xs"
-                    style={{ color: '#f0f0f0' }}
-                  >
-                    {item.label}
-                  </span>
-                </div>
                 <span
-                  className="font-mono text-xs font-semibold shrink-0 ml-2"
-                  style={{ color: '#00ff88' }}
+                  style={{
+                    display: 'inline-block',
+                    width: 16, height: 16,
+                    borderRadius: '50%',
+                    border: '1.5px solid #444444',
+                    flexShrink: 0,
+                  }}
+                />
+                <span
+                  className="font-mono text-xs"
+                  style={{ color: '#555555' }}
                 >
-                  {item.status}
+                  {item.label}
                 </span>
               </div>
             ))}
