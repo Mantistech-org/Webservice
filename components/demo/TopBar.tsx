@@ -4,12 +4,98 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import type { DemoView } from './Sidebar'
 
+// WEATHER STATE — set to coldSnap or heatWave to switch between states
+const WEATHER_STATE: 'coldSnap' | 'heatWave' = 'coldSnap'
+
 interface TopBarProps {
   businessName?: string
   onToggleSidebar: () => void
   onNavigate?: (page: DemoView) => void
   darkMode?: boolean
   onToggleDark?: () => void
+}
+
+function ColdSnapIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      style={{ flexShrink: 0 }}
+      aria-hidden="true"
+    >
+      {/* Cloud body */}
+      <path
+        d="M12.5 7a3 3 0 00-5.74-1.2A2 2 0 104 11h8.5a2 2 0 000-4z"
+        fill="#93C5FD"
+      />
+      {/* Rain drops — animated via CSS classes */}
+      <line
+        className="rain-drop rain-1"
+        x1="5.5" y1="12" x2="4.5" y2="14"
+        stroke="#93C5FD" strokeWidth="1.3" strokeLinecap="round"
+      />
+      <line
+        className="rain-drop rain-2"
+        x1="8" y1="12" x2="7" y2="14"
+        stroke="#93C5FD" strokeWidth="1.3" strokeLinecap="round"
+      />
+      <line
+        className="rain-drop rain-3"
+        x1="10.5" y1="12" x2="9.5" y2="14"
+        stroke="#93C5FD" strokeWidth="1.3" strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+function HeatWaveIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      style={{ flexShrink: 0 }}
+      aria-hidden="true"
+    >
+      {/* Sun circle */}
+      <circle cx="8" cy="8" r="2.8" fill="#FDBA74" />
+      {/* Radiating rays — animated via CSS class */}
+      <g className="sun-rays">
+        <line x1="8" y1="1" x2="8" y2="3" stroke="#FDBA74" strokeWidth="1.4" strokeLinecap="round" />
+        <line x1="8" y1="13" x2="8" y2="15" stroke="#FDBA74" strokeWidth="1.4" strokeLinecap="round" />
+        <line x1="1" y1="8" x2="3" y2="8" stroke="#FDBA74" strokeWidth="1.4" strokeLinecap="round" />
+        <line x1="13" y1="8" x2="15" y2="8" stroke="#FDBA74" strokeWidth="1.4" strokeLinecap="round" />
+        <line x1="3.05" y1="3.05" x2="4.46" y2="4.46" stroke="#FDBA74" strokeWidth="1.4" strokeLinecap="round" />
+        <line x1="11.54" y1="11.54" x2="12.95" y2="12.95" stroke="#FDBA74" strokeWidth="1.4" strokeLinecap="round" />
+        <line x1="12.95" y1="3.05" x2="11.54" y2="4.46" stroke="#FDBA74" strokeWidth="1.4" strokeLinecap="round" />
+        <line x1="4.46" y1="11.54" x2="3.05" y2="12.95" stroke="#FDBA74" strokeWidth="1.4" strokeLinecap="round" />
+      </g>
+    </svg>
+  )
+}
+
+const WEATHER_CONFIGS = {
+  coldSnap: {
+    pillBg: 'rgba(30,58,138,0.55)',
+    pillBorder: '1px solid rgba(59,130,246,0.4)',
+    dotColor: '#3B82F6',
+    dotAnimation: 'demo-pulse-blue',
+    textColor: '#93C5FD',
+    label: 'Cold Snap Detected — 28F tonight',
+    icon: <ColdSnapIcon />,
+  },
+  heatWave: {
+    pillBg: 'rgba(120,53,15,0.55)',
+    pillBorder: '1px solid rgba(249,115,22,0.4)',
+    dotColor: '#F97316',
+    dotAnimation: 'demo-pulse-orange',
+    textColor: '#FDBA74',
+    label: 'Heat Wave Detected',
+    icon: <HeatWaveIcon />,
+  },
 }
 
 export default function TopBar({ businessName, onToggleSidebar, onNavigate }: TopBarProps) {
@@ -31,26 +117,54 @@ export default function TopBar({ businessName, onToggleSidebar, onNavigate }: To
     ? businessName.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()
     : 'MT'
 
+  const weather = WEATHER_CONFIGS[WEATHER_STATE]
+
   return (
     <>
       <style>{`
-        @keyframes demo-pulse-amber {
-          0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(245,158,11,0.5); }
-          50%       { opacity: 0.75; box-shadow: 0 0 0 5px rgba(245,158,11,0); }
-        }
         @keyframes demo-pulse-green {
           0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,255,136,0.5); }
           50%       { opacity: 0.75; box-shadow: 0 0 0 5px rgba(0,255,136,0); }
         }
-        .dot-amber { animation: demo-pulse-amber 2.2s ease-in-out infinite; }
+        @keyframes demo-pulse-blue {
+          0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(59,130,246,0.55); }
+          50%       { opacity: 0.75; box-shadow: 0 0 0 5px rgba(59,130,246,0); }
+        }
+        @keyframes demo-pulse-orange {
+          0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(249,115,22,0.55); }
+          50%       { opacity: 0.75; box-shadow: 0 0 0 5px rgba(249,115,22,0); }
+        }
         .dot-green  { animation: demo-pulse-green  2.2s ease-in-out infinite; }
+        .dot-blue   { animation: demo-pulse-blue   2.2s ease-in-out infinite; }
+        .dot-orange { animation: demo-pulse-orange 2.2s ease-in-out infinite; }
+
+        /* Rain drop falling animation — staggered per drop */
+        @keyframes rain-fall {
+          0%   { transform: translateY(0px);  opacity: 1; }
+          75%  { transform: translateY(3px);  opacity: 0; }
+          100% { transform: translateY(0px);  opacity: 0; }
+        }
+        .rain-drop { animation: rain-fall 1.5s ease-in infinite; }
+        .rain-1    { animation-delay: 0s; }
+        .rain-2    { animation-delay: 0.35s; }
+        .rain-3    { animation-delay: 0.7s; }
+
+        /* Sun ray shimmer — subtle pulse on the rays group */
+        @keyframes sun-shimmer {
+          0%, 100% { opacity: 1;    transform: scale(1);    }
+          50%       { opacity: 0.55; transform: scale(1.18); }
+        }
+        .sun-rays {
+          animation: sun-shimmer 2s ease-in-out infinite;
+          transform-origin: 8px 8px;
+        }
       `}</style>
 
       <header
         className="fixed top-0 left-0 right-0 h-14 z-50 flex items-center px-4 gap-4"
         style={{
-          backgroundColor: '#0d6b3c',
-          borderBottom: '1px solid rgba(0,0,0,0.15)',
+          backgroundColor: '#303030',
+          borderBottom: '1px solid rgba(0,0,0,0.25)',
         }}
       >
         {/* Hamburger */}
@@ -100,27 +214,30 @@ export default function TopBar({ businessName, onToggleSidebar, onNavigate }: To
         {/* Center: weather alert pill */}
         <div className="flex-1 flex justify-center pointer-events-none">
           <div
-            className="flex items-center gap-2.5 px-4 py-1.5 rounded-full"
+            className="flex items-center gap-2 px-4 py-1.5 rounded-full"
             style={{
-              backgroundColor: 'rgba(245,158,11,0.1)',
-              border: '1px solid rgba(245,158,11,0.3)',
+              backgroundColor: weather.pillBg,
+              border: weather.pillBorder,
             }}
           >
+            {/* Animated weather icon */}
+            {weather.icon}
+            {/* Pulsing dot */}
             <span
-              className="dot-amber shrink-0"
+              className={`dot-${WEATHER_STATE === 'coldSnap' ? 'blue' : 'orange'} shrink-0`}
               style={{
                 display: 'inline-block',
-                width: 7,
-                height: 7,
+                width: 6,
+                height: 6,
                 borderRadius: '50%',
-                backgroundColor: '#f59e0b',
+                backgroundColor: weather.dotColor,
               }}
             />
             <span
               className="font-mono text-xs"
-              style={{ color: '#fcd34d', whiteSpace: 'nowrap' }}
+              style={{ color: weather.textColor, whiteSpace: 'nowrap' }}
             >
-              Cold Snap Detected — 28F tonight
+              {weather.label}
             </span>
           </div>
         </div>
