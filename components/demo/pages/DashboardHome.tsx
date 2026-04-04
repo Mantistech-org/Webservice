@@ -451,7 +451,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         <div style={{
           backgroundColor: '#ffffff',
           border: '1px solid #E5E7EB',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
           borderRadius: 8,
           padding: 32,
           display: 'flex',
@@ -462,7 +462,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             fontSize: '0.68rem',
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
-            color: '#9CA3AF',
+            color: '#6B7280',
             marginBottom: 12,
           }}>
             Platform Performance — This Month
@@ -514,7 +514,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
                   fontSize: '0.72rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
-                  color: '#9CA3AF',
+                  color: '#6B7280',
                 }}>
                   {row.label}
                 </span>
@@ -600,15 +600,15 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         <div style={{
           backgroundColor: '#ffffff',
           border: '1px solid #E5E7EB',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
           borderRadius: 8,
           padding: 24,
         }}>
           <div style={{
-                        fontSize: '0.68rem',
+            fontSize: '0.68rem',
             textTransform: 'uppercase',
             letterSpacing: '0.1em',
-            color: '#9CA3AF',
+            color: '#6B7280',
             marginBottom: 20,
           }}>
             Recent Activity
