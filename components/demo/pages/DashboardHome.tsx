@@ -205,8 +205,7 @@ function CityMap() {
         <span style={{
           color: '#ffffff',
           fontSize: '0.75rem',
-          fontFamily: 'monospace',
-          whiteSpace: 'nowrap',
+                    whiteSpace: 'nowrap',
         }}>
           11 jobs captured in your service area
         </span>
@@ -225,8 +224,7 @@ function CityMap() {
         <span style={{
           color: '#ffffff',
           fontSize: '0.75rem',
-          fontFamily: 'monospace',
-          whiteSpace: 'nowrap',
+                    whiteSpace: 'nowrap',
         }}>
           Cold snap active — 28F tonight
         </span>
@@ -319,7 +317,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
   return (
     // Negative margin bleeds to edge of parent's 24px padding, then re-applies it
     // so the #F8F8F8 background fills the entire content area.
-    <div style={{ margin: -24, padding: 24, backgroundColor: '#F8F8F8', minHeight: '100%' }}>
+    <div className="demo-dashboard" style={{ margin: -24, padding: 24, backgroundColor: '#F8F8F8', minHeight: '100%' }}>
       <style>{`
         @keyframes dotPulse {
           0%, 100% { opacity: 1; }
@@ -369,7 +367,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
               marginRight: 7,
             }} />
             <span style={{
-              fontFamily: 'monospace', fontSize: 9,
+              fontSize: 9,
               letterSpacing: '0.1em', textTransform: 'uppercase',
               color: '#00ff88', flex: 1,
             }}>
@@ -391,7 +389,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             Cold Snap Detected
           </div>
           <p style={{
-            fontFamily: 'monospace', fontSize: '0.8rem',
+            fontSize: '0.8rem',
             color: '#888888', lineHeight: 1.5, marginBottom: 12,
           }}>
             28F forecast tonight in your service area. Your platform is ready to activate.
@@ -401,7 +399,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             style={{
               display: 'block', width: '100%',
               backgroundColor: '#00ff88', color: '#000000',
-              fontFamily: 'monospace', fontWeight: 700,
+              fontWeight: 700,
               fontSize: '0.8rem', letterSpacing: '0.05em',
               padding: '9px 0', borderRadius: 6,
               border: 'none', cursor: 'pointer',
@@ -412,7 +410,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             Activate Now
           </button>
           <p style={{
-            fontFamily: 'monospace', fontSize: '0.7rem',
+            fontSize: '0.7rem',
             color: '#555555', textAlign: 'center', marginBottom: 10,
           }}>
             5 tools will activate simultaneously
@@ -430,7 +428,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
                   display: 'inline-block', width: 11, height: 11,
                   borderRadius: '50%', border: '1.5px solid #444444', flexShrink: 0,
                 }} />
-                <span style={{ fontFamily: 'monospace', fontSize: '0.72rem', color: '#555555' }}>
+                <span style={{ fontSize: '0.72rem', color: '#555555' }}>
                   {item.label}
                 </span>
               </div>
@@ -442,7 +440,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
       {/* ── Section 1: Hero row ── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '45fr 55fr',
+        gridTemplateColumns: '30fr 70fr',
         gap: 24,
         alignItems: 'stretch',
       }}>
@@ -459,8 +457,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         }}>
           {/* Label */}
           <div style={{
-            fontFamily: 'monospace',
-            fontSize: '0.68rem',
+                        fontSize: '0.68rem',
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
             color: '#9CA3AF',
@@ -512,8 +509,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
                 }}
               >
                 <span style={{
-                  fontFamily: 'monospace',
-                  fontSize: '0.72rem',
+                                    fontSize: '0.72rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
                   color: '#9CA3AF',
@@ -589,8 +585,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           padding: 24,
         }}>
           <div style={{
-            fontFamily: 'monospace',
-            fontSize: '0.68rem',
+                        fontSize: '0.68rem',
             textTransform: 'uppercase',
             letterSpacing: '0.1em',
             color: '#9CA3AF',
@@ -618,8 +613,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
                   display: 'inline-block',
                 }} />
                 <span style={{
-                  fontFamily: 'monospace',
-                  fontSize: '0.78rem',
+                                    fontSize: '0.78rem',
                   color: '#444444',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -629,8 +623,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
                 </span>
               </div>
               <span style={{
-                fontFamily: 'monospace',
-                fontSize: '0.75rem',
+                                fontSize: '0.75rem',
                 color: '#999999',
                 flexShrink: 0,
                 marginLeft: 16,
@@ -650,8 +643,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           padding: 24,
         }}>
           <div style={{
-            fontFamily: 'monospace',
-            fontSize: '0.68rem',
+                        fontSize: '0.68rem',
             textTransform: 'uppercase',
             letterSpacing: '0.1em',
             color: '#9CA3AF',
@@ -672,8 +664,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={{
-                  fontFamily: 'monospace',
-                  fontSize: '0.75rem',
+                                    fontSize: '0.75rem',
                   color: '#999999',
                   flexShrink: 0,
                   width: 62,
@@ -688,16 +679,14 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
                   display: 'inline-block',
                 }} />
                 <span style={{
-                  fontFamily: 'monospace',
-                  fontSize: '0.85rem',
+                                    fontSize: '0.85rem',
                   color: '#1a1a1a',
                 }}>
                   {slot.name}
                 </span>
               </div>
               <span style={{
-                fontFamily: 'monospace',
-                fontSize: '0.75rem',
+                                fontSize: '0.75rem',
                 fontWeight: 600,
                 color: '#00aa55',
               }}>
@@ -706,7 +695,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             </div>
           ))}
           <div style={{ paddingTop: 16, marginTop: 4, borderTop: '1px solid #F3F4F6' }}>
-            <span style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#00aa55' }}>
+            <span style={{ fontSize: '0.78rem', color: '#00aa55' }}>
               2 more slots available today
             </span>
           </div>
@@ -723,8 +712,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         marginTop: 24,
       }}>
         <div style={{
-          fontFamily: 'monospace',
-          fontSize: '0.68rem',
+                    fontSize: '0.68rem',
           textTransform: 'uppercase',
           letterSpacing: '0.1em',
           color: '#9CA3AF',
