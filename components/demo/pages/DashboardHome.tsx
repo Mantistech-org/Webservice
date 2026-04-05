@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface DashboardProps {
   businessName?: string
@@ -74,6 +74,28 @@ const SNOWFLAKES = [
   { x: 560, y: 188, r: 6 },
 ]
 
+// ── Google Maps dark style (command-center night mode) ─────────────────────────
+const DARK_MAP_STYLE = [
+  { elementType: 'geometry',                                        stylers: [{ color: '#242f3e' }] },
+  { elementType: 'labels.text.stroke',                             stylers: [{ color: '#242f3e' }] },
+  { elementType: 'labels.text.fill',                               stylers: [{ color: '#746855' }] },
+  { featureType: 'administrative.locality', elementType: 'labels.text.fill',   stylers: [{ color: '#d59563' }] },
+  { featureType: 'poi',                     elementType: 'labels.text.fill',   stylers: [{ color: '#d59563' }] },
+  { featureType: 'poi.park',               elementType: 'geometry',            stylers: [{ color: '#263c3f' }] },
+  { featureType: 'poi.park',               elementType: 'labels.text.fill',    stylers: [{ color: '#6b9a76' }] },
+  { featureType: 'road',                   elementType: 'geometry',            stylers: [{ color: '#38414e' }] },
+  { featureType: 'road',                   elementType: 'geometry.stroke',     stylers: [{ color: '#212a37' }] },
+  { featureType: 'road',                   elementType: 'labels.text.fill',    stylers: [{ color: '#9ca5b3' }] },
+  { featureType: 'road.highway',           elementType: 'geometry',            stylers: [{ color: '#746855' }] },
+  { featureType: 'road.highway',           elementType: 'geometry.stroke',     stylers: [{ color: '#1f2835' }] },
+  { featureType: 'road.highway',           elementType: 'labels.text.fill',    stylers: [{ color: '#f3d19c' }] },
+  { featureType: 'transit',               elementType: 'geometry',             stylers: [{ color: '#2f3948' }] },
+  { featureType: 'transit.station',       elementType: 'labels.text.fill',     stylers: [{ color: '#d59563' }] },
+  { featureType: 'water',                 elementType: 'geometry',             stylers: [{ color: '#17263c' }] },
+  { featureType: 'water',                 elementType: 'labels.text.fill',     stylers: [{ color: '#515c6d' }] },
+  { featureType: 'water',                 elementType: 'labels.text.stroke',   stylers: [{ color: '#17263c' }] },
+]
+
 // ── SVG helpers ───────────────────────────────────────────────────────────────
 
 function Snowflake({ x, y, r }: { x: number; y: number; r: number }) {
@@ -101,50 +123,68 @@ function Snowflake({ x, y, r }: { x: number; y: number; r: number }) {
 function CityMap() {
   const W = 600
   const H = 400
-  // Service area
   const SAX = 265, SAY = 195, SAR = 132
+  const mapDivRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+    if (!apiKey || !mapDivRef.current) return
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const g = (window as any).google
+
+    const initMap = () => {
+      if (!mapDivRef.current) return
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      new (window as any).google.maps.Map(mapDivRef.current, {
+        center: { lat: 34.7465, lng: -92.2896 },
+        zoom: 12,
+        mapTypeId: 'roadmap',
+        disableDefaultUI: true,
+        styles: DARK_MAP_STYLE,
+      })
+    }
+
+    // Already loaded
+    if (g?.maps) { initMap(); return }
+
+    // Script tag already injected — poll until API is ready
+    const scriptId = 'google-maps-script'
+    if (document.getElementById(scriptId)) {
+      const poll = setInterval(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((window as any).google?.maps) { clearInterval(poll); initMap() }
+      }, 100)
+      return () => clearInterval(poll)
+    }
+
+    // Inject script for the first time
+    const script = document.createElement('script')
+    script.id = scriptId
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`
+    script.async = true
+    script.onload = initMap
+    document.head.appendChild(script)
+  }, [])
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      {/* Google Maps render target */}
+      <div ref={mapDivRef} style={{ width: '100%', height: '100%' }} />
+
+      {/* SVG overlay: service area, job dots, weather tint, snowflakes */}
       <svg
         viewBox={`0 0 ${W} ${H}`}
-        style={{ display: 'block', width: '100%', height: '100%' }}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+        }}
         preserveAspectRatio="xMidYMid slice"
       >
-        {/* ── Base ── */}
-        <rect width={W} height={H} fill="#eaeaea" />
-
-        {/* ── Minor streets (horizontal) ── */}
-        {[28, 72, 116, 160, 204, 248, 292, 336, 380].map((y) => (
-          <line key={`mh${y}`} x1={0} y1={y} x2={W} y2={y}
-            stroke="#d8d8d8" strokeWidth="0.8" />
-        ))}
-        {/* ── Minor streets (vertical) ── */}
-        {[24, 70, 116, 162, 208, 254, 300, 346, 392, 438, 484, 530, 576].map((x) => (
-          <line key={`mv${x}`} x1={x} y1={0} x2={x} y2={H}
-            stroke="#d8d8d8" strokeWidth="0.8" />
-        ))}
-
-        {/* ── Arterial roads (horizontal) ── */}
-        {[116, 292].map((y) => (
-          <line key={`ah${y}`} x1={0} y1={y} x2={W} y2={y}
-            stroke="#c6c6c6" strokeWidth="2.5" />
-        ))}
-        {/* ── Arterial roads (vertical) ── */}
-        {[162, 392].map((x) => (
-          <line key={`av${x}`} x1={x} y1={0} x2={x} y2={H}
-            stroke="#c6c6c6" strokeWidth="2.5" />
-        ))}
-
-        {/* ── Highway — diagonal NW to SE ── */}
-        <line x1={0} y1={55} x2={W} y2={310} stroke="#bbbbbb" strokeWidth="5" />
-        <line x1={0} y1={55} x2={W} y2={310}
-          stroke="#d4d4d4" strokeWidth="1.2" strokeDasharray="14 9" />
-
-        {/* ── Secondary diagonal (SW corner) ── */}
-        <line x1={0} y1={290} x2={220} y2={H} stroke="#c6c6c6" strokeWidth="2" />
-
-        {/* ── Service area ── */}
+        {/* Service area */}
         <circle
           cx={SAX} cy={SAY} r={SAR}
           fill="rgba(0,255,136,0.15)"
@@ -152,30 +192,26 @@ function CityMap() {
           strokeWidth="2"
         />
 
-        {/* ── Job activity dots with ripple ── */}
+        {/* Job activity dots with ripple */}
         {JOB_DOTS.map((dot, i) => (
           <g key={i}>
-            {/* Ripple ring */}
             <circle
               cx={dot.cx} cy={dot.cy} r={6}
-              fill="none"
-              stroke="#00ff88"
-              strokeWidth="1.5"
+              fill="none" stroke="#00ff88" strokeWidth="1.5"
               style={{
                 transformBox: 'fill-box',
                 transformOrigin: 'center',
                 animation: `jobRipple 3s ease-out ${dot.delay}s infinite`,
               }}
             />
-            {/* Core dot */}
             <circle cx={dot.cx} cy={dot.cy} r={4} fill="#00ff88" />
           </g>
         ))}
 
-        {/* ── Weather overlay — cold tint ── */}
+        {/* Weather overlay — cold tint */}
         <rect width={W} height={H} fill="rgba(59,130,246,0.12)" />
 
-        {/* ── Snowflakes ── */}
+        {/* Snowflakes */}
         {SNOWFLAKES.map((s, i) => (
           <Snowflake key={i} x={s.x} y={s.y} r={s.r} />
         ))}
@@ -184,8 +220,7 @@ function CityMap() {
       {/* Top-left pill */}
       <div style={{
         position: 'absolute',
-        top: 12,
-        left: 12,
+        top: 12, left: 12,
         backgroundColor: 'rgba(0,0,0,0.62)',
         borderRadius: 20,
         padding: '6px 12px',
@@ -202,11 +237,7 @@ function CityMap() {
           flexShrink: 0,
           animation: 'dotPulse 2s ease-in-out infinite',
         }} />
-        <span style={{
-          color: '#ffffff',
-          fontSize: '0.75rem',
-                    whiteSpace: 'nowrap',
-        }}>
+        <span style={{ color: '#ffffff', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
           11 jobs captured in your service area
         </span>
       </div>
@@ -214,18 +245,13 @@ function CityMap() {
       {/* Bottom-right pill */}
       <div style={{
         position: 'absolute',
-        bottom: 12,
-        right: 12,
+        bottom: 12, right: 12,
         backgroundColor: 'rgba(0,0,0,0.62)',
         borderRadius: 20,
         padding: '6px 12px',
         pointerEvents: 'none',
       }}>
-        <span style={{
-          color: '#ffffff',
-          fontSize: '0.75rem',
-                    whiteSpace: 'nowrap',
-        }}>
+        <span style={{ color: '#ffffff', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
           Cold snap active — 28F tonight
         </span>
       </div>
