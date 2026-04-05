@@ -719,7 +719,25 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             <span style={{ fontSize: 14, color: '#6b7280', alignSelf: 'flex-end', paddingBottom: 2 }}>out of 5</span>
           </div>
           <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>3 new reviews this month</div>
-          <div style={{ flex: 1 }} />
+          <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
+            {[
+              { color: '#00C27C', text: '4 negative spam reviews removed this month' },
+              { color: '#00C27C', text: '94% positive sentiment across all reviews'  },
+              { color: '#9ca3af', text: 'Last review received: 2 days ago'           },
+            ].map((row, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '9px 0',
+                borderBottom: i < 2 ? '1px solid rgba(0,0,0,0.06)' : 'none',
+              }}>
+                <span style={{
+                  display: 'inline-block', width: 8, height: 8,
+                  borderRadius: '50%', backgroundColor: row.color, flexShrink: 0,
+                }} />
+                <span style={{ fontSize: 14, color: '#111827' }}>{row.text}</span>
+              </div>
+            ))}
+          </div>
           <a
             href="/demo/reviews"
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,204,102,0.08)' }}
