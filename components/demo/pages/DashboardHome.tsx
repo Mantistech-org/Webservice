@@ -112,11 +112,11 @@ function CityMap() {
         map,
         center: { lat: 34.7465, lng: -92.2896 },
         radius: 15000,
-        fillColor: '#00ff88',
+        fillColor: '#000000',
         fillOpacity: 0,
-        strokeColor: '#00ff88',
+        strokeColor: '#1a1a1a',
         strokeOpacity: 1.0,
-        strokeWeight: 1,
+        strokeWeight: 2,
         clickable: false,
       })
 
@@ -223,7 +223,7 @@ function CityMap() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{
           display: 'inline-block', width: 14, height: 14,
-          borderRadius: '50%', border: '2px solid #00C27C',
+          borderRadius: '50%', border: '2px solid #1a1a1a',
           backgroundColor: 'transparent', flexShrink: 0, boxSizing: 'border-box',
         }} />
         <span style={{ color: '#ffffff', fontSize: 12, lineHeight: 1.8, fontFamily: 'inherit' }}>Service area</span>
