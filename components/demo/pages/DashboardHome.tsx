@@ -459,7 +459,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         padding: 32,
         marginTop: 24,
       }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '40fr 60fr', gap: 32 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '40fr 60fr', gap: 32, alignItems: 'center' }}>
 
           {/* Left: hero number block */}
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
