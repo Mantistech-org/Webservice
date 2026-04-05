@@ -43,7 +43,7 @@ const JOB_BARS = [
 
 // ── Map data ──────────────────────────────────────────────────────────────────
 
-// 11 job dots scattered within the service area (center ~265, 195, radius ~130)
+// 11 job dots — pixel coords for SVG fallback (600×400 viewBox)
 const JOB_DOTS = [
   { cx: 208, cy: 162, delay: 0    },
   { cx: 244, cy: 132, delay: 0.5  },
@@ -58,20 +58,19 @@ const JOB_DOTS = [
   { cx: 233, cy: 238, delay: 1.6  },
 ]
 
-// Snowflakes scattered across the full map (x, y, half-size r)
-const SNOWFLAKES = [
-  { x:  78, y:  46, r: 5 },
-  { x: 152, y: 298, r: 6 },
-  { x: 350, y:  80, r: 4 },
-  { x: 453, y: 158, r: 7 },
-  { x: 504, y: 300, r: 5 },
-  { x:  96, y: 198, r: 8 },
-  { x: 384, y: 346, r: 4 },
-  { x: 520, y:  50, r: 6 },
-  { x: 278, y: 366, r: 5 },
-  { x: 450, y: 248, r: 4 },
-  { x: 176, y:  62, r: 5 },
-  { x: 560, y: 188, r: 6 },
+// 11 job dots — real lat/lng for Google Maps Circle overlays
+const JOB_LATLNGS = [
+  { lat: 34.780, lng: -92.310 },
+  { lat: 34.800, lng: -92.260 },
+  { lat: 34.810, lng: -92.215 },
+  { lat: 34.795, lng: -92.180 },
+  { lat: 34.765, lng: -92.215 },
+  { lat: 34.740, lng: -92.325 },
+  { lat: 34.755, lng: -92.255 },
+  { lat: 34.760, lng: -92.205 },
+  { lat: 34.790, lng: -92.160 },
+  { lat: 34.720, lng: -92.265 },
+  { lat: 34.730, lng: -92.315 },
 ]
 
 // ── Google Maps dark style (command-center night mode) ─────────────────────────
@@ -96,30 +95,6 @@ const DARK_MAP_STYLE = [
   { featureType: 'water',                 elementType: 'labels.text.stroke',   stylers: [{ color: '#17263c' }] },
 ]
 
-// ── SVG helpers ───────────────────────────────────────────────────────────────
-
-function Snowflake({ x, y, r }: { x: number; y: number; r: number }) {
-  // Three lines at 0 / 60 / 120 degrees form a six-armed asterisk
-  return (
-    <>
-      {[0, 60, 120].map((deg) => {
-        const rad = (deg * Math.PI) / 180
-        const dx = r * Math.sin(rad)
-        const dy = r * Math.cos(rad)
-        return (
-          <line
-            key={deg}
-            x1={x - dx} y1={y - dy}
-            x2={x + dx} y2={y + dy}
-            stroke="white" strokeWidth="1.3" opacity="0.45"
-            strokeLinecap="round"
-          />
-        )
-      })}
-    </>
-  )
-}
-
 function CityMap() {
   const W = 600
   const H = 400
@@ -143,12 +118,55 @@ function CityMap() {
     const initMap = () => {
       if (!mapDivRef.current) return
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      new (window as any).google.maps.Map(mapDivRef.current, {
+      const gm = (window as any).google.maps
+
+      const map = new gm.Map(mapDivRef.current, {
         center: { lat: 34.7465, lng: -92.2896 },
         zoom: 12,
         mapTypeId: 'roadmap',
         disableDefaultUI: true,
         styles: DARK_MAP_STYLE,
+      })
+
+      // Service area circle — attached to map, moves with pan/zoom
+      new gm.Circle({
+        map,
+        center: { lat: 34.7465, lng: -92.2896 },
+        radius: 15000,
+        fillColor: '#00ff88',
+        fillOpacity: 0.15,
+        strokeColor: '#00ff88',
+        strokeOpacity: 0.60,
+        strokeWeight: 2,
+        clickable: false,
+      })
+
+      // Job activity dots — attached to map, move with pan/zoom
+      JOB_LATLNGS.forEach((pos) => {
+        // Outer ring (simulates ripple)
+        new gm.Circle({
+          map,
+          center: pos,
+          radius: 650,
+          fillColor: '#00ff88',
+          fillOpacity: 0,
+          strokeColor: '#00ff88',
+          strokeOpacity: 0.45,
+          strokeWeight: 1.5,
+          clickable: false,
+        })
+        // Core dot
+        new gm.Circle({
+          map,
+          center: pos,
+          radius: 280,
+          fillColor: '#00ff88',
+          fillOpacity: 1,
+          strokeColor: '#00ff88',
+          strokeOpacity: 0,
+          strokeWeight: 0,
+          clickable: false,
+        })
       })
     }
 
@@ -172,8 +190,21 @@ function CityMap() {
     document.head.appendChild(script)
   }, [apiKey])
 
-  // Shared SVG overlays rendered on top in all states
-  const overlaysvg = (
+  // Cold snap pill — absolute HTML, informational label not a geographic marker
+  const coldSnapPill = (
+    <div style={{
+      position: 'absolute', bottom: 12, right: 12,
+      backgroundColor: 'rgba(0,0,0,0.62)', borderRadius: 20,
+      padding: '6px 12px', pointerEvents: 'none',
+    }}>
+      <span style={{ color: '#ffffff', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+        Cold snap active — 28F tonight
+      </span>
+    </div>
+  )
+
+  // SVG overlays used in fallback/loading states (service area, job dots, cold tint)
+  const fallbackOverlay = (
     <svg
       viewBox={`0 0 ${W} ${H}`}
       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
@@ -188,35 +219,10 @@ function CityMap() {
         </g>
       ))}
       <rect width={W} height={H} fill="rgba(59,130,246,0.12)" />
-      {SNOWFLAKES.map((s, i) => <Snowflake key={i} x={s.x} y={s.y} r={s.r} />)}
     </svg>
   )
 
-  const pills = (
-    <>
-      <div style={{
-        position: 'absolute', top: 12, left: 12,
-        backgroundColor: 'rgba(0,0,0,0.62)', borderRadius: 20,
-        padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6, pointerEvents: 'none',
-      }}>
-        <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', backgroundColor: '#00ff88', flexShrink: 0, animation: 'dotPulse 2s ease-in-out infinite' }} />
-        <span style={{ color: '#ffffff', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
-          11 jobs captured in your service area
-        </span>
-      </div>
-      <div style={{
-        position: 'absolute', bottom: 12, right: 12,
-        backgroundColor: 'rgba(0,0,0,0.62)', borderRadius: 20,
-        padding: '6px 12px', pointerEvents: 'none',
-      }}>
-        <span style={{ color: '#ffffff', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
-          Cold snap active — 28F tonight
-        </span>
-      </div>
-    </>
-  )
-
-  // No key found — render dark SVG simulated map as fallback
+  // No key — dark SVG simulated map fallback
   if (apiKey === '') {
     return (
       <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -237,19 +243,20 @@ function CityMap() {
           <line x1={0} y1={55} x2={W} y2={310} stroke="#2c2c2c" strokeWidth="5" />
           <line x1={0} y1={290} x2={220} y2={H} stroke="#333333" strokeWidth="2" />
         </svg>
-        {overlaysvg}
-        {pills}
+        {fallbackOverlay}
+        {coldSnapPill}
       </div>
     )
   }
 
-  // Loading (null) or key ready — always keep mapDivRef in the DOM so the
-  // effect can initialise Maps the moment the key arrives
+  // Loading (null) or Google Maps ready — mapDivRef always in DOM so initMap
+  // fires immediately when the key arrives
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#1e1e1e' }}>
       <div ref={mapDivRef} style={{ width: '100%', height: '100%' }} />
-      {overlaysvg}
-      {pills}
+      {/* Show placeholder overlays while key is still being fetched */}
+      {apiKey === null && fallbackOverlay}
+      {coldSnapPill}
     </div>
   )
 }
