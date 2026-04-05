@@ -323,6 +323,9 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
     setActivating(true)
     setTimeout(() => {
       setActivating(false)
+      if (typeof window !== 'undefined') {
+        window.history.pushState({}, '', window.location.pathname + '?autoactivate=true')
+      }
       onNavigateToWeather?.()
     }, 1500)
   }
