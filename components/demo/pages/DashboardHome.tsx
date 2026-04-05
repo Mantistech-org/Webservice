@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 interface DashboardProps {
   businessName?: string
@@ -301,19 +301,7 @@ function BarChart() {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function DashboardHome({ businessName, onNavigateToWeather }: DashboardProps) {
-  const [toastShown, setToastShown] = useState(false)
-  const [toastExiting, setToastExiting] = useState(false)
   const [expandedRow, setExpandedRow] = useState<number | null>(null)
-
-  useEffect(() => {
-    const t = setTimeout(() => setToastShown(true), 1000)
-    return () => clearTimeout(t)
-  }, [])
-
-  const handleDismiss = () => {
-    setToastExiting(true)
-    setTimeout(() => setToastShown(false), 400)
-  }
 
   return (
     // Negative margin bleeds to edge of parent's 24px padding, then re-applies it
@@ -328,115 +316,11 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           0%, 100% { box-shadow: 0 0 10px 3px rgba(0,255,136,0.45); }
           50% { box-shadow: 0 0 24px 10px rgba(0,255,136,0.12); }
         }
-        @keyframes toastIn {
-          from { transform: translateY(80px); opacity: 0; }
-          to   { transform: translateY(0);   opacity: 1; }
-        }
-        @keyframes toastOut {
-          from { transform: translateY(0);    opacity: 1; }
-          to   { transform: translateY(80px); opacity: 0; }
-        }
         @keyframes jobRipple {
           0%   { transform: scale(1); opacity: 0.8; }
           100% { transform: scale(4.5); opacity: 0; }
         }
       `}</style>
-
-      {/* ── Toast notification — fixed bottom-right, outside layout flow ── */}
-      {toastShown && (
-        <div style={{
-          position: 'fixed',
-          bottom: 24, right: 24,
-          width: 320,
-          zIndex: 50,
-          backgroundColor: '#1e1e1e',
-          borderRadius: 8,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3)',
-          padding: 16,
-          animation: toastExiting
-            ? 'toastOut 0.4s ease forwards'
-            : 'toastIn 0.4s ease forwards',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-            <span style={{
-              display: 'inline-block',
-              width: 7, height: 7,
-              borderRadius: '50%',
-              backgroundColor: '#00ff88',
-              flexShrink: 0,
-              animation: 'dotPulse 2s ease-in-out infinite',
-              marginRight: 7,
-            }} />
-            <span style={{
-              fontSize: 9,
-              letterSpacing: '0.1em', textTransform: 'uppercase',
-              color: '#00ff88', flex: 1,
-            }}>
-              Weather Event Active
-            </span>
-            <button
-              onClick={handleDismiss}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: '#666666', fontSize: 14, lineHeight: 1,
-                padding: '0 0 0 8px', flexShrink: 0,
-              }}
-              aria-label="Dismiss"
-            >
-              &#x2715;
-            </button>
-          </div>
-          <div style={{ color: '#ffffff', fontWeight: 700, fontSize: '1rem', marginBottom: 6 }}>
-            Cold Snap Detected
-          </div>
-          <p style={{
-            fontSize: '0.8rem',
-            color: '#888888', lineHeight: 1.5, marginBottom: 12,
-          }}>
-            28F forecast tonight in your service area. Your platform is ready to activate.
-          </p>
-          <button
-            onClick={onNavigateToWeather}
-            style={{
-              display: 'block', width: '100%',
-              backgroundColor: '#00ff88', color: '#000000',
-              fontWeight: 700,
-              fontSize: '0.8rem', letterSpacing: '0.05em',
-              padding: '9px 0', borderRadius: 6,
-              border: 'none', cursor: 'pointer',
-              animation: 'glowPulse 2s ease-in-out infinite',
-              marginBottom: 8,
-            }}
-          >
-            Activate Now
-          </button>
-          <p style={{
-            fontSize: '0.7rem',
-            color: '#555555', textAlign: 'center', marginBottom: 10,
-          }}>
-            5 tools will activate simultaneously
-          </p>
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', marginBottom: 8 }} />
-          <div>
-            {ACTIVATION_ITEMS.map((item, i) => (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                paddingTop: 5, paddingBottom: 5,
-                borderBottom: i < ACTIVATION_ITEMS.length - 1
-                  ? '1px solid rgba(255,255,255,0.05)' : 'none',
-              }}>
-                <span style={{
-                  display: 'inline-block', width: 11, height: 11,
-                  borderRadius: '50%', border: '1.5px solid #444444', flexShrink: 0,
-                }} />
-                <span style={{ fontSize: '0.72rem', color: '#555555' }}>
-                  {item.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ── Section 1: Hero row ── */}
       <div style={{
@@ -448,135 +332,112 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         overflow: 'hidden',
       }}>
 
-        {/* Left: performance card */}
+        {/* Left: weather activation card */}
         <div style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid #E5E7EB',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
+          backgroundColor: '#1e1e1e',
           borderRadius: 8,
-          padding: 32,
+          padding: 24,
+          height: '100%',
           display: 'flex',
           flexDirection: 'column',
+          boxSizing: 'border-box',
         }}>
-          {/* Label */}
-          <div style={{
-            fontSize: '0.68rem',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            color: '#374151',
+          {/* Header row: pulsing dot + label */}
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
+            <span style={{
+              display: 'inline-block',
+              width: 7, height: 7,
+              borderRadius: '50%',
+              backgroundColor: '#00ff88',
+              flexShrink: 0,
+              animation: 'dotPulse 2s ease-in-out infinite',
+              marginRight: 7,
+            }} />
+            <span style={{
+              fontSize: 9,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: '#00ff88',
+            }}>
+              Weather Event Active
+            </span>
+          </div>
+
+          {/* Heading */}
+          <div style={{ color: '#ffffff', fontWeight: 700, fontSize: '1.1rem', marginBottom: 8 }}>
+            Cold Snap Detected
+          </div>
+
+          {/* Subtext */}
+          <p style={{
+            fontSize: '0.8rem',
+            color: '#888888',
+            lineHeight: 1.5,
+            marginBottom: 16,
+          }}>
+            28F forecast tonight in your service area. Your platform is ready to activate.
+          </p>
+
+          {/* Activate Now button */}
+          <button
+            onClick={onNavigateToWeather}
+            style={{
+              display: 'block',
+              width: '100%',
+              backgroundColor: '#00ff88',
+              color: '#000000',
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              letterSpacing: '0.05em',
+              padding: '10px 0',
+              borderRadius: 6,
+              border: 'none',
+              cursor: 'pointer',
+              animation: 'glowPulse 2s ease-in-out infinite',
+              marginBottom: 10,
+            }}
+          >
+            Activate Now
+          </button>
+
+          {/* Tools count */}
+          <p style={{
+            fontSize: '0.7rem',
+            color: '#555555',
+            textAlign: 'center',
             marginBottom: 12,
           }}>
-            Platform Performance — This Month
-          </div>
-
-          {/* Hero number */}
-          <div style={{
-            fontSize: '3.5rem',
-            fontWeight: 800,
-            lineHeight: 1,
-            color: '#1a1a1a',
-            marginBottom: 10,
-            letterSpacing: '-0.02em',
-          }}>
-            $14,200
-          </div>
-
-          {/* Subtitle */}
-          <p style={{
-            fontSize: '0.9rem',
-            color: '#9CA3AF',
-            lineHeight: 1.5,
-            margin: 0,
-          }}>
-            11 jobs booked through your platform this month
+            5 tools will activate simultaneously
           </p>
 
           {/* Divider */}
-          <div style={{ borderTop: '1px solid #E5E7EB', margin: '24px 0' }} />
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', marginBottom: 10 }} />
 
-          {/* Stats */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {[
-              { label: 'Jobs Booked',             value: '11' },
-              { label: 'Missed Calls Recovered',  value: '24' },
-              { label: 'New Reviews This Month',  value: '3'  },
-            ].map((row, i, arr) => (
-              <div
-                key={row.label}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '12px 0',
-                  borderBottom: i < arr.length - 1 ? '1px solid #F3F4F6' : 'none',
-                }}
-              >
+          {/* Tool list */}
+          <div style={{ flex: 1 }}>
+            {ACTIVATION_ITEMS.map((item, i) => (
+              <div key={i} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                paddingTop: 6,
+                paddingBottom: 6,
+                borderBottom: i < ACTIVATION_ITEMS.length - 1
+                  ? '1px solid rgba(255,255,255,0.05)' : 'none',
+              }}>
                 <span style={{
-                  fontSize: '0.72rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                  color: '#374151',
-                }}>
-                  {row.label}
-                </span>
-                <span style={{
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                  color: '#1a1a1a',
-                }}>
-                  {row.value}
+                  display: 'inline-block',
+                  width: 11, height: 11,
+                  borderRadius: '50%',
+                  border: '1.5px solid #444444',
+                  flexShrink: 0,
+                }} />
+                <span style={{ fontSize: '0.75rem', color: '#666666' }}>
+                  {item.label}
                 </span>
               </div>
             ))}
           </div>
-
-          {/* Divider */}
-          <div style={{ borderTop: '1px solid #E5E7EB', margin: '24px 0 16px' }} />
-
-          {/* Green activation note */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{
-              display: 'inline-block',
-              width: 8, height: 8,
-              borderRadius: '50%',
-              backgroundColor: '#00cc66',
-              flexShrink: 0,
-              animation: 'dotPulse 2s ease-in-out infinite',
-            }} />
-            <span style={{
-              fontSize: '0.85rem',
-              color: '#00aa55',
-              lineHeight: 1.4,
-            }}>
-              3 booked during last night&apos;s cold snap activation
-            </span>
-          </div>
-
-          {/* Outlined report button */}
-          <button
-            onClick={() => {}}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(0,204,102,0.10)'
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'
-            }}
-            style={{
-              display: 'block',
-              width: '100%',
-              backgroundColor: 'transparent',
-              border: '1px solid #00cc66',
-              color: '#00aa55',
-              fontSize: '0.85rem',
-              padding: '10px 0',
-              borderRadius: 6,
-              cursor: 'pointer',
-              textAlign: 'center',
-              marginTop: 12,
-            }}
-          >
-            View Monthly Performance Report
-          </button>
         </div>
 
         {/* Right: map card */}
@@ -586,6 +447,132 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           overflow: 'hidden',
         }}>
           <CityMap />
+        </div>
+      </div>
+
+      {/* ── Full-width performance card ── */}
+      <div style={{
+        backgroundColor: '#ffffff',
+        border: '1px solid #E5E7EB',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+        borderRadius: 8,
+        padding: 32,
+        marginTop: 24,
+      }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '40fr 60fr', gap: 32 }}>
+
+          {/* Left: hero number block */}
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{
+              fontSize: '0.68rem',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: '#374151',
+              marginBottom: 12,
+            }}>
+              Platform Performance — This Month
+            </div>
+            <div style={{
+              fontSize: '3.5rem',
+              fontWeight: 800,
+              lineHeight: 1,
+              color: '#1a1a1a',
+              marginBottom: 10,
+              letterSpacing: '-0.02em',
+            }}>
+              $14,200
+            </div>
+            <p style={{
+              fontSize: '0.9rem',
+              color: '#9CA3AF',
+              lineHeight: 1.5,
+              margin: 0,
+            }}>
+              11 jobs booked through your platform this month
+            </p>
+          </div>
+
+          {/* Right: stats + activation note + button */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {/* Stat rows */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+              {[
+                { label: 'Jobs Booked',            value: '11' },
+                { label: 'Missed Calls Recovered', value: '24' },
+                { label: 'New Reviews This Month', value: '3'  },
+              ].map((row, i, arr) => (
+                <div
+                  key={row.label}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '12px 0',
+                    borderBottom: i < arr.length - 1 ? '1px solid #F3F4F6' : 'none',
+                  }}
+                >
+                  <span style={{
+                    fontSize: '0.72rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                    color: '#374151',
+                  }}>
+                    {row.label}
+                  </span>
+                  <span style={{
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    color: '#1a1a1a',
+                  }}>
+                    {row.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div style={{ borderTop: '1px solid #E5E7EB', margin: '20px 0 16px' }} />
+
+            {/* Green activation note */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <span style={{
+                display: 'inline-block',
+                width: 8, height: 8,
+                borderRadius: '50%',
+                backgroundColor: '#00cc66',
+                flexShrink: 0,
+                animation: 'dotPulse 2s ease-in-out infinite',
+              }} />
+              <span style={{ fontSize: '0.85rem', color: '#00aa55', lineHeight: 1.4 }}>
+                3 booked during last night&apos;s cold snap activation
+              </span>
+            </div>
+
+            {/* Report button */}
+            <button
+              onClick={() => {}}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(0,204,102,0.10)'
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                backgroundColor: 'transparent',
+                border: '1px solid #00cc66',
+                color: '#00aa55',
+                fontSize: '0.85rem',
+                padding: '10px 0',
+                borderRadius: 6,
+                cursor: 'pointer',
+                textAlign: 'center',
+              }}
+            >
+              View Monthly Performance Report
+            </button>
+          </div>
         </div>
       </div>
 
