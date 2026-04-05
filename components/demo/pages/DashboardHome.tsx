@@ -120,6 +120,24 @@ function CityMap() {
         clickable: false,
       })
 
+      // Weather pill — sits on the top edge of the service area circle
+      // 15000m radius = ~0.1349 degrees latitude
+      const weatherTemp = '28F'
+      const weatherEvent = 'Cold Snap'
+      const pillText = `${weatherTemp} — ${weatherEvent}`
+      const pillW = 110, pillH = 26
+      const pillSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${pillW}" height="${pillH}"><rect width="${pillW}" height="${pillH}" rx="6" fill="rgba(20,20,20,0.85)"/><text x="${pillW / 2}" y="${pillH / 2}" text-anchor="middle" dominant-baseline="central" font-family="Arial,sans-serif" font-size="11" fill="white">${pillText}</text></svg>`
+      new gm.Marker({
+        map,
+        position: { lat: 34.7465 + 0.1349, lng: -92.2896 },
+        icon: {
+          url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(pillSvg)}`,
+          scaledSize: new gm.Size(pillW, pillH),
+          anchor: new gm.Point(pillW / 2, pillH),
+        },
+        clickable: false,
+      })
+
       // Individual pin markers (shown at zoom >= 14)
       const individualMarkers = JOB_LATLNGS.map((pos) =>
         new gm.Marker({ map, position: pos, clickable: false, visible: false })
