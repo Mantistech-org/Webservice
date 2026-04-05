@@ -394,6 +394,16 @@ function BarChart() {
 
 export default function DashboardHome({ businessName, onNavigateToWeather }: DashboardProps) {
   const [expandedRow, setExpandedRow] = useState<number | null>(null)
+  const [activating, setActivating] = useState(false)
+
+  const handleActivate = () => {
+    if (activating) return
+    setActivating(true)
+    setTimeout(() => {
+      setActivating(false)
+      onNavigateToWeather?.()
+    }, 1500)
+  }
 
   return (
     // Negative margin bleeds to edge of parent's 24px padding, then re-applies it
@@ -411,6 +421,10 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         @keyframes jobRipple {
           0%   { transform: scale(1); opacity: 0.8; }
           100% { transform: scale(4.5); opacity: 0; }
+        }
+        @keyframes loadingBar {
+          from { width: 0%; }
+          to   { width: 100%; }
         }
       `}</style>
 
@@ -433,7 +447,25 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           display: 'flex',
           flexDirection: 'column',
           boxSizing: 'border-box',
+          position: 'relative',
+          overflow: 'hidden',
         }}>
+          {/* Loading bar */}
+          {activating && (
+            <div style={{
+              position: 'absolute',
+              top: 0, left: 0,
+              height: 3,
+              width: '100%',
+              backgroundColor: 'rgba(255,255,255,0.08)',
+            }}>
+              <div style={{
+                height: '100%',
+                backgroundColor: '#00C27C',
+                animation: 'loadingBar 1.5s linear forwards',
+              }} />
+            </div>
+          )}
           {/* Top zone: label + headline + stat pills */}
           <div style={{ marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
@@ -483,7 +515,8 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           {/* Middle zone: button + subtext */}
           <div style={{ marginBottom: 16 }}>
             <button
-              onClick={onNavigateToWeather}
+              onClick={handleActivate}
+              disabled={activating}
               style={{
                 display: 'block',
                 width: '100%',
@@ -495,16 +528,17 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
                 padding: '10px 0',
                 borderRadius: 6,
                 border: 'none',
-                cursor: 'pointer',
-                animation: 'glowPulse 2s ease-in-out infinite',
+                cursor: activating ? 'default' : 'pointer',
+                animation: activating ? 'none' : 'glowPulse 2s ease-in-out infinite',
+                opacity: activating ? 0.75 : 1,
                 marginBottom: 10,
               }}
             >
-              Activate Now
+              {activating ? 'Activating...' : 'Activate Now'}
             </button>
             <p style={{
               fontSize: '0.7rem',
-              color: '#555555',
+              color: '#9ca3af',
               textAlign: 'center',
               margin: 0,
             }}>
