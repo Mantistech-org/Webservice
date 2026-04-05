@@ -120,15 +120,9 @@ function CityMap() {
         clickable: false,
       })
 
-      // Green dot markers — SVG icon, scales naturally with zoom
-      const dotSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="8" fill="#00C27C"/></svg>`
-      const dotIcon = {
-        url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(dotSvg)}`,
-        scaledSize: new gm.Size(16, 16),
-        anchor: new gm.Point(8, 8),
-      }
+      // Default red pin markers
       JOB_LATLNGS.forEach((pos) => {
-        new gm.Marker({ map, position: pos, icon: dotIcon, clickable: false })
+        new gm.Marker({ map, position: pos, clickable: false })
       })
     }
 
@@ -221,10 +215,9 @@ function CityMap() {
       pointerEvents: 'none',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-        <span style={{
-          display: 'inline-block', width: 14, height: 14,
-          borderRadius: '50%', backgroundColor: '#00C27C', flexShrink: 0,
-        }} />
+        <svg width="14" height="20" viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+          <path d="M7 0C3.13 0 0 3.13 0 7c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335"/>
+        </svg>
         <span style={{ color: '#ffffff', fontSize: 12, lineHeight: 1.8, fontFamily: 'inherit' }}>Recent clients</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
