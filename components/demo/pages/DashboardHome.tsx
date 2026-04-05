@@ -303,6 +303,7 @@ function BarChart() {
 export default function DashboardHome({ businessName, onNavigateToWeather }: DashboardProps) {
   const [toastShown, setToastShown] = useState(false)
   const [toastExiting, setToastExiting] = useState(false)
+  const [expandedRow, setExpandedRow] = useState<number | null>(null)
 
   useEffect(() => {
     const t = setTimeout(() => setToastShown(true), 1000)
@@ -672,46 +673,115 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
             Today&apos;s Schedule
           </div>
           {SCHEDULE.map((slot, i) => (
-            <div
-              key={i}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '11px 0',
-                borderBottom: '1px solid #F3F4F6',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <span style={{
-                                    fontSize: '0.75rem',
-                  color: '#999999',
-                  flexShrink: 0,
-                  width: 62,
-                }}>
-                  {slot.time}
-                </span>
-                <span style={{
-                  width: 3, height: 22,
-                  backgroundColor: '#00cc66',
-                  borderRadius: 2,
-                  flexShrink: 0,
-                  display: 'inline-block',
-                }} />
-                <span style={{
-                                    fontSize: '0.85rem',
-                  color: '#1a1a1a',
-                }}>
-                  {slot.name}
-                </span>
+            <div key={i} style={{ borderBottom: '1px solid #F3F4F6' }}>
+              {/* Clickable row header */}
+              <div
+                onClick={() => setExpandedRow(expandedRow === i ? null : i)}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.backgroundColor = '#F9FAFB'
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.backgroundColor =
+                    expandedRow === i ? '#F9FAFB' : 'transparent'
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '11px 0',
+                  cursor: 'pointer',
+                  backgroundColor: expandedRow === i ? '#F9FAFB' : 'transparent',
+                  transition: 'background-color 0.15s ease',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    color: '#999999',
+                    flexShrink: 0,
+                    width: 62,
+                  }}>
+                    {slot.time}
+                  </span>
+                  <span style={{
+                    width: 3, height: 22,
+                    backgroundColor: '#00cc66',
+                    borderRadius: 2,
+                    flexShrink: 0,
+                    display: 'inline-block',
+                  }} />
+                  <span style={{
+                    fontSize: '0.85rem',
+                    color: '#1a1a1a',
+                  }}>
+                    {slot.name}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    color: '#00aa55',
+                  }}>
+                    Confirmed
+                  </span>
+                  <svg
+                    width="12" height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#9CA3AF"
+                    strokeWidth="2.5"
+                    style={{
+                      transform: expandedRow === i ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.2s ease-in-out',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
               </div>
-              <span style={{
-                                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: '#00aa55',
+
+              {/* Expandable action buttons */}
+              <div style={{
+                maxHeight: expandedRow === i ? 64 : 0,
+                overflow: 'hidden',
+                transition: 'max-height 0.2s ease-in-out',
               }}>
-                Confirmed
-              </span>
+                <div style={{ display: 'flex', gap: 8, paddingBottom: 12 }}>
+                  {[
+                    { label: 'View Details', color: '#00aa55', border: '#00cc66', hoverBg: 'rgba(0,204,102,0.08)' },
+                    { label: 'Reschedule',   color: '#00aa55', border: '#00cc66', hoverBg: 'rgba(0,204,102,0.08)' },
+                    { label: 'Cancel',       color: '#DC2626', border: '#DC2626', hoverBg: 'rgba(220,38,38,0.06)' },
+                  ].map((btn) => (
+                    <a
+                      key={btn.label}
+                      href="/consultation"
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.backgroundColor = btn.hoverBg
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'
+                      }}
+                      style={{
+                        flex: 1,
+                        textAlign: 'center',
+                        padding: '7px 0',
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        color: btn.color,
+                        border: `1px solid ${btn.border}`,
+                        borderRadius: 6,
+                        textDecoration: 'none',
+                        backgroundColor: 'transparent',
+                        transition: 'background-color 0.15s ease',
+                      }}
+                    >
+                      {btn.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
             </div>
           ))}
           <div style={{ paddingTop: 16, marginTop: 4, borderTop: '1px solid #F3F4F6' }}>
