@@ -26,20 +26,6 @@ const ACTIVITY_FEED = [
   { text: 'Booking confirmed — Ray Dominguez, 10:00 AM', time: '7:45 AM'  },
 ]
 
-const SCHEDULE = [
-  { time: '7:00 AM',  name: 'James Perkins'   },
-  { time: '8:30 AM',  name: 'Michelle Carter' },
-  { time: '10:00 AM', name: 'Ray Dominguez'   },
-  { time: '11:30 AM', name: 'Donna Howell'    },
-  { time: '1:00 PM',  name: 'Brian Stokes'    },
-]
-
-// 30-day jobs per day — day 24 (index 23) is the cold snap spike
-const JOB_BARS = [
-  2, 1, 3, 2, 1, 3, 2, 2, 1, 3,
-  2, 3, 1, 2, 2, 3, 1, 2, 3, 2,
-  1, 2, 3, 11, 2, 3, 1, 2, 3, 2,
-]
 
 // ── Map data ──────────────────────────────────────────────────────────────────
 
@@ -325,75 +311,9 @@ function CityMap() {
   )
 }
 
-// ── Bar chart ─────────────────────────────────────────────────────────────────
-
-function BarChart() {
-  const W = 800
-  const H = 180
-  const pL = 44, pR = 20, pT = 32, pB = 28
-  const cW = W - pL - pR
-  const cH = H - pT - pB
-  const max = Math.max(...JOB_BARS)
-  const slotW = cW / JOB_BARS.length
-  const barW = Math.max(Math.floor(slotW * 0.72), 4)
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 180 }}>
-      <text
-        fontSize="9" fill="#888888" textAnchor="middle"
-        transform={`translate(11,${pT + cH / 2}) rotate(-90)`}
-      >
-        Jobs
-      </text>
-      {[0, 0.33, 0.66, 1].map((t) => {
-        const y = pT + cH * (1 - t)
-        return (
-          <g key={t}>
-            <line x1={pL} y1={y} x2={W - pR} y2={y} stroke="#e0e0e0" strokeWidth="1" />
-            <text x={pL - 6} y={y + 3.5} textAnchor="end" fontSize="9" fill="#888888">
-              {Math.round(t * max)}
-            </text>
-          </g>
-        )
-      })}
-      {JOB_BARS.map((val, i) => {
-        const isSpike = i === 23
-        const barH = Math.max((val / max) * cH, 2)
-        const x = pL + i * slotW + (slotW - barW) / 2
-        const y = pT + cH - barH
-        return (
-          <g key={i}>
-            <rect
-              x={x} y={y} width={barW} height={barH}
-              fill={isSpike ? '#22c55e' : '#86efac'}
-              rx="2"
-            />
-            {isSpike && (
-              <text
-                x={x + barW / 2} y={y - 6}
-                textAnchor="middle" fontSize="8"
-                fill="#16a34a" fontWeight="700"
-              >
-                Cold snap *
-              </text>
-            )}
-          </g>
-        )
-      })}
-      <text
-        x={pL + cW / 2} y={H - 4}
-        textAnchor="middle" fontSize="9" fill="#888888"
-      >
-        Last 30 Days
-      </text>
-    </svg>
-  )
-}
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function DashboardHome({ businessName, onNavigateToWeather }: DashboardProps) {
-  const [expandedRow, setExpandedRow] = useState<number | null>(null)
   const [activating, setActivating] = useState(false)
 
   const handleActivate = () => {
@@ -724,228 +644,200 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
         </div>
       </div>
 
-      {/* ── Section 2: Activity + Schedule ── */}
+      {/* ── 2x2 grid: Bookings, Reviews, SEO, SMS ── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '55fr 45fr',
+        gridTemplateColumns: '1fr 1fr',
         gap: 24,
         marginTop: 24,
       }}>
 
-        {/* Recent Activity */}
-        <div style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid #E5E7EB',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
-          borderRadius: 8,
-          padding: 24,
-        }}>
-          <div style={{
-            fontSize: '0.68rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            color: '#374151',
-            marginBottom: 20,
-          }}>
-            Recent Activity
-          </div>
-          {ACTIVITY_FEED.map((item, i) => (
-            <div
-              key={i}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '11px 0',
-                borderBottom: i < ACTIVITY_FEED.length - 1 ? '1px solid #F3F4F6' : 'none',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-                <span style={{
-                  width: 7, height: 7,
-                  borderRadius: '50%',
-                  backgroundColor: '#00cc66',
-                  flexShrink: 0,
-                  display: 'inline-block',
-                }} />
-                <span style={{
-                                    fontSize: '0.78rem',
-                  color: '#444444',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}>
-                  {item.text}
-                </span>
-              </div>
-              <span style={{
-                                fontSize: '0.75rem',
-                color: '#999999',
-                flexShrink: 0,
-                marginLeft: 16,
-              }}>
-                {item.time}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Today's Schedule */}
+        {/* Bookings */}
         <div style={{
           backgroundColor: '#ffffff',
           border: '1px solid #E5E7EB',
           boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
           borderRadius: 8,
           padding: 24,
+          display: 'flex',
+          flexDirection: 'column',
         }}>
-          <div style={{
-            fontSize: '0.68rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            color: '#374151',
-            marginBottom: 20,
-          }}>
-            Today&apos;s Schedule
+          <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#374151', marginBottom: 16 }}>
+            Bookings
           </div>
-          {SCHEDULE.map((slot, i) => (
-            <div key={i} style={{ borderBottom: '1px solid #F3F4F6' }}>
-              {/* Clickable row header */}
-              <div
-                onClick={() => setExpandedRow(expandedRow === i ? null : i)}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.backgroundColor = '#F9FAFB'
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.backgroundColor =
-                    expandedRow === i ? '#F9FAFB' : 'transparent'
-                }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '11px 0',
-                  cursor: 'pointer',
-                  backgroundColor: expandedRow === i ? '#F9FAFB' : 'transparent',
-                  transition: 'background-color 0.15s ease',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <span style={{
-                    fontSize: '0.75rem',
-                    color: '#999999',
-                    flexShrink: 0,
-                    width: 62,
-                  }}>
-                    {slot.time}
-                  </span>
-                  <span style={{
-                    width: 3, height: 22,
-                    backgroundColor: '#00cc66',
-                    borderRadius: 2,
-                    flexShrink: 0,
-                    display: 'inline-block',
-                  }} />
-                  <span style={{
-                    fontSize: '0.85rem',
-                    color: '#1a1a1a',
-                  }}>
-                    {slot.name}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    color: '#00aa55',
-                  }}>
-                    Confirmed
-                  </span>
-                  <svg
-                    width="12" height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#9CA3AF"
-                    strokeWidth="2.5"
-                    style={{
-                      transform: expandedRow === i ? 'rotate(180deg)' : 'rotate(0deg)',
-                      transition: 'transform 0.2s ease-in-out',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </div>
-              </div>
-
-              {/* Expandable action buttons */}
-              <div style={{
-                maxHeight: expandedRow === i ? 64 : 0,
-                overflow: 'hidden',
-                transition: 'max-height 0.2s ease-in-out',
-              }}>
-                <div style={{ display: 'flex', gap: 8, paddingBottom: 12 }}>
-                  {[
-                    { label: 'View Details', color: '#00aa55', border: '#00cc66', hoverBg: 'rgba(0,204,102,0.08)' },
-                    { label: 'Reschedule',   color: '#00aa55', border: '#00cc66', hoverBg: 'rgba(0,204,102,0.08)' },
-                    { label: 'Cancel',       color: '#DC2626', border: '#DC2626', hoverBg: 'rgba(220,38,38,0.06)' },
-                  ].map((btn) => (
-                    <a
-                      key={btn.label}
-                      href="/consultation"
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.backgroundColor = btn.hoverBg
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'
-                      }}
-                      style={{
-                        flex: 1,
-                        textAlign: 'center',
-                        padding: '7px 0',
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
-                        color: btn.color,
-                        border: `1px solid ${btn.border}`,
-                        borderRadius: 6,
-                        textDecoration: 'none',
-                        backgroundColor: 'transparent',
-                        transition: 'background-color 0.15s ease',
-                      }}
-                    >
-                      {btn.label}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-          <div style={{ paddingTop: 16, marginTop: 4, borderTop: '1px solid #F3F4F6' }}>
-            <span style={{ fontSize: '0.78rem', color: '#00aa55' }}>
-              2 more slots available today
-            </span>
+          <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#1a1a1a', marginBottom: 12 }}>
+            Next: James Perkins — 7:00 AM
           </div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 6 }}>5 jobs scheduled today</div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>2 open slots remaining</div>
+          <div style={{ flex: 1 }} />
+          <a
+            href="/demo/bookings"
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,204,102,0.08)' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+            style={{
+              display: 'block', textAlign: 'center', width: '100%', boxSizing: 'border-box',
+              backgroundColor: 'transparent', border: '1px solid #00cc66', color: '#00aa55',
+              fontSize: '0.85rem', padding: '10px 0', borderRadius: 6, textDecoration: 'none',
+              transition: 'background-color 0.15s ease',
+            }}
+          >
+            View Bookings
+          </a>
         </div>
+
+        {/* Reviews */}
+        <div style={{
+          backgroundColor: '#ffffff',
+          border: '1px solid #E5E7EB',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+          borderRadius: 8,
+          padding: 24,
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+          <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#374151', marginBottom: 16 }}>
+            Reviews
+          </div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 6 }}>3 new reviews this month</div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>4.8 average rating</div>
+          <div style={{ flex: 1 }} />
+          <a
+            href="/demo/reviews"
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,204,102,0.08)' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+            style={{
+              display: 'block', textAlign: 'center', width: '100%', boxSizing: 'border-box',
+              backgroundColor: 'transparent', border: '1px solid #00cc66', color: '#00aa55',
+              fontSize: '0.85rem', padding: '10px 0', borderRadius: 6, textDecoration: 'none',
+              transition: 'background-color 0.15s ease',
+            }}
+          >
+            View Reviews
+          </a>
+        </div>
+
+        {/* SEO */}
+        <div style={{
+          backgroundColor: '#ffffff',
+          border: '1px solid #E5E7EB',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+          borderRadius: 8,
+          padding: 24,
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+          <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#374151', marginBottom: 16 }}>
+            SEO
+          </div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 6 }}>12 local keywords ranking</div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>847 impressions this month</div>
+          <div style={{ flex: 1 }} />
+          <a
+            href="/demo/seo"
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,204,102,0.08)' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+            style={{
+              display: 'block', textAlign: 'center', width: '100%', boxSizing: 'border-box',
+              backgroundColor: 'transparent', border: '1px solid #00cc66', color: '#00aa55',
+              fontSize: '0.85rem', padding: '10px 0', borderRadius: 6, textDecoration: 'none',
+              transition: 'background-color 0.15s ease',
+            }}
+          >
+            View SEO
+          </a>
+        </div>
+
+        {/* SMS */}
+        <div style={{
+          backgroundColor: '#ffffff',
+          border: '1px solid #E5E7EB',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+          borderRadius: 8,
+          padding: 24,
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+          <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#374151', marginBottom: 16 }}>
+            SMS
+          </div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 6 }}>1,247 contacts</div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>Last blast sent last night</div>
+          <div style={{ flex: 1 }} />
+          <a
+            href="/demo/sms"
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,204,102,0.08)' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+            style={{
+              display: 'block', textAlign: 'center', width: '100%', boxSizing: 'border-box',
+              backgroundColor: 'transparent', border: '1px solid #00cc66', color: '#00aa55',
+              fontSize: '0.85rem', padding: '10px 0', borderRadius: 6, textDecoration: 'none',
+              transition: 'background-color 0.15s ease',
+            }}
+          >
+            View SMS
+          </a>
+        </div>
+
       </div>
 
-      {/* ── Section 3: Chart ── */}
+      {/* ── Recent Activity (full width, bottom) ── */}
       <div style={{
         backgroundColor: '#ffffff',
         border: '1px solid #E5E7EB',
-        boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
         borderRadius: 8,
         padding: 24,
         marginTop: 24,
       }}>
         <div style={{
-                    fontSize: '0.68rem',
+          fontSize: '0.68rem',
           textTransform: 'uppercase',
           letterSpacing: '0.1em',
-          color: '#9CA3AF',
+          color: '#374151',
           marginBottom: 20,
         }}>
-          Jobs Booked — Last 30 Days
+          Recent Activity
         </div>
-        <BarChart />
+        {ACTIVITY_FEED.map((item, i) => (
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '11px 0',
+              borderBottom: i < ACTIVITY_FEED.length - 1 ? '1px solid #F3F4F6' : 'none',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+              <span style={{
+                width: 7, height: 7,
+                borderRadius: '50%',
+                backgroundColor: '#00cc66',
+                flexShrink: 0,
+                display: 'inline-block',
+              }} />
+              <span style={{
+                fontSize: '0.78rem',
+                color: '#444444',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {item.text}
+              </span>
+            </div>
+            <span style={{
+              fontSize: '0.75rem',
+              color: '#999999',
+              flexShrink: 0,
+              marginLeft: 16,
+            }}>
+              {item.time}
+            </span>
+          </div>
+        ))}
       </div>
 
     </div>
