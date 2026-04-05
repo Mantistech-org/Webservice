@@ -662,15 +662,29 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           display: 'flex',
           flexDirection: 'column',
         }}>
-          <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#374151', marginBottom: 16 }}>
-            Bookings
+          <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
+            Bookings — Today
           </div>
-          <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#1a1a1a', marginBottom: 12 }}>
-            Next: James Perkins — 7:00 AM
-          </div>
-          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 6 }}>5 jobs scheduled today</div>
-          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>2 open slots remaining</div>
-          <div style={{ flex: 1 }} />
+          {[
+            { time: '7:00 AM',  name: 'James Perkins'   },
+            { time: '8:30 AM',  name: 'Michelle Carter' },
+            { time: '10:00 AM', name: 'Ray Dominguez'   },
+            { time: '11:30 AM', name: 'Donna Howell'    },
+            { time: '1:00 PM',  name: 'Brian Stokes'    },
+          ].map((slot, i, arr) => (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '9px 0',
+              borderBottom: i < arr.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 13, color: '#6b7280', flexShrink: 0, width: 58 }}>{slot.time}</span>
+                <span style={{ width: 3, height: 20, backgroundColor: '#00C27C', borderRadius: 2, flexShrink: 0, display: 'inline-block' }} />
+                <span style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>{slot.name}</span>
+              </div>
+              <span style={{ fontSize: 13, color: '#00C27C', flexShrink: 0 }}>Confirmed</span>
+            </div>
+          ))}
           <a
             href="/demo/bookings"
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,204,102,0.08)' }}
@@ -679,7 +693,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
               display: 'block', textAlign: 'center', width: '100%', boxSizing: 'border-box',
               backgroundColor: 'transparent', border: '1px solid #00cc66', color: '#00aa55',
               fontSize: '0.85rem', padding: '10px 0', borderRadius: 6, textDecoration: 'none',
-              transition: 'background-color 0.15s ease',
+              transition: 'background-color 0.15s ease', marginTop: 16,
             }}
           >
             View Bookings
@@ -696,11 +710,15 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           display: 'flex',
           flexDirection: 'column',
         }}>
-          <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#374151', marginBottom: 16 }}>
+          <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             Reviews
           </div>
-          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 6 }}>3 new reviews this month</div>
-          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>4.8 average rating</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
+            <span style={{ fontSize: 48, fontWeight: 700, lineHeight: 1, color: '#111827' }}>4.9</span>
+            <span style={{ fontSize: 36, color: '#F59E0B', lineHeight: 1 }}>&#9733;</span>
+            <span style={{ fontSize: 14, color: '#6b7280', alignSelf: 'flex-end', paddingBottom: 2 }}>out of 5</span>
+          </div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>3 new reviews this month</div>
           <div style={{ flex: 1 }} />
           <a
             href="/demo/reviews"
@@ -727,10 +745,10 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           display: 'flex',
           flexDirection: 'column',
         }}>
-          <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#374151', marginBottom: 16 }}>
+          <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             SEO
           </div>
-          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 6 }}>12 local keywords ranking</div>
+          <div style={{ fontSize: 14, color: '#111827', marginBottom: 6 }}>12 local keywords ranking</div>
           <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>847 impressions this month</div>
           <div style={{ flex: 1 }} />
           <a
@@ -758,10 +776,10 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           display: 'flex',
           flexDirection: 'column',
         }}>
-          <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#374151', marginBottom: 16 }}>
+          <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             SMS
           </div>
-          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 6 }}>1,247 contacts</div>
+          <div style={{ fontSize: 14, color: '#111827', marginBottom: 6 }}>1,247 contacts</div>
           <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>Last blast sent last night</div>
           <div style={{ flex: 1 }} />
           <a
