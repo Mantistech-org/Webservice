@@ -120,10 +120,52 @@ function CityMap() {
         clickable: false,
       })
 
-      // Default red pin markers
-      JOB_LATLNGS.forEach((pos) => {
-        new gm.Marker({ map, position: pos, clickable: false })
-      })
+      // Individual pin markers (shown at zoom >= 14)
+      const individualMarkers = JOB_LATLNGS.map((pos) =>
+        new gm.Marker({ map, position: pos, clickable: false, visible: false })
+      )
+
+      // Cluster markers (shown at zoom < 14)
+      const clusterDefs = [
+        { position: { lat: 34.7430, lng: -92.3310 }, count: 6 },
+        { position: { lat: 34.7530, lng: -92.3190 }, count: 5 },
+      ]
+      const makeBadgeSvg = (count: number) => {
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"><circle cx="18" cy="18" r="18" fill="#EA4335"/><text x="18" y="18" text-anchor="middle" dominant-baseline="central" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="white">${count}</text></svg>`
+        return {
+          url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+          scaledSize: new gm.Size(36, 36),
+          anchor: new gm.Point(18, 18),
+        }
+      }
+      const clusterMarkers = clusterDefs.map(({ position, count }) =>
+        new gm.Marker({ map, position, icon: makeBadgeSvg(count), clickable: false, visible: true })
+      )
+
+      // Toggle clusters vs individual pins based on zoom
+      const updateVisibility = () => {
+        const zoom = map.getZoom() ?? 12
+        const showIndividual = zoom >= 14
+        individualMarkers.forEach((m) => m.setVisible(showIndividual))
+        clusterMarkers.forEach((m) => m.setVisible(!showIndividual))
+      }
+      map.addListener('zoom_changed', updateVisibility)
+
+      // Zip code boundary layer
+      fetch(
+        "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/2/query?where=ZCTA5+IN+('72201','72202','72204','72205','72206','72207','72209','72212')&outFields=ZCTA5&f=geojson"
+      )
+        .then((r) => r.json())
+        .then((geojson) => {
+          map.data.addGeoJson(geojson)
+          map.data.setStyle({
+            strokeColor: '#555555',
+            strokeWeight: 1,
+            strokeOpacity: 0.6,
+            fillOpacity: 0,
+          })
+        })
+        .catch(() => { /* silently skip if fetch fails */ })
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -220,13 +262,20 @@ function CityMap() {
         </svg>
         <span style={{ color: '#ffffff', fontSize: 12, lineHeight: 1.8, fontFamily: 'inherit' }}>Recent clients</span>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
         <span style={{
           display: 'inline-block', width: 14, height: 14,
           borderRadius: '50%', border: '2px solid #1a1a1a',
           backgroundColor: 'transparent', flexShrink: 0, boxSizing: 'border-box',
         }} />
         <span style={{ color: '#ffffff', fontSize: 12, lineHeight: 1.8, fontFamily: 'inherit' }}>Service area</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{
+          display: 'inline-block', width: 14, height: 2,
+          backgroundColor: '#555555', flexShrink: 0,
+        }} />
+        <span style={{ color: '#ffffff', fontSize: 12, lineHeight: 1.8, fontFamily: 'inherit' }}>Zip codes</span>
       </div>
     </div>
   )
