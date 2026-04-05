@@ -59,18 +59,19 @@ const JOB_DOTS = [
 ]
 
 // 11 job dots — real lat/lng for Google Maps Circle overlays
+// 6 in Midtown, 5 in Hillcrest
 const JOB_LATLNGS = [
-  { lat: 34.780, lng: -92.310 },
-  { lat: 34.800, lng: -92.260 },
-  { lat: 34.810, lng: -92.215 },
-  { lat: 34.795, lng: -92.180 },
-  { lat: 34.765, lng: -92.215 },
-  { lat: 34.740, lng: -92.325 },
-  { lat: 34.755, lng: -92.255 },
-  { lat: 34.760, lng: -92.205 },
-  { lat: 34.790, lng: -92.160 },
-  { lat: 34.720, lng: -92.265 },
-  { lat: 34.730, lng: -92.315 },
+  { lat: 34.7420, lng: -92.3320 },
+  { lat: 34.7435, lng: -92.3290 },
+  { lat: 34.7410, lng: -92.3350 },
+  { lat: 34.7450, lng: -92.3310 },
+  { lat: 34.7425, lng: -92.3270 },
+  { lat: 34.7445, lng: -92.3340 },
+  { lat: 34.7530, lng: -92.3190 },
+  { lat: 34.7515, lng: -92.3210 },
+  { lat: 34.7545, lng: -92.3175 },
+  { lat: 34.7500, lng: -92.3230 },
+  { lat: 34.7560, lng: -92.3155 },
 ]
 
 // ── Google Maps dark style (command-center night mode) ─────────────────────────
@@ -136,7 +137,7 @@ function CityMap() {
         center: { lat: 34.7465, lng: -92.2896 },
         radius: 15000,
         fillColor: '#00ff88',
-        fillOpacity: 0.04,
+        fillOpacity: 0,
         strokeColor: '#00ff88',
         strokeOpacity: 1.0,
         strokeWeight: 1,
@@ -237,6 +238,33 @@ function CityMap() {
     )
   }
 
+  // Map legend — bottom left, above the cold snap pill
+  const mapLegend = (
+    <div style={{
+      position: 'absolute', bottom: 48, left: 12,
+      backgroundColor: 'rgba(20,20,20,0.85)',
+      borderRadius: 6,
+      padding: '8px 12px',
+      pointerEvents: 'none',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+        <span style={{
+          display: 'inline-block', width: 14, height: 14,
+          borderRadius: '50%', backgroundColor: '#00C27C', flexShrink: 0,
+        }} />
+        <span style={{ color: '#ffffff', fontSize: 12, lineHeight: 1.8, fontFamily: 'inherit' }}>Recent clients</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{
+          display: 'inline-block', width: 14, height: 14,
+          borderRadius: '50%', border: '2px solid #00C27C',
+          backgroundColor: 'transparent', flexShrink: 0, boxSizing: 'border-box',
+        }} />
+        <span style={{ color: '#ffffff', fontSize: 12, lineHeight: 1.8, fontFamily: 'inherit' }}>Service area</span>
+      </div>
+    </div>
+  )
+
   // Loading (null) or Google Maps ready — mapDivRef always in DOM so initMap
   // fires immediately when the key arrives
   return (
@@ -244,6 +272,7 @@ function CityMap() {
       <div ref={mapDivRef} style={{ width: '100%', height: '100%' }} />
       {/* Show placeholder overlays while key is still being fetched */}
       {apiKey === null && fallbackOverlay}
+      {mapLegend}
       {coldSnapPill}
     </div>
   )
