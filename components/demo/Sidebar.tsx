@@ -9,6 +9,7 @@ export type DemoView =
   | 'review'
   | 'seo'
   | 'sms'
+  | 'performance'
   | 'settings'
   | 'billing'
 

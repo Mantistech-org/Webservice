@@ -7,6 +7,7 @@ import Sidebar from './Sidebar'
 import type { DemoView } from './Sidebar'
 import DashboardHome from './pages/DashboardHome'
 import BillingPage from './pages/BillingPage'
+import PerformancePage from './pages/PerformancePage'
 import ReviewManagement from './tabs/ReviewManagement'
 import SEOOptimization from './tabs/SEOOptimization'
 import CalendarPage from './tabs/CalendarPage'
@@ -68,16 +69,18 @@ export default function DemoView() {
         <DashboardHome
           businessName={businessName}
           onNavigateToWeather={() => setActivePage('weather')}
+          onNavigate={setActivePage}
         />
       )
-      case 'weather':  return <WeatherActivation sessionId={sessionId} businessName={businessName} />
-      case 'bookings': return <CalendarPage />
-      case 'review':   return <ReviewManagement sessionId={sessionId} />
-      case 'seo':      return <SEOOptimization sessionId={sessionId} />
-      case 'sms':      return <SMSTextMarketing sessionId={sessionId} />
+      case 'weather':     return <WeatherActivation sessionId={sessionId} businessName={businessName} />
+      case 'bookings':    return <CalendarPage />
+      case 'review':      return <ReviewManagement sessionId={sessionId} />
+      case 'seo':         return <SEOOptimization sessionId={sessionId} />
+      case 'sms':         return <SMSTextMarketing sessionId={sessionId} />
+      case 'performance': return <PerformancePage />
       case 'settings':
-      case 'billing':  return <BillingPage />
-      default:         return <DashboardHome businessName={businessName} onNavigateToWeather={() => setActivePage('weather')} />
+      case 'billing':     return <BillingPage />
+      default:            return <DashboardHome businessName={businessName} onNavigateToWeather={() => setActivePage('weather')} onNavigate={setActivePage} />
     }
   }
 
@@ -210,7 +213,7 @@ export default function DemoView() {
               </p>
             </div>
             <Link
-              href="/intake"
+              href="/consultation"
               className="shrink-0 font-mono text-xs px-5 py-2 rounded-lg tracking-wider whitespace-nowrap transition-opacity hover:opacity-80"
               style={{ backgroundColor: '#f0f0f0', color: '#000000' }}
             >

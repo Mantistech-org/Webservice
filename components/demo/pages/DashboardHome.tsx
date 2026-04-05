@@ -1,10 +1,12 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import type { DemoView } from '@/components/demo/Sidebar'
 
 interface DashboardProps {
   businessName?: string
   onNavigateToWeather?: () => void
+  onNavigate?: (page: DemoView) => void
 }
 
 // ── Static data ────────────────────────────────────────────────────────────────
@@ -313,7 +315,7 @@ function CityMap() {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function DashboardHome({ businessName, onNavigateToWeather }: DashboardProps) {
+export default function DashboardHome({ businessName, onNavigateToWeather, onNavigate }: DashboardProps) {
   const [activating, setActivating] = useState(false)
 
   const handleActivate = () => {
@@ -618,7 +620,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
 
             {/* Report button */}
             <button
-              onClick={() => {}}
+              onClick={() => onNavigate?.('performance')}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(0,204,102,0.10)'
               }}
@@ -685,19 +687,19 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
               <span style={{ fontSize: 13, color: '#00C27C', flexShrink: 0 }}>Confirmed</span>
             </div>
           ))}
-          <a
-            href="/demo/bookings"
+          <button
+            onClick={() => onNavigate?.('bookings')}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,204,102,0.08)' }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
             style={{
               display: 'block', textAlign: 'center', width: '100%', boxSizing: 'border-box',
               backgroundColor: 'transparent', border: '1px solid #00cc66', color: '#00aa55',
-              fontSize: '0.85rem', padding: '10px 0', borderRadius: 6, textDecoration: 'none',
+              fontSize: '0.85rem', padding: '10px 0', borderRadius: 6, cursor: 'pointer',
               transition: 'background-color 0.15s ease', marginTop: 16,
             }}
           >
             View Bookings
-          </a>
+          </button>
         </div>
 
         {/* Reviews */}
@@ -738,19 +740,19 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
               </div>
             ))}
           </div>
-          <a
-            href="/demo/reviews"
+          <button
+            onClick={() => onNavigate?.('review')}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,204,102,0.08)' }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
             style={{
               display: 'block', textAlign: 'center', width: '100%', boxSizing: 'border-box',
               backgroundColor: 'transparent', border: '1px solid #00cc66', color: '#00aa55',
-              fontSize: '0.85rem', padding: '10px 0', borderRadius: 6, textDecoration: 'none',
+              fontSize: '0.85rem', padding: '10px 0', borderRadius: 6, cursor: 'pointer',
               transition: 'background-color 0.15s ease',
             }}
           >
             View Reviews
-          </a>
+          </button>
         </div>
 
         {/* SEO */}
@@ -769,19 +771,19 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           <div style={{ fontSize: 14, color: '#111827', marginBottom: 6 }}>12 local keywords ranking</div>
           <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>847 impressions this month</div>
           <div style={{ flex: 1 }} />
-          <a
-            href="/demo/seo"
+          <button
+            onClick={() => onNavigate?.('seo')}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,204,102,0.08)' }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
             style={{
               display: 'block', textAlign: 'center', width: '100%', boxSizing: 'border-box',
               backgroundColor: 'transparent', border: '1px solid #00cc66', color: '#00aa55',
-              fontSize: '0.85rem', padding: '10px 0', borderRadius: 6, textDecoration: 'none',
+              fontSize: '0.85rem', padding: '10px 0', borderRadius: 6, cursor: 'pointer',
               transition: 'background-color 0.15s ease',
             }}
           >
             View SEO
-          </a>
+          </button>
         </div>
 
         {/* SMS */}
@@ -800,19 +802,19 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           <div style={{ fontSize: 14, color: '#111827', marginBottom: 6 }}>1,247 contacts</div>
           <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>Last blast sent last night</div>
           <div style={{ flex: 1 }} />
-          <a
-            href="/demo/sms"
+          <button
+            onClick={() => onNavigate?.('sms')}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,204,102,0.08)' }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
             style={{
               display: 'block', textAlign: 'center', width: '100%', boxSizing: 'border-box',
               backgroundColor: 'transparent', border: '1px solid #00cc66', color: '#00aa55',
-              fontSize: '0.85rem', padding: '10px 0', borderRadius: 6, textDecoration: 'none',
+              fontSize: '0.85rem', padding: '10px 0', borderRadius: 6, cursor: 'pointer',
               transition: 'background-color 0.15s ease',
             }}
           >
             View SMS
-          </a>
+          </button>
         </div>
 
       </div>
