@@ -125,13 +125,20 @@ function CityMap() {
   const H = 400
   const SAX = 265, SAY = 195, SAR = 132
   const mapDivRef = useRef<HTMLDivElement>(null)
+  // null = still fetching; '' = no key found; 'abc...' = key ready
+  const [apiKey, setApiKey] = useState<string | null>(null)
 
+  // Fetch key from Supabase via server route on mount
   useEffect(() => {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-    if (!apiKey || !mapDivRef.current) return
+    fetch('/api/demo/maps-key')
+      .then((r) => (r.ok ? r.json() : { key: '' }))
+      .then((data) => setApiKey(data.key ?? ''))
+      .catch(() => setApiKey(''))
+  }, [])
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const g = (window as any).google
+  // Load and initialise Google Maps once key is available
+  useEffect(() => {
+    if (!apiKey || !mapDivRef.current) return
 
     const initMap = () => {
       if (!mapDivRef.current) return
@@ -145,10 +152,9 @@ function CityMap() {
       })
     }
 
-    // Already loaded
-    if (g?.maps) { initMap(); return }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((window as any).google?.maps) { initMap(); return }
 
-    // Script tag already injected — poll until API is ready
     const scriptId = 'google-maps-script'
     if (document.getElementById(scriptId)) {
       const poll = setInterval(() => {
@@ -158,103 +164,92 @@ function CityMap() {
       return () => clearInterval(poll)
     }
 
-    // Inject script for the first time
     const script = document.createElement('script')
     script.id = scriptId
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`
     script.async = true
     script.onload = initMap
     document.head.appendChild(script)
-  }, [])
+  }, [apiKey])
 
-  return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      {/* Google Maps render target */}
-      <div ref={mapDivRef} style={{ width: '100%', height: '100%' }} />
+  // Shared SVG overlays rendered on top in all states
+  const overlaysvg = (
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
+      preserveAspectRatio="xMidYMid slice"
+    >
+      <circle cx={SAX} cy={SAY} r={SAR} fill="rgba(0,255,136,0.15)" stroke="rgba(0,255,136,0.60)" strokeWidth="2" />
+      {JOB_DOTS.map((dot, i) => (
+        <g key={i}>
+          <circle cx={dot.cx} cy={dot.cy} r={6} fill="none" stroke="#00ff88" strokeWidth="1.5"
+            style={{ transformBox: 'fill-box', transformOrigin: 'center', animation: `jobRipple 3s ease-out ${dot.delay}s infinite` }} />
+          <circle cx={dot.cx} cy={dot.cy} r={4} fill="#00ff88" />
+        </g>
+      ))}
+      <rect width={W} height={H} fill="rgba(59,130,246,0.12)" />
+      {SNOWFLAKES.map((s, i) => <Snowflake key={i} x={s.x} y={s.y} r={s.r} />)}
+    </svg>
+  )
 
-      {/* SVG overlay: service area, job dots, weather tint, snowflakes */}
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          pointerEvents: 'none',
-        }}
-        preserveAspectRatio="xMidYMid slice"
-      >
-        {/* Service area */}
-        <circle
-          cx={SAX} cy={SAY} r={SAR}
-          fill="rgba(0,255,136,0.15)"
-          stroke="rgba(0,255,136,0.60)"
-          strokeWidth="2"
-        />
-
-        {/* Job activity dots with ripple */}
-        {JOB_DOTS.map((dot, i) => (
-          <g key={i}>
-            <circle
-              cx={dot.cx} cy={dot.cy} r={6}
-              fill="none" stroke="#00ff88" strokeWidth="1.5"
-              style={{
-                transformBox: 'fill-box',
-                transformOrigin: 'center',
-                animation: `jobRipple 3s ease-out ${dot.delay}s infinite`,
-              }}
-            />
-            <circle cx={dot.cx} cy={dot.cy} r={4} fill="#00ff88" />
-          </g>
-        ))}
-
-        {/* Weather overlay — cold tint */}
-        <rect width={W} height={H} fill="rgba(59,130,246,0.12)" />
-
-        {/* Snowflakes */}
-        {SNOWFLAKES.map((s, i) => (
-          <Snowflake key={i} x={s.x} y={s.y} r={s.r} />
-        ))}
-      </svg>
-
-      {/* Top-left pill */}
+  const pills = (
+    <>
       <div style={{
-        position: 'absolute',
-        top: 12, left: 12,
-        backgroundColor: 'rgba(0,0,0,0.62)',
-        borderRadius: 20,
-        padding: '6px 12px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-        pointerEvents: 'none',
+        position: 'absolute', top: 12, left: 12,
+        backgroundColor: 'rgba(0,0,0,0.62)', borderRadius: 20,
+        padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6, pointerEvents: 'none',
       }}>
-        <span style={{
-          display: 'inline-block',
-          width: 6, height: 6,
-          borderRadius: '50%',
-          backgroundColor: '#00ff88',
-          flexShrink: 0,
-          animation: 'dotPulse 2s ease-in-out infinite',
-        }} />
+        <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', backgroundColor: '#00ff88', flexShrink: 0, animation: 'dotPulse 2s ease-in-out infinite' }} />
         <span style={{ color: '#ffffff', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
           11 jobs captured in your service area
         </span>
       </div>
-
-      {/* Bottom-right pill */}
       <div style={{
-        position: 'absolute',
-        bottom: 12, right: 12,
-        backgroundColor: 'rgba(0,0,0,0.62)',
-        borderRadius: 20,
-        padding: '6px 12px',
-        pointerEvents: 'none',
+        position: 'absolute', bottom: 12, right: 12,
+        backgroundColor: 'rgba(0,0,0,0.62)', borderRadius: 20,
+        padding: '6px 12px', pointerEvents: 'none',
       }}>
         <span style={{ color: '#ffffff', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
           Cold snap active — 28F tonight
         </span>
       </div>
+    </>
+  )
+
+  // No key found — render dark SVG simulated map as fallback
+  if (apiKey === '') {
+    return (
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <svg viewBox={`0 0 ${W} ${H}`} style={{ display: 'block', width: '100%', height: '100%' }} preserveAspectRatio="xMidYMid slice">
+          <rect width={W} height={H} fill="#1e1e1e" />
+          {[28, 72, 116, 160, 204, 248, 292, 336, 380].map((y) => (
+            <line key={`mh${y}`} x1={0} y1={y} x2={W} y2={y} stroke="#2a2a2a" strokeWidth="0.8" />
+          ))}
+          {[24, 70, 116, 162, 208, 254, 300, 346, 392, 438, 484, 530, 576].map((x) => (
+            <line key={`mv${x}`} x1={x} y1={0} x2={x} y2={H} stroke="#2a2a2a" strokeWidth="0.8" />
+          ))}
+          {[116, 292].map((y) => (
+            <line key={`ah${y}`} x1={0} y1={y} x2={W} y2={y} stroke="#333333" strokeWidth="2.5" />
+          ))}
+          {[162, 392].map((x) => (
+            <line key={`av${x}`} x1={x} y1={0} x2={x} y2={H} stroke="#333333" strokeWidth="2.5" />
+          ))}
+          <line x1={0} y1={55} x2={W} y2={310} stroke="#2c2c2c" strokeWidth="5" />
+          <line x1={0} y1={290} x2={220} y2={H} stroke="#333333" strokeWidth="2" />
+        </svg>
+        {overlaysvg}
+        {pills}
+      </div>
+    )
+  }
+
+  // Loading (null) or key ready — always keep mapDivRef in the DOM so the
+  // effect can initialise Maps the moment the key arrives
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#1e1e1e' }}>
+      <div ref={mapDivRef} style={{ width: '100%', height: '100%' }} />
+      {overlaysvg}
+      {pills}
     </div>
   )
 }
