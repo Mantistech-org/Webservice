@@ -74,29 +74,6 @@ const JOB_LATLNGS = [
   { lat: 34.7560, lng: -92.3155 },
 ]
 
-// ── Google Maps dark style (command-center night mode) ─────────────────────────
-// Strictly neutral grey palette — every value has R=G=B so blue channel
-// is never dominant. Approved values only: #1c1c1c #111111 #2a2a2a #3a3a3a #888888
-const DARK_MAP_STYLE = [
-  { elementType: 'geometry',                                           stylers: [{ color: '#1c1c1c' }] },
-  { elementType: 'labels.text.fill',                                   stylers: [{ color: '#888888' }] },
-  { elementType: 'labels.text.stroke',                                 stylers: [{ color: '#1c1c1c' }] },
-  { featureType: 'administrative',    elementType: 'geometry',         stylers: [{ color: '#1c1c1c' }] },
-  { featureType: 'administrative',    elementType: 'labels.text.fill', stylers: [{ color: '#888888' }] },
-  { featureType: 'landscape',         elementType: 'geometry',         stylers: [{ color: '#1c1c1c' }] },
-  { featureType: 'poi',               elementType: 'geometry',         stylers: [{ color: '#1c1c1c' }] },
-  { featureType: 'poi',               elementType: 'labels.text.fill', stylers: [{ color: '#888888' }] },
-  { featureType: 'road',              elementType: 'geometry',         stylers: [{ color: '#2a2a2a' }] },
-  { featureType: 'road',              elementType: 'geometry.stroke',  stylers: [{ color: '#3a3a3a' }] },
-  { featureType: 'road',              elementType: 'labels.text.fill', stylers: [{ color: '#888888' }] },
-  { featureType: 'road.highway',      elementType: 'geometry',         stylers: [{ color: '#2a2a2a' }] },
-  { featureType: 'road.highway',      elementType: 'geometry.stroke',  stylers: [{ color: '#3a3a3a' }] },
-  { featureType: 'road.highway',      elementType: 'labels.text.fill', stylers: [{ color: '#888888' }] },
-  { featureType: 'transit',           elementType: 'geometry',         stylers: [{ color: '#1c1c1c' }] },
-  { featureType: 'transit',           elementType: 'labels.text.fill', stylers: [{ color: '#888888' }] },
-  { featureType: 'water',             elementType: 'geometry',         stylers: [{ color: '#111111' }] },
-  { featureType: 'water',             elementType: 'labels.text.fill', stylers: [{ color: '#888888' }] },
-]
 
 function CityMap() {
   const W = 600
@@ -128,7 +105,6 @@ function CityMap() {
         zoom: 12,
         mapTypeId: 'roadmap',
         disableDefaultUI: true,
-        styles: DARK_MAP_STYLE,
       })
 
       // Service area circle — attached to map, moves with pan/zoom
@@ -144,18 +120,15 @@ function CityMap() {
         clickable: false,
       })
 
-      // Solid green job dots — attached to map, move with pan/zoom
+      // Green dot markers — SVG icon, scales naturally with zoom
+      const dotSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="8" fill="#00C27C"/></svg>`
+      const dotIcon = {
+        url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(dotSvg)}`,
+        scaledSize: new gm.Size(16, 16),
+        anchor: new gm.Point(8, 8),
+      }
       JOB_LATLNGS.forEach((pos) => {
-        new gm.Circle({
-          map,
-          center: pos,
-          radius: 300,
-          fillColor: '#00C27C',
-          fillOpacity: 1,
-          strokeOpacity: 0,
-          strokeWeight: 0,
-          clickable: false,
-        })
+        new gm.Marker({ map, position: pos, icon: dotIcon, clickable: false })
       })
     }
 
