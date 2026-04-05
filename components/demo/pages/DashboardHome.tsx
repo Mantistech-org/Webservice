@@ -74,25 +74,27 @@ const JOB_LATLNGS = [
 ]
 
 // ── Google Maps dark style (command-center night mode) ─────────────────────────
+// Strictly neutral grey palette — every value has R=G=B so blue channel
+// is never dominant. Approved values only: #1c1c1c #111111 #2a2a2a #3a3a3a #888888
 const DARK_MAP_STYLE = [
-  { elementType: 'geometry',                                        stylers: [{ color: '#242f3e' }] },
-  { elementType: 'labels.text.stroke',                             stylers: [{ color: '#242f3e' }] },
-  { elementType: 'labels.text.fill',                               stylers: [{ color: '#746855' }] },
-  { featureType: 'administrative.locality', elementType: 'labels.text.fill',   stylers: [{ color: '#d59563' }] },
-  { featureType: 'poi',                     elementType: 'labels.text.fill',   stylers: [{ color: '#d59563' }] },
-  { featureType: 'poi.park',               elementType: 'geometry',            stylers: [{ color: '#263c3f' }] },
-  { featureType: 'poi.park',               elementType: 'labels.text.fill',    stylers: [{ color: '#6b9a76' }] },
-  { featureType: 'road',                   elementType: 'geometry',            stylers: [{ color: '#38414e' }] },
-  { featureType: 'road',                   elementType: 'geometry.stroke',     stylers: [{ color: '#212a37' }] },
-  { featureType: 'road',                   elementType: 'labels.text.fill',    stylers: [{ color: '#9ca5b3' }] },
-  { featureType: 'road.highway',           elementType: 'geometry',            stylers: [{ color: '#746855' }] },
-  { featureType: 'road.highway',           elementType: 'geometry.stroke',     stylers: [{ color: '#1f2835' }] },
-  { featureType: 'road.highway',           elementType: 'labels.text.fill',    stylers: [{ color: '#f3d19c' }] },
-  { featureType: 'transit',               elementType: 'geometry',             stylers: [{ color: '#2f3948' }] },
-  { featureType: 'transit.station',       elementType: 'labels.text.fill',     stylers: [{ color: '#d59563' }] },
-  { featureType: 'water',                 elementType: 'geometry',             stylers: [{ color: '#17263c' }] },
-  { featureType: 'water',                 elementType: 'labels.text.fill',     stylers: [{ color: '#515c6d' }] },
-  { featureType: 'water',                 elementType: 'labels.text.stroke',   stylers: [{ color: '#17263c' }] },
+  { elementType: 'geometry',                                           stylers: [{ color: '#1c1c1c' }] },
+  { elementType: 'labels.text.fill',                                   stylers: [{ color: '#888888' }] },
+  { elementType: 'labels.text.stroke',                                 stylers: [{ color: '#1c1c1c' }] },
+  { featureType: 'administrative',    elementType: 'geometry',         stylers: [{ color: '#1c1c1c' }] },
+  { featureType: 'administrative',    elementType: 'labels.text.fill', stylers: [{ color: '#888888' }] },
+  { featureType: 'landscape',         elementType: 'geometry',         stylers: [{ color: '#1c1c1c' }] },
+  { featureType: 'poi',               elementType: 'geometry',         stylers: [{ color: '#1c1c1c' }] },
+  { featureType: 'poi',               elementType: 'labels.text.fill', stylers: [{ color: '#888888' }] },
+  { featureType: 'road',              elementType: 'geometry',         stylers: [{ color: '#2a2a2a' }] },
+  { featureType: 'road',              elementType: 'geometry.stroke',  stylers: [{ color: '#3a3a3a' }] },
+  { featureType: 'road',              elementType: 'labels.text.fill', stylers: [{ color: '#888888' }] },
+  { featureType: 'road.highway',      elementType: 'geometry',         stylers: [{ color: '#2a2a2a' }] },
+  { featureType: 'road.highway',      elementType: 'geometry.stroke',  stylers: [{ color: '#3a3a3a' }] },
+  { featureType: 'road.highway',      elementType: 'labels.text.fill', stylers: [{ color: '#888888' }] },
+  { featureType: 'transit',           elementType: 'geometry',         stylers: [{ color: '#1c1c1c' }] },
+  { featureType: 'transit',           elementType: 'labels.text.fill', stylers: [{ color: '#888888' }] },
+  { featureType: 'water',             elementType: 'geometry',         stylers: [{ color: '#111111' }] },
+  { featureType: 'water',             elementType: 'labels.text.fill', stylers: [{ color: '#888888' }] },
 ]
 
 function CityMap() {
@@ -134,38 +136,26 @@ function CityMap() {
         center: { lat: 34.7465, lng: -92.2896 },
         radius: 15000,
         fillColor: '#00ff88',
-        fillOpacity: 0.15,
+        fillOpacity: 0.08,
         strokeColor: '#00ff88',
-        strokeOpacity: 0.60,
-        strokeWeight: 2,
+        strokeOpacity: 1.0,
+        strokeWeight: 1,
         clickable: false,
       })
 
-      // Job activity dots — attached to map, move with pan/zoom
-      JOB_LATLNGS.forEach((pos) => {
-        // Outer ring (simulates ripple)
-        new gm.Circle({
+      // Numbered job pins — attached to map, move with pan/zoom
+      JOB_LATLNGS.forEach((pos, idx) => {
+        const n = idx + 1
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"><circle cx="14" cy="14" r="13" fill="#2d2d2d" stroke="#00ff88" stroke-width="2"/><text x="14" y="14" text-anchor="middle" dominant-baseline="central" font-family="Arial,sans-serif" font-size="11" font-weight="600" fill="white">${n}</text></svg>`
+        new gm.Marker({
           map,
-          center: pos,
-          radius: 650,
-          fillColor: '#00ff88',
-          fillOpacity: 0,
-          strokeColor: '#00ff88',
-          strokeOpacity: 0.45,
-          strokeWeight: 1.5,
-          clickable: false,
-        })
-        // Core dot
-        new gm.Circle({
-          map,
-          center: pos,
-          radius: 280,
-          fillColor: '#00ff88',
-          fillOpacity: 1,
-          strokeColor: '#00ff88',
-          strokeOpacity: 0,
-          strokeWeight: 0,
-          clickable: false,
+          position: pos,
+          icon: {
+            url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+            scaledSize: new gm.Size(28, 28),
+            anchor: new gm.Point(14, 14),
+          },
+          title: `Job ${n}`,
         })
       })
     }
