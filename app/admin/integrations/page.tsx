@@ -102,6 +102,14 @@ const CATEGORIES: { label: string; services: Service[] }[] = [
         docsLabel: 'console.cloud.google.com',
       },
       {
+        id: 'google-maps',
+        name: 'Google Maps',
+        description: 'Used to display real map views in the client dashboard and demo.',
+        fields: [{ key: 'NEXT_PUBLIC_GOOGLE_MAPS_API_KEY', label: 'API Key' }],
+        docsUrl: 'https://console.cloud.google.com',
+        docsLabel: 'console.cloud.google.com',
+      },
+      {
         id: 'google-search-console',
         name: 'Google Search Console',
         description: 'Used for SEO monitoring and organic search performance tracking.',
@@ -159,6 +167,12 @@ function ServiceIcon({ id }: { id: string }) {
     <svg className={cls} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  )
+  if (id === 'google-maps') return (
+    <svg className={cls} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+      <circle cx="12" cy="10" r="3" />
     </svg>
   )
   if (id === 'railway') return (

@@ -30,6 +30,7 @@ export const ENV_FALLBACKS: Record<string, string> = {
   stripe_price_addon_email_marketing:  'STRIPE_PRICE_ADDON_EMAIL_MARKETING',
   stripe_price_addon_email_domain:     'STRIPE_PRICE_ADDON_EMAIL_DOMAIN',
   google_places:                       'GOOGLE_PLACES_API_KEY',
+  google_maps:                         'NEXT_PUBLIC_GOOGLE_MAPS_API_KEY',
   google_search_console:               'GOOGLE_SEARCH_CONSOLE_KEY',
   cron_secret:                         'CRON_SECRET',
 }
