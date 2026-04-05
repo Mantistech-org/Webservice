@@ -136,7 +136,7 @@ function CityMap() {
         center: { lat: 34.7465, lng: -92.2896 },
         radius: 15000,
         fillColor: '#00ff88',
-        fillOpacity: 0.08,
+        fillOpacity: 0.04,
         strokeColor: '#00ff88',
         strokeOpacity: 1.0,
         strokeWeight: 1,
