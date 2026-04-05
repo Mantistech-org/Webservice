@@ -143,19 +143,17 @@ function CityMap() {
         clickable: false,
       })
 
-      // Numbered job pins — attached to map, move with pan/zoom
-      JOB_LATLNGS.forEach((pos, idx) => {
-        const n = idx + 1
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"><circle cx="14" cy="14" r="13" fill="#2d2d2d" stroke="#00ff88" stroke-width="2"/><text x="14" y="14" text-anchor="middle" dominant-baseline="central" font-family="Arial,sans-serif" font-size="11" font-weight="600" fill="white">${n}</text></svg>`
-        new gm.Marker({
+      // Solid green job dots — attached to map, move with pan/zoom
+      JOB_LATLNGS.forEach((pos) => {
+        new gm.Circle({
           map,
-          position: pos,
-          icon: {
-            url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-            scaledSize: new gm.Size(28, 28),
-            anchor: new gm.Point(14, 14),
-          },
-          title: `Job ${n}`,
+          center: pos,
+          radius: 300,
+          fillColor: '#00C27C',
+          fillOpacity: 1,
+          strokeOpacity: 0,
+          strokeWeight: 0,
+          clickable: false,
         })
       })
     }
