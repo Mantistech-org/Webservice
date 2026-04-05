@@ -120,20 +120,20 @@ function CityMap() {
         clickable: false,
       })
 
-      // Weather pill — sits on the top edge of the service area circle
-      // 15000m radius = ~0.1349 degrees latitude
+      // Weather pill — sits on the east edge of the service area circle
+      // 15000m radius at lat 34.7465 = ~0.1712 degrees longitude
       const weatherTemp = '28F'
       const weatherEvent = 'Cold Snap'
       const pillText = `${weatherTemp} — ${weatherEvent}`
       const pillW = 110, pillH = 26
       const pillSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${pillW}" height="${pillH}"><rect width="${pillW}" height="${pillH}" rx="6" fill="rgba(20,20,20,0.85)"/><text x="${pillW / 2}" y="${pillH / 2}" text-anchor="middle" dominant-baseline="central" font-family="Arial,sans-serif" font-size="11" fill="white">${pillText}</text></svg>`
-      new gm.Marker({
+      const weatherPillMarker = new gm.Marker({
         map,
-        position: { lat: 34.7465 + 0.1349, lng: -92.2896 },
+        position: { lat: 34.7465, lng: -92.1184 },
         icon: {
           url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(pillSvg)}`,
           scaledSize: new gm.Size(pillW, pillH),
-          anchor: new gm.Point(pillW / 2, pillH),
+          anchor: new gm.Point(0, pillH / 2),
         },
         clickable: false,
       })
@@ -145,8 +145,10 @@ function CityMap() {
 
       // Cluster markers (shown at zoom < 14)
       const clusterDefs = [
-        { position: { lat: 34.7430, lng: -92.3310 }, count: 6 },
+        { position: { lat: 34.7425, lng: -92.3310 }, count: 9 },
         { position: { lat: 34.7530, lng: -92.3190 }, count: 5 },
+        { position: { lat: 34.7820, lng: -92.2650 }, count: 4 },
+        { position: { lat: 34.7920, lng: -92.2430 }, count: 3 },
       ]
       const makeBadgeSvg = (count: number) => {
         const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"><circle cx="18" cy="18" r="18" fill="#EA4335"/><text x="18" y="18" text-anchor="middle" dominant-baseline="central" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="white">${count}</text></svg>`
@@ -168,6 +170,18 @@ function CityMap() {
         clusterMarkers.forEach((m) => m.setVisible(!showIndividual))
       }
       map.addListener('zoom_changed', updateVisibility)
+
+      // Toggle bottom-right cold snap pill based on whether weather pill is in view
+      const coldSnapPillEl = mapDivRef.current?.parentElement?.querySelector<HTMLElement>('[data-cold-snap-pill]')
+      const updatePillVisibility = () => {
+        if (!coldSnapPillEl) return
+        const bounds = map.getBounds()
+        const pillPos = weatherPillMarker.getPosition()
+        if (bounds && pillPos) {
+          coldSnapPillEl.style.display = bounds.contains(pillPos) ? 'none' : 'block'
+        }
+      }
+      map.addListener('bounds_changed', updatePillVisibility)
 
       // Zip code boundary layer
       fetch(
@@ -208,7 +222,7 @@ function CityMap() {
 
   // Cold snap pill — absolute HTML, informational label not a geographic marker
   const coldSnapPill = (
-    <div style={{
+    <div data-cold-snap-pill style={{
       position: 'absolute', bottom: 12, right: 12,
       backgroundColor: 'rgba(0,0,0,0.62)', borderRadius: 20,
       padding: '6px 12px', pointerEvents: 'none',
@@ -420,98 +434,120 @@ export default function DashboardHome({ businessName, onNavigateToWeather }: Das
           flexDirection: 'column',
           boxSizing: 'border-box',
         }}>
-          {/* Header row: pulsing dot + label */}
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-            <span style={{
-              display: 'inline-block',
-              width: 7, height: 7,
-              borderRadius: '50%',
-              backgroundColor: '#00ff88',
-              flexShrink: 0,
-              animation: 'dotPulse 2s ease-in-out infinite',
-              marginRight: 7,
-            }} />
-            <span style={{
-              fontSize: 9,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: '#00ff88',
+          {/* Top zone: label + headline + stat pills */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{
+                display: 'inline-block',
+                width: 7, height: 7,
+                borderRadius: '50%',
+                backgroundColor: '#00ff88',
+                flexShrink: 0,
+                animation: 'dotPulse 2s ease-in-out infinite',
+                marginRight: 7,
+              }} />
+              <span style={{
+                fontSize: 9,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: '#00ff88',
+              }}>
+                Weather Event Active
+              </span>
+            </div>
+            <div style={{ color: '#ffffff', fontWeight: 700, fontSize: '1.1rem', marginBottom: 12 }}>
+              Cold Snap Detected
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <span style={{
+                backgroundColor: 'rgba(255,255,255,0.08)',
+                color: '#ffffff',
+                fontSize: 13,
+                borderRadius: 6,
+                padding: '6px 10px',
+              }}>
+                28F Tonight
+              </span>
+              <span style={{
+                backgroundColor: 'rgba(255,255,255,0.08)',
+                color: '#ffffff',
+                fontSize: 13,
+                borderRadius: 6,
+                padding: '6px 10px',
+              }}>
+                Forecast: 3 days
+              </span>
+            </div>
+          </div>
+
+          {/* Middle zone: button + subtext */}
+          <div style={{ marginBottom: 16 }}>
+            <button
+              onClick={onNavigateToWeather}
+              style={{
+                display: 'block',
+                width: '100%',
+                backgroundColor: '#00ff88',
+                color: '#000000',
+                fontWeight: 700,
+                fontSize: '0.8rem',
+                letterSpacing: '0.05em',
+                padding: '10px 0',
+                borderRadius: 6,
+                border: 'none',
+                cursor: 'pointer',
+                animation: 'glowPulse 2s ease-in-out infinite',
+                marginBottom: 10,
+              }}
+            >
+              Activate Now
+            </button>
+            <p style={{
+              fontSize: '0.7rem',
+              color: '#555555',
+              textAlign: 'center',
+              margin: 0,
             }}>
-              Weather Event Active
-            </span>
+              Your platform is ready. Activate to fill your schedule.
+            </p>
           </div>
-
-          {/* Heading */}
-          <div style={{ color: '#ffffff', fontWeight: 700, fontSize: '1.1rem', marginBottom: 8 }}>
-            Cold Snap Detected
-          </div>
-
-          {/* Subtext */}
-          <p style={{
-            fontSize: '0.8rem',
-            color: '#888888',
-            lineHeight: 1.5,
-            marginBottom: 16,
-          }}>
-            28F forecast tonight in your service area. Your platform is ready to activate.
-          </p>
-
-          {/* Activate Now button */}
-          <button
-            onClick={onNavigateToWeather}
-            style={{
-              display: 'block',
-              width: '100%',
-              backgroundColor: '#00ff88',
-              color: '#000000',
-              fontWeight: 700,
-              fontSize: '0.8rem',
-              letterSpacing: '0.05em',
-              padding: '10px 0',
-              borderRadius: 6,
-              border: 'none',
-              cursor: 'pointer',
-              animation: 'glowPulse 2s ease-in-out infinite',
-              marginBottom: 10,
-            }}
-          >
-            Activate Now
-          </button>
-
-          {/* Tools count */}
-          <p style={{
-            fontSize: '0.7rem',
-            color: '#555555',
-            textAlign: 'center',
-            marginBottom: 12,
-          }}>
-            5 tools will activate simultaneously
-          </p>
 
           {/* Divider */}
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', marginBottom: 10 }} />
 
-          {/* Tool list */}
+          {/* Bottom zone: two-column tool grid */}
           <div style={{ flex: 1 }}>
             {ACTIVATION_ITEMS.map((item, i) => (
               <div key={i} style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 8,
-                paddingTop: 6,
-                paddingBottom: 6,
+                justifyContent: 'space-between',
+                paddingTop: 7,
+                paddingBottom: 7,
                 borderBottom: i < ACTIVATION_ITEMS.length - 1
-                  ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                  ? '1px solid rgba(255,255,255,0.06)' : 'none',
               }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{
+                    display: 'inline-block',
+                    width: 6, height: 6,
+                    borderRadius: '50%',
+                    backgroundColor: '#00C27C',
+                    flexShrink: 0,
+                  }} />
+                  <span style={{ fontSize: 13, color: '#ffffff' }}>
+                    {item.label}
+                  </span>
+                </div>
                 <span style={{
-                  display: 'inline-block',
-                  width: 11, height: 11,
-                  borderRadius: '50%',
-                  border: '1.5px solid #444444',
+                  backgroundColor: 'rgba(255,255,255,0.08)',
+                  color: '#ffffff',
+                  fontSize: 11,
+                  borderRadius: 5,
+                  padding: '4px 8px',
                   flexShrink: 0,
-                }} />
-                <span style={{ fontSize: '0.75rem', color: '#666666' }}>
-                  {item.label}
+                }}>
+                  Ready
                 </span>
               </div>
             ))}
