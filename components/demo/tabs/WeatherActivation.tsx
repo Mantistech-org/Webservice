@@ -68,9 +68,9 @@ const DAY_DETAILS: Record<string, Array<{ label: string; value: string }>> = {
   SUN:   [{ label: 'High',          value: '65F' }, { label: 'Wind Speed', value: '5 MPH'  }, { label: 'Humidity', value: '45%' }],
 }
 
-function SnowflakeIcon() {
+function SnowflakeIcon({ size = 20 }: { size?: number }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <line x1="12" y1="2"    x2="12" y2="22"   />
       <line x1="2"  y1="12"   x2="22" y2="12"   />
       <line x1="4.93"  y1="4.93"  x2="19.07" y2="19.07" />
@@ -84,17 +84,17 @@ function SnowflakeIcon() {
   )
 }
 
-function CloudIcon() {
+function CloudIcon({ size = 20 }: { size?: number }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z" />
     </svg>
   )
 }
 
-function SunIcon() {
+function SunIcon({ size = 20 }: { size?: number }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="5" />
       <line x1="12" y1="1"    x2="12" y2="3"    />
       <line x1="12" y1="21"   x2="12" y2="23"   />
@@ -108,12 +108,13 @@ function SunIcon() {
   )
 }
 
-function WeatherIcon({ type }: { type: string }) {
-  if (type === 'snowflake') return <SnowflakeIcon />
-  if (type === 'cloud')     return <CloudIcon />
-  return <SunIcon />
+function WeatherIcon({ type, size = 20 }: { type: string; size?: number }) {
+  if (type === 'snowflake') return <SnowflakeIcon size={size} />
+  if (type === 'cloud')     return <CloudIcon size={size} />
+  return <SunIcon size={size} />
 }
 
+// Compact card used for TUE–SUN
 function ForecastCard({ day }: { day: typeof FORECAST_DAYS[number] }) {
   const details = DAY_DETAILS[day.day]
   return (
@@ -130,65 +131,35 @@ function ForecastCard({ day }: { day: typeof FORECAST_DAYS[number] }) {
         alignItems: 'center',
       }}
     >
-      {/* Day label */}
-      <div style={{
-        fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em',
-        color: '#6b7280', marginBottom: 1, fontWeight: 600,
-      }}>
+      <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6b7280', marginBottom: 1, fontWeight: 600 }}>
         {day.day}
       </div>
-
-      {/* Date */}
       <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 8 }}>
         {day.date}
       </div>
-
-      {/* Weather icon */}
       <div style={{ marginBottom: 8 }}>
-        <WeatherIcon type={day.icon} />
+        <WeatherIcon type={day.icon} size={20} />
       </div>
-
-      {/* High / Low */}
       <div style={{ fontSize: 13, fontWeight: 500, color: '#111827', marginBottom: 3 }}>
         {day.high}F / {day.low}F
       </div>
-
-      {/* Condition label */}
       <div style={{ fontSize: 10, color: '#6b7280', marginBottom: 6 }}>
         {day.condition}
       </div>
-
-      {/* Detail stats */}
-      <div style={{
-        borderTop: '1px solid rgba(0,0,0,0.06)',
-        paddingTop: 6,
-        textAlign: 'left',
-        width: '100%',
-      }}>
+      <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: 6, textAlign: 'left', width: '100%' }}>
         {details.map((stat) => (
-          <div
-            key={stat.label}
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 3,
-            }}
-          >
+          <div key={stat.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
             <span style={{ fontSize: 11, color: '#6b7280' }}>{stat.label}</span>
             <span style={{ fontSize: 11, fontWeight: 500, color: '#111827' }}>{stat.value}</span>
           </div>
         ))}
       </div>
-
-      {/* Activation Recommended pill */}
       {day.activate && (
         <div style={{
           fontSize: 10, color: '#00C27C', fontWeight: 600,
           backgroundColor: 'rgba(0,194,124,0.12)',
           borderRadius: 999, padding: '2px 6px',
-          whiteSpace: 'nowrap',
-          marginTop: 6,
+          whiteSpace: 'nowrap', marginTop: 6,
         }}>
           Activation Recommended
         </div>
@@ -243,197 +214,235 @@ export default function WeatherActivation({ }: Props) {
     ? 'Activation triggered at 11:47 PM.'
     : 'Your platform is ready to activate. All 5 tools are standing by.'
 
+  const todayDetails = DAY_DETAILS['TODAY']
+  const remainingDays = FORECAST_DAYS.slice(1)
+
   return (
-    <div>
+    <div style={{ display: 'grid', gridTemplateColumns: '40% 60%', gap: 24, alignItems: 'stretch' }}>
 
-      {/* Two-column layout: left = header + panel, right = forecast + history */}
-      <div style={{ display: 'grid', gridTemplateColumns: '40% 60%', gap: 24, alignItems: 'stretch' }}>
+      {/* ── Left column — header + activation panel ── */}
+      <div style={{ position: 'sticky', top: 24, display: 'flex', flexDirection: 'column' }}>
 
-        {/* Left column — header + activation panel */}
-        <div style={{ position: 'sticky', top: 24, display: 'flex', flexDirection: 'column' }}>
+        {/* Page header */}
+        <div style={{ marginBottom: 16 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 600, color: '#111827', margin: 0, marginBottom: 6 }}>
+            Weather Activation System
+          </h1>
+          <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>
+            Automated campaign deployment triggered by real-time weather events.
+          </p>
+        </div>
 
-          {/* Page header */}
-          <div style={{ marginBottom: 16 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 600, color: '#111827', margin: 0, marginBottom: 6 }}>
-              Weather Activation System
-            </h1>
-            <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>
-              Automated campaign deployment triggered by real-time weather events.
+        {/* Activation panel — flex: 1 fills remaining left column height */}
+        <div style={{
+          backgroundColor: '#1a1a1a',
+          borderRadius: 12,
+          borderTop: '3px solid #00C27C',
+          overflow: 'hidden',
+          flex: 1,
+        }}>
+          <div style={{ padding: '24px 24px 8px 24px' }}>
+
+            {/* Label */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <span style={{
+                display: 'inline-block', width: 9, height: 9,
+                borderRadius: '50%', backgroundColor: '#00C27C', flexShrink: 0,
+              }} />
+              <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00C27C' }}>
+                Active Weather Event
+              </span>
+            </div>
+
+            {/* Headline */}
+            <div style={{ fontSize: 18, fontWeight: 600, color: '#ffffff', marginBottom: 8, lineHeight: 1.4 }}>
+              Cold snap detected. 28F forecast tonight in your service area.
+            </div>
+
+            {/* Subline */}
+            <p style={{ fontSize: 14, color: '#9ca3af', margin: 0 }}>
+              {subline}
             </p>
+
+            {/* Activate Now button */}
+            {!activated && (
+              <button
+                onClick={handleActivate}
+                disabled={activating}
+                style={{
+                  display: 'block', width: '100%', marginTop: 20,
+                  backgroundColor: '#00C27C', color: '#ffffff',
+                  fontWeight: 700, fontSize: 15, padding: '13px 0',
+                  borderRadius: 8, border: 'none',
+                  cursor: activating ? 'default' : 'pointer',
+                  opacity: activating ? 0.75 : 1,
+                }}
+              >
+                {activating ? 'Activating...' : 'Activate Now'}
+              </button>
+            )}
           </div>
 
-          {/* Activation panel — flex: 1 so it fills remaining left column height */}
-          <div style={{
-            backgroundColor: '#1a1a1a',
-            borderRadius: 12,
-            borderTop: '3px solid #00C27C',
-            overflow: 'hidden',
-            flex: 1,
-          }}>
-            <div style={{ padding: '24px 24px 8px 24px' }}>
+          {/* Tool rows */}
+          <div style={{ padding: '16px 24px 8px 24px' }}>
+            {ITEMS.map((item, i) => {
+              const isChecked   = checkedCount > i
+              const isAnimating = animatingIdx === i
 
-              {/* Label */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <span style={{
-                  display: 'inline-block', width: 9, height: 9,
-                  borderRadius: '50%', backgroundColor: '#00C27C', flexShrink: 0,
-                }} />
-                <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00C27C' }}>
-                  Active Weather Event
-                </span>
-              </div>
-
-              {/* Headline */}
-              <div style={{ fontSize: 18, fontWeight: 600, color: '#ffffff', marginBottom: 8, lineHeight: 1.4 }}>
-                Cold snap detected. 28F forecast tonight in your service area.
-              </div>
-
-              {/* Subline */}
-              <p style={{ fontSize: 14, color: '#9ca3af', margin: 0 }}>
-                {subline}
-              </p>
-
-              {/* Activate Now button */}
-              {!activated && (
-                <button
-                  onClick={handleActivate}
-                  disabled={activating}
+              return (
+                <div
+                  key={i}
                   style={{
-                    display: 'block', width: '100%', marginTop: 20,
-                    backgroundColor: '#00C27C', color: '#ffffff',
-                    fontWeight: 700, fontSize: 15, padding: '13px 0',
-                    borderRadius: 8, border: 'none',
-                    cursor: activating ? 'default' : 'pointer',
-                    opacity: activating ? 0.75 : 1,
+                    display: 'flex', alignItems: 'flex-start', gap: 16,
+                    paddingTop: 14, paddingBottom: 14,
+                    borderBottom: i < ITEMS.length - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none',
                   }}
                 >
-                  {activating ? 'Activating...' : 'Activate Now'}
-                </button>
-              )}
-            </div>
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                    backgroundColor: isChecked ? '#00b857' : 'transparent',
+                    border: isChecked ? 'none' : '2px solid #4b5563',
+                    transform: isAnimating ? 'scale(1.15)' : 'scale(1)',
+                    transition: 'transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
+                  }}>
+                    {isChecked && (
+                      <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
+                        <path d="M1 4.5L4 7.5L10 1" stroke="white" strokeWidth="1.8"
+                          strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </span>
 
-            {/* Tool rows */}
-            <div style={{ padding: '16px 24px 8px 24px' }}>
-              {ITEMS.map((item, i) => {
-                const isChecked   = checkedCount > i
-                const isAnimating = animatingIdx === i
-
-                return (
-                  <div
-                    key={i}
-                    style={{
-                      display: 'flex', alignItems: 'flex-start', gap: 16,
-                      paddingTop: 14, paddingBottom: 14,
-                      borderBottom: i < ITEMS.length - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none',
-                    }}
-                  >
-                    {/* Circle / checkmark */}
-                    <span style={{
-                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                      width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                      backgroundColor: isChecked ? '#00b857' : 'transparent',
-                      border: isChecked ? 'none' : '2px solid #4b5563',
-                      transform: isAnimating ? 'scale(1.15)' : 'scale(1)',
-                      transition: 'transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
-                    }}>
-                      {isChecked && (
-                        <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
-                          <path d="M1 4.5L4 7.5L10 1" stroke="white" strokeWidth="1.8"
-                            strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      )}
-                    </span>
-
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 14, fontWeight: 600, color: '#e5e7eb' }}>
-                          {item.label}
-                        </span>
-                        <span style={{
-                          fontSize: 12, fontWeight: 700, flexShrink: 0,
-                          color: isChecked ? '#00aa55' : '#6b7280',
-                        }}>
-                          {isChecked ? item.activatedStatus : 'Ready'}
-                        </span>
-                      </div>
-                      {isChecked && (
-                        <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>
-                          {item.desc}
-                        </p>
-                      )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: '#e5e7eb' }}>
+                        {item.label}
+                      </span>
+                      <span style={{ fontSize: 12, fontWeight: 700, flexShrink: 0, color: isChecked ? '#00aa55' : '#6b7280' }}>
+                        {isChecked ? item.activatedStatus : 'Ready'}
+                      </span>
                     </div>
+                    {isChecked && (
+                      <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>
+                        {item.desc}
+                      </p>
+                    )}
                   </div>
-                )
-              })}
-            </div>
+                </div>
+              )
+            })}
+          </div>
 
-            {/* Impact pills — only shown after full 3000ms sequence completes */}
-            {sequenceDone && (
-              <div style={{
-                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10,
-                padding: '16px 24px 24px 24px',
-              }}>
-                {IMPACT_STATS.map((stat) => (
-                  <div
-                    key={stat.value}
-                    style={{
-                      backgroundColor: 'rgba(0,194,124,0.08)',
-                      border: '1px solid rgba(0,194,124,0.3)',
-                      borderRadius: 12,
-                      padding: '14px 10px',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#00C27C', lineHeight: 1.3 }}>
-                      {stat.value}
-                    </div>
-                    <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>
-                      {stat.label}
-                    </div>
-                  </div>
-                ))}
+          {/* Impact pills — only shown after full 3000ms sequence completes */}
+          {sequenceDone && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, padding: '16px 24px 24px 24px' }}>
+              {IMPACT_STATS.map((stat) => (
+                <div
+                  key={stat.value}
+                  style={{
+                    backgroundColor: 'rgba(0,194,124,0.08)',
+                    border: '1px solid rgba(0,194,124,0.3)',
+                    borderRadius: 12,
+                    padding: '14px 10px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#00C27C', lineHeight: 1.3 }}>{stat.value}</div>
+                  <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!sequenceDone && <div style={{ height: 24 }} />}
+        </div>
+      </div>
+
+      {/* ── Right column — TODAY hero, remaining 6 days, history ── */}
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+
+        {/* TODAY hero card */}
+        <div style={{
+          backgroundColor: 'rgba(0,194,124,0.04)',
+          borderRadius: 12,
+          border: '1px solid rgba(0,0,0,0.06)',
+          borderLeft: '3px solid #00C27C',
+          display: 'flex',
+          overflow: 'hidden',
+          marginBottom: 12,
+        }}>
+          {/* Left side — day info */}
+          <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6b7280', fontWeight: 600, marginBottom: 2 }}>
+              TODAY
+            </div>
+            <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 14 }}>
+              Apr 6
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <WeatherIcon type="snowflake" size={36} />
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 600, color: '#111827', marginBottom: 4 }}>
+              34F / 28F
+            </div>
+            <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 12 }}>
+              Cold Snap
+            </div>
+            <div style={{
+              display: 'inline-flex',
+              fontSize: 10, color: '#00C27C', fontWeight: 600,
+              backgroundColor: 'rgba(0,194,124,0.12)',
+              borderRadius: 999, padding: '3px 10px',
+              whiteSpace: 'nowrap', alignSelf: 'flex-start',
+            }}>
+              Activation Recommended
+            </div>
+          </div>
+
+          {/* Vertical divider */}
+          <div style={{ width: 1, backgroundColor: 'rgba(0,0,0,0.06)', flexShrink: 0 }} />
+
+          {/* Right side — stats */}
+          <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            {todayDetails.map((stat) => (
+              <div
+                key={stat.label}
+                style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  paddingTop: 10, paddingBottom: 10,
+                  borderBottom: stat.label !== todayDetails[todayDetails.length - 1].label
+                    ? '1px solid rgba(0,0,0,0.06)' : 'none',
+                }}
+              >
+                <span style={{ fontSize: 12, color: '#6b7280' }}>{stat.label}</span>
+                <span style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>{stat.value}</span>
               </div>
-            )}
-
-            {/* Bottom padding when pills not shown */}
-            {!sequenceDone && <div style={{ height: 24 }} />}
+            ))}
           </div>
         </div>
 
-        {/* Right column — forecast grid + history panel fills remaining height */}
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {/* Remaining 6 days — two rows of 3 */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 20 }}>
+          {remainingDays.map((day) => (
+            <ForecastCard key={day.day} day={day} />
+          ))}
+        </div>
 
-          {/* 7-Day Forecast label */}
+        {/* Activation History */}
+        <div>
           <div style={{
             fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em',
-            color: '#6b7280', marginBottom: 16,
+            color: '#6b7280', marginBottom: 12,
           }}>
-            7-Day Forecast
+            Activation History
           </div>
-
-          {/* Single 7-column grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8, marginBottom: 16 }}>
-            {FORECAST_DAYS.map((day) => (
-              <ForecastCard key={day.day} day={day} />
-            ))}
-          </div>
-
-          {/* Activation history — flex: 1 fills remaining right column height */}
           <div style={{
-            flex: 1,
-            backgroundColor: '#f9fafb',
+            backgroundColor: '#ffffff',
             border: '1px solid rgba(0,0,0,0.06)',
             borderRadius: 12,
             overflow: 'hidden',
           }}>
-            <div style={{ padding: '20px 24px 0 24px' }}>
-              <div style={{
-                fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em',
-                color: '#6b7280', marginBottom: 16,
-              }}>
-                Activation History
-              </div>
-            </div>
             <div style={{ padding: '0 24px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
@@ -442,7 +451,7 @@ export default function WeatherActivation({ }: Props) {
                       <th
                         key={h}
                         style={{
-                          textAlign: 'left', paddingTop: 0, paddingBottom: 12, paddingRight: 24,
+                          textAlign: 'left', paddingTop: 16, paddingBottom: 12, paddingRight: 24,
                           fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em',
                           color: '#9ca3af', fontWeight: 500,
                         }}
@@ -468,7 +477,6 @@ export default function WeatherActivation({ }: Props) {
               </table>
             </div>
           </div>
-
         </div>
 
       </div>
