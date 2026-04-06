@@ -457,7 +457,7 @@ export default function AdCreative({ sessionId, darkMode }: Props) {
       )}
 
       <p className="font-mono text-xs text-dim text-center">
-        The full version publishes directly to your Facebook Ads Manager, Instagram, Google Ads, and LinkedIn Campaign Manager.
+        The full version publishes directly to your Facebook Ads Manager, Instagram, Automated Ads, and LinkedIn Campaign Manager.
       </p>
     </div>
   )

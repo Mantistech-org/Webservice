@@ -54,8 +54,8 @@ export default function MissedCallAutoReply({ sessionId, darkMode }: Props) {
           <h2 className="font-heading text-2xl text-primary">Missed Call Auto-Reply</h2>
           <p className="font-mono text-sm text-muted mt-1">
             {enabled
-              ? 'Active — callers receive a text immediately when a call goes unanswered.'
-              : 'Inactive — callers will not receive an automatic reply.'}
+              ? 'Active: callers receive a text immediately when a call goes unanswered.'
+              : 'Inactive: callers will not receive an automatic reply.'}
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0">

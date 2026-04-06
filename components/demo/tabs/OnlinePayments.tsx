@@ -40,9 +40,9 @@ const INIT_CLIENTS: Client[] = [
 ]
 
 const INIT_SERVICES: ServiceItem[] = [
-  { id: 1, name: 'Monthly Website Plan — Starter',  description: 'Base plan: custom website, hosting, SSL',    defaultPrice: 40  },
-  { id: 2, name: 'Monthly Website Plan — Growth',   description: 'Growth plan with bundled marketing services', defaultPrice: 125 },
-  { id: 3, name: 'Monthly Website Plan — Pro',      description: 'Pro plan with all services included',          defaultPrice: 250 },
+  { id: 1, name: 'Monthly Website Plan: Starter',  description: 'Base plan: custom website, hosting, SSL',    defaultPrice: 40  },
+  { id: 2, name: 'Monthly Website Plan: Growth',   description: 'Growth plan with bundled marketing services', defaultPrice: 125 },
+  { id: 3, name: 'Monthly Website Plan: Pro',      description: 'Pro plan with all services included',          defaultPrice: 250 },
   { id: 4, name: 'SEO Optimization',                description: 'Ongoing local SEO management',                defaultPrice: 25  },
   { id: 5, name: 'Review Management',               description: 'Automated review monitoring and posting',     defaultPrice: 19  },
   { id: 6, name: 'Social Media Automation',         description: 'Automated social media posting',              defaultPrice: 24  },
@@ -54,13 +54,13 @@ const INIT_SERVICES: ServiceItem[] = [
 ]
 
 const INIT_INVOICES: Invoice[] = [
-  { id: 'INV-1041', clientId: 1, client: 'Riverside Auto Repair',    email: 'billing@riversideauto.com',  issueDate: 'Mar 22', dueDate: 'Apr 5',  status: 'unpaid',  items: [{ description: 'Monthly Website Plan — Growth', qty: 1, rate: 125 }, { description: 'SEO Optimization', qty: 1, rate: 25 }] },
-  { id: 'INV-1040', clientId: 2, client: 'Green Valley Landscaping', email: 'accounts@greenvalleyls.com', issueDate: 'Mar 15', dueDate: 'Mar 29', status: 'paid',    items: [{ description: 'Monthly Website Plan — Pro', qty: 1, rate: 250 }, { description: 'SMS/Text Marketing', qty: 1, rate: 29 }, { description: 'Custom Referral System', qty: 1, rate: 19 }] },
-  { id: 'INV-1039', clientId: 3, client: 'Lakeside Dental Studio',   email: 'front@lakesidedental.com',   issueDate: 'Mar 10', dueDate: 'Mar 24', status: 'paid',    items: [{ description: 'Monthly Website Plan — Growth', qty: 1, rate: 125 }, { description: 'Missed Call Auto-Reply', qty: 1, rate: 19 }] },
-  { id: 'INV-1038', clientId: 4, client: 'Apex Fitness Co.',         email: 'ops@apexfitness.com',        issueDate: 'Feb 28', dueDate: 'Mar 14', status: 'overdue', items: [{ description: 'Monthly Website Plan — Starter', qty: 1, rate: 40 }, { description: 'Review Management', qty: 1, rate: 19 }, { description: 'Email with Domain', qty: 1, rate: 12 }] },
-  { id: 'INV-1037', clientId: 5, client: 'Northside Pet Clinic',     email: 'admin@northsidepet.com',     issueDate: 'Feb 25', dueDate: 'Mar 11', status: 'paid',    items: [{ description: 'Monthly Website Plan — Pro', qty: 1, rate: 250 }, { description: 'Custom Referral System', qty: 1, rate: 19 }] },
-  { id: 'INV-1036', clientId: 6, client: 'Summit Roofing LLC',       email: 'billing@summitroofing.com',  issueDate: 'Feb 20', dueDate: 'Mar 6',  status: 'overdue', items: [{ description: 'Monthly Website Plan — Growth', qty: 1, rate: 125 }, { description: 'Social Media Automation', qty: 1, rate: 24 }] },
-  { id: 'INV-1035', clientId: 1, client: 'Riverside Auto Repair',    email: 'billing@riversideauto.com',  issueDate: 'Feb 22', dueDate: 'Mar 8',  status: 'paid',    items: [{ description: 'Monthly Website Plan — Growth', qty: 1, rate: 125 }] },
+  { id: 'INV-1041', clientId: 1, client: 'Riverside Auto Repair',    email: 'billing@riversideauto.com',  issueDate: 'Mar 22', dueDate: 'Apr 5',  status: 'unpaid',  items: [{ description: 'Monthly Website Plan: Growth', qty: 1, rate: 125 }, { description: 'SEO Optimization', qty: 1, rate: 25 }] },
+  { id: 'INV-1040', clientId: 2, client: 'Green Valley Landscaping', email: 'accounts@greenvalleyls.com', issueDate: 'Mar 15', dueDate: 'Mar 29', status: 'paid',    items: [{ description: 'Monthly Website Plan: Pro', qty: 1, rate: 250 }, { description: 'SMS/Text Marketing', qty: 1, rate: 29 }, { description: 'Custom Referral System', qty: 1, rate: 19 }] },
+  { id: 'INV-1039', clientId: 3, client: 'Lakeside Dental Studio',   email: 'front@lakesidedental.com',   issueDate: 'Mar 10', dueDate: 'Mar 24', status: 'paid',    items: [{ description: 'Monthly Website Plan: Growth', qty: 1, rate: 125 }, { description: 'Missed Call Auto-Reply', qty: 1, rate: 19 }] },
+  { id: 'INV-1038', clientId: 4, client: 'Apex Fitness Co.',         email: 'ops@apexfitness.com',        issueDate: 'Feb 28', dueDate: 'Mar 14', status: 'overdue', items: [{ description: 'Monthly Website Plan: Starter', qty: 1, rate: 40 }, { description: 'Review Management', qty: 1, rate: 19 }, { description: 'Email with Domain', qty: 1, rate: 12 }] },
+  { id: 'INV-1037', clientId: 5, client: 'Northside Pet Clinic',     email: 'admin@northsidepet.com',     issueDate: 'Feb 25', dueDate: 'Mar 11', status: 'paid',    items: [{ description: 'Monthly Website Plan: Pro', qty: 1, rate: 250 }, { description: 'Custom Referral System', qty: 1, rate: 19 }] },
+  { id: 'INV-1036', clientId: 6, client: 'Summit Roofing LLC',       email: 'billing@summitroofing.com',  issueDate: 'Feb 20', dueDate: 'Mar 6',  status: 'overdue', items: [{ description: 'Monthly Website Plan: Growth', qty: 1, rate: 125 }, { description: 'Social Media Automation', qty: 1, rate: 24 }] },
+  { id: 'INV-1035', clientId: 1, client: 'Riverside Auto Repair',    email: 'billing@riversideauto.com',  issueDate: 'Feb 22', dueDate: 'Mar 8',  status: 'paid',    items: [{ description: 'Monthly Website Plan: Growth', qty: 1, rate: 125 }] },
 ]
 
 const INIT_RECURRING: RecurringInvoice[] = [
@@ -531,7 +531,7 @@ export default function OnlinePayments({ sessionId, darkMode }: Props) {
                               </div>
                             ) : (
                               <>
-                                <p className="font-mono text-xs text-[#888888]">Stripe-powered — clients pay securely via a one-click link.</p>
+                                <p className="font-mono text-xs text-[#888888]">Stripe-powered. Clients pay securely via a one-click link.</p>
                                 <button type="button" onClick={() => markPaid(inv.id)} className="font-mono text-sm px-5 py-2.5 rounded tracking-wider transition-opacity hover:opacity-80 shrink-0" style={{ backgroundColor: '#000000', color: '#f0f0f0' }}>
                                   Mark as Paid
                                 </button>
@@ -844,7 +844,7 @@ export default function OnlinePayments({ sessionId, darkMode }: Props) {
                   </thead>
                   <tbody>
                     <tr className="border-b" style={{ borderColor: tmpl.border }}>
-                      <td className="py-2.5 font-mono text-sm text-[#1a1a1a]">Monthly Website Plan — Growth</td>
+                      <td className="py-2.5 font-mono text-sm text-[#1a1a1a]">Monthly Website Plan: Growth</td>
                       <td className="py-2.5 font-mono text-sm text-[#1a1a1a] text-right">$125.00</td>
                     </tr>
                     <tr>

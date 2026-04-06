@@ -152,7 +152,7 @@ export default function CustomReferralSystem({ sessionId, darkMode }: Props) {
     {
       key: 'facebook',
       platform: 'Facebook',
-      body: `We want to say thank you to our customers. If you have been happy with our service, share this link with a friend and both of you will receive ${rewardLabel} when they sign up. We appreciate every referral — it means more than you know.\n\n${referralLink}`,
+      body: `We want to say thank you to our customers. If you have been happy with our service, share this link with a friend and both of you will receive ${rewardLabel} when they sign up. We appreciate every referral. It means more than you know.\n\n${referralLink}`,
     },
     {
       key: 'instagram',

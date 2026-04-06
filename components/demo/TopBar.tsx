@@ -84,7 +84,7 @@ const WEATHER_CONFIGS = {
     dotColor: '#3B82F6',
     dotAnimation: 'demo-pulse-blue',
     textColor: '#93C5FD',
-    label: 'Cold Snap Detected — 28F tonight',
+    label: 'Cold Snap Detected: 28F tonight',
     icon: <ColdSnapIcon />,
   },
   heatWave: {

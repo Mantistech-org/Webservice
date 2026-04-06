@@ -10,12 +10,12 @@ interface Props {
 
 const ITEMS = [
   {
-    label: 'Google Ads',
+    label: 'Automated Ads',
     activatedStatus: 'Active',
-    desc: 'Campaign running — targeting your service area.',
+    desc: 'Campaign running in your service area.',
   },
   {
-    label: 'Customer SMS Blast',
+    label: 'Customer Outreach',
     activatedStatus: 'Sent to 1,247 contacts',
     desc: 'Sent to 1,247 contacts at 11:47 PM.',
   },
@@ -27,12 +27,12 @@ const ITEMS = [
   {
     label: 'Missed Call Auto-Reply',
     activatedStatus: 'Active',
-    desc: 'Active — responding to all missed calls instantly.',
+    desc: 'Responding to all missed calls instantly.',
   },
   {
     label: 'Website Banner',
     activatedStatus: 'Live',
-    desc: 'Live — showing emergency availability message.',
+    desc: 'Showing emergency availability message.',
   },
 ]
 
@@ -43,19 +43,19 @@ const ACTIVATION_HISTORY = [
 ]
 
 const IMPACT_STATS = [
-  { value: '9 Jobs Captured',          label: 'Jobs from this activation'  },
+  { value: '9 Jobs Captured',          label: 'Jobs from this activation' },
   { value: '$6,300 Revenue Generated', label: 'Estimated revenue captured' },
-  { value: '1,247 Contacts Reached',   label: 'SMS blast recipients'       },
+  { value: '1,247 Contacts Reached',   label: 'Outreach recipients'       },
 ]
 
 const FORECAST_DAYS = [
-  { day: 'TODAY', high: 34, low: 28, condition: 'Cold Snap',      icon: 'snowflake', activate: true  },
-  { day: 'TUE',   high: 31, low: 22, condition: 'Freeze Warning', icon: 'snowflake', activate: true  },
-  { day: 'WED',   high: 38, low: 26, condition: 'Cold Snap',      icon: 'snowflake', activate: true  },
-  { day: 'THU',   high: 45, low: 33, condition: 'Overcast',       icon: 'cloud',     activate: false },
-  { day: 'FRI',   high: 52, low: 38, condition: 'Clearing',       icon: 'cloud',     activate: false },
-  { day: 'SAT',   high: 61, low: 44, condition: 'Clear',          icon: 'sun',       activate: false },
-  { day: 'SUN',   high: 65, low: 47, condition: 'Clear',          icon: 'sun',       activate: false },
+  { day: 'TODAY', date: 'Apr 6',  high: 34, low: 28, condition: 'Cold Snap',      icon: 'snowflake', activate: true  },
+  { day: 'TUE',   date: 'Apr 7',  high: 31, low: 22, condition: 'Freeze Warning', icon: 'snowflake', activate: true  },
+  { day: 'WED',   date: 'Apr 8',  high: 38, low: 26, condition: 'Cold Snap',      icon: 'snowflake', activate: true  },
+  { day: 'THU',   date: 'Apr 9',  high: 45, low: 33, condition: 'Overcast',       icon: 'cloud',     activate: false },
+  { day: 'FRI',   date: 'Apr 10', high: 52, low: 38, condition: 'Clearing',       icon: 'cloud',     activate: false },
+  { day: 'SAT',   date: 'Apr 11', high: 61, low: 44, condition: 'Clear',          icon: 'sun',       activate: false },
+  { day: 'SUN',   date: 'Apr 12', high: 65, low: 47, condition: 'Clear',          icon: 'sun',       activate: false },
 ]
 
 const DAY_DETAILS: Record<string, Array<{ label: string; value: string }>> = {
@@ -114,37 +114,33 @@ function WeatherIcon({ type }: { type: string }) {
   return <SunIcon />
 }
 
-interface ForecastCardProps {
-  day: typeof FORECAST_DAYS[number]
-  isExpanded: boolean
-  onToggle: () => void
-}
-
-function ForecastCard({ day, isExpanded, onToggle }: ForecastCardProps) {
+function ForecastCard({ day }: { day: typeof FORECAST_DAYS[number] }) {
   const details = DAY_DETAILS[day.day]
   return (
     <div
-      onClick={onToggle}
       style={{
         backgroundColor: day.activate ? 'rgba(0,194,124,0.04)' : '#ffffff',
         borderRadius: 12,
-        padding: '16px 16px 28px 16px',
+        padding: 16,
         textAlign: 'center',
         border: '1px solid rgba(0,0,0,0.06)',
         borderLeft: day.activate ? '3px solid #00C27C' : '1px solid rgba(0,0,0,0.06)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        cursor: 'pointer',
-        position: 'relative',
       }}
     >
       {/* Day label */}
       <div style={{
         fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em',
-        color: '#6b7280', marginBottom: 10, fontWeight: 600,
+        color: '#6b7280', marginBottom: 2, fontWeight: 600,
       }}>
         {day.day}
+      </div>
+
+      {/* Date */}
+      <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 10 }}>
+        {day.date}
       </div>
 
       {/* Weather icon */}
@@ -158,38 +154,31 @@ function ForecastCard({ day, isExpanded, onToggle }: ForecastCardProps) {
       </div>
 
       {/* Condition label */}
-      <div style={{ fontSize: 11, color: '#6b7280' }}>
+      <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 8 }}>
         {day.condition}
       </div>
 
-      {/* Expandable details panel */}
+      {/* Detail stats — always visible */}
       <div style={{
-        overflow: 'hidden',
-        maxHeight: isExpanded ? 120 : 0,
-        transition: 'max-height 250ms ease',
+        borderTop: '1px solid rgba(0,0,0,0.06)',
+        paddingTop: 8,
+        textAlign: 'left',
         width: '100%',
       }}>
-        <div style={{
-          borderTop: '1px solid rgba(0,0,0,0.06)',
-          marginTop: 8,
-          paddingTop: 8,
-          textAlign: 'left',
-        }}>
-          {details.map((stat) => (
-            <div
-              key={stat.label}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 4,
-              }}
-            >
-              <span style={{ fontSize: 12, color: '#6b7280' }}>{stat.label}</span>
-              <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{stat.value}</span>
-            </div>
-          ))}
-        </div>
+        {details.map((stat) => (
+          <div
+            key={stat.label}
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 4,
+            }}
+          >
+            <span style={{ fontSize: 12, color: '#6b7280' }}>{stat.label}</span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{stat.value}</span>
+          </div>
+        ))}
       </div>
 
       {/* Activation Recommended pill */}
@@ -204,20 +193,6 @@ function ForecastCard({ day, isExpanded, onToggle }: ForecastCardProps) {
           Activation Recommended
         </div>
       )}
-
-      {/* Chevron — rotates when expanded */}
-      <div style={{
-        position: 'absolute',
-        bottom: 8,
-        right: 8,
-        transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-        transition: 'transform 250ms ease',
-        lineHeight: 0,
-      }}>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path d="M2 4L6 8L10 4" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
     </div>
   )
 }
@@ -228,7 +203,6 @@ export default function WeatherActivation({ }: Props) {
   const [checkedCount, setCheckedCount] = useState(0)
   const [animatingIdx, setAnimatingIdx] = useState<number | null>(null)
   const [sequenceDone, setSequenceDone] = useState(false)
-  const [expandedDay,  setExpandedDay]  = useState<string | null>('TODAY')
 
   const runSequence = () => {
     setActivated(true)
@@ -269,15 +243,13 @@ export default function WeatherActivation({ }: Props) {
     ? 'Activation triggered at 11:47 PM.'
     : 'Your platform is ready to activate. All 5 tools are standing by.'
 
-  const toggleDay = (day: string) => setExpandedDay(prev => prev === day ? null : day)
-
   const rowOne = FORECAST_DAYS.slice(0, 4)
   const rowTwo = FORECAST_DAYS.slice(4)
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '40% 60%', gap: 24, alignItems: 'start' }}>
 
-      {/* ── Left column — header + activation panel ── */}
+      {/* Left column — header + activation panel */}
       <div style={{ position: 'sticky', top: 24 }}>
 
         {/* Page header */}
@@ -312,7 +284,7 @@ export default function WeatherActivation({ }: Props) {
 
             {/* Headline */}
             <div style={{ fontSize: 18, fontWeight: 600, color: '#ffffff', marginBottom: 8, lineHeight: 1.4 }}>
-              Cold snap detected — 28F forecast tonight in your service area.
+              Cold snap detected. 28F forecast tonight in your service area.
             </div>
 
             {/* Subline */}
@@ -394,7 +366,7 @@ export default function WeatherActivation({ }: Props) {
             })}
           </div>
 
-          {/* Impact pills — shown after activation completes */}
+          {/* Impact pills — only shown after full 3000ms sequence completes */}
           {sequenceDone && (
             <div style={{
               display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10,
@@ -427,7 +399,7 @@ export default function WeatherActivation({ }: Props) {
         </div>
       </div>
 
-      {/* ── Right column — forecast grid + history ── */}
+      {/* Right column — forecast grid + history */}
       <div>
 
         {/* 7-Day Forecast label */}
@@ -438,27 +410,17 @@ export default function WeatherActivation({ }: Props) {
           7-Day Forecast
         </div>
 
-        {/* Forecast row 1: TODAY – THU (4 columns) */}
+        {/* Forecast row 1: TODAY through THU (4 columns) */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 8 }}>
           {rowOne.map((day) => (
-            <ForecastCard
-              key={day.day}
-              day={day}
-              isExpanded={expandedDay === day.day}
-              onToggle={() => toggleDay(day.day)}
-            />
+            <ForecastCard key={day.day} day={day} />
           ))}
         </div>
 
-        {/* Forecast row 2: FRI – SUN (3 columns) */}
+        {/* Forecast row 2: FRI through SUN (3 columns) */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {rowTwo.map((day) => (
-            <ForecastCard
-              key={day.day}
-              day={day}
-              isExpanded={expandedDay === day.day}
-              onToggle={() => toggleDay(day.day)}
-            />
+            <ForecastCard key={day.day} day={day} />
           ))}
         </div>
 

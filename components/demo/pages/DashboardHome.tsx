@@ -12,8 +12,8 @@ interface DashboardProps {
 // ── Static data ────────────────────────────────────────────────────────────────
 
 const ACTIVATION_ITEMS = [
-  { label: 'Google Ads'              },
-  { label: 'Customer SMS Blast'      },
+  { label: 'Automated Ads'           },
+  { label: 'Customer Outreach'       },
   { label: 'Google Business Profile' },
   { label: 'Missed Call Auto-Reply'  },
   { label: 'Website Banner'          },
@@ -21,11 +21,11 @@ const ACTIVATION_ITEMS = [
 
 const ACTIVITY_FEED = [
   { text: 'Cold snap activation fired automatically',    time: '11:47 PM' },
-  { text: 'SMS blast sent to 1,247 contacts',            time: '11:47 PM' },
-  { text: 'Google Ads campaign activated',               time: '11:48 PM' },
+  { text: 'Customer outreach sent to 1,247 contacts',    time: '11:47 PM' },
+  { text: 'Automated Ads campaign activated',            time: '11:48 PM' },
   { text: 'Missed call auto-reply enabled',              time: '11:48 PM' },
   { text: '3 new Google reviews received',               time: '8:22 AM'  },
-  { text: 'Booking confirmed — Ray Dominguez, 10:00 AM', time: '7:45 AM'  },
+  { text: 'Booking confirmed, Ray Dominguez, 10:00 AM',  time: '7:45 AM'  },
 ]
 
 
@@ -112,7 +112,7 @@ function CityMap() {
       // 15000m radius at lat 34.7465 = ~0.1712 degrees longitude
       const weatherTemp = '28F'
       const weatherEvent = 'Cold Snap'
-      const pillText = `${weatherTemp} — ${weatherEvent}`
+      const pillText = `${weatherTemp}: ${weatherEvent}`
       const pillW = 110, pillH = 26
       const pillSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${pillW}" height="${pillH}"><rect width="${pillW}" height="${pillH}" rx="6" fill="rgba(20,20,20,0.85)"/><text x="${pillW / 2}" y="${pillH / 2}" text-anchor="middle" dominant-baseline="central" font-family="Arial,sans-serif" font-size="11" fill="white">${pillText}</text></svg>`
       const weatherPillMarker = new gm.Marker({
@@ -216,7 +216,7 @@ function CityMap() {
       padding: '6px 12px', pointerEvents: 'none',
     }}>
       <span style={{ color: '#ffffff', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
-        Cold snap active — 28F tonight
+        Cold snap active: 28F tonight
       </span>
     </div>
   )
@@ -543,7 +543,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
               color: '#374151',
               marginBottom: 12,
             }}>
-              Platform Performance — This Month
+              Platform Performance, This Month
             </div>
             <div style={{
               fontSize: '3.5rem',
@@ -668,7 +668,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           flexDirection: 'column',
         }}>
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
-            Bookings — Today
+            Bookings, Today
           </div>
           {[
             { time: '7:00 AM',  name: 'James Perkins'   },

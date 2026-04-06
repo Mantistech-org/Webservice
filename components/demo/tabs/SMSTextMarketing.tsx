@@ -53,7 +53,7 @@ const INITIAL_CAMPAIGNS: Campaign[] = [
   { id: 2, name: 'Service Reminder',           message: 'Hi [Name], your HVAC tune-up is due this month. Book now and lock in our spring rate before it ends.',          sent: 312,  delivered: 308,  replies: 61, date: 'Mar 13', status: 'sent'      },
   { id: 3, name: 'Maintenance Plan Offer',     message: 'Join our annual maintenance plan and get priority scheduling plus 10% off all repairs. Reply for details.',      sent: 188,  delivered: 185,  replies: 24, date: 'Mar 10', status: 'sent'      },
   { id: 4, name: 'Review Request',             message: 'Thanks for trusting us with your HVAC. A quick Google review means a lot to our team. [link]',                  sent: 203,  delivered: 199,  replies: 22, date: 'Mar 7',  status: 'sent'      },
-  { id: 5, name: 'Summer AC Tune-Up Promo',    message: 'Summer is coming fast. Book your AC tune-up now and skip the rush — 10% off this month only.',                  sent: 0,    delivered: 0,    replies: 0,  date: 'Apr 1',  status: 'scheduled' },
+  { id: 5, name: 'Summer AC Tune-Up Promo',    message: 'Summer is coming fast. Book your AC tune-up now and skip the rush. 10% off this month only.',                  sent: 0,    delivered: 0,    replies: 0,  date: 'Apr 1',  status: 'scheduled' },
 ]
 
 const TEMPLATES: Template[] = [
@@ -325,7 +325,7 @@ export default function SMSTextMarketing({ sessionId, darkMode }: Props) {
                     <div className="p-4 flex items-center justify-between gap-4 cursor-pointer" onClick={() => setExpandedCampaign(expandedCampaign === c.id ? null : c.id)}>
                       <div className="flex-1 min-w-0">
                         <div className="font-mono text-sm text-[#1a1a1a] font-medium">{c.name}</div>
-                        <div className="font-mono text-xs text-[#888888] mt-0.5">{c.date} — {c.delivered} delivered</div>
+                        <div className="font-mono text-xs text-[#888888] mt-0.5">{c.date}, {c.delivered} delivered</div>
                       </div>
                       <div className="flex items-center gap-6 shrink-0">
                         <div className="text-center">
@@ -494,7 +494,7 @@ export default function SMSTextMarketing({ sessionId, darkMode }: Props) {
                       </td>
                       <td className="py-3 pr-4 font-mono text-sm text-primary">{c.name}</td>
                       <td className="py-3 pr-4 font-mono text-sm text-muted">{c.phone}</td>
-                      <td className="py-3 pr-4 font-mono text-sm text-muted hidden sm:table-cell">{c.email || '—'}</td>
+                      <td className="py-3 pr-4 font-mono text-sm text-muted hidden sm:table-cell">{c.email || '-'}</td>
                       <td className="py-3 pr-4">
                         <span className="font-mono text-xs px-2 py-0.5 rounded border" style={{ color: TAG_COLORS[c.tag] ?? '#888888', borderColor: `${TAG_COLORS[c.tag] ?? '#888888'}30`, backgroundColor: `${TAG_COLORS[c.tag] ?? '#888888'}08` }}>
                           {c.tag}
