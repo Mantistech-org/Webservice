@@ -9,31 +9,11 @@ interface Props {
 }
 
 const ITEMS = [
-  {
-    label: 'Automated Ads',
-    activatedStatus: 'Active',
-    desc: 'Campaign running in your service area.',
-  },
-  {
-    label: 'Customer Outreach',
-    activatedStatus: 'Sent to 1,247 contacts',
-    desc: 'Sent to 1,247 contacts at 11:47 PM.',
-  },
-  {
-    label: 'Google Business Profile',
-    activatedStatus: 'Updated',
-    desc: 'Emergency availability post published.',
-  },
-  {
-    label: 'Missed Call Auto-Reply',
-    activatedStatus: 'Active',
-    desc: 'Responding to all missed calls instantly.',
-  },
-  {
-    label: 'Website Banner',
-    activatedStatus: 'Live',
-    desc: 'Showing emergency availability message.',
-  },
+  { label: 'Automated Ads',          activatedStatus: 'Active',                 desc: 'Campaign running in your service area.'     },
+  { label: 'Customer Outreach',       activatedStatus: 'Sent to 1,247 contacts', desc: 'Sent to 1,247 contacts at 11:47 PM.'        },
+  { label: 'Google Business Profile', activatedStatus: 'Updated',                desc: 'Emergency availability post published.'     },
+  { label: 'Missed Call Auto-Reply',  activatedStatus: 'Active',                 desc: 'Responding to all missed calls instantly.'  },
+  { label: 'Website Banner',          activatedStatus: 'Live',                   desc: 'Showing emergency availability message.'    },
 ]
 
 const ACTIVATION_HISTORY = [
@@ -67,6 +47,8 @@ const DAY_DETAILS: Record<string, Array<{ label: string; value: string }>> = {
   SAT:   [{ label: 'High',          value: '61F' }, { label: 'Wind Speed', value: '6 MPH'  }, { label: 'Humidity', value: '48%' }],
   SUN:   [{ label: 'High',          value: '65F' }, { label: 'Wind Speed', value: '5 MPH'  }, { label: 'Humidity', value: '45%' }],
 }
+
+// ── Icon components ──────────────────────────────────────────────────────────
 
 function SnowflakeIcon({ size = 20 }: { size?: number }) {
   return (
@@ -114,38 +96,23 @@ function WeatherIcon({ type, size = 20 }: { type: string; size?: number }) {
   return <SunIcon size={size} />
 }
 
-// Compact card used for TUE–SUN
+// ── Forecast cards ────────────────────────────────────────────────────────────
+
 function ForecastCard({ day }: { day: typeof FORECAST_DAYS[number] }) {
   const details = DAY_DETAILS[day.day]
   return (
-    <div
-      style={{
-        backgroundColor: day.activate ? 'rgba(0,194,124,0.04)' : '#ffffff',
-        borderRadius: 12,
-        padding: 12,
-        textAlign: 'center',
-        border: '1px solid rgba(0,0,0,0.06)',
-        borderLeft: day.activate ? '3px solid #00C27C' : '1px solid rgba(0,0,0,0.06)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}
-    >
-      <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6b7280', marginBottom: 1, fontWeight: 600 }}>
-        {day.day}
-      </div>
-      <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 8 }}>
-        {day.date}
-      </div>
-      <div style={{ marginBottom: 8 }}>
-        <WeatherIcon type={day.icon} size={20} />
-      </div>
-      <div style={{ fontSize: 13, fontWeight: 500, color: '#111827', marginBottom: 3 }}>
-        {day.high}F / {day.low}F
-      </div>
-      <div style={{ fontSize: 10, color: '#6b7280', marginBottom: 6 }}>
-        {day.condition}
-      </div>
+    <div style={{
+      backgroundColor: day.activate ? 'rgba(0,194,124,0.04)' : '#ffffff',
+      borderRadius: 12, padding: 12, textAlign: 'center',
+      border: '1px solid rgba(0,0,0,0.06)',
+      borderLeft: day.activate ? '3px solid #00C27C' : '1px solid rgba(0,0,0,0.06)',
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+    }}>
+      <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6b7280', marginBottom: 1, fontWeight: 600 }}>{day.day}</div>
+      <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 8 }}>{day.date}</div>
+      <div style={{ marginBottom: 8 }}><WeatherIcon type={day.icon} size={20} /></div>
+      <div style={{ fontSize: 13, fontWeight: 500, color: '#111827', marginBottom: 3 }}>{day.high}F / {day.low}F</div>
+      <div style={{ fontSize: 10, color: '#6b7280', marginBottom: 6 }}>{day.condition}</div>
       <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: 6, textAlign: 'left', width: '100%' }}>
         {details.map((stat) => (
           <div key={stat.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
@@ -155,12 +122,7 @@ function ForecastCard({ day }: { day: typeof FORECAST_DAYS[number] }) {
         ))}
       </div>
       {day.activate && (
-        <div style={{
-          fontSize: 10, color: '#00C27C', fontWeight: 600,
-          backgroundColor: 'rgba(0,194,124,0.12)',
-          borderRadius: 999, padding: '2px 6px',
-          whiteSpace: 'nowrap', marginTop: 6,
-        }}>
+        <div style={{ fontSize: 10, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 999, padding: '2px 6px', whiteSpace: 'nowrap', marginTop: 6 }}>
           Activation Recommended
         </div>
       )}
@@ -168,12 +130,213 @@ function ForecastCard({ day }: { day: typeof FORECAST_DAYS[number] }) {
   )
 }
 
-export default function WeatherActivation({ }: Props) {
-  const [activated,    setActivated]    = useState(false)
-  const [activating,   setActivating]   = useState(false)
-  const [checkedCount, setCheckedCount] = useState(0)
-  const [animatingIdx, setAnimatingIdx] = useState<number | null>(null)
-  const [sequenceDone, setSequenceDone] = useState(false)
+// ── Shared panel UI helpers ───────────────────────────────────────────────────
+
+const panelLabel: React.CSSProperties = {
+  fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em',
+  color: '#9ca3af', fontWeight: 600, marginBottom: 10,
+}
+
+function PillGroup({ options, value, onChange }: {
+  options: { label: string; value: string | number }[]
+  value: string | number
+  onChange: (v: string | number) => void
+}) {
+  return (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          onClick={() => onChange(opt.value)}
+          style={{
+            fontSize: 12, fontWeight: 500, padding: '5px 12px', borderRadius: 6, border: 'none',
+            cursor: 'pointer',
+            backgroundColor: value === opt.value ? '#00C27C' : 'rgba(255,255,255,0.08)',
+            color: value === opt.value ? '#ffffff' : '#9ca3af',
+          }}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function SmsBubble({ message }: { message: string }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+      <div style={{
+        backgroundColor: '#00C27C',
+        borderRadius: '12px 12px 2px 12px',
+        padding: '10px 14px',
+        maxWidth: '90%',
+      }}>
+        <p style={{ fontSize: 13, color: '#ffffff', margin: 0, lineHeight: 1.5 }}>{message}</p>
+      </div>
+    </div>
+  )
+}
+
+// ── Accordion panel components ────────────────────────────────────────────────
+
+function AutomatedAdsPanel() {
+  const [platforms, setPlatforms] = useState({ google: true, facebook: true, instagram: false })
+  const [duration, setDuration]   = useState<number>(3)
+  const [budget, setBudget]       = useState('$25')
+
+  const togglePlatform = (key: keyof typeof platforms) =>
+    setPlatforms(prev => ({ ...prev, [key]: !prev[key] }))
+
+  const CheckBox = ({ label, checked, onChange }: { label: string; checked: boolean; onChange: () => void }) => (
+    <div onClick={onChange} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+      <div style={{
+        width: 16, height: 16, borderRadius: 3, flexShrink: 0,
+        backgroundColor: checked ? '#00C27C' : 'transparent',
+        border: checked ? 'none' : '1.5px solid #4b5563',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {checked && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+      </div>
+      <span style={{ fontSize: 13, color: '#ffffff' }}>{label}</span>
+    </div>
+  )
+
+  return (
+    <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 16, marginTop: 12 }}>
+      <div style={panelLabel}>Ad Preview</div>
+      <div style={{ backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 8, padding: 12, marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: '#ffffff', marginBottom: 4 }}>Emergency HVAC Service Available Now</div>
+        <div style={{ fontSize: 12, color: '#00C27C', marginBottom: 6 }}>mantistech.org/hvac-service</div>
+        <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.5 }}>Cold snap hitting tonight. Our techs are standing by for emergency heating repairs. Call now or book online.</div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 14 }}>
+        <div>
+          <div style={panelLabel}>Post To</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <CheckBox label="Google Search" checked={platforms.google}    onChange={() => togglePlatform('google')} />
+            <CheckBox label="Facebook"      checked={platforms.facebook}  onChange={() => togglePlatform('facebook')} />
+            <CheckBox label="Instagram"     checked={platforms.instagram} onChange={() => togglePlatform('instagram')} />
+          </div>
+        </div>
+        <div>
+          <div style={panelLabel}>Duration</div>
+          <PillGroup
+            options={[{ label: '1 Day', value: 1 }, { label: '2 Days', value: 2 }, { label: '3 Days', value: 3 }, { label: '5 Days', value: 5 }]}
+            value={duration}
+            onChange={(v) => setDuration(v as number)}
+          />
+        </div>
+      </div>
+
+      <div>
+        <div style={panelLabel}>Daily Budget</div>
+        <input
+          value={budget}
+          onChange={(e) => setBudget(e.target.value)}
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.3)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 8, padding: '7px 12px', fontSize: 14, textAlign: 'right', width: 100,
+            outline: 'none',
+          }}
+        />
+      </div>
+    </div>
+  )
+}
+
+function CustomerOutreachPanel({ businessName }: { businessName: string }) {
+  const [timing, setTiming] = useState<'now' | 'schedule'>('now')
+  return (
+    <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 16, marginTop: 12 }}>
+      <div style={panelLabel}>Message Preview</div>
+      <SmsBubble message={`Hi, this is ${businessName} with Mantis Tech. A cold snap is hitting your area tonight with temps dropping to 28F. If your heating system needs attention, we have emergency availability. Reply STOP to opt out.`} />
+      <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 14 }}>161 characters</div>
+      <div style={panelLabel}>Send Timing</div>
+      <PillGroup
+        options={[{ label: 'Send Now', value: 'now' }, { label: 'Schedule 6 AM', value: 'schedule' }]}
+        value={timing}
+        onChange={(v) => setTiming(v as 'now' | 'schedule')}
+      />
+    </div>
+  )
+}
+
+function GBPPanel() {
+  return (
+    <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 16, marginTop: 12 }}>
+      <div style={panelLabel}>Post Preview</div>
+      <div style={{ backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 8, padding: 12 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#ffffff', marginBottom: 6 }}>Your HVAC Business</div>
+        <p style={{ fontSize: 13, color: '#9ca3af', margin: '0 0 10px 0', lineHeight: 1.5 }}>
+          Cold snap warning: Temps dropping to 28F tonight. We have emergency heating availability. Call us now or book online for same-day service. Stay warm.
+        </p>
+        <div style={{ display: 'inline-flex', fontSize: 11, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.15)', borderRadius: 999, padding: '3px 10px' }}>
+          Emergency Hours
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MissedCallPanel() {
+  const [status, setStatus] = useState<'active' | 'inactive'>('active')
+  return (
+    <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 16, marginTop: 12 }}>
+      <div style={panelLabel}>Auto-Reply Preview</div>
+      <SmsBubble message="Hi, you reached [Business Name]. We just missed your call but we are on it. We have emergency heating availability tonight. Click here to book: mantistech.org/book" />
+      <div style={{ marginTop: 14 }}>
+        <div style={panelLabel}>Status</div>
+        <PillGroup
+          options={[{ label: 'Active', value: 'active' }, { label: 'Inactive', value: 'inactive' }]}
+          value={status}
+          onChange={(v) => setStatus(v as 'active' | 'inactive')}
+        />
+      </div>
+    </div>
+  )
+}
+
+function WebsiteBannerPanel() {
+  const [visibility, setVisibility] = useState<'visible' | 'hidden'>('visible')
+  return (
+    <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 16, marginTop: 12 }}>
+      <div style={panelLabel}>Banner Preview</div>
+      <div style={{
+        backgroundColor: 'rgba(0,194,124,0.15)',
+        border: '1px solid rgba(0,194,124,0.3)',
+        borderRadius: 8, padding: 12, marginBottom: 14,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+      }}>
+        <span style={{ fontSize: 13, color: '#ffffff', flex: 1, lineHeight: 1.5 }}>
+          Cold snap alert: Emergency heating service available now. Call or book online.
+        </span>
+        <button style={{ backgroundColor: '#00C27C', color: '#ffffff', fontSize: 12, fontWeight: 600, padding: '6px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+          Book Now
+        </button>
+      </div>
+      <div style={panelLabel}>Show Banner</div>
+      <PillGroup
+        options={[{ label: 'Visible', value: 'visible' }, { label: 'Hidden', value: 'hidden' }]}
+        value={visibility}
+        onChange={(v) => setVisibility(v as 'visible' | 'hidden')}
+      />
+    </div>
+  )
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
+export default function WeatherActivation({ businessName = 'Your Business' }: Props) {
+  const [activated,     setActivated]     = useState(false)
+  const [activating,    setActivating]    = useState(false)
+  const [checkedCount,  setCheckedCount]  = useState(0)
+  const [animatingIdx,  setAnimatingIdx]  = useState<number | null>(null)
+  const [sequenceDone,  setSequenceDone]  = useState(false)
+  const [expandedTools, setExpandedTools] = useState<Set<number>>(new Set())
+
+  const collapsePanel = (i: number) =>
+    setExpandedTools(prev => { const next = new Set(prev); next.delete(i); return next })
 
   const runSequence = () => {
     setActivated(true)
@@ -182,6 +345,7 @@ export default function WeatherActivation({ }: Props) {
     DELAYS.forEach((delay, i) => {
       setTimeout(() => {
         setAnimatingIdx(i)
+        collapsePanel(i)
         setTimeout(() => {
           setCheckedCount(i + 1)
           setAnimatingIdx(null)
@@ -194,7 +358,6 @@ export default function WeatherActivation({ }: Props) {
     }, 3000)
   }
 
-  // Auto-activate when arriving from the dashboard via ?autoactivate=true
   useEffect(() => {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(window.location.search)
@@ -210,6 +373,13 @@ export default function WeatherActivation({ }: Props) {
     runSequence()
   }
 
+  const toggleTool = (i: number) =>
+    setExpandedTools(prev => {
+      const next = new Set(prev)
+      next.has(i) ? next.delete(i) : next.add(i)
+      return next
+    })
+
   const subline = sequenceDone
     ? 'Activation triggered at 11:47 PM.'
     : 'Your platform is ready to activate. All 5 tools are standing by.'
@@ -223,7 +393,6 @@ export default function WeatherActivation({ }: Props) {
       {/* ── Left column — header + activation panel ── */}
       <div style={{ position: 'sticky', top: 24, display: 'flex', flexDirection: 'column' }}>
 
-        {/* Page header */}
         <div style={{ marginBottom: 16 }}>
           <h1 style={{ fontSize: 22, fontWeight: 600, color: '#111827', margin: 0, marginBottom: 6 }}>
             Weather Activation System
@@ -233,38 +402,22 @@ export default function WeatherActivation({ }: Props) {
           </p>
         </div>
 
-        {/* Activation panel — flex: 1 fills remaining left column height */}
-        <div style={{
-          backgroundColor: '#1a1a1a',
-          borderRadius: 12,
-          borderTop: '3px solid #00C27C',
-          overflow: 'hidden',
-          flex: 1,
-        }}>
+        <div style={{ backgroundColor: '#1a1a1a', borderRadius: 12, borderTop: '3px solid #00C27C', overflow: 'hidden', flex: 1 }}>
           <div style={{ padding: '24px 24px 8px 24px' }}>
 
-            {/* Label */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <span style={{
-                display: 'inline-block', width: 9, height: 9,
-                borderRadius: '50%', backgroundColor: '#00C27C', flexShrink: 0,
-              }} />
+              <span style={{ display: 'inline-block', width: 9, height: 9, borderRadius: '50%', backgroundColor: '#00C27C', flexShrink: 0 }} />
               <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00C27C' }}>
                 Active Weather Event
               </span>
             </div>
 
-            {/* Headline */}
             <div style={{ fontSize: 18, fontWeight: 600, color: '#ffffff', marginBottom: 8, lineHeight: 1.4 }}>
               Cold snap detected. 28F forecast tonight in your service area.
             </div>
 
-            {/* Subline */}
-            <p style={{ fontSize: 14, color: '#9ca3af', margin: 0 }}>
-              {subline}
-            </p>
+            <p style={{ fontSize: 14, color: '#9ca3af', margin: 0 }}>{subline}</p>
 
-            {/* Activate Now button */}
             {!activated && (
               <button
                 onClick={handleActivate}
@@ -284,51 +437,74 @@ export default function WeatherActivation({ }: Props) {
           </div>
 
           {/* Tool rows */}
-          <div style={{ padding: '16px 24px 8px 24px' }}>
+          <div style={{ padding: '8px 24px 8px 24px' }}>
             {ITEMS.map((item, i) => {
               const isChecked   = checkedCount > i
               const isAnimating = animatingIdx === i
+              const isOpen      = expandedTools.has(i)
 
               return (
-                <div
-                  key={i}
-                  style={{
-                    display: 'flex', alignItems: 'flex-start', gap: 16,
-                    paddingTop: 14, paddingBottom: 14,
-                    borderBottom: i < ITEMS.length - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none',
-                  }}
-                >
-                  <span style={{
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                    backgroundColor: isChecked ? '#00b857' : 'transparent',
-                    border: isChecked ? 'none' : '2px solid #4b5563',
-                    transform: isAnimating ? 'scale(1.15)' : 'scale(1)',
-                    transition: 'transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
-                  }}>
-                    {isChecked && (
-                      <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
-                        <path d="M1 4.5L4 7.5L10 1" stroke="white" strokeWidth="1.8"
-                          strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                  </span>
+                <div key={i} style={{ borderBottom: i < ITEMS.length - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none' }}>
+                  {/* Row */}
+                  <div
+                    onClick={() => { if (!activated) toggleTool(i) }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 16,
+                      paddingTop: 14, paddingBottom: 14,
+                      cursor: activated ? 'default' : 'pointer',
+                    }}
+                  >
+                    {/* Circle / checkmark */}
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                      width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                      backgroundColor: isChecked ? '#00b857' : 'transparent',
+                      border: isChecked ? 'none' : '2px solid #4b5563',
+                      transform: isAnimating ? 'scale(1.15)' : 'scale(1)',
+                      transition: 'transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
+                    }}>
+                      {isChecked && (
+                        <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
+                          <path d="M1 4.5L4 7.5L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </span>
 
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: '#e5e7eb' }}>
-                        {item.label}
-                      </span>
-                      <span style={{ fontSize: 12, fontWeight: 700, flexShrink: 0, color: isChecked ? '#00aa55' : '#6b7280' }}>
-                        {isChecked ? item.activatedStatus : 'Ready'}
-                      </span>
+                    {/* Label + desc */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: '#e5e7eb' }}>{item.label}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: isChecked ? '#00aa55' : '#6b7280' }}>
+                            {isChecked ? item.activatedStatus : 'Ready'}
+                          </span>
+                          {/* Chevron — only in unactivated state */}
+                          {!activated && (
+                            <svg
+                              width="12" height="12" viewBox="0 0 12 12" fill="none"
+                              style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 200ms ease', flexShrink: 0 }}
+                            >
+                              <path d="M2 4L6 8L10 4" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          )}
+                        </div>
+                      </div>
+                      {isChecked && (
+                        <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 2, marginBottom: 0 }}>{item.desc}</p>
+                      )}
                     </div>
-                    {isChecked && (
-                      <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>
-                        {item.desc}
-                      </p>
-                    )}
                   </div>
+
+                  {/* Accordion panel — unactivated state only */}
+                  {!activated && (
+                    <div style={{ overflow: 'hidden', maxHeight: isOpen ? '600px' : '0', transition: 'max-height 250ms ease', marginBottom: isOpen ? 12 : 0 }}>
+                      {i === 0 && <AutomatedAdsPanel />}
+                      {i === 1 && <CustomerOutreachPanel businessName={businessName} />}
+                      {i === 2 && <GBPPanel />}
+                      {i === 3 && <MissedCallPanel />}
+                      {i === 4 && <WebsiteBannerPanel />}
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -338,16 +514,7 @@ export default function WeatherActivation({ }: Props) {
           {sequenceDone && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, padding: '16px 24px 24px 24px' }}>
               {IMPACT_STATS.map((stat) => (
-                <div
-                  key={stat.value}
-                  style={{
-                    backgroundColor: 'rgba(0,194,124,0.08)',
-                    border: '1px solid rgba(0,194,124,0.3)',
-                    borderRadius: 12,
-                    padding: '14px 10px',
-                    textAlign: 'center',
-                  }}
-                >
+                <div key={stat.value} style={{ backgroundColor: 'rgba(0,194,124,0.08)', border: '1px solid rgba(0,194,124,0.3)', borderRadius: 12, padding: '14px 10px', textAlign: 'center' }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#00C27C', lineHeight: 1.3 }}>{stat.value}</div>
                   <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>{stat.label}</div>
                 </div>
@@ -372,49 +539,22 @@ export default function WeatherActivation({ }: Props) {
           overflow: 'hidden',
           marginBottom: 12,
         }}>
-          {/* Left side — day info */}
           <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6b7280', fontWeight: 600, marginBottom: 2 }}>
-              TODAY
-            </div>
-            <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 14 }}>
-              Apr 6
-            </div>
-            <div style={{ marginBottom: 12 }}>
-              <WeatherIcon type="snowflake" size={36} />
-            </div>
-            <div style={{ fontSize: 22, fontWeight: 600, color: '#111827', marginBottom: 4 }}>
-              34F / 28F
-            </div>
-            <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 12 }}>
-              Cold Snap
-            </div>
-            <div style={{
-              display: 'inline-flex',
-              fontSize: 10, color: '#00C27C', fontWeight: 600,
-              backgroundColor: 'rgba(0,194,124,0.12)',
-              borderRadius: 999, padding: '3px 10px',
-              whiteSpace: 'nowrap', alignSelf: 'flex-start',
-            }}>
+            <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6b7280', fontWeight: 600, marginBottom: 2 }}>TODAY</div>
+            <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 14 }}>Apr 6</div>
+            <div style={{ marginBottom: 12 }}><WeatherIcon type="snowflake" size={36} /></div>
+            <div style={{ fontSize: 22, fontWeight: 600, color: '#111827', marginBottom: 4 }}>34F / 28F</div>
+            <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 12 }}>Cold Snap</div>
+            <div style={{ display: 'inline-flex', fontSize: 10, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 999, padding: '3px 10px', whiteSpace: 'nowrap', alignSelf: 'flex-start' }}>
               Activation Recommended
             </div>
           </div>
 
-          {/* Vertical divider */}
           <div style={{ width: 1, backgroundColor: 'rgba(0,0,0,0.06)', flexShrink: 0 }} />
 
-          {/* Right side — stats */}
           <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            {todayDetails.map((stat) => (
-              <div
-                key={stat.label}
-                style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  paddingTop: 10, paddingBottom: 10,
-                  borderBottom: stat.label !== todayDetails[todayDetails.length - 1].label
-                    ? '1px solid rgba(0,0,0,0.06)' : 'none',
-                }}
-              >
+            {todayDetails.map((stat, i) => (
+              <div key={stat.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, paddingBottom: 10, borderBottom: i < todayDetails.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>
                 <span style={{ fontSize: 12, color: '#6b7280' }}>{stat.label}</span>
                 <span style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>{stat.value}</span>
               </div>
@@ -431,42 +571,22 @@ export default function WeatherActivation({ }: Props) {
 
         {/* Activation History */}
         <div>
-          <div style={{
-            fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em',
-            color: '#6b7280', marginBottom: 12,
-          }}>
+          <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 12 }}>
             Activation History
           </div>
-          <div style={{
-            backgroundColor: '#ffffff',
-            border: '1px solid rgba(0,0,0,0.06)',
-            borderRadius: 12,
-            overflow: 'hidden',
-          }}>
+          <div style={{ backgroundColor: '#ffffff', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 12, overflow: 'hidden' }}>
             <div style={{ padding: '0 24px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
                     {['Date', 'Event Type', 'Jobs Captured', 'Revenue Estimated'].map((h) => (
-                      <th
-                        key={h}
-                        style={{
-                          textAlign: 'left', paddingTop: 16, paddingBottom: 12, paddingRight: 24,
-                          fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em',
-                          color: '#9ca3af', fontWeight: 500,
-                        }}
-                      >
-                        {h}
-                      </th>
+                      <th key={h} style={{ textAlign: 'left', paddingTop: 16, paddingBottom: 12, paddingRight: 24, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#9ca3af', fontWeight: 500 }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {ACTIVATION_HISTORY.map((row, i) => (
-                    <tr
-                      key={i}
-                      style={{ borderBottom: i < ACTIVATION_HISTORY.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}
-                    >
+                    <tr key={i} style={{ borderBottom: i < ACTIVATION_HISTORY.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>
                       <td style={{ fontSize: 14, color: '#444444', paddingRight: 24, paddingTop: 14, paddingBottom: 14 }}>{row.date}</td>
                       <td style={{ fontSize: 14, color: '#444444', paddingRight: 24, paddingTop: 14, paddingBottom: 14 }}>{row.event}</td>
                       <td style={{ fontSize: 18, fontWeight: 700, color: '#1a1a1a', paddingRight: 24, paddingTop: 14, paddingBottom: 14 }}>{row.jobs}</td>
