@@ -114,6 +114,114 @@ function WeatherIcon({ type }: { type: string }) {
   return <SunIcon />
 }
 
+interface ForecastCardProps {
+  day: typeof FORECAST_DAYS[number]
+  isExpanded: boolean
+  onToggle: () => void
+}
+
+function ForecastCard({ day, isExpanded, onToggle }: ForecastCardProps) {
+  const details = DAY_DETAILS[day.day]
+  return (
+    <div
+      onClick={onToggle}
+      style={{
+        backgroundColor: day.activate ? 'rgba(0,194,124,0.04)' : '#ffffff',
+        borderRadius: 12,
+        padding: '16px 16px 28px 16px',
+        textAlign: 'center',
+        border: '1px solid rgba(0,0,0,0.06)',
+        borderLeft: day.activate ? '3px solid #00C27C' : '1px solid rgba(0,0,0,0.06)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        cursor: 'pointer',
+        position: 'relative',
+      }}
+    >
+      {/* Day label */}
+      <div style={{
+        fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em',
+        color: '#6b7280', marginBottom: 10, fontWeight: 600,
+      }}>
+        {day.day}
+      </div>
+
+      {/* Weather icon */}
+      <div style={{ marginBottom: 10 }}>
+        <WeatherIcon type={day.icon} />
+      </div>
+
+      {/* High / Low */}
+      <div style={{ fontSize: 14, fontWeight: 500, color: '#111827', marginBottom: 4 }}>
+        {day.high}F / {day.low}F
+      </div>
+
+      {/* Condition label */}
+      <div style={{ fontSize: 11, color: '#6b7280' }}>
+        {day.condition}
+      </div>
+
+      {/* Expandable details panel */}
+      <div style={{
+        overflow: 'hidden',
+        maxHeight: isExpanded ? 120 : 0,
+        transition: 'max-height 250ms ease',
+        width: '100%',
+      }}>
+        <div style={{
+          borderTop: '1px solid rgba(0,0,0,0.06)',
+          marginTop: 8,
+          paddingTop: 8,
+          textAlign: 'left',
+        }}>
+          {details.map((stat) => (
+            <div
+              key={stat.label}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 4,
+              }}
+            >
+              <span style={{ fontSize: 12, color: '#6b7280' }}>{stat.label}</span>
+              <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{stat.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Activation Recommended pill */}
+      {day.activate && (
+        <div style={{
+          fontSize: 10, color: '#00C27C', fontWeight: 600,
+          backgroundColor: 'rgba(0,194,124,0.12)',
+          borderRadius: 999, padding: '2px 8px',
+          whiteSpace: 'nowrap',
+          marginTop: 8,
+        }}>
+          Activation Recommended
+        </div>
+      )}
+
+      {/* Chevron — rotates when expanded */}
+      <div style={{
+        position: 'absolute',
+        bottom: 8,
+        right: 8,
+        transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+        transition: 'transform 250ms ease',
+        lineHeight: 0,
+      }}>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M2 4L6 8L10 4" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+    </div>
+  )
+}
+
 export default function WeatherActivation({ }: Props) {
   const [activated,    setActivated]    = useState(false)
   const [activating,   setActivating]   = useState(false)
@@ -161,132 +269,35 @@ export default function WeatherActivation({ }: Props) {
     ? 'Activation triggered at 11:47 PM.'
     : 'Your platform is ready to activate. All 5 tools are standing by.'
 
+  const toggleDay = (day: string) => setExpandedDay(prev => prev === day ? null : day)
+
+  const rowOne = FORECAST_DAYS.slice(0, 4)
+  const rowTwo = FORECAST_DAYS.slice(4)
+
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'grid', gridTemplateColumns: '40% 60%', gap: 24, alignItems: 'start' }}>
 
-      {/* 7-day forecast row + activation panel — visually connected */}
-      <div>
+      {/* ── Left column — header + activation panel ── */}
+      <div style={{ position: 'sticky', top: 24 }}>
 
-        {/* Forecast row */}
-        <div style={{
-          backgroundColor: '#f0f0f0',
-          borderRadius: '12px 12px 0 0',
-          padding: '16px 16px 12px 16px',
-        }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
-            {FORECAST_DAYS.map((day) => {
-              const isExpanded = expandedDay === day.day
-              const details    = DAY_DETAILS[day.day]
-
-              return (
-                <div
-                  key={day.day}
-                  onClick={() => setExpandedDay(expandedDay === day.day ? null : day.day)}
-                  style={{
-                    backgroundColor: day.activate ? 'rgba(0,194,124,0.04)' : '#ffffff',
-                    borderRadius: 12,
-                    padding: '16px 16px 28px 16px',
-                    textAlign: 'center',
-                    borderLeft: day.activate ? '3px solid #00C27C' : '3px solid transparent',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    position: 'relative',
-                  }}
-                >
-                  {/* Day label */}
-                  <div style={{
-                    fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em',
-                    color: '#6b7280', marginBottom: 10, fontWeight: 600,
-                  }}>
-                    {day.day}
-                  </div>
-
-                  {/* Weather icon */}
-                  <div style={{ marginBottom: 10 }}>
-                    <WeatherIcon type={day.icon} />
-                  </div>
-
-                  {/* High / Low */}
-                  <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', marginBottom: 4 }}>
-                    {day.high}F / {day.low}F
-                  </div>
-
-                  {/* Condition label */}
-                  <div style={{ fontSize: 11, color: '#6b7280' }}>
-                    {day.condition}
-                  </div>
-
-                  {/* Expandable details panel */}
-                  <div style={{
-                    overflow: 'hidden',
-                    maxHeight: isExpanded ? 120 : 0,
-                    transition: 'max-height 250ms ease',
-                    width: '100%',
-                  }}>
-                    <div style={{
-                      borderTop: '1px solid rgba(0,0,0,0.06)',
-                      marginTop: 8,
-                      paddingTop: 8,
-                      textAlign: 'left',
-                    }}>
-                      {details.map((stat) => (
-                        <div
-                          key={stat.label}
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            marginBottom: 4,
-                          }}
-                        >
-                          <span style={{ fontSize: 12, color: '#6b7280' }}>{stat.label}</span>
-                          <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{stat.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Activation Recommended pill */}
-                  {day.activate && (
-                    <div style={{
-                      fontSize: 10, color: '#00C27C', fontWeight: 600,
-                      backgroundColor: 'rgba(0,194,124,0.12)',
-                      borderRadius: 999, padding: '2px 8px',
-                      whiteSpace: 'nowrap',
-                      marginTop: 8,
-                    }}>
-                      Activation Recommended
-                    </div>
-                  )}
-
-                  {/* Chevron — rotates when expanded */}
-                  <div style={{
-                    position: 'absolute',
-                    bottom: 8,
-                    right: 8,
-                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                    transition: 'transform 250ms ease',
-                    lineHeight: 0,
-                  }}>
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M2 4L6 8L10 4" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+        {/* Page header */}
+        <div style={{ marginBottom: 16 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 600, color: '#111827', margin: 0, marginBottom: 6 }}>
+            Weather Activation System
+          </h1>
+          <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>
+            Automated campaign deployment triggered by real-time weather events.
+          </p>
         </div>
 
-        {/* Activation panel — dark, attached below forecast */}
+        {/* Activation panel */}
         <div style={{
           backgroundColor: '#1a1a1a',
+          borderRadius: 12,
           borderTop: '3px solid #00C27C',
-          borderRadius: '0 0 12px 12px',
+          overflow: 'hidden',
         }}>
-          <div style={{ padding: '28px 28px 8px 28px' }}>
+          <div style={{ padding: '24px 24px 8px 24px' }}>
 
             {/* Label */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
@@ -300,12 +311,12 @@ export default function WeatherActivation({ }: Props) {
             </div>
 
             {/* Headline */}
-            <h2 className="font-heading text-xl font-bold mb-2" style={{ color: '#ffffff' }}>
+            <div style={{ fontSize: 18, fontWeight: 600, color: '#ffffff', marginBottom: 8, lineHeight: 1.4 }}>
               Cold snap detected — 28F forecast tonight in your service area.
-            </h2>
+            </div>
 
             {/* Subline */}
-            <p style={{ fontSize: 14, color: '#9ca3af' }}>
+            <p style={{ fontSize: 14, color: '#9ca3af', margin: 0 }}>
               {subline}
             </p>
 
@@ -329,7 +340,7 @@ export default function WeatherActivation({ }: Props) {
           </div>
 
           {/* Tool rows */}
-          <div style={{ padding: '16px 28px 8px 28px' }}>
+          <div style={{ padding: '16px 24px 8px 24px' }}>
             {ITEMS.map((item, i) => {
               const isChecked   = checkedCount > i
               const isAnimating = animatingIdx === i
@@ -361,7 +372,7 @@ export default function WeatherActivation({ }: Props) {
                   </span>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
                       <span style={{ fontSize: 14, fontWeight: 600, color: '#e5e7eb' }}>
                         {item.label}
                       </span>
@@ -386,24 +397,24 @@ export default function WeatherActivation({ }: Props) {
           {/* Impact pills — shown after activation completes */}
           {sequenceDone && (
             <div style={{
-              display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12,
-              padding: '16px 28px 28px 28px',
+              display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10,
+              padding: '16px 24px 24px 24px',
             }}>
               {IMPACT_STATS.map((stat) => (
                 <div
                   key={stat.value}
                   style={{
-                    backgroundColor: 'rgba(0, 194, 124, 0.1)',
-                    border: '1px solid rgba(0, 194, 124, 0.35)',
-                    borderRadius: 10,
-                    padding: 16,
+                    backgroundColor: 'rgba(0,194,124,0.08)',
+                    border: '1px solid rgba(0,194,124,0.3)',
+                    borderRadius: 12,
+                    padding: '14px 10px',
                     textAlign: 'center',
                   }}
                 >
-                  <div style={{ fontSize: 16, fontWeight: 700, color: '#00C27C', lineHeight: 1.2 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#00C27C', lineHeight: 1.3 }}>
                     {stat.value}
                   </div>
-                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>
+                  <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>
                     {stat.label}
                   </div>
                 </div>
@@ -412,43 +423,96 @@ export default function WeatherActivation({ }: Props) {
           )}
 
           {/* Bottom padding when pills not shown */}
-          {!sequenceDone && <div style={{ height: 28 }} />}
+          {!sequenceDone && <div style={{ height: 24 }} />}
         </div>
       </div>
 
-      {/* Activation History */}
-      <div className="rounded-xl" style={{ backgroundColor: '#e8e8e8', border: '1px solid #d0d0d0' }}>
-        <div className="px-6 pt-6 pb-4">
-          <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#888888', marginBottom: 20 }}>
+      {/* ── Right column — forecast grid + history ── */}
+      <div>
+
+        {/* 7-Day Forecast label */}
+        <div style={{
+          fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em',
+          color: '#6b7280', marginBottom: 16,
+        }}>
+          7-Day Forecast
+        </div>
+
+        {/* Forecast row 1: TODAY – THU (4 columns) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 8 }}>
+          {rowOne.map((day) => (
+            <ForecastCard
+              key={day.day}
+              day={day}
+              isExpanded={expandedDay === day.day}
+              onToggle={() => toggleDay(day.day)}
+            />
+          ))}
+        </div>
+
+        {/* Forecast row 2: FRI – SUN (3 columns) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+          {rowTwo.map((day) => (
+            <ForecastCard
+              key={day.day}
+              day={day}
+              isExpanded={expandedDay === day.day}
+              onToggle={() => toggleDay(day.day)}
+            />
+          ))}
+        </div>
+
+        {/* Activation History */}
+        <div style={{ marginTop: 24 }}>
+          <div style={{
+            fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em',
+            color: '#6b7280', marginBottom: 16,
+          }}>
             Activation History
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr style={{ borderBottom: '1px solid #d0d0d0' }}>
-                  {['Date', 'Event Type', 'Jobs Captured', 'Revenue Estimated'].map((h) => (
-                    <th key={h} className="text-left pb-3"
-                      style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#888888', paddingRight: 24, fontWeight: 500 }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {ACTIVATION_HISTORY.map((row, i) => (
-                  <tr key={i} style={{ borderBottom: i < ACTIVATION_HISTORY.length - 1 ? '1px solid #d0d0d0' : 'none' }}>
-                    <td className="py-4" style={{ fontSize: 14, color: '#444444', paddingRight: 24 }}>{row.date}</td>
-                    <td className="py-4" style={{ fontSize: 14, color: '#444444', paddingRight: 24 }}>{row.event}</td>
-                    <td className="py-4" style={{ fontSize: 18, fontWeight: 700, color: '#1a1a1a', paddingRight: 24 }}>{row.jobs}</td>
-                    <td className="py-4" style={{ fontSize: 14, fontWeight: 600, color: '#00aa55' }}>{row.revenue}</td>
+          <div style={{
+            backgroundColor: '#ffffff',
+            border: '1px solid rgba(0,0,0,0.06)',
+            borderRadius: 12,
+            overflow: 'hidden',
+          }}>
+            <div style={{ padding: '0 24px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+                    {['Date', 'Event Type', 'Jobs Captured', 'Revenue Estimated'].map((h) => (
+                      <th
+                        key={h}
+                        style={{
+                          textAlign: 'left', paddingTop: 16, paddingBottom: 12, paddingRight: 24,
+                          fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em',
+                          color: '#9ca3af', fontWeight: 500,
+                        }}
+                      >
+                        {h}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {ACTIVATION_HISTORY.map((row, i) => (
+                    <tr
+                      key={i}
+                      style={{ borderBottom: i < ACTIVATION_HISTORY.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}
+                    >
+                      <td style={{ fontSize: 14, color: '#444444', paddingRight: 24, paddingTop: 16, paddingBottom: 16 }}>{row.date}</td>
+                      <td style={{ fontSize: 14, color: '#444444', paddingRight: 24, paddingTop: 16, paddingBottom: 16 }}>{row.event}</td>
+                      <td style={{ fontSize: 18, fontWeight: 700, color: '#1a1a1a', paddingRight: 24, paddingTop: 16, paddingBottom: 16 }}>{row.jobs}</td>
+                      <td style={{ fontSize: 14, fontWeight: 600, color: '#00aa55', paddingTop: 16, paddingBottom: 16 }}>{row.revenue}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
 
+      </div>
     </div>
   )
 }
