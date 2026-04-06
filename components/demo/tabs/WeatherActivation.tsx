@@ -246,11 +246,11 @@ export default function WeatherActivation({ }: Props) {
   return (
     <div>
 
-      {/* Two-column layout: left = header + panel, right = forecast only */}
-      <div style={{ display: 'grid', gridTemplateColumns: '40% 60%', gap: 24, alignItems: 'start' }}>
+      {/* Two-column layout: left = header + panel, right = forecast + history */}
+      <div style={{ display: 'grid', gridTemplateColumns: '40% 60%', gap: 24, alignItems: 'stretch' }}>
 
         {/* Left column — header + activation panel */}
-        <div style={{ position: 'sticky', top: 24 }}>
+        <div style={{ position: 'sticky', top: 24, display: 'flex', flexDirection: 'column' }}>
 
           {/* Page header */}
           <div style={{ marginBottom: 16 }}>
@@ -262,12 +262,13 @@ export default function WeatherActivation({ }: Props) {
             </p>
           </div>
 
-          {/* Activation panel */}
+          {/* Activation panel — flex: 1 so it fills remaining left column height */}
           <div style={{
             backgroundColor: '#1a1a1a',
             borderRadius: 12,
             borderTop: '3px solid #00C27C',
             overflow: 'hidden',
+            flex: 1,
           }}>
             <div style={{ padding: '24px 24px 8px 24px' }}>
 
@@ -399,8 +400,9 @@ export default function WeatherActivation({ }: Props) {
           </div>
         </div>
 
-        {/* Right column — forecast grid only */}
-        <div>
+        {/* Right column — forecast grid + history panel fills remaining height */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+
           {/* 7-Day Forecast label */}
           <div style={{
             fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em',
@@ -410,63 +412,65 @@ export default function WeatherActivation({ }: Props) {
           </div>
 
           {/* Single 7-column grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8, marginBottom: 16 }}>
             {FORECAST_DAYS.map((day) => (
               <ForecastCard key={day.day} day={day} />
             ))}
           </div>
-        </div>
 
-      </div>
-
-      {/* Full-width activation history below both columns */}
-      <div style={{ marginTop: 24 }}>
-        <div style={{
-          fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em',
-          color: '#6b7280', marginBottom: 24,
-        }}>
-          Activation History
-        </div>
-        <div style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid rgba(0,0,0,0.06)',
-          borderRadius: 12,
-          overflow: 'hidden',
-        }}>
-          <div style={{ padding: '0 24px' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-                  {['Date', 'Event Type', 'Jobs Captured', 'Revenue Estimated'].map((h) => (
-                    <th
-                      key={h}
-                      style={{
-                        textAlign: 'left', paddingTop: 16, paddingBottom: 12, paddingRight: 24,
-                        fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em',
-                        color: '#9ca3af', fontWeight: 500,
-                      }}
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {ACTIVATION_HISTORY.map((row, i) => (
-                  <tr
-                    key={i}
-                    style={{ borderBottom: i < ACTIVATION_HISTORY.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}
-                  >
-                    <td style={{ fontSize: 14, color: '#444444', paddingRight: 24, paddingTop: 16, paddingBottom: 16 }}>{row.date}</td>
-                    <td style={{ fontSize: 14, color: '#444444', paddingRight: 24, paddingTop: 16, paddingBottom: 16 }}>{row.event}</td>
-                    <td style={{ fontSize: 18, fontWeight: 700, color: '#1a1a1a', paddingRight: 24, paddingTop: 16, paddingBottom: 16 }}>{row.jobs}</td>
-                    <td style={{ fontSize: 14, fontWeight: 600, color: '#00aa55', paddingTop: 16, paddingBottom: 16 }}>{row.revenue}</td>
+          {/* Activation history — flex: 1 fills remaining right column height */}
+          <div style={{
+            flex: 1,
+            backgroundColor: '#f9fafb',
+            border: '1px solid rgba(0,0,0,0.06)',
+            borderRadius: 12,
+            overflow: 'hidden',
+          }}>
+            <div style={{ padding: '20px 24px 0 24px' }}>
+              <div style={{
+                fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em',
+                color: '#6b7280', marginBottom: 16,
+              }}>
+                Activation History
+              </div>
+            </div>
+            <div style={{ padding: '0 24px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+                    {['Date', 'Event Type', 'Jobs Captured', 'Revenue Estimated'].map((h) => (
+                      <th
+                        key={h}
+                        style={{
+                          textAlign: 'left', paddingTop: 0, paddingBottom: 12, paddingRight: 24,
+                          fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em',
+                          color: '#9ca3af', fontWeight: 500,
+                        }}
+                      >
+                        {h}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {ACTIVATION_HISTORY.map((row, i) => (
+                    <tr
+                      key={i}
+                      style={{ borderBottom: i < ACTIVATION_HISTORY.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}
+                    >
+                      <td style={{ fontSize: 14, color: '#444444', paddingRight: 24, paddingTop: 14, paddingBottom: 14 }}>{row.date}</td>
+                      <td style={{ fontSize: 14, color: '#444444', paddingRight: 24, paddingTop: 14, paddingBottom: 14 }}>{row.event}</td>
+                      <td style={{ fontSize: 18, fontWeight: 700, color: '#1a1a1a', paddingRight: 24, paddingTop: 14, paddingBottom: 14 }}>{row.jobs}</td>
+                      <td style={{ fontSize: 14, fontWeight: 600, color: '#00aa55', paddingTop: 14, paddingBottom: 14 }}>{row.revenue}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
+
         </div>
+
       </div>
 
     </div>
