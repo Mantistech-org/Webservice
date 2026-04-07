@@ -393,8 +393,8 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
       {/* ── TOP SECTION: two columns, both size to content ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: 24, alignItems: 'start' }}>
 
-        {/* Left column — activation panel only, sizes to content */}
-        <div style={{ position: 'sticky', top: 24, alignSelf: 'start' }}>
+        {/* Left column — activation panel only, stretches to match right column height */}
+        <div style={{ alignSelf: 'stretch', display: 'flex', flexDirection: 'column' }}>
 
           <div style={{ marginBottom: 16 }}>
             <h1 style={{ fontSize: 22, fontWeight: 600, color: '#111827', margin: 0, marginBottom: 6 }}>
@@ -405,7 +405,7 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
             </p>
           </div>
 
-          <div style={{ backgroundColor: '#1a1a1a', borderRadius: 12, borderTop: '3px solid #00C27C', overflow: 'hidden' }}>
+          <div style={{ backgroundColor: '#1a1a1a', borderRadius: 12, borderTop: '3px solid #00C27C', overflow: 'hidden', flex: 1 }}>
             <div style={{ padding: '24px 24px 8px 24px' }}>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
