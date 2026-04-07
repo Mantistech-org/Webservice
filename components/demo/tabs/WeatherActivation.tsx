@@ -103,26 +103,26 @@ function ForecastCard({ day }: { day: typeof FORECAST_DAYS[number] }) {
   return (
     <div style={{
       backgroundColor: day.activate ? 'rgba(0,194,124,0.04)' : '#ffffff',
-      borderRadius: 12, padding: 12, textAlign: 'center',
+      borderRadius: 12, padding: 16, textAlign: 'center',
       border: '1px solid rgba(0,0,0,0.06)',
       borderLeft: day.activate ? '3px solid #00C27C' : '1px solid rgba(0,0,0,0.06)',
       display: 'flex', flexDirection: 'column', alignItems: 'center',
     }}>
-      <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6b7280', marginBottom: 1, fontWeight: 600 }}>{day.day}</div>
-      <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 8 }}>{day.date}</div>
-      <div style={{ marginBottom: 8 }}><WeatherIcon type={day.icon} size={20} /></div>
-      <div style={{ fontSize: 13, fontWeight: 500, color: '#111827', marginBottom: 3 }}>{day.high}F / {day.low}F</div>
-      <div style={{ fontSize: 10, color: '#6b7280', marginBottom: 6 }}>{day.condition}</div>
+      <div style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#374151', marginBottom: 1, fontWeight: 600 }}>{day.day}</div>
+      <div style={{ fontSize: 11, color: '#4b5563', marginBottom: 8 }}>{day.date}</div>
+      <div style={{ marginBottom: 8 }}><WeatherIcon type={day.icon} size={24} /></div>
+      <div style={{ fontSize: 16, fontWeight: 600, color: '#111827', marginBottom: 3 }}>{day.high}F / {day.low}F</div>
+      <div style={{ fontSize: 12, color: '#4b5563', marginBottom: 6 }}>{day.condition}</div>
       <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: 6, textAlign: 'left', width: '100%' }}>
         {details.map((stat) => (
           <div key={stat.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
-            <span style={{ fontSize: 11, color: '#6b7280' }}>{stat.label}</span>
-            <span style={{ fontSize: 11, fontWeight: 500, color: '#111827' }}>{stat.value}</span>
+            <span style={{ fontSize: 12, color: '#4b5563' }}>{stat.label}</span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{stat.value}</span>
           </div>
         ))}
       </div>
       {day.activate && (
-        <div style={{ fontSize: 10, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 999, padding: '2px 6px', whiteSpace: 'nowrap', marginTop: 6 }}>
+        <div style={{ fontSize: 11, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 999, padding: '2px 6px', whiteSpace: 'nowrap', marginTop: 6 }}>
           Activation Recommended
         </div>
       )}
@@ -388,10 +388,10 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
   const remainingDays = FORECAST_DAYS.slice(1)
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '40% 60%', gap: 24, alignItems: 'stretch' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '40% 60%', gap: 24, alignItems: 'start' }}>
 
       {/* ── Left column — header + activation panel ── */}
-      <div style={{ position: 'sticky', top: 24, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ position: 'sticky', top: 24, alignSelf: 'start' }}>
 
         <div style={{ marginBottom: 16 }}>
           <h1 style={{ fontSize: 22, fontWeight: 600, color: '#111827', margin: 0, marginBottom: 6 }}>
@@ -402,7 +402,7 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
           </p>
         </div>
 
-        <div style={{ backgroundColor: '#1a1a1a', borderRadius: 12, borderTop: '3px solid #00C27C', overflow: 'hidden', flex: 1 }}>
+        <div style={{ backgroundColor: '#1a1a1a', borderRadius: 12, borderTop: '3px solid #00C27C', overflow: 'hidden' }}>
           <div style={{ padding: '24px 24px 8px 24px' }}>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
@@ -540,12 +540,12 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
           marginBottom: 12,
         }}>
           <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6b7280', fontWeight: 600, marginBottom: 2 }}>TODAY</div>
-            <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 14 }}>Apr 6</div>
+            <div style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#374151', fontWeight: 600, marginBottom: 2 }}>TODAY</div>
+            <div style={{ fontSize: 11, color: '#4b5563', marginBottom: 14 }}>Apr 6</div>
             <div style={{ marginBottom: 12 }}><WeatherIcon type="snowflake" size={36} /></div>
             <div style={{ fontSize: 22, fontWeight: 600, color: '#111827', marginBottom: 4 }}>34F / 28F</div>
-            <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 12 }}>Cold Snap</div>
-            <div style={{ display: 'inline-flex', fontSize: 10, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 999, padding: '3px 10px', whiteSpace: 'nowrap', alignSelf: 'flex-start' }}>
+            <div style={{ fontSize: 13, color: '#4b5563', marginBottom: 12 }}>Cold Snap</div>
+            <div style={{ display: 'inline-flex', fontSize: 11, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 999, padding: '3px 10px', whiteSpace: 'nowrap', alignSelf: 'flex-start' }}>
               Activation Recommended
             </div>
           </div>
@@ -555,7 +555,7 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
           <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             {todayDetails.map((stat, i) => (
               <div key={stat.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, paddingBottom: 10, borderBottom: i < todayDetails.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>
-                <span style={{ fontSize: 12, color: '#6b7280' }}>{stat.label}</span>
+                <span style={{ fontSize: 12, color: '#4b5563' }}>{stat.label}</span>
                 <span style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>{stat.value}</span>
               </div>
             ))}
@@ -563,7 +563,7 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
         </div>
 
         {/* Remaining 6 days — two rows of 3 */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 24 }}>
           {remainingDays.map((day) => (
             <ForecastCard key={day.day} day={day} />
           ))}
@@ -571,7 +571,7 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
 
         {/* Activation History */}
         <div>
-          <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 12 }}>
+          <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#374151', fontWeight: 600, marginBottom: 12 }}>
             Activation History
           </div>
           <div style={{ backgroundColor: '#ffffff', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 12, overflow: 'hidden' }}>
@@ -580,15 +580,15 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
                     {['Date', 'Event Type', 'Jobs Captured', 'Revenue Estimated'].map((h) => (
-                      <th key={h} style={{ textAlign: 'left', paddingTop: 16, paddingBottom: 12, paddingRight: 24, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#9ca3af', fontWeight: 500 }}>{h}</th>
+                      <th key={h} style={{ textAlign: 'left', paddingTop: 16, paddingBottom: 12, paddingRight: 24, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#374151', fontWeight: 600 }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {ACTIVATION_HISTORY.map((row, i) => (
                     <tr key={i} style={{ borderBottom: i < ACTIVATION_HISTORY.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>
-                      <td style={{ fontSize: 14, color: '#444444', paddingRight: 24, paddingTop: 14, paddingBottom: 14 }}>{row.date}</td>
-                      <td style={{ fontSize: 14, color: '#444444', paddingRight: 24, paddingTop: 14, paddingBottom: 14 }}>{row.event}</td>
+                      <td style={{ fontSize: 14, color: '#374151', paddingRight: 24, paddingTop: 14, paddingBottom: 14 }}>{row.date}</td>
+                      <td style={{ fontSize: 14, color: '#374151', paddingRight: 24, paddingTop: 14, paddingBottom: 14 }}>{row.event}</td>
                       <td style={{ fontSize: 18, fontWeight: 700, color: '#1a1a1a', paddingRight: 24, paddingTop: 14, paddingBottom: 14 }}>{row.jobs}</td>
                       <td style={{ fontSize: 14, fontWeight: 600, color: '#00aa55', paddingTop: 14, paddingBottom: 14 }}>{row.revenue}</td>
                     </tr>
