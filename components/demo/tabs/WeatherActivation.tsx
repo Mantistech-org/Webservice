@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 interface Props {
   sessionId: string
@@ -170,16 +170,6 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
       setSequenceRunning(false)
     }, 3000)
   }
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('autoactivate') === 'true') {
-      const t = setTimeout(runSequence, 500)
-      return () => clearTimeout(t)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const toggleTool = (i: number) =>
     setExpandedTools(prev => {
