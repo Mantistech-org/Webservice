@@ -9,11 +9,11 @@ interface Props {
 }
 
 const ITEMS = [
-  { label: 'Automated Ads',          activatedStatus: 'Active'                 },
-  { label: 'Customer Outreach',       activatedStatus: 'Sent to 1,247 contacts' },
-  { label: 'Google Business Profile', activatedStatus: 'Updated'                },
-  { label: 'Missed Call Auto-Reply',  activatedStatus: 'Active'                 },
-  { label: 'Website Banner',          activatedStatus: 'Live'                   },
+  { label: 'Automated Ads',          description: 'Google Search, Facebook, Instagram',  activatedStatus: 'Active'                 },
+  { label: 'Customer Outreach',       description: '1,247 contacts ready',                 activatedStatus: 'Sent to 1,247 contacts' },
+  { label: 'Google Business Profile', description: 'Post ready to publish',                activatedStatus: 'Updated'                },
+  { label: 'Missed Call Auto-Reply',  description: 'Auto-response configured',             activatedStatus: 'Active'                 },
+  { label: 'Website Banner',          description: 'Banner ready to go live',              activatedStatus: 'Live'                   },
 ]
 
 const ACTIVATION_HISTORY = [
@@ -48,7 +48,7 @@ const DAY_DETAILS: Record<string, Array<{ label: string; value: string }>> = {
   SUN:   [{ label: 'High',          value: '65F' }, { label: 'Wind Speed', value: '5 MPH'  }, { label: 'Humidity', value: '45%' }],
 }
 
-// ── Icon components ───────────────────────────────────────────────────────────
+// ── Icon components ────────────────────────────────────────────────────────────
 
 function SnowflakeIcon({ size = 20 }: { size?: number }) {
   return (
@@ -96,123 +96,16 @@ function WeatherIcon({ type, size = 20 }: { type: string; size?: number }) {
   return <SunIcon size={size} />
 }
 
-// ── Forecast card ─────────────────────────────────────────────────────────────
+// ── Chevron SVG ────────────────────────────────────────────────────────────────
 
-function ForecastCard({ day }: { day: typeof FORECAST_DAYS[number] }) {
-  const details = DAY_DETAILS[day.day]
+function ChevronIcon({ open }: { open: boolean }) {
   return (
-    <div style={{
-      backgroundColor: day.activate ? 'rgba(0,194,124,0.04)' : '#ffffff',
-      borderRadius: 12, padding: 16, textAlign: 'center',
-      border: '1px solid rgba(0,0,0,0.06)',
-      borderLeft: day.activate ? '3px solid #00C27C' : '1px solid rgba(0,0,0,0.06)',
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-    }}>
-      <div style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#374151', marginBottom: 1, fontWeight: 600 }}>{day.day}</div>
-      <div style={{ fontSize: 11, color: '#4b5563', marginBottom: 8 }}>{day.date}</div>
-      <div style={{ marginBottom: 8 }}><WeatherIcon type={day.icon} size={24} /></div>
-      <div style={{ fontSize: 16, fontWeight: 600, color: '#0a0a0a', marginBottom: 3 }}>{day.high}F / {day.low}F</div>
-      <div style={{ fontSize: 12, color: '#4b5563', marginBottom: 6 }}>{day.condition}</div>
-      <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: 6, textAlign: 'left', width: '100%' }}>
-        {details.map((stat) => (
-          <div key={stat.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
-            <span style={{ fontSize: 12, color: '#4b5563' }}>{stat.label}</span>
-            <span style={{ fontSize: 13, fontWeight: 500, color: '#0a0a0a' }}>{stat.value}</span>
-          </div>
-        ))}
-      </div>
-      {day.activate && (
-        <div style={{ fontSize: 11, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 999, padding: '2px 6px', whiteSpace: 'nowrap', marginTop: 6 }}>
-          Activation Recommended
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ── Tool card preview components ──────────────────────────────────────────────
-
-function AutomatedAdsPreview({ adDuration, setAdDuration }: { adDuration: number; setAdDuration: (v: number) => void }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
-      <div style={{ backgroundColor: '#f9fafb', borderRadius: 8, padding: 10 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: '#0a0a0a', marginBottom: 3 }}>Emergency HVAC Service Available Now</div>
-        <div style={{ fontSize: 11, color: '#00C27C', marginBottom: 4 }}>mantistech.org/hvac-service</div>
-        <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4 }}>Cold snap hitting tonight. Techs standing by for emergency heating repairs.</div>
-      </div>
-      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-        {[{ v: 1, label: '1 Day' }, { v: 2, label: '2 Days' }, { v: 3, label: '3 Days' }, { v: 5, label: '5 Days' }].map(({ v, label }) => (
-          <button
-            key={v}
-            onClick={() => setAdDuration(v)}
-            style={{
-              fontSize: 10, padding: '3px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-              backgroundColor: adDuration === v ? '#00C27C' : 'rgba(0,0,0,0.06)',
-              color: adDuration === v ? '#ffffff' : '#6b7280',
-              fontWeight: adDuration === v ? 600 : 400,
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function CustomerOutreachPreview({ businessName }: { businessName: string }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <div style={{ backgroundColor: '#00C27C', color: '#ffffff', fontSize: 11, borderRadius: 10, padding: 10, maxWidth: '90%', lineHeight: 1.4 }}>
-          Hi, this is {businessName}. Cold snap hitting tonight, temps dropping to 28F. We have emergency availability. Reply STOP to opt out.
-        </div>
-      </div>
-      <div style={{ fontSize: 10, color: '#9ca3af', textAlign: 'right' }}>161 characters</div>
-    </div>
-  )
-}
-
-function GBPPreview() {
-  return (
-    <div style={{ backgroundColor: '#f9fafb', borderRadius: 8, padding: 10, flex: 1 }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: '#0a0a0a', marginBottom: 4 }}>Your HVAC Business</div>
-      <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4, marginBottom: 8 }}>
-        Cold snap warning: Temps dropping to 28F. Emergency heating availability, call now or book online.
-      </div>
-      <div style={{ display: 'inline-flex', fontSize: 10, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 4, padding: '3px 8px' }}>
-        Emergency Hours
-      </div>
-    </div>
-  )
-}
-
-function MissedCallPreview() {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'flex-end', flex: 1 }}>
-      <div style={{ backgroundColor: '#00C27C', color: '#ffffff', fontSize: 11, borderRadius: 10, padding: 10, maxWidth: '90%', lineHeight: 1.4 }}>
-        Hi, you reached [Business Name]. We missed your call but we are on it. Emergency heating availability tonight. Book here: mantistech.org/book
-      </div>
-    </div>
-  )
-}
-
-function WebsiteBannerPreview() {
-  return (
-    <div style={{
-      backgroundColor: 'rgba(0,194,124,0.1)',
-      border: '1px solid rgba(0,194,124,0.3)',
-      borderRadius: 8, padding: 8,
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-      flex: 1,
-    }}>
-      <span style={{ fontSize: 11, color: '#0a0a0a', flex: 1, lineHeight: 1.4 }}>
-        Cold snap alert: Emergency heating service available now.
-      </span>
-      <div style={{ fontSize: 10, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 4, padding: '3px 8px', whiteSpace: 'nowrap' }}>
-        Book Now
-      </div>
-    </div>
+    <svg
+      width={14} height={14} viewBox="0 0 14 14" fill="none"
+      style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease', flexShrink: 0 }}
+    >
+      <path d="M3 5l4 4 4-4" stroke="#6b7280" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }
 
@@ -226,28 +119,211 @@ function CheckmarkSvg({ size = 10, color = 'white' }: { size?: number; color?: s
   )
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ── Tool accordion panel content ───────────────────────────────────────────────
+
+function AutomatedAdsPanel({ adDuration, setAdDuration, onConfirm }: { adDuration: number; setAdDuration: (v: number) => void; onConfirm: () => void }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 8, padding: 10 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#ffffff', marginBottom: 3 }}>Emergency HVAC Service Available Now</div>
+        <div style={{ fontSize: 11, color: '#00C27C', marginBottom: 4 }}>mantistech.org/hvac-service</div>
+        <div style={{ fontSize: 11, color: '#9ca3af', lineHeight: 1.4 }}>Cold snap hitting tonight. Techs standing by for emergency heating repairs. Call now or book online.</div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {[
+          { label: 'Google Search', checked: true  },
+          { label: 'Facebook',      checked: true  },
+          { label: 'Instagram',     checked: false },
+        ].map(({ label, checked }) => (
+          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{
+              width: 14, height: 14, borderRadius: 3, flexShrink: 0,
+              backgroundColor: checked ? '#00C27C' : 'transparent',
+              border: checked ? 'none' : '1.5px solid #6b7280',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {checked && <CheckmarkSvg size={8} color="white" />}
+            </div>
+            <span style={{ fontSize: 12, color: '#ffffff' }}>{label}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 6 }}>
+        {[{ v: 1, label: '1 Day' }, { v: 2, label: '2 Days' }, { v: 3, label: '3 Days' }, { v: 5, label: '5 Days' }].map(({ v, label }) => (
+          <button
+            key={v}
+            onClick={() => setAdDuration(v)}
+            style={{
+              fontSize: 11, padding: '4px 10px', borderRadius: 4, border: 'none', cursor: 'pointer',
+              backgroundColor: adDuration === v ? '#00C27C' : 'rgba(255,255,255,0.1)',
+              color: adDuration === v ? '#ffffff' : '#9ca3af',
+              fontWeight: adDuration === v ? 600 : 400,
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button onClick={onConfirm} style={{ width: 'auto', alignSelf: 'flex-end', padding: '8px 16px', fontSize: 13, backgroundColor: '#00C27C', color: '#ffffff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>
+          Confirm Automated Ads
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function CustomerOutreachPanel({ businessName, onConfirm }: { businessName: string; onConfirm: () => void }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ backgroundColor: '#00C27C', color: '#ffffff', fontSize: 12, borderRadius: 10, padding: 10, maxWidth: '85%', lineHeight: 1.4 }}>
+          Hi, this is {businessName}. Cold snap hitting tonight, temps dropping to 28F. We have emergency availability. Reply STOP to opt out.
+        </div>
+      </div>
+      <div style={{ fontSize: 10, color: '#9ca3af', textAlign: 'right' }}>161 characters</div>
+      <div style={{ display: 'flex', gap: 6 }}>
+        {['Send Now', 'Schedule 6 AM'].map((label, idx) => (
+          <button key={label} style={{
+            fontSize: 11, padding: '4px 10px', borderRadius: 4, border: 'none', cursor: 'pointer',
+            backgroundColor: idx === 0 ? '#00C27C' : 'rgba(255,255,255,0.1)',
+            color: idx === 0 ? '#ffffff' : '#9ca3af',
+            fontWeight: idx === 0 ? 600 : 400,
+          }}>
+            {label}
+          </button>
+        ))}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button onClick={onConfirm} style={{ width: 'auto', alignSelf: 'flex-end', padding: '8px 16px', fontSize: 13, backgroundColor: '#00C27C', color: '#ffffff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>
+          Confirm Customer Outreach
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function GBPPanel({ onConfirm }: { onConfirm: () => void }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 8, padding: 10 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: '#ffffff', marginBottom: 4 }}>Your HVAC Business</div>
+        <div style={{ fontSize: 11, color: '#9ca3af', lineHeight: 1.4, marginBottom: 8 }}>
+          Cold snap warning: Temps dropping to 28F. Emergency heating availability. Call now or book online. Stay warm.
+        </div>
+        <div style={{ display: 'inline-flex', fontSize: 10, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 4, padding: '3px 8px' }}>
+          Emergency Hours
+        </div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button onClick={onConfirm} style={{ width: 'auto', alignSelf: 'flex-end', padding: '8px 16px', fontSize: 13, backgroundColor: '#00C27C', color: '#ffffff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>
+          Confirm Business Profile
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function MissedCallPanel({ onConfirm }: { onConfirm: () => void }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ backgroundColor: '#00C27C', color: '#ffffff', fontSize: 12, borderRadius: 10, padding: 10, maxWidth: '85%', lineHeight: 1.4 }}>
+          Hi, you reached [Business Name]. We missed your call but we are on it. Emergency heating availability tonight. Book here: mantistech.org/book
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 6 }}>
+        {['Active', 'Inactive'].map((label, idx) => (
+          <button key={label} style={{
+            fontSize: 11, padding: '4px 10px', borderRadius: 4, border: 'none', cursor: 'pointer',
+            backgroundColor: idx === 0 ? '#00C27C' : 'rgba(255,255,255,0.1)',
+            color: idx === 0 ? '#ffffff' : '#9ca3af',
+            fontWeight: idx === 0 ? 600 : 400,
+          }}>
+            {label}
+          </button>
+        ))}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button onClick={onConfirm} style={{ width: 'auto', alignSelf: 'flex-end', padding: '8px 16px', fontSize: 13, backgroundColor: '#00C27C', color: '#ffffff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>
+          Confirm Auto-Reply
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function WebsiteBannerPanel({ onConfirm }: { onConfirm: () => void }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{
+        backgroundColor: 'rgba(0,194,124,0.1)',
+        border: '1px solid rgba(0,194,124,0.3)',
+        borderRadius: 8, padding: 8,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+      }}>
+        <span style={{ fontSize: 12, color: '#ffffff', flex: 1, lineHeight: 1.4 }}>
+          Cold snap alert: Emergency heating service available now. Call or book online.
+        </span>
+        <div style={{ fontSize: 10, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 4, padding: '3px 8px', whiteSpace: 'nowrap' }}>
+          Book Now
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 6 }}>
+        {['Visible', 'Hidden'].map((label, idx) => (
+          <button key={label} style={{
+            fontSize: 11, padding: '4px 10px', borderRadius: 4, border: 'none', cursor: 'pointer',
+            backgroundColor: idx === 0 ? '#00C27C' : 'rgba(255,255,255,0.1)',
+            color: idx === 0 ? '#ffffff' : '#9ca3af',
+            fontWeight: idx === 0 ? 600 : 400,
+          }}>
+            {label}
+          </button>
+        ))}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button onClick={onConfirm} style={{ width: 'auto', alignSelf: 'flex-end', padding: '8px 16px', fontSize: 13, backgroundColor: '#00C27C', color: '#ffffff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>
+          Confirm Website Banner
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Main component ─────────────────────────────────────────────────────────────
 
 export default function WeatherActivation({ businessName = 'Your Business' }: Props) {
   const [checkedItems,    setCheckedItems]    = useState<Set<number>>(new Set())
   const [animatingIdx,    setAnimatingIdx]    = useState<number | null>(null)
   const [sequenceRunning, setSequenceRunning] = useState(false)
-  const [includedTools,   setIncludedTools]   = useState<Set<number>>(new Set([0, 1, 2, 3, 4]))
+  const [expandedTools,   setExpandedTools]   = useState<Set<number>>(new Set())
   const [adDuration,      setAdDuration]      = useState(3)
 
-  const allDone = includedTools.size > 0 && [...includedTools].every(i => checkedItems.has(i))
+  const allDone = checkedItems.size === 5
 
-  const toggleInclude = (i: number) =>
-    setIncludedTools(prev => {
+  const toggleExpand = (i: number) => {
+    if (checkedItems.has(i)) return
+    setExpandedTools(prev => {
       const next = new Set(prev)
       next.has(i) ? next.delete(i) : next.add(i)
       return next
     })
+  }
+
+  const confirmTool = (i: number) => {
+    setCheckedItems(prev => new Set(prev).add(i))
+    setExpandedTools(prev => {
+      const next = new Set(prev)
+      next.delete(i)
+      return next
+    })
+  }
 
   const runSequence = () => {
     if (sequenceRunning) return
     setSequenceRunning(true)
-    const toActivate = [0, 1, 2, 3, 4].filter(i => includedTools.has(i))
+    setExpandedTools(new Set())
+    const toActivate = [0, 1, 2, 3, 4]
     toActivate.forEach((toolIdx, position) => {
       setTimeout(() => {
         setAnimatingIdx(toolIdx)
@@ -257,186 +333,199 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
         }, 200)
       }, position * 600)
     })
-    const duration = toActivate.length > 0 ? (toActivate.length - 1) * 600 + 400 : 200
+    const duration = (toActivate.length - 1) * 600 + 400
     setTimeout(() => setSequenceRunning(false), duration)
   }
-
-  const todayDetails = DAY_DETAILS['TODAY']
-  const remainingDays = FORECAST_DAYS.slice(1)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-      {/* ── Section 1: Weather context bar ── */}
+      {/* ── Section 1: 7-day forecast row ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
+        {FORECAST_DAYS.map((day) => {
+          const details = DAY_DETAILS[day.day]
+          return (
+            <div
+              key={day.day}
+              style={{
+                backgroundColor: day.activate ? 'rgba(0,194,124,0.04)' : '#ffffff',
+                borderRadius: 12,
+                border: '1px solid rgba(0,0,0,0.08)',
+                borderLeft: day.activate ? '3px solid #00C27C' : '1px solid rgba(0,0,0,0.08)',
+                padding: 12,
+                textAlign: 'center',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+              }}
+            >
+              <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#374151', marginBottom: 1, fontWeight: 600 }}>{day.day}</div>
+              <div style={{ fontSize: 11, color: '#4b5563', marginBottom: 6 }}>{day.date}</div>
+              <div style={{ marginBottom: 6 }}><WeatherIcon type={day.icon} size={20} /></div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', marginBottom: 2 }}>{day.high}F / {day.low}F</div>
+              <div style={{ fontSize: 10, color: '#4b5563', marginBottom: 6 }}>{day.condition}</div>
+              <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: 6, width: '100%', textAlign: 'left' }}>
+                {details.map((stat) => (
+                  <div key={stat.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                    <span style={{ fontSize: 11, color: '#4b5563' }}>{stat.label}</span>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: '#111827' }}>{stat.value}</span>
+                  </div>
+                ))}
+              </div>
+              {day.activate && (
+                <div style={{ fontSize: 10, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 999, padding: '2px 6px', whiteSpace: 'nowrap', marginTop: 6 }}>
+                  Activation Recommended
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* ── Section 2: Active weather event card ── */}
       <div style={{
-        backgroundColor: '#1a1a1a', borderRadius: 12, padding: 16,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24,
+        backgroundColor: '#1a1a1a',
+        borderRadius: 12,
+        padding: 24,
+        borderTop: '3px solid #00C27C',
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {/* Top row: label + stat pills */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#00C27C', flexShrink: 0 }} />
             <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00C27C', fontWeight: 600 }}>
               Active Weather Event
             </span>
           </div>
-          <div style={{ fontSize: 16, fontWeight: 600, color: '#ffffff', lineHeight: 1.3 }}>
-            Cold snap detected. 28F forecast tonight in your service area.
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-          {['28F Tonight', '3 Day Event', '87% Humidity'].map(pill => (
-            <div key={pill} style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: '#ffffff', fontSize: 13, borderRadius: 6, padding: '8px 12px', whiteSpace: 'nowrap' }}>
-              {pill}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Section 2: Five tool cards ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
-        {ITEMS.map((item, i) => {
-          const isChecked   = checkedItems.has(i)
-          const isAnimating = animatingIdx === i
-          const isIncluded  = includedTools.has(i)
-
-          return (
-            <div
-              key={i}
-              style={{
-                backgroundColor: '#ffffff',
-                borderRadius: 12,
-                border: isAnimating ? '2px solid #00C27C' : '1px solid rgba(0,0,0,0.08)',
-                padding: 16,
-                display: 'flex', flexDirection: 'column', gap: 12,
-                position: 'relative',
-                transition: 'border-color 0.2s ease',
-              }}
-            >
-              {/* Green checkmark badge — shown after activation */}
-              {isChecked && (
-                <div style={{
-                  position: 'absolute', top: 10, right: 10,
-                  width: 20, height: 20, borderRadius: '50%',
-                  backgroundColor: '#00b857',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <CheckmarkSvg size={10} color="white" />
-                </div>
-              )}
-
-              {/* Tool name */}
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#0a0a0a', paddingRight: isChecked ? 24 : 0 }}>
-                {item.label}
-              </div>
-
-              {/* Status pill */}
-              <div style={{ display: 'inline-flex', alignSelf: 'flex-start', fontSize: 12, fontWeight: 600, color: '#00C27C', backgroundColor: 'rgba(0,194,124,0.1)', borderRadius: 4, padding: '4px 8px' }}>
-                {isChecked ? item.activatedStatus : 'Ready'}
-              </div>
-
-              {/* Preview content */}
-              {i === 0 && <AutomatedAdsPreview adDuration={adDuration} setAdDuration={setAdDuration} />}
-              {i === 1 && <CustomerOutreachPreview businessName={businessName} />}
-              {i === 2 && <GBPPreview />}
-              {i === 3 && <MissedCallPreview />}
-              {i === 4 && <WebsiteBannerPreview />}
-
-              {/* Include in activation toggle */}
-              <div
-                onClick={() => toggleInclude(i)}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginTop: 'auto' }}
-              >
-                <div style={{
-                  width: 16, height: 16, borderRadius: 3, flexShrink: 0,
-                  backgroundColor: isIncluded ? '#00C27C' : 'transparent',
-                  border: isIncluded ? 'none' : '1.5px solid #d1d5db',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {isIncluded && <CheckmarkSvg size={10} color="white" />}
-                </div>
-                <span style={{ fontSize: 11, color: '#9ca3af' }}>Include in activation</span>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* ── Section 3: Activate All Tools button ── */}
-      {!allDone && (
-        <button
-          onClick={runSequence}
-          disabled={sequenceRunning}
-          style={{
-            width: '100%',
-            backgroundColor: '#00C27C', color: '#ffffff',
-            fontWeight: 600, fontSize: 14, padding: 16,
-            borderRadius: 12, border: 'none',
-            cursor: sequenceRunning ? 'default' : 'pointer',
-            opacity: sequenceRunning ? 0.75 : 1,
-          }}
-        >
-          {sequenceRunning ? 'Activating...' : 'Activate All Tools'}
-        </button>
-      )}
-
-      {/* ── Section 4: Impact stats — shown only after all included tools confirm ── */}
-      {allDone && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-          {IMPACT_STATS.map((stat) => (
-            <div key={stat.value} style={{ backgroundColor: 'rgba(0,194,124,0.08)', border: '1px solid rgba(0,194,124,0.3)', borderRadius: 12, padding: '14px 10px', textAlign: 'center' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#00C27C', lineHeight: 1.3 }}>{stat.value}</div>
-              <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ── Section 5: Forecast cards ── */}
-      <div>
-        {/* TODAY hero card */}
-        <div style={{
-          backgroundColor: 'rgba(0,194,124,0.04)',
-          borderRadius: 12,
-          border: '1px solid rgba(0,0,0,0.06)',
-          borderLeft: '3px solid #00C27C',
-          display: 'flex',
-          overflow: 'hidden',
-          marginBottom: 8,
-        }}>
-          <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <div style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#374151', fontWeight: 600, marginBottom: 2 }}>TODAY</div>
-            <div style={{ fontSize: 11, color: '#4b5563', marginBottom: 14 }}>Apr 6</div>
-            <div style={{ marginBottom: 12 }}><WeatherIcon type="snowflake" size={36} /></div>
-            <div style={{ fontSize: 22, fontWeight: 600, color: '#0a0a0a', marginBottom: 4 }}>34F / 28F</div>
-            <div style={{ fontSize: 13, color: '#4b5563', marginBottom: 12 }}>Cold Snap</div>
-            <div style={{ display: 'inline-flex', fontSize: 11, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 999, padding: '3px 10px', whiteSpace: 'nowrap', alignSelf: 'flex-start' }}>
-              Activation Recommended
-            </div>
-          </div>
-
-          <div style={{ width: 1, backgroundColor: 'rgba(0,0,0,0.06)', flexShrink: 0 }} />
-
-          <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            {todayDetails.map((stat, i) => (
-              <div key={stat.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, paddingBottom: 10, borderBottom: i < todayDetails.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>
-                <span style={{ fontSize: 12, color: '#4b5563' }}>{stat.label}</span>
-                <span style={{ fontSize: 14, fontWeight: 500, color: '#0a0a0a' }}>{stat.value}</span>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {['28F Tonight', '3 Day Event', '87% Humidity'].map(pill => (
+              <div key={pill} style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: '#ffffff', fontSize: 12, borderRadius: 6, padding: '6px 10px', whiteSpace: 'nowrap' }}>
+                {pill}
               </div>
             ))}
           </div>
         </div>
 
-        {/* TUE–SUN: two rows of three */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-          {remainingDays.map((day) => (
-            <ForecastCard key={day.day} day={day} />
-          ))}
+        {/* Headline */}
+        <div style={{ fontSize: 18, fontWeight: 600, color: '#ffffff', lineHeight: 1.3, marginBottom: 6 }}>
+          Cold snap detected. 28F forecast tonight in your service area.
         </div>
+
+        {/* Subline */}
+        <div style={{ fontSize: 14, color: '#9ca3af', marginBottom: 24 }}>
+          {allDone
+            ? 'Activation triggered at 11:47 PM.'
+            : 'Your platform is ready to activate. All 5 tools are standing by.'
+          }
+        </div>
+
+        {/* Tool accordion rows */}
+        <div>
+          {ITEMS.map((item, i) => {
+            const isChecked   = checkedItems.has(i)
+            const isAnimating = animatingIdx === i
+            const isExpanded  = expandedTools.has(i)
+
+            return (
+              <div key={i}>
+                <div
+                  onClick={() => toggleExpand(i)}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    paddingTop: 14, paddingBottom: 14,
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    cursor: isChecked ? 'default' : 'pointer',
+                    opacity: isAnimating ? 0.7 : 1,
+                    transition: 'opacity 0.2s ease',
+                  }}
+                >
+                  {/* Left: indicator + name + description */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    {isChecked ? (
+                      <div style={{
+                        width: 20, height: 20, borderRadius: '50%',
+                        backgroundColor: '#00C27C',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0,
+                      }}>
+                        <CheckmarkSvg size={10} color="white" />
+                      </div>
+                    ) : (
+                      <div style={{
+                        width: 20, height: 20, borderRadius: '50%',
+                        border: '1.5px solid #6b7280',
+                        flexShrink: 0,
+                      }} />
+                    )}
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 500, color: '#ffffff' }}>{item.label}</div>
+                      <div style={{ fontSize: 12, color: '#9ca3af' }}>{item.description}</div>
+                    </div>
+                  </div>
+
+                  {/* Right: status + chevron */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 12, color: isChecked ? '#00C27C' : '#9ca3af', fontWeight: isChecked ? 600 : 400 }}>
+                      {isChecked ? item.activatedStatus : 'Ready'}
+                    </span>
+                    {!isChecked && <ChevronIcon open={isExpanded} />}
+                  </div>
+                </div>
+
+                {/* Accordion panel */}
+                {isExpanded && !isChecked && (
+                  <div style={{
+                    backgroundColor: 'rgba(255,255,255,0.04)',
+                    borderRadius: 12,
+                    padding: 16,
+                    marginTop: 12,
+                    marginBottom: 8,
+                  }}>
+                    {i === 0 && <AutomatedAdsPanel adDuration={adDuration} setAdDuration={setAdDuration} onConfirm={() => confirmTool(0)} />}
+                    {i === 1 && <CustomerOutreachPanel businessName={businessName} onConfirm={() => confirmTool(1)} />}
+                    {i === 2 && <GBPPanel onConfirm={() => confirmTool(2)} />}
+                    {i === 3 && <MissedCallPanel onConfirm={() => confirmTool(3)} />}
+                    {i === 4 && <WebsiteBannerPanel onConfirm={() => confirmTool(4)} />}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Activate All Tools button */}
+        {!allDone && (
+          <button
+            onClick={runSequence}
+            disabled={sequenceRunning}
+            style={{
+              width: '100%',
+              backgroundColor: '#00C27C', color: '#ffffff',
+              fontWeight: 600, fontSize: 14, padding: 16,
+              borderRadius: 12, border: 'none',
+              cursor: sequenceRunning ? 'default' : 'pointer',
+              opacity: sequenceRunning ? 0.75 : 1,
+              marginTop: 16,
+            }}
+          >
+            {sequenceRunning ? 'Activating...' : 'Activate All Tools'}
+          </button>
+        )}
+
+        {/* Impact stats — shown after all tools activated */}
+        {allDone && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: 16 }}>
+            {IMPACT_STATS.map((stat) => (
+              <div key={stat.value} style={{ backgroundColor: 'rgba(0,194,124,0.08)', border: '1px solid rgba(0,194,124,0.3)', borderRadius: 12, padding: '14px 10px', textAlign: 'center' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#00C27C', lineHeight: 1.3 }}>{stat.value}</div>
+                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* ── Section 6: Activation History ── */}
+      {/* ── Section 3: Activation History ── */}
       <div>
-        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#374151', fontWeight: 600, marginBottom: 12 }}>
+        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', fontWeight: 600, marginBottom: 12 }}>
           Activation History
         </div>
         <div style={{ backgroundColor: '#ffffff', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 12, overflow: 'hidden' }}>
