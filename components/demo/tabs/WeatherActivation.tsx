@@ -510,18 +510,19 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
           </button>
         )}
 
-        {/* Impact stats — shown after all tools activated */}
-        {allDone && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: 16 }}>
-            {IMPACT_STATS.map((stat) => (
-              <div key={stat.value} style={{ backgroundColor: 'rgba(0,194,124,0.08)', border: '1px solid rgba(0,194,124,0.3)', borderRadius: 12, padding: '14px 10px', textAlign: 'center' }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#00C27C', lineHeight: 1.3 }}>{stat.value}</div>
-                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
+
+      {/* ── Impact stats — shown after all tools activated ── */}
+      {allDone && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+          {IMPACT_STATS.map((stat) => (
+            <div key={stat.value} style={{ backgroundColor: 'rgba(0,194,124,0.08)', border: '1px solid rgba(0,194,124,0.3)', borderRadius: 12, padding: '14px 10px', textAlign: 'center' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#00C27C', lineHeight: 1.3 }}>{stat.value}</div>
+              <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* ── Section 3: Activation History ── */}
       <div>
