@@ -133,33 +133,41 @@ function ForecastCard({ day }: { day: typeof FORECAST_DAYS[number] }) {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function WeatherActivation({ businessName = 'Your Business' }: Props) {
-  const [activated,     setActivated]     = useState(false)
-  const [activating,    setActivating]    = useState(false)
-  const [checkedCount,  setCheckedCount]  = useState(0)
-  const [animatingIdx,  setAnimatingIdx]  = useState<number | null>(null)
-  const [sequenceDone,  setSequenceDone]  = useState(false)
-  const [expandedTools, setExpandedTools] = useState<Set<number>>(new Set())
+  const [checkedItems,    setCheckedItems]    = useState<Set<number>>(new Set())
+  const [animatingIdx,    setAnimatingIdx]    = useState<number | null>(null)
+  const [sequenceRunning, setSequenceRunning] = useState(false)
+  const [expandedTools,   setExpandedTools]   = useState<Set<number>>(new Set())
+
+  const allDone = checkedItems.size === ITEMS.length
 
   const collapsePanel = (i: number) =>
     setExpandedTools(prev => { const next = new Set(prev); next.delete(i); return next })
 
+  const confirmTool = (i: number) => {
+    setAnimatingIdx(i)
+    collapsePanel(i)
+    setTimeout(() => {
+      setCheckedItems(prev => new Set(prev).add(i))
+      setAnimatingIdx(null)
+    }, 200)
+  }
+
   const runSequence = () => {
-    setActivated(true)
-    setActivating(true)
+    if (sequenceRunning) return
+    setSequenceRunning(true)
     const DELAYS = [0, 600, 1200, 1800, 2400]
     DELAYS.forEach((delay, i) => {
       setTimeout(() => {
         setAnimatingIdx(i)
         collapsePanel(i)
         setTimeout(() => {
-          setCheckedCount(i + 1)
+          setCheckedItems(prev => new Set(prev).add(i))
           setAnimatingIdx(null)
         }, 200)
       }, delay)
     })
     setTimeout(() => {
-      setActivating(false)
-      setSequenceDone(true)
+      setSequenceRunning(false)
     }, 3000)
   }
 
@@ -173,11 +181,6 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleActivate = () => {
-    if (activating || activated) return
-    runSequence()
-  }
-
   const toggleTool = (i: number) =>
     setExpandedTools(prev => {
       const next = new Set(prev)
@@ -185,7 +188,7 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
       return next
     })
 
-  const subline = sequenceDone
+  const subline = allDone
     ? 'Activation triggered at 11:47 PM.'
     : 'Your platform is ready to activate. All 5 tools are standing by.'
 
@@ -225,41 +228,24 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
               </div>
 
               <p style={{ fontSize: 14, color: '#9ca3af', margin: 0 }}>{subline}</p>
-
-              {!activated && (
-                <button
-                  onClick={handleActivate}
-                  disabled={activating}
-                  style={{
-                    display: 'block', width: '100%', marginTop: 20,
-                    backgroundColor: '#00C27C', color: '#ffffff',
-                    fontWeight: 700, fontSize: 15, padding: '13px 0',
-                    borderRadius: 8, border: 'none',
-                    cursor: activating ? 'default' : 'pointer',
-                    opacity: activating ? 0.75 : 1,
-                  }}
-                >
-                  {activating ? 'Activating...' : 'Activate Now'}
-                </button>
-              )}
             </div>
 
             {/* Tool rows */}
-            <div style={{ padding: '8px 24px 24px 24px' }}>
+            <div style={{ padding: '8px 24px 0 24px' }}>
               {ITEMS.map((item, i) => {
-                const isChecked   = checkedCount > i
+                const isChecked   = checkedItems.has(i)
                 const isAnimating = animatingIdx === i
                 const isOpen      = expandedTools.has(i)
 
                 return (
                   <div key={i} style={{ borderBottom: i < ITEMS.length - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none' }}>
-                    {/* Row */}
+                    {/* Row — click only toggles accordion, never triggers activation */}
                     <div
-                      onClick={() => { if (!activated) toggleTool(i) }}
+                      onClick={() => { if (!isChecked && !sequenceRunning) toggleTool(i) }}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 16,
                         paddingTop: 14, paddingBottom: 14,
-                        cursor: activated ? 'default' : 'pointer',
+                        cursor: isChecked || sequenceRunning ? 'default' : 'pointer',
                       }}
                     >
                       {/* Circle / checkmark */}
@@ -286,8 +272,8 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
                             <span style={{ fontSize: 12, fontWeight: 700, color: isChecked ? '#00aa55' : '#6b7280' }}>
                               {isChecked ? item.activatedStatus : 'Ready'}
                             </span>
-                            {/* Chevron — only in unactivated state */}
-                            {!activated && (
+                            {/* Chevron — only for unchecked tools */}
+                            {!isChecked && (
                               <svg
                                 width="12" height="12" viewBox="0 0 12 12" fill="none"
                                 style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 200ms ease', flexShrink: 0 }}
@@ -303,16 +289,49 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
                       </div>
                     </div>
 
-                    {/* Accordion panel — unactivated state only */}
-                    {!activated && (
-                      <div style={{ overflow: 'hidden', maxHeight: isOpen ? '200px' : '0', transition: 'max-height 250ms ease', marginBottom: isOpen ? 8 : 0 }}>
-                        <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 16, marginTop: 8 }} />
+                    {/* Accordion panel — unchecked tools only */}
+                    {!isChecked && (
+                      <div style={{ overflow: 'hidden', maxHeight: isOpen ? '120px' : '0', transition: 'max-height 250ms ease', marginBottom: isOpen ? 8 : 0 }}>
+                        <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 16, marginTop: 8 }}>
+                          <button
+                            onClick={() => confirmTool(i)}
+                            style={{
+                              display: 'block', width: '100%',
+                              backgroundColor: '#00C27C', color: '#ffffff',
+                              border: 'none', borderRadius: 8, padding: 12,
+                              fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                            }}
+                          >
+                            Confirm {item.label}
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
                 )
               })}
             </div>
+
+            {/* Activate All Tools button */}
+            {!allDone && (
+              <div style={{ padding: '16px 24px 24px 24px' }}>
+                <button
+                  onClick={runSequence}
+                  disabled={sequenceRunning}
+                  style={{
+                    display: 'block', width: '100%',
+                    backgroundColor: '#00C27C', color: '#ffffff',
+                    fontWeight: 600, fontSize: 14, padding: '12px 0',
+                    borderRadius: 8, border: 'none',
+                    cursor: sequenceRunning ? 'default' : 'pointer',
+                    opacity: sequenceRunning ? 0.75 : 1,
+                  }}
+                >
+                  {sequenceRunning ? 'Activating...' : 'Activate All Tools'}
+                </button>
+              </div>
+            )}
+            {allDone && <div style={{ height: 24 }} />}
           </div>
         </div>
 
@@ -366,7 +385,7 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
       <div style={{ marginTop: 24 }}>
 
         {/* Activation History */}
-        <div style={{ marginBottom: sequenceDone ? 24 : 0 }}>
+        <div style={{ marginBottom: allDone ? 24 : 0 }}>
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#374151', fontWeight: 600, marginBottom: 12 }}>
             Activation History
           </div>
@@ -395,8 +414,8 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
           </div>
         </div>
 
-        {/* Impact pills — only shown after full 3000ms sequence completes */}
-        {sequenceDone && (
+        {/* Impact pills — only shown after all tools are confirmed */}
+        {allDone && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
             {IMPACT_STATS.map((stat) => (
               <div key={stat.value} style={{ backgroundColor: 'rgba(0,194,124,0.08)', border: '1px solid rgba(0,194,124,0.3)', borderRadius: 12, padding: '14px 10px', textAlign: 'center' }}>
