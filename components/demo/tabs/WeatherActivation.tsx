@@ -111,13 +111,13 @@ function ForecastCard({ day }: { day: typeof FORECAST_DAYS[number] }) {
       <div style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#374151', marginBottom: 1, fontWeight: 600 }}>{day.day}</div>
       <div style={{ fontSize: 11, color: '#4b5563', marginBottom: 8 }}>{day.date}</div>
       <div style={{ marginBottom: 8 }}><WeatherIcon type={day.icon} size={24} /></div>
-      <div style={{ fontSize: 16, fontWeight: 600, color: '#111827', marginBottom: 3 }}>{day.high}F / {day.low}F</div>
+      <div style={{ fontSize: 16, fontWeight: 600, color: '#0a0a0a', marginBottom: 3 }}>{day.high}F / {day.low}F</div>
       <div style={{ fontSize: 12, color: '#4b5563', marginBottom: 6 }}>{day.condition}</div>
       <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: 6, textAlign: 'left', width: '100%' }}>
         {details.map((stat) => (
           <div key={stat.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
             <span style={{ fontSize: 12, color: '#4b5563' }}>{stat.label}</span>
-            <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{stat.value}</span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: '#0a0a0a' }}>{stat.value}</span>
           </div>
         ))}
       </div>
@@ -136,7 +136,7 @@ function AutomatedAdsPreview({ adDuration, setAdDuration }: { adDuration: number
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
       <div style={{ backgroundColor: '#f9fafb', borderRadius: 8, padding: 10 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: '#111827', marginBottom: 3 }}>Emergency HVAC Service Available Now</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: '#0a0a0a', marginBottom: 3 }}>Emergency HVAC Service Available Now</div>
         <div style={{ fontSize: 11, color: '#00C27C', marginBottom: 4 }}>mantistech.org/hvac-service</div>
         <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4 }}>Cold snap hitting tonight. Techs standing by for emergency heating repairs.</div>
       </div>
@@ -176,7 +176,7 @@ function CustomerOutreachPreview({ businessName }: { businessName: string }) {
 function GBPPreview() {
   return (
     <div style={{ backgroundColor: '#f9fafb', borderRadius: 8, padding: 10, flex: 1 }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: '#111827', marginBottom: 4 }}>Your HVAC Business</div>
+      <div style={{ fontSize: 12, fontWeight: 700, color: '#0a0a0a', marginBottom: 4 }}>Your HVAC Business</div>
       <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4, marginBottom: 8 }}>
         Cold snap warning: Temps dropping to 28F. Emergency heating availability, call now or book online.
       </div>
@@ -206,7 +206,7 @@ function WebsiteBannerPreview() {
       display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
       flex: 1,
     }}>
-      <span style={{ fontSize: 11, color: '#111827', flex: 1, lineHeight: 1.4 }}>
+      <span style={{ fontSize: 11, color: '#0a0a0a', flex: 1, lineHeight: 1.4 }}>
         Cold snap alert: Emergency heating service available now.
       </span>
       <div style={{ fontSize: 10, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 4, padding: '3px 8px', whiteSpace: 'nowrap' }}>
@@ -325,7 +325,7 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
               )}
 
               {/* Tool name */}
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', paddingRight: isChecked ? 24 : 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#0a0a0a', paddingRight: isChecked ? 24 : 0 }}>
                 {item.label}
               </div>
 
@@ -407,7 +407,7 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
             <div style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#374151', fontWeight: 600, marginBottom: 2 }}>TODAY</div>
             <div style={{ fontSize: 11, color: '#4b5563', marginBottom: 14 }}>Apr 6</div>
             <div style={{ marginBottom: 12 }}><WeatherIcon type="snowflake" size={36} /></div>
-            <div style={{ fontSize: 22, fontWeight: 600, color: '#111827', marginBottom: 4 }}>34F / 28F</div>
+            <div style={{ fontSize: 22, fontWeight: 600, color: '#0a0a0a', marginBottom: 4 }}>34F / 28F</div>
             <div style={{ fontSize: 13, color: '#4b5563', marginBottom: 12 }}>Cold Snap</div>
             <div style={{ display: 'inline-flex', fontSize: 11, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 999, padding: '3px 10px', whiteSpace: 'nowrap', alignSelf: 'flex-start' }}>
               Activation Recommended
@@ -420,7 +420,7 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
             {todayDetails.map((stat, i) => (
               <div key={stat.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, paddingBottom: 10, borderBottom: i < todayDetails.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>
                 <span style={{ fontSize: 12, color: '#4b5563' }}>{stat.label}</span>
-                <span style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>{stat.value}</span>
+                <span style={{ fontSize: 14, fontWeight: 500, color: '#0a0a0a' }}>{stat.value}</span>
               </div>
             ))}
           </div>

@@ -685,7 +685,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: 13, color: '#6b7280', flexShrink: 0, width: 58 }}>{slot.time}</span>
                 <span style={{ width: 3, height: 20, backgroundColor: '#00C27C', borderRadius: 2, flexShrink: 0, display: 'inline-block' }} />
-                <span style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>{slot.name}</span>
+                <span style={{ fontSize: 14, fontWeight: 500, color: '#0a0a0a' }}>{slot.name}</span>
               </div>
               <span style={{ fontSize: 13, color: '#00C27C', flexShrink: 0 }}>Confirmed</span>
             </div>
@@ -719,7 +719,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
             Reviews
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
-            <span style={{ fontSize: 48, fontWeight: 700, lineHeight: 1, color: '#111827' }}>4.9</span>
+            <span style={{ fontSize: 48, fontWeight: 700, lineHeight: 1, color: '#0a0a0a' }}>4.9</span>
             <span style={{ fontSize: 36, color: '#F59E0B', lineHeight: 1 }}>&#9733;</span>
             <span style={{ fontSize: 14, color: '#6b7280', alignSelf: 'flex-end', paddingBottom: 2 }}>out of 5</span>
           </div>
@@ -739,7 +739,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
                   display: 'inline-block', width: 8, height: 8,
                   borderRadius: '50%', backgroundColor: row.color, flexShrink: 0,
                 }} />
-                <span style={{ fontSize: 14, color: '#111827' }}>{row.text}</span>
+                <span style={{ fontSize: 14, color: '#0a0a0a' }}>{row.text}</span>
               </div>
             ))}
           </div>
@@ -771,7 +771,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             SEO
           </div>
-          <div style={{ fontSize: 14, color: '#111827', marginBottom: 6 }}>12 local keywords ranking</div>
+          <div style={{ fontSize: 14, color: '#0a0a0a', marginBottom: 6 }}>12 local keywords ranking</div>
           <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>847 impressions this month</div>
           <div style={{ flex: 1 }} />
           <button
@@ -802,7 +802,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             SMS
           </div>
-          <div style={{ fontSize: 14, color: '#111827', marginBottom: 6 }}>1,247 contacts</div>
+          <div style={{ fontSize: 14, color: '#0a0a0a', marginBottom: 6 }}>1,247 contacts</div>
           <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>Last blast sent last night</div>
           <div style={{ flex: 1 }} />
           <button
