@@ -274,7 +274,7 @@ Reply as the business assistant:`,
 
     case 'email-marketing':
       return {
-        maxTokens: 6000,
+        maxTokens: 8000,
         prompt: `You are a professional email marketing specialist. Create a complete email marketing package.
 
 Business Name: ${body.businessName}
@@ -286,7 +286,7 @@ Create:
 2. Monthly Newsletter: 1 template
 3. Re-Engagement Campaign: 3 emails
 
-Each email needs a compelling subject line, preview text (50 characters), and full body copy (150 to 300 words).
+Each email needs a compelling subject line, preview text (under 60 characters), and body copy (80 to 120 words). Keep every body concise and punchy — no filler, no padding.
 
 Return ONLY a valid JSON object with no explanation or markdown:
 {

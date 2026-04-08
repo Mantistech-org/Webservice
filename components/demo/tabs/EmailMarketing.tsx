@@ -210,7 +210,7 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts, dar
               Writing your complete email marketing package...
             </div>
           )}
-          {error && <div className="mt-6 bg-red-900/20 border border-red-500/30 rounded p-4 font-mono text-sm text-red-300">{error}</div>}
+          {error && <div className="mt-6 rounded p-4 text-sm" style={{ backgroundColor: '#fef2f2', border: '1px solid #fca5a5', color: '#991b1b' }}>{error}</div>}
         </div>
       </div>
 
@@ -257,11 +257,11 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts, dar
           <div className="bg-card border border-border rounded">
             <div className="px-6 py-4 border-b border-border">
               <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00aa55' }}>Welcome Sequence</p>
-              <h3 className="font-heading text-xl text-primary">{result.welcomeSequence.length} Emails</h3>
+              <h3 className="font-heading text-xl text-primary">{result.welcomeSequence?.length ?? 0} Emails</h3>
               <p className="font-mono text-xs text-muted mt-1">Sent automatically when a contact joins your list</p>
             </div>
             <div className="p-6 space-y-3">
-              {result.welcomeSequence.map((email, i) => <EmailCard key={i} email={email} badge={email.day === 0 ? 'Day 0' : `Day ${email.day}`} badgeColor="#4ade80" />)}
+              {(result.welcomeSequence ?? []).map((email, i) => <EmailCard key={i} email={email} badge={email.day === 0 ? 'Day 0' : `Day ${email.day}`} badgeColor="#4ade80" />)}
             </div>
           </div>
 
@@ -279,11 +279,11 @@ export default function EmailMarketing({ sessionId, contacts, onAddContacts, dar
           <div className="bg-card border border-border rounded">
             <div className="px-6 py-4 border-b border-border">
               <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#f97316' }}>Re-Engagement Campaign</p>
-              <h3 className="font-heading text-xl text-primary">{result.reEngagement.length} Emails</h3>
+              <h3 className="font-heading text-xl text-primary">{result.reEngagement?.length ?? 0} Emails</h3>
               <p className="font-mono text-xs text-muted mt-1">Triggers when a contact has not opened in 90 days</p>
             </div>
             <div className="p-6 space-y-3">
-              {result.reEngagement.map((email, i) => <EmailCard key={i} email={email} badge={email.dayLabel ?? `Email ${i + 1}`} badgeColor="#f97316" />)}
+              {(result.reEngagement ?? []).map((email, i) => <EmailCard key={i} email={email} badge={email.dayLabel ?? `Email ${i + 1}`} badgeColor="#f97316" />)}
             </div>
           </div>
         </div>
