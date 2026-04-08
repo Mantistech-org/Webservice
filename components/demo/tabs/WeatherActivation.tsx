@@ -290,7 +290,7 @@ function WebsiteBannerPanel({ onConfirm }: { onConfirm: () => void }) {
   )
 }
 
-// ── Main component ─────────────────────────────────────────────────────────────
+// ── Main component ──────────────────────────────────────────────────────────── (deploy)
 
 export default function WeatherActivation({ businessName = 'Your Business' }: Props) {
   const [checkedItems,    setCheckedItems]    = useState<Set<number>>(new Set())
