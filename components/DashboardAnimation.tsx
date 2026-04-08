@@ -13,53 +13,11 @@ const ACTIVATION_ITEMS = [
   { label: 'Website Banner',          status: 'Live'                   },
 ]
 
-const BOOKING_SLOTS = [
-  { time: '7:00 AM',  name: 'James Perkins'   },
-  { time: '8:30 AM',  name: 'Michelle Carter' },
-  { time: '10:00 AM', name: 'Ray Dominguez'   },
-  { time: '11:30 AM', name: 'Donna Howell'    },
-  { time: '1:00 PM',  name: 'Brian Stokes'    },
-  { time: '2:30 PM',  name: 'Linda Park'      },
-  { time: '4:00 PM',  name: 'Frank Nguyen'    },
-]
-
-const OVERLAY_LINES = [
-  '',
-  'A cold snap hits your market tonight.',
-  'Your platform sees it first.',
-  'Everything activates automatically.',
-  'You wake up to a full schedule.',
-]
-
-const ACTIVITY_ITEMS = [
-  { label: 'SMS sent to 47 contacts',      time: '6:14 AM' },
-  { label: 'Google Ads activated',          time: '6:14 AM' },
-  { label: '3 new reviews received',        time: '7:02 AM' },
-  { label: 'Missed call auto-reply sent',   time: '7:48 AM' },
-  { label: 'Website banner updated',        time: '6:15 AM' },
-]
-
 // ── Sub-components ─────────────────────────────────────────────────────────────
-
-function SidebarItem({ label, active }: { label: string; active: boolean }) {
-  return (
-    <div style={{
-      padding: '10px 18px',
-      fontSize: 14,
-      fontWeight: active ? 600 : 400,
-      color: active ? '#00ff88' : '#5a5a5a',
-      backgroundColor: active ? 'rgba(0,255,136,0.07)' : 'transparent',
-      borderLeft: `3px solid ${active ? '#00ff88' : 'transparent'}`,
-      transition: 'all 0.3s ease',
-    }}>
-      {label}
-    </div>
-  )
-}
 
 function Check() {
   return (
-    <svg width="11" height="8" viewBox="0 0 7 5" fill="none">
+    <svg width="9" height="7" viewBox="0 0 7 5" fill="none">
       <polyline
         points="0.5,2.5 2.5,4.5 6.5,0.5"
         stroke="white"
@@ -74,19 +32,10 @@ function Check() {
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function DashboardAnimation() {
-  const [alertIn,      setAlertIn]      = useState(false)
-  const [alertPulse,   setAlertPulse]   = useState(false)
-  const [cursorOn,     setCursorOn]     = useState(false)
-  const [cursorX,      setCursorX]      = useState(28)
-  const [cursorY,      setCursorY]      = useState(68)
-  const [cursorMs,     setCursorMs]     = useState(800)
-  const [activated,    setActivated]    = useState(false)
-  const [checked,      setChecked]      = useState<number[]>([])
-  const [showBookings, setShowBookings] = useState(false)
-  const [filledSlots,  setFilledSlots]  = useState<number[]>([])
-  const [bookedCount,  setBookedCount]  = useState(0)
-  const [showBanner,   setShowBanner]   = useState(false)
-  const [overlayIdx,   setOverlayIdx]   = useState(0)
+  const [activated,   setActivated]   = useState(false)
+  const [checked,     setChecked]     = useState<number[]>([])
+  const [bookedCount, setBookedCount] = useState(0)
+  const [showBanner,  setShowBanner]  = useState(false)
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
 
   function clear() {
@@ -99,76 +48,37 @@ export default function DashboardAnimation() {
   }
 
   function reset() {
-    setAlertIn(false)
-    setAlertPulse(false)
-    setCursorOn(false)
-    setCursorX(28)
-    setCursorY(68)
-    setCursorMs(800)
     setActivated(false)
     setChecked([])
-    setShowBookings(false)
-    setFilledSlots([])
     setBookedCount(0)
     setShowBanner(false)
-    setOverlayIdx(0)
   }
 
   function run() {
     clear()
     reset()
 
-    // ── Frame 1: alert slides in ───────────────────────────────────────────
-    add(() => { setAlertIn(true);    setOverlayIdx(1) }, 700)
-    add(() => { setAlertPulse(true); setOverlayIdx(2) }, 2100)
-    add(() =>   setOverlayIdx(0),                        3900)
+    // ── Activation fires ───────────────────────────────────────────────────
+    add(() => setActivated(true),        5420)
 
-    // ── Frame 2: cursor appears, moves to Activate Now in the alert ────────
-    add(() => { setCursorOn(true); setCursorMs(0) }, 3700)
+    // ── Five items check off in rapid succession ───────────────────────────
+    add(() => setChecked([0]),           5620)
+    add(() => setChecked([0,1]),         5970)
+    add(() => setChecked([0,1,2]),       6310)
+    add(() => setChecked([0,1,2,3]),     6650)
+    add(() => setChecked([0,1,2,3,4]),   6990)
 
-    // First leg — slow diagonal sweep toward upper-right
-    add(() => { setCursorMs(750); setCursorX(54); setCursorY(47) }, 3850)
+    // ── Jobs booked counter increments ─────────────────────────────────────
+    add(() => setBookedCount(1),         8000)
+    add(() => setBookedCount(3),         8600)
+    add(() => setBookedCount(5),         9200)
+    add(() => setBookedCount(7),         9800)
 
-    // Second leg — closing in on the Activate Now button inside the alert card
-    add(() => { setCursorMs(550); setCursorX(82); setCursorY(28) }, 4650)
-
-    // Micro hover correction — small human wobble before click
-    add(() => { setCursorMs(160); setCursorX(82.5); setCursorY(28.3) }, 5230)
-
-    // Click — alert button registers, activation begins, overlay 3
-    add(() => { setActivated(true); setOverlayIdx(3) }, 5420)
-
-    // Five items check off in rapid succession
-    add(() => setChecked([0]),             5620)
-    add(() => setChecked([0,1]),           5970)
-    add(() => setChecked([0,1,2]),         6310)
-    add(() => setChecked([0,1,2,3]),       6650)
-    add(() => setChecked([0,1,2,3,4]),     6990)
-
-    // Cursor fades, overlay 3 fades
-    add(() => setCursorOn(false),  7350)
-    add(() => setOverlayIdx(0),    7500)
-
-    // ── Frame 3: bookings panel, slots fill one by one ─────────────────────
-    add(() => setShowBookings(true), 8000)
-
-    const slotBase = 8300
-    const slotGap  = 380
-    for (let i = 0; i < BOOKING_SLOTS.length; i++) {
-      const idx = i
-      add(() => {
-        setFilledSlots(prev => [...prev, idx])
-        setBookedCount(idx + 1)
-      }, slotBase + idx * slotGap)
-    }
-
-    // ── Frame 4: return to dashboard, success banner + overlay 4 ──────────
-    add(() => { setShowBookings(false); setOverlayIdx(4) }, 11100)
-    add(() =>   setShowBanner(true),                        11550)
-    add(() =>   setOverlayIdx(0),                           13300)
+    // ── Success banner ─────────────────────────────────────────────────────
+    add(() => setShowBanner(true),       11550)
 
     // ── Loop ───────────────────────────────────────────────────────────────
-    add(() => run(), 14800)
+    add(() => run(),                     14800)
   }
 
   useEffect(() => {
@@ -187,420 +97,267 @@ export default function DashboardAnimation() {
         <div style={{
           position: 'relative',
           overflow: 'hidden',
-          aspectRatio: '16 / 6.6',
+          aspectRatio: '16 / 7.5',
           fontFamily: "'Inter', Arial, sans-serif",
           userSelect: 'none',
+          backgroundColor: '#0f0f0f',
         }}>
 
-          {/* Vignette */}
+          {/* Vignette — fades bottom into CTA bar */}
           <div style={{
             position: 'absolute', inset: 0, zIndex: 24, pointerEvents: 'none',
-            background: 'radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(0,0,0,0.72) 100%)',
+            background: 'linear-gradient(to bottom, transparent 52%, rgba(0,0,0,0.88) 100%)',
           }} />
 
-          {/* Cinematic tint */}
+          {/* Main content */}
           <div style={{
-            position: 'absolute', inset: 0, zIndex: 22, pointerEvents: 'none',
-            backgroundColor: 'rgba(0,6,3,0.16)',
-          }} />
+            position: 'absolute', inset: 0,
+            display: 'flex', flexDirection: 'column',
+            padding: '12px 14px 0',
+            paddingBottom: '27%',
+          }}>
 
-          {/* Text overlays — above vignette, highest z */}
-          {OVERLAY_LINES.map((line, n) => n > 0 && (
-            <div key={n} style={{
-              position: 'absolute', bottom: '25%', left: 0, right: 0, zIndex: 40,
-              textAlign: 'center', pointerEvents: 'none',
-              opacity: overlayIdx === n ? 1 : 0,
-              transition: 'opacity 0.55s ease',
-            }}>
-              <span style={{
-                fontSize: 'clamp(14px, 2vw, 20px)',
-                color: '#ffffff',
-                letterSpacing: '0.015em',
-                textShadow: '0 1px 14px rgba(0,0,0,0.95)',
-              }}>
-                {line}
-              </span>
-            </div>
-          ))}
+            {/* ── Hero row: activation card + map ──────────────────────────── */}
+            <div style={{ flex: 1, display: 'flex', gap: 12, overflow: 'hidden', minHeight: 0 }}>
 
-          {/* ── Dashboard layout ──────────────────────────────────────────── */}
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', transform: 'scale(0.92)', transformOrigin: 'center center' }}>
-
-            {/* Sidebar */}
-            <div style={{
-              width: '16%',
-              backgroundColor: '#1c1c1c',
-              borderRight: '1px solid rgba(255,255,255,0.055)',
-              display: 'flex', flexDirection: 'column', flexShrink: 0,
-            }}>
-              {/* Logo */}
+              {/* Left: weather activation card */}
               <div style={{
-                padding: '16px 20px 17px',
-                borderBottom: '1px solid rgba(255,255,255,0.055)',
-                display: 'flex', alignItems: 'center', gap: 8,
-              }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#00ff88', flexShrink: 0 }} />
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-                  Mantis
-                </span>
-              </div>
-              {/* Nav items */}
-              <div style={{ paddingTop: 10 }}>
-                {['Dashboard','Weather Activation','Bookings','Reviews','SEO','SMS','Settings'].map((item) => (
-                  <SidebarItem
-                    key={item}
-                    label={item}
-                    active={showBookings ? item === 'Bookings' : item === 'Dashboard'}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Main content */}
-            <div style={{ flex: 1, backgroundColor: '#f7f7f5', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-              {/* Top bar */}
-              <div style={{
-                backgroundColor: '#fff',
-                borderBottom: '1px solid #e6e6e4',
-                padding: '11px 22px',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                width: '31%',
                 flexShrink: 0,
+                backgroundColor: '#162118',
+                border: `1px solid ${activated ? 'rgba(0,255,136,0.45)' : 'rgba(0,255,136,0.2)'}`,
+                borderRadius: 10,
+                padding: '13px 14px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 9,
+                transition: 'border-color 0.5s ease, box-shadow 0.5s ease',
+                boxShadow: activated
+                  ? '0 0 0 1px rgba(0,255,136,0.1), 0 4px 24px rgba(0,0,0,0.55)'
+                  : '0 4px 24px rgba(0,0,0,0.45)',
+                overflow: 'hidden',
               }}>
-                <span style={{ fontSize: 16, fontWeight: 600, color: '#111', letterSpacing: '0.04em' }}>
-                  {showBookings ? 'Bookings' : 'Dashboard'}
-                </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{
-                    width: 8, height: 8, borderRadius: '50%',
-                    backgroundColor: activated ? '#00b857' : '#c8c8c8',
-                    transition: 'background-color 0.5s ease',
-                    boxShadow: activated ? '0 0 7px rgba(0,184,87,0.6)' : 'none',
-                  }} />
-                  <span style={{ fontSize: 13, color: '#888' }}>
-                    {activated ? 'Platform Active' : 'Standby'}
-                  </span>
-                </div>
-              </div>
 
-              {/* Content area — two views cross-fade */}
-              <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-
-                {/* ── Dashboard view ──────────────────────────────────────── */}
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  padding: '14px 20px',
-                  opacity: showBookings ? 0 : 1,
-                  transition: 'opacity 0.4s ease',
-                  pointerEvents: showBookings ? 'none' : 'auto',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}>
-
-                  {/* Stats row */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 9, marginBottom: 10, flexShrink: 0 }}>
-                    {[
-                      { label: 'Jobs Booked',              val: bookedCount > 0 ? String(bookedCount) : '0', hot: bookedCount > 0 },
-                      { label: 'Missed Calls Recovered',   val: activated ? '24'      : '0',       hot: activated },
-                      { label: 'New Reviews',              val: '3',                               hot: false },
-                      { label: 'Platform Revenue',         val: activated ? '$14,200' : '$12,800', hot: activated },
-                    ].map(s => (
-                      <div key={s.label} style={{
-                        backgroundColor: '#fff', border: '1px solid #e6e6e4',
-                        borderRadius: 6, padding: '10px 13px',
+                {/* Header */}
+                <div style={{ flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
+                    <div style={{
+                      width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+                      backgroundColor: '#00ff88',
+                      boxShadow: activated ? '0 0 9px rgba(0,255,136,0.9)' : '0 0 4px rgba(0,255,136,0.4)',
+                      transition: 'box-shadow 0.5s ease',
+                      animation: !activated ? 'mt-dot-pulse 2s ease-in-out infinite' : 'none',
+                    }} />
+                    <span style={{
+                      fontSize: 9, fontWeight: 700, color: '#00ff88',
+                      letterSpacing: '0.12em', textTransform: 'uppercase',
+                    }}>
+                      Weather Event Active
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 6 }}>
+                    Cold Snap Detected
+                  </div>
+                  <div style={{ display: 'flex', gap: 5 }}>
+                    {['28F Tonight', 'Forecast: 3 days'].map(pill => (
+                      <div key={pill} style={{
+                        fontSize: 9, color: '#9ec8a8',
+                        backgroundColor: 'rgba(0,255,136,0.07)',
+                        border: '1px solid rgba(0,255,136,0.15)',
+                        borderRadius: 4, padding: '2px 7px',
                       }}>
-                        <div style={{ fontSize: 11, color: '#999', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-                          {s.label}
-                        </div>
-                        <div style={{
-                          fontSize: 20, fontWeight: 700,
-                          color: s.hot ? '#00b857' : '#1a1a1a',
-                          transition: 'color 0.45s ease',
-                        }}>
-                          {s.val}
-                        </div>
+                        {pill}
                       </div>
                     ))}
                   </div>
-
-                  {/* Middle row: activation panel + right column */}
-                  <div style={{ flex: 1, display: 'flex', gap: 10, marginBottom: 10, overflow: 'hidden' }}>
-
-                    {/* Left: activation panel — fills full height */}
-                    <div style={{
-                      flex: '0 0 56%',
-                      backgroundColor: '#fff', border: '1px solid #e6e6e4',
-                      borderRadius: 6, padding: '13px 15px',
-                      display: 'flex', flexDirection: 'column', overflow: 'hidden',
-                    }}>
-                      <div style={{ marginBottom: 12, flexShrink: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                          <div style={{
-                            width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
-                            backgroundColor: '#00ff88',
-                            boxShadow: activated ? '0 0 6px rgba(0,255,136,0.8)' : 'none',
-                            transition: 'box-shadow 0.4s ease',
-                          }} />
-                          <span style={{
-                            fontSize: 9, fontWeight: 700, color: '#00ff88',
-                            letterSpacing: '0.1em', textTransform: 'uppercase',
-                          }}>
-                            Weather Event Active
-                          </span>
-                        </div>
-                        <div style={{ fontSize: 16, fontWeight: 700, color: '#111', marginBottom: 8 }}>
-                          Cold Snap Detected
-                        </div>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          {['28F Tonight', 'Forecast: 3 days'].map(pill => (
-                            <div key={pill} style={{
-                              fontSize: 11, color: '#555',
-                              backgroundColor: 'rgba(0,0,0,0.05)',
-                              border: '1px solid rgba(0,0,0,0.08)',
-                              borderRadius: 4, padding: '3px 8px',
-                            }}>
-                              {pill}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {ACTIVATION_ITEMS.map((item, i) => (
-                        <div key={item.label} style={{
-                          display: 'flex', alignItems: 'center', gap: 8,
-                          paddingBottom: i < ACTIVATION_ITEMS.length - 1 ? 9 : 0,
-                          borderBottom: i < ACTIVATION_ITEMS.length - 1 ? '1px solid #f0f0ee' : 'none',
-                          marginBottom: i < ACTIVATION_ITEMS.length - 1 ? 9 : 0,
-                        }}>
-                          <div style={{
-                            width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
-                            backgroundColor: checked.includes(i) ? '#00b857' : '#e6e6e4',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            transition: 'background-color 0.3s ease',
-                          }}>
-                            {checked.includes(i) && <Check />}
-                          </div>
-                          <span style={{ fontSize: 13, color: '#555', flex: 1 }}>{item.label}</span>
-                          <span style={{
-                            fontSize: 11, fontWeight: 600,
-                            color: checked.includes(i) ? '#00b857' : '#d0d0d0',
-                            transition: 'color 0.3s ease',
-                          }}>
-                            {checked.includes(i) ? item.status : '—'}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Right column: activity feed + metrics */}
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, overflow: 'hidden' }}>
-
-                      {/* Recent activity */}
-                      <div style={{
-                        flex: 1,
-                        backgroundColor: '#fff', border: '1px solid #e6e6e4',
-                        borderRadius: 6, padding: '13px 15px',
-                        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-                      }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: '#111', marginBottom: 11, flexShrink: 0 }}>
-                          Recent Activity
-                        </div>
-                        {ACTIVITY_ITEMS.map((item, i) => (
-                          <div key={i} style={{
-                            display: 'flex', alignItems: 'center', gap: 9,
-                            paddingBottom: i < ACTIVITY_ITEMS.length - 1 ? 8 : 0,
-                            borderBottom: i < ACTIVITY_ITEMS.length - 1 ? '1px solid #f0f0ee' : 'none',
-                            marginBottom: i < ACTIVITY_ITEMS.length - 1 ? 8 : 0,
-                          }}>
-                            <div style={{
-                              width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
-                              backgroundColor: activated ? '#00b857' : '#d0d0d0',
-                              transition: 'background-color 0.45s ease',
-                            }} />
-                            <span style={{ fontSize: 12, color: '#444', flex: 1, lineHeight: 1.35 }}>{item.label}</span>
-                            <span style={{ fontSize: 11, color: '#aaa', flexShrink: 0 }}>{item.time}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Platform metrics */}
-                      <div style={{
-                        backgroundColor: '#fff', border: '1px solid #e6e6e4',
-                        borderRadius: 6, padding: '13px 15px',
-                        flexShrink: 0,
-                      }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: '#111', marginBottom: 11 }}>
-                          Platform Metrics
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6 }}>
-                          {[
-                            { label: 'Avg Response',    val: '48 sec' },
-                            { label: 'Jobs This Week',  val: activated ? '11' : '4' },
-                            { label: 'Google Rating',   val: '4.9' },
-                          ].map(m => (
-                            <div key={m.label} style={{ textAlign: 'center' }}>
-                              <div style={{
-                                fontSize: 18, fontWeight: 700,
-                                color: '#1a1a1a',
-                                lineHeight: 1.2,
-                                transition: 'color 0.45s ease',
-                              }}>
-                                {m.val}
-                              </div>
-                              <div style={{
-                                fontSize: 10, color: '#999',
-                                textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 3,
-                              }}>
-                                {m.label}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-
-                  {/* Success banner — pinned at bottom */}
-                  <div style={{
-                    flexShrink: 0,
-                    backgroundColor: 'rgba(0,184,87,0.08)',
-                    border: '1px solid rgba(0,184,87,0.28)',
-                    borderRadius: 6, padding: '10px 16px',
-                    display: 'flex', alignItems: 'center', gap: 11,
-                    opacity: showBanner ? 1 : 0,
-                    transform: showBanner ? 'translateY(0)' : 'translateY(5px)',
-                    transition: 'opacity 0.45s ease, transform 0.45s ease',
-                  }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#00b857', flexShrink: 0 }} />
-                    <span style={{ fontSize: 13, color: '#111', fontWeight: 500 }}>
-                      Platform running. {bookedCount} jobs booked. You did not touch your phone.
-                    </span>
-                  </div>
-
                 </div>
 
-                {/* ── Bookings view ────────────────────────────────────────── */}
+                {/* Activate Now button */}
                 <div style={{
-                  position: 'absolute', inset: 0,
-                  padding: '14px 20px',
-                  opacity: showBookings ? 1 : 0,
-                  transition: 'opacity 0.4s ease',
-                  pointerEvents: showBookings ? 'auto' : 'none',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column',
+                  flexShrink: 0,
+                  backgroundColor: activated ? '#00b857' : '#00ff88',
+                  color: '#000',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  textAlign: 'center',
+                  padding: '8px 0',
+                  borderRadius: 6,
+                  letterSpacing: '0.07em',
+                  cursor: 'default',
+                  transition: 'background-color 0.3s ease',
+                  animation: !activated ? 'mt-activate-pulse 1.8s ease-in-out infinite' : 'none',
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 11, flexShrink: 0 }}>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: '#111' }}>Today&apos;s Schedule</span>
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: 6,
-                      backgroundColor: 'rgba(0,184,87,0.08)',
-                      border: '1px solid rgba(0,184,87,0.24)',
-                      borderRadius: 6, padding: '5px 13px',
-                    }}>
-                      <span style={{ fontSize: 19, fontWeight: 700, color: '#00b857', lineHeight: 1 }}>{bookedCount}</span>
-                      <span style={{ fontSize: 13, color: '#666' }}>booked</span>
-                    </div>
-                  </div>
+                  {activated ? 'Activated' : 'Activate Now'}
+                </div>
 
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    {BOOKING_SLOTS.map((slot, i) => {
-                      const filled = filledSlots.includes(i)
-                      return (
-                        <div key={slot.time} style={{
-                          display: 'flex', alignItems: 'center', gap: 11,
-                          backgroundColor: filled ? '#fff' : '#f2f2f0',
-                          border: `1px solid ${filled ? '#e0e0de' : '#eaeae8'}`,
-                          borderRadius: 5, padding: '0 13px',
-                          flex: 1,
-                          marginBottom: i < BOOKING_SLOTS.length - 1 ? 6 : 0,
-                          opacity: filled ? 1 : 0.38,
-                          transition: 'opacity 0.45s ease, background-color 0.45s ease, border-color 0.45s ease',
-                        }}>
-                          <span style={{ fontSize: 13, color: '#888', width: 60, flexShrink: 0 }}>{slot.time}</span>
-                          <div style={{
-                            width: 3, height: 22, borderRadius: 1.5, flexShrink: 0,
-                            backgroundColor: filled ? '#00b857' : '#d4d4d2',
-                            transition: 'background-color 0.45s ease',
-                          }} />
-                          <span style={{
-                            fontSize: 13, flex: 1, fontWeight: filled ? 500 : 400,
-                            color: filled ? '#111' : '#aaa',
-                            transition: 'color 0.45s ease',
-                          }}>
-                            {filled ? slot.name : 'Available'}
-                          </span>
-                          <span style={{
-                            fontSize: 11, fontWeight: 600,
-                            color: filled ? '#00b857' : 'transparent',
-                            transition: 'color 0.45s ease',
-                          }}>
-                            Confirmed
-                          </span>
-                        </div>
-                      )
-                    })}
-                  </div>
+                {/* Tool rows */}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', overflow: 'hidden', minHeight: 0 }}>
+                  {ACTIVATION_ITEMS.map((item, i) => (
+                    <div key={item.label} style={{
+                      display: 'flex', alignItems: 'center', gap: 7,
+                    }}>
+                      <div style={{
+                        width: 14, height: 14, borderRadius: '50%', flexShrink: 0,
+                        backgroundColor: checked.includes(i) ? '#00b857' : 'rgba(255,255,255,0.1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'background-color 0.3s ease',
+                      }}>
+                        {checked.includes(i) && <Check />}
+                      </div>
+                      <span style={{
+                        fontSize: 11, flex: 1, lineHeight: 1.2,
+                        color: checked.includes(i) ? '#b8e8c8' : '#5a7a62',
+                        transition: 'color 0.3s ease',
+                      }}>
+                        {item.label}
+                      </span>
+                      <span style={{
+                        fontSize: 9, fontWeight: 600,
+                        color: checked.includes(i) ? '#00b857' : 'transparent',
+                        transition: 'color 0.3s ease',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {checked.includes(i) ? item.status : ''}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Completion message */}
+                <div style={{
+                  flexShrink: 0,
+                  fontSize: 10, color: '#00b857', fontWeight: 500,
+                  textAlign: 'center',
+                  borderTop: '1px solid rgba(0,255,136,0.12)',
+                  paddingTop: 7,
+                  opacity: showBanner ? 1 : 0,
+                  transition: 'opacity 0.5s ease',
+                }}>
+                  {bookedCount} jobs booked &middot; System running
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* ── Weather alert notification ─────────────────────────────────── */}
-          <div style={{
-            position: 'absolute', top: '11%', zIndex: 10,
-            right: alertIn ? '2%' : '-44%',
-            width: '31%',
-            backgroundColor: '#162118',
-            border: `1px solid ${alertPulse ? 'rgba(0,255,136,0.55)' : 'rgba(0,255,136,0.22)'}`,
-            borderRadius: 11, padding: '16px 20px',
-            transition: [
-              'right 0.65s cubic-bezier(0.34,1.38,0.64,1)',
-              'border-color 0.55s ease',
-              'box-shadow 0.55s ease',
-            ].join(', '),
-            boxShadow: alertPulse
-              ? '0 0 0 4px rgba(0,255,136,0.13), 0 10px 32px rgba(0,0,0,0.55)'
-              : '0 10px 32px rgba(0,0,0,0.45)',
-          }}>
-            {/* Alert header row */}
-            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 14 }}>
+              {/* Right: SVG map simulation */}
               <div style={{
-                width: 11, height: 11, borderRadius: '50%', flexShrink: 0, marginTop: 3,
-                backgroundColor: '#00ff88',
-                boxShadow: alertPulse ? '0 0 9px rgba(0,255,136,0.75)' : 'none',
-                transition: 'box-shadow 0.55s ease',
-              }} />
-              <div>
+                flex: 1,
+                backgroundColor: '#1e1e1e',
+                borderRadius: 10,
+                position: 'relative',
+                overflow: 'hidden',
+              }}>
+                <svg
+                  width="100%"
+                  height="100%"
+                  viewBox="0 0 420 260"
+                  preserveAspectRatio="xMidYMid slice"
+                >
+                  {/* Subtle grid lines */}
+                  <line x1="0"   y1="65"  x2="420" y2="65"  stroke="rgba(255,255,255,0.025)" strokeWidth="1" />
+                  <line x1="0"   y1="130" x2="420" y2="130" stroke="rgba(255,255,255,0.025)" strokeWidth="1" />
+                  <line x1="0"   y1="195" x2="420" y2="195" stroke="rgba(255,255,255,0.025)" strokeWidth="1" />
+                  <line x1="105" y1="0"   x2="105" y2="260" stroke="rgba(255,255,255,0.025)" strokeWidth="1" />
+                  <line x1="210" y1="0"   x2="210" y2="260" stroke="rgba(255,255,255,0.025)" strokeWidth="1" />
+                  <line x1="315" y1="0"   x2="315" y2="260" stroke="rgba(255,255,255,0.025)" strokeWidth="1" />
+
+                  {/* Service area circle */}
+                  <circle cx="210" cy="130" r="105" fill="#111111" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" />
+
+                  {/* Subtle road lines inside */}
+                  <line x1="140" y1="98"  x2="280" y2="98"  stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+                  <line x1="130" y1="130" x2="290" y2="130" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+                  <line x1="140" y1="162" x2="280" y2="162" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+                  <line x1="178" y1="55"  x2="178" y2="205" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+                  <line x1="210" y1="35"  x2="210" y2="225" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+                  <line x1="242" y1="55"  x2="242" y2="205" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+
+                  {/* Cluster badge markers */}
+                  {[
+                    { cx: 163, cy: 90,  n: 9 },
+                    { cx: 255, cy: 108, n: 5 },
+                    { cx: 182, cy: 158, n: 4 },
+                    { cx: 238, cy: 162, n: 3 },
+                  ].map(({ cx, cy, n }) => (
+                    <g key={n}>
+                      <circle cx={cx} cy={cy} r="15" fill="#ef4444" opacity="0.92" />
+                      <text
+                        x={cx} y={cy}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        fontSize="11"
+                        fontWeight="700"
+                        fill="white"
+                        fontFamily="Arial, sans-serif"
+                      >
+                        {n}
+                      </text>
+                    </g>
+                  ))}
+
+                  {/* Center location dot */}
+                  <circle cx="210" cy="130" r="4.5" fill="rgba(0,255,136,0.75)" />
+                  <circle cx="210" cy="130" r="9"   fill="none" stroke="rgba(0,255,136,0.28)" strokeWidth="1.5" />
+                </svg>
+
+                {/* Map label */}
                 <div style={{
-                  fontSize: 11, fontWeight: 700, color: '#00ff88',
-                  letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: 6,
+                  position: 'absolute', top: 10, left: 12,
+                  fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.35)',
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
                 }}>
-                  Cold snap detected
+                  Service Area
                 </div>
-                <div style={{ fontSize: 14, color: '#c8c8c8', lineHeight: 1.55 }}>
-                  28&deg;F forecast for tonight in your service area. Activation ready.
+
+                {/* Live / Standby badge */}
+                <div style={{
+                  position: 'absolute', top: 10, right: 12,
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  backgroundColor: 'rgba(0,0,0,0.55)',
+                  borderRadius: 4, padding: '3px 8px',
+                }}>
+                  <div style={{
+                    width: 5, height: 5, borderRadius: '50%',
+                    backgroundColor: activated ? '#00ff88' : '#555',
+                    transition: 'background-color 0.5s ease',
+                    boxShadow: activated ? '0 0 5px rgba(0,255,136,0.7)' : 'none',
+                  }} />
+                  <span style={{
+                    fontSize: 9, letterSpacing: '0.1em',
+                    color: activated ? 'rgba(0,255,136,0.8)' : 'rgba(255,255,255,0.4)',
+                    transition: 'color 0.5s ease',
+                  }}>
+                    {activated ? 'LIVE' : 'STANDBY'}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Activate Now button — pulsing glow, cursor clicks here */}
+            {/* ── Stats bar ────────────────────────────────────────────────── */}
             <div style={{
-              backgroundColor: activated ? '#00b857' : '#00ff88',
-              color: '#000',
-              fontSize: 13,
-              fontWeight: 700,
-              textAlign: 'center',
-              padding: '11px 0',
-              borderRadius: 6,
-              letterSpacing: '0.05em',
-              cursor: 'default',
-              transition: 'background-color 0.25s ease',
-              animation: alertPulse && !activated ? 'mt-activate-pulse 1.8s ease-in-out infinite' : 'none',
+              display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8,
+              marginTop: 10, flexShrink: 0,
             }}>
-              {activated ? 'Activating...' : 'Activate Now'}
+              {[
+                { label: 'Jobs Booked',           val: bookedCount > 0 ? String(bookedCount) : '0', hot: bookedCount > 0 },
+                { label: 'Missed Calls Recovered', val: activated ? '24' : '0',                      hot: activated },
+                { label: 'New Reviews',            val: '3',                                          hot: false },
+                { label: 'Platform Revenue',       val: activated ? '$14,200' : '$12,800',            hot: activated },
+              ].map(s => (
+                <div key={s.label} style={{
+                  backgroundColor: '#fff', border: '1px solid #e6e6e4',
+                  borderRadius: 6, padding: '8px 11px',
+                }}>
+                  <div style={{ fontSize: 9, color: '#999', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                    {s.label}
+                  </div>
+                  <div style={{
+                    fontSize: 17, fontWeight: 700,
+                    color: s.hot ? '#00b857' : '#1a1a1a',
+                    transition: 'color 0.45s ease',
+                  }}>
+                    {s.val}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -633,33 +390,8 @@ export default function DashboardAnimation() {
             </p>
           </div>
 
-          {/* ── Cursor ───────────────────────────────────────────────────────── */}
-          <div style={{
-            position: 'absolute', zIndex: 38, pointerEvents: 'none',
-            left: `${cursorX}%`,
-            top: `${cursorY}%`,
-            opacity: cursorOn ? 1 : 0,
-            transition: [
-              'opacity 0.3s ease',
-              `left ${cursorMs}ms cubic-bezier(0.25,0.46,0.45,0.94)`,
-              `top ${cursorMs}ms cubic-bezier(0.25,0.46,0.45,0.94)`,
-            ].join(', '),
-          }}>
-            <svg width="28" height="36" viewBox="0 0 18 23" fill="none">
-              <path
-                d="M1 1L1 18.5L6 13.5L9 21L11.5 20L8.5 12.5L15 12.5Z"
-                fill="white"
-                stroke="rgba(0,0,0,0.45)"
-                strokeWidth="1"
-                strokeLinejoin="round"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-
         </div>
         {/* ── End animation window ─────────────────────────────────────────── */}
-
 
       </div>
 
@@ -673,8 +405,11 @@ export default function DashboardAnimation() {
             box-shadow: 0 0 0 6px rgba(0,255,136,0.2), 0 2px 16px rgba(0,255,136,0.5);
           }
         }
+        @keyframes mt-dot-pulse {
+          0%, 100% { opacity: 1; }
+          50%       { opacity: 0.45; }
+        }
       `}</style>
     </section>
   )
 }
-// Wed, Apr  8, 2026 10:23:21 AM
