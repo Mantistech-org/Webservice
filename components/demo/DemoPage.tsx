@@ -46,7 +46,7 @@ const GBP_POSTS = [
   {
     date: 'Apr 5, 2026',
     type: 'Update',
-    text: 'Spring is here — time to schedule your AC tune-up before the heat hits. Book online now and get priority scheduling.',
+    text: 'Spring is here. Time to schedule your AC tune-up before the heat hits. Book online now and get priority scheduling.',
   },
   {
     date: 'Mar 20, 2026',
@@ -56,7 +56,7 @@ const GBP_POSTS = [
   {
     date: 'Mar 3, 2026',
     type: 'Update',
-    text: 'We now offer same-day emergency service 7 days a week. Call us anytime — our technicians are standing by.',
+    text: 'We now offer same-day emergency service 7 days a week. Call us anytime. Our technicians are standing by.',
   },
 ]
 
@@ -186,7 +186,7 @@ const MISSED_CALL_STATS = [
   { label: 'Reply Rate',              value: '100%' },
 ]
 
-const DEFAULT_REPLY = `Hi, you reached {businessName}. Sorry we missed you — we're likely on another call. We have same-day availability for repairs and installs. Book online at mantistech.org/book or reply here and we'll call you right back.`
+const DEFAULT_REPLY = `Hi, you reached {businessName}. Sorry we missed you. We're likely on another call. We have same-day availability for repairs and installs. Book online at mantistech.org/book or reply here and we'll call you right back.`
 
 const REPLY_LOG = [
   { time: 'Today, 2:14 PM',    caller: '(614) 882-4401', sent: 'Yes', outcome: 'Booked appointment'    },
@@ -521,7 +521,7 @@ export default function DemoView() {
           </div>
         </div>
 
-        {/* Page content — lazy mount for persistence */}
+        {/* Page content - lazy mount for persistence */}
         <div style={{ padding: 24 }}>
           {Array.from(mountedPages.current).map((page) => (
             <div key={page} style={{ display: page === activePage ? 'block' : 'none' }}>
