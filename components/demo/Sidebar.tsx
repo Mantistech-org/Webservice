@@ -9,6 +9,9 @@ export type DemoView =
   | 'review'
   | 'seo'
   | 'sms'
+  | 'email'
+  | 'gbp'
+  | 'missed-call'
   | 'performance'
   | 'settings'
   | 'billing'
@@ -76,6 +79,29 @@ function MessageSquareIcon() {
     </svg>
   )
 }
+function MailIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="2" y="4" width="20" height="16" rx="2"/>
+      <polyline points="2,4 12,13 22,4"/>
+    </svg>
+  )
+}
+function MapPinIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+      <circle cx="12" cy="10" r="3"/>
+    </svg>
+  )
+}
+function PhoneIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.7A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.16 6.16l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+    </svg>
+  )
+}
 function GearIcon() {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -101,8 +127,11 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'bookings',  label: 'Bookings',           icon: <CalendarIcon /> },
   { id: 'review',    label: 'Reviews',            icon: <StarIcon /> },
   { id: 'seo',       label: 'SEO',                icon: <SearchIcon /> },
-  { id: 'sms',       label: 'SMS',                icon: <MessageSquareIcon /> },
-  { id: 'settings',  label: 'Settings',           icon: <GearIcon /> },
+  { id: 'sms',          label: 'SMS',                icon: <MessageSquareIcon /> },
+  { id: 'email',        label: 'Email Marketing',   icon: <MailIcon /> },
+  { id: 'gbp',          label: 'Google Business',   icon: <MapPinIcon /> },
+  { id: 'missed-call',  label: 'Missed Call Reply', icon: <PhoneIcon /> },
+  { id: 'settings',     label: 'Settings',          icon: <GearIcon /> },
 ]
 
 export default function Sidebar({ expanded, activePage, onNavigate }: SidebarProps) {

@@ -13,6 +13,27 @@ import SEOOptimization from './tabs/SEOOptimization'
 import CalendarPage from './tabs/CalendarPage'
 import SMSTextMarketing from './tabs/SMSTextMarketing'
 import WeatherActivation from './tabs/WeatherActivation'
+import EmailMarketing from './tabs/EmailMarketing'
+
+function GBPPage({ businessName }: { businessName: string }) {
+  return (
+    <div style={{ padding: 24 }}>
+      <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#00C27C', fontWeight: 600, marginBottom: 8 }}>Google Business Profile</p>
+      <h1 style={{ fontSize: 24, fontWeight: 700, color: '#111827', marginBottom: 8 }}>Profile Management</h1>
+      <p style={{ fontSize: 14, color: '#6b7280' }}>Manage your Google Business Profile for {businessName}. Full version coming soon.</p>
+    </div>
+  )
+}
+
+function MissedCallPage({ businessName }: { businessName: string }) {
+  return (
+    <div style={{ padding: 24 }}>
+      <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#00C27C', fontWeight: 600, marginBottom: 8 }}>Missed Call Auto-Reply</p>
+      <h1 style={{ fontSize: 24, fontWeight: 700, color: '#111827', marginBottom: 8 }}>Auto-Reply Configuration</h1>
+      <p style={{ fontSize: 14, color: '#6b7280' }}>Configure automatic SMS replies to missed calls for {businessName}. Full version coming soon.</p>
+    </div>
+  )
+}
 
 // Retained for backward-compat with ClientDashboard
 export interface DemoContact {
@@ -77,6 +98,9 @@ export default function DemoView() {
       case 'review':      return <ReviewManagement sessionId={sessionId} />
       case 'seo':         return <SEOOptimization sessionId={sessionId} />
       case 'sms':         return <SMSTextMarketing sessionId={sessionId} />
+      case 'email':       return <EmailMarketing sessionId={sessionId} contacts={[]} onAddContacts={() => {}} />
+      case 'gbp':         return <GBPPage businessName={businessName} />
+      case 'missed-call': return <MissedCallPage businessName={businessName} />
       case 'performance': return <PerformancePage />
       case 'settings':
       case 'billing':     return <BillingPage />
