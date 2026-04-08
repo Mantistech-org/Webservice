@@ -8,7 +8,7 @@ export default function Hero() {
           Mantis Tech
         </p>
         <h1 className="font-heading text-[clamp(2.2rem,5.5vw,4rem)] leading-tight text-primary mb-6">
-          The HVAC contractor dominating your market has one thing you do not.
+          Never miss an HVAC job again.
         </h1>
         <p className="text-lg text-primary leading-relaxed mb-4 max-w-xl mx-auto font-medium">
           While every other contractor scrambles during a heat wave or cold snap, the ones with a system wake up to a full schedule.
