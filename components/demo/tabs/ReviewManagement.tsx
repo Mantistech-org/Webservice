@@ -43,7 +43,7 @@ function Stars({ n }: { n: number }) {
 }
 
 export default function ReviewManagement({ sessionId, darkMode }: Props) {
-  const [mainTab, setMainTab] = useState<'reviews' | 'response'>('reviews')
+  const [mainTab, setMainTab] = useState<'reviews' | 'response' | 'requests'>('reviews')
   const [platform, setPlatform] = useState<'google' | 'yelp' | 'facebook'>('google')
 
   // Response generator state
@@ -86,7 +86,7 @@ export default function ReviewManagement({ sessionId, darkMode }: Props) {
     <div className="space-y-8">
       {/* Main tab switcher */}
       <div className="flex gap-2 border-b border-border pb-0">
-        {([['reviews', 'Reviews'], ['response', 'Negative Review Response']] as const).map(([id, label]) => (
+        {([['reviews', 'Reviews'], ['response', 'Negative Review Response'], ['requests', 'Review Requests']] as const).map(([id, label]) => (
           <button
             key={id}
             onClick={() => setMainTab(id)}
@@ -269,6 +269,124 @@ export default function ReviewManagement({ sessionId, darkMode }: Props) {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {mainTab === 'requests' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+          {/* Auto-Request Settings */}
+          <div style={{ backgroundColor: '#ffffff', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 12, overflow: 'hidden' }}>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+              <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#00aa55', fontWeight: 600, marginBottom: 6 }}>Auto-Request System</p>
+              <h2 style={{ fontSize: 22, fontWeight: 700, color: '#111827', margin: 0 }}>Automatic Review Requests</h2>
+            </div>
+            <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {/* Trigger row */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#00C27C', flexShrink: 0, display: 'inline-block' }} />
+                <span style={{ fontSize: 12, color: '#6b7280' }}>Sends automatically when a job is marked complete in Bookings</span>
+              </div>
+              {/* Toggle */}
+              <div style={{ display: 'flex', gap: 8 }}>
+                {['Active', 'Paused'].map((label, i) => (
+                  <div
+                    key={label}
+                    style={{
+                      padding: '6px 18px', borderRadius: 999, fontSize: 13, fontWeight: i === 0 ? 600 : 400,
+                      backgroundColor: i === 0 ? '#00C27C' : 'transparent',
+                      color: i === 0 ? '#ffffff' : '#6b7280',
+                      border: i === 0 ? 'none' : '1px solid rgba(0,0,0,0.12)',
+                      cursor: 'default',
+                    }}
+                  >
+                    {label}
+                  </div>
+                ))}
+              </div>
+              {/* Stat pills */}
+              <div style={{ display: 'flex', gap: 10 }}>
+                {[
+                  { value: '47 Requests Sent', label: 'This Month' },
+                  { value: '31%',              label: 'Conversion Rate' },
+                ].map((pill) => (
+                  <div
+                    key={pill.label}
+                    style={{
+                      backgroundColor: 'rgba(0,194,124,0.08)',
+                      border: '1px solid rgba(0,194,124,0.3)',
+                      borderRadius: 8, padding: '10px 16px',
+                    }}
+                  >
+                    <div style={{ fontSize: 15, fontWeight: 700, color: '#00C27C', lineHeight: 1.2 }}>{pill.value}</div>
+                    <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{pill.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Message Preview */}
+          <div style={{ backgroundColor: '#ffffff', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 12, overflow: 'hidden' }}>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+              <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#00aa55', fontWeight: 600, marginBottom: 6 }}>Request Message</p>
+              <h2 style={{ fontSize: 22, fontWeight: 700, color: '#111827', margin: 0 }}>SMS Review Request</h2>
+            </div>
+            <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
+              <div style={{
+                backgroundColor: '#00C27C', color: '#ffffff',
+                fontSize: 14, lineHeight: 1.6,
+                padding: '10px 14px', borderRadius: 12,
+                maxWidth: '85%',
+              }}>
+                Hi [Customer Name], thank you for choosing [Business Name] today. We hope your service went smoothly. If you have a moment, we would really appreciate a Google review. It helps families in the area find reliable HVAC service: g.page/r/[business-link]/review
+              </div>
+              <span style={{ fontSize: 12, color: '#6b7280' }}>Sends within 2 hours of job completion</span>
+            </div>
+          </div>
+
+          {/* Recent Requests */}
+          <div style={{ backgroundColor: '#ffffff', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 12, overflow: 'hidden' }}>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+              <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#00aa55', fontWeight: 600, margin: 0 }}>Recent Requests</p>
+            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+                  {['Customer', 'Job Type', 'Sent', 'Status'].map((h) => (
+                    <th key={h} style={{ padding: '12px 20px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { customer: 'James Perkins',  job: 'Furnace Repair',       sent: 'Apr 6, 2:14 PM',  status: 'Review Left' },
+                  { customer: 'Michelle Carter', job: 'AC Tune-Up',           sent: 'Apr 5, 4:30 PM',  status: 'Opened'      },
+                  { customer: 'Ray Dominguez',   job: 'System Install',       sent: 'Apr 5, 11:00 AM', status: 'Review Left' },
+                  { customer: 'Donna Howell',    job: 'Heat Pump Service',    sent: 'Apr 4, 3:45 PM',  status: 'Sent'        },
+                  { customer: 'Brian Stokes',    job: 'Furnace Replacement',  sent: 'Apr 3, 1:20 PM',  status: 'Review Left' },
+                ].map((row, i, arr) => {
+                  const pill =
+                    row.status === 'Review Left' ? { bg: 'rgba(0,194,124,0.1)',   color: '#00C27C' } :
+                    row.status === 'Opened'      ? { bg: 'rgba(245,158,11,0.1)',  color: '#F59E0B' } :
+                                                   { bg: 'rgba(0,0,0,0.05)',      color: '#6b7280' }
+                  return (
+                    <tr key={i} style={{ borderBottom: i < arr.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>
+                      <td style={{ padding: '14px 20px', fontSize: 14, color: '#111827', fontWeight: 500 }}>{row.customer}</td>
+                      <td style={{ padding: '14px 20px', fontSize: 14, color: '#111827' }}>{row.job}</td>
+                      <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280' }}>{row.sent}</td>
+                      <td style={{ padding: '14px 20px' }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: pill.color, backgroundColor: pill.bg, borderRadius: 4, padding: '3px 10px' }}>
+                          {row.status}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+
         </div>
       )}
 
