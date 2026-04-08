@@ -6,11 +6,11 @@ import Link from 'next/link'
 // ── Static data ────────────────────────────────────────────────────────────────
 
 const ACTIVATION_ITEMS = [
-  { label: 'Google Ads',              status: 'Active'  },
-  { label: 'Customer SMS Blast',      status: 'Sent'    },
-  { label: 'Google Business Profile', status: 'Updated' },
-  { label: 'Missed Call Auto-Reply',  status: 'Active'  },
-  { label: 'Website Banner',          status: 'Live'    },
+  { label: 'Automated Ads',           status: 'Active'                 },
+  { label: 'Customer Outreach',       status: 'Sent to 1,247 contacts' },
+  { label: 'Google Business Profile', status: 'Updated'                },
+  { label: 'Missed Call Auto-Reply',  status: 'Active'                 },
+  { label: 'Website Banner',          status: 'Live'                   },
 ]
 
 const BOOKING_SLOTS = [
@@ -246,7 +246,7 @@ export default function DashboardAnimation() {
               </div>
               {/* Nav items */}
               <div style={{ paddingTop: 10 }}>
-                {['Dashboard','Weather','Bookings','Reviews','SEO','SMS','Settings'].map((item) => (
+                {['Dashboard','Weather Activation','Bookings','Reviews','SEO','SMS','Settings'].map((item) => (
                   <SidebarItem
                     key={item}
                     label={item}
@@ -301,10 +301,10 @@ export default function DashboardAnimation() {
                   {/* Stats row */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 9, marginBottom: 10, flexShrink: 0 }}>
                     {[
-                      { label: 'Jobs Booked',  val: bookedCount > 0 ? String(bookedCount) : '0', hot: bookedCount > 0 },
-                      { label: 'Ads',          val: activated ? 'Active'  : 'Standby', hot: activated },
-                      { label: 'SMS Sent',     val: activated ? '1,247'   : '0',       hot: activated },
-                      { label: 'Missed Calls', val: '0', hot: false },
+                      { label: 'Jobs Booked',              val: bookedCount > 0 ? String(bookedCount) : '0', hot: bookedCount > 0 },
+                      { label: 'Missed Calls Recovered',   val: activated ? '24'      : '0',       hot: activated },
+                      { label: 'New Reviews',              val: '3',                               hot: false },
+                      { label: 'Platform Revenue',         val: activated ? '$14,200' : '$12,800', hot: activated },
                     ].map(s => (
                       <div key={s.label} style={{
                         backgroundColor: '#fff', border: '1px solid #e6e6e4',
@@ -334,18 +334,35 @@ export default function DashboardAnimation() {
                       borderRadius: 6, padding: '13px 15px',
                       display: 'flex', flexDirection: 'column', overflow: 'hidden',
                     }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexShrink: 0 }}>
-                        <span style={{ fontSize: 14, fontWeight: 600, color: '#111' }}>Weather Activation</span>
-                        <div style={{
-                          backgroundColor: activated ? '#00b857' : '#00ff88',
-                          color: '#000',
-                          fontSize: 11, fontWeight: 700,
-                          padding: '5px 15px', borderRadius: 5,
-                          letterSpacing: '0.07em',
-                          transition: 'background-color 0.25s ease',
-                          transform: activated ? 'scale(0.95)' : 'scale(1)',
-                        }}>
-                          {activated ? 'ACTIVATED' : 'ACTIVATE'}
+                      <div style={{ marginBottom: 12, flexShrink: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                          <div style={{
+                            width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+                            backgroundColor: '#00ff88',
+                            boxShadow: activated ? '0 0 6px rgba(0,255,136,0.8)' : 'none',
+                            transition: 'box-shadow 0.4s ease',
+                          }} />
+                          <span style={{
+                            fontSize: 9, fontWeight: 700, color: '#00ff88',
+                            letterSpacing: '0.1em', textTransform: 'uppercase',
+                          }}>
+                            Weather Event Active
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 16, fontWeight: 700, color: '#111', marginBottom: 8 }}>
+                          Cold Snap Detected
+                        </div>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          {['28F Tonight', 'Forecast: 3 days'].map(pill => (
+                            <div key={pill} style={{
+                              fontSize: 11, color: '#555',
+                              backgroundColor: 'rgba(0,0,0,0.05)',
+                              border: '1px solid rgba(0,0,0,0.08)',
+                              borderRadius: 4, padding: '3px 8px',
+                            }}>
+                              {pill}
+                            </div>
+                          ))}
                         </div>
                       </div>
 
