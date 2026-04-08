@@ -12,6 +12,29 @@ export default function DashboardAnimation() {
           playsInline
           style={{ width: '100%', display: 'block', borderRadius: 8 }}
         />
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(0,0,0,0.35)',
+          borderRadius: 8,
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'flex-end',
+          padding: '16px',
+          pointerEvents: 'none',
+        }}>
+          <span style={{
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            color: '#ffffff',
+            fontSize: 11,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            padding: '4px 10px',
+            borderRadius: 4,
+          }}>
+            Live Demo Preview
+          </span>
+        </div>
 
         {/* ── CTA overlay bar ─────────────────────────────────────────────── */}
         <div style={{
