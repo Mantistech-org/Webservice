@@ -1,7 +1,7 @@
 FROM node:20-alpine
 WORKDIR /app
 COPY package*.json ./
-ARG CACHEBUST=1
+ARG CACHEBUST=2
 RUN npm ci
 COPY . .
 RUN npm run build
