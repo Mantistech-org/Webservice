@@ -1,64 +1,25 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import QuoteCalculator from './QuoteCalculator'
-import { ADDONS, PLANS, PLAN_INCLUDED_ADDONS, PLAN_PAGE_LIMITS, Plan } from '@/types'
+import { PLANS, Plan } from '@/types'
 
-const BUSINESS_TYPES = [
-  'Restaurant / Cafe',
-  'Retail Store',
-  'Health and Wellness',
-  'Professional Services',
-  'Real Estate',
-  'Beauty and Salon',
-  'Fitness and Gym',
-  'Automotive',
-  'Construction and Trades',
-  'Technology',
-  'Education',
-  'Non-Profit',
-  'Entertainment',
-  'Other',
-]
-
-const TIMELINES = ['As soon as possible', '1 to 2 weeks', '1 month', 'Flexible']
-
-const STYLE_PREFERENCES = [
-  'Modern and Minimal',
-  'Bold and Vibrant',
-  'Professional and Corporate',
-  'Warm and Friendly',
-  'Dark and Luxury',
-  'Clean and Bright',
-]
-
-const EMPLOYEE_COUNTS = [
-  'Just me',
-  '2 to 5',
-  '6 to 15',
-  '16 to 50',
-  '50 plus',
-]
+const HVAC_TYPES = ['Residential HVAC', 'Commercial HVAC', 'Both Residential and Commercial']
 
 interface FormData {
   businessName: string
   ownerName: string
   email: string
   phone: string
-  employeeCount: string
   businessType: string
   location: string
   currentWebsite: string
   businessDescription: string
-  primaryGoal: string
-  timeline: string
-  stylePreference: string
   specificFeatures: string
   additionalNotes: string
   addons: string[]
   plan: Plan
-  requestedPages: string
   // Domain step
   domainStatus: 'existing' | 'new' | ''
   existingDomain: string
@@ -71,19 +32,14 @@ const DEFAULT_FORM: FormData = {
   ownerName: '',
   email: '',
   phone: '',
-  employeeCount: '',
   businessType: '',
   location: '',
   currentWebsite: '',
   businessDescription: '',
-  primaryGoal: '',
-  timeline: '',
-  stylePreference: '',
   specificFeatures: '',
   additionalNotes: '',
   addons: [],
-  plan: 'starter',
-  requestedPages: '',
+  plan: 'platform',
   domainStatus: '',
   existingDomain: '',
   preferredDomain: '',
@@ -91,19 +47,6 @@ const DEFAULT_FORM: FormData = {
 }
 
 const STORAGE_KEY = 'intake_form_draft'
-
-function getRecommendedPlan(employeeCount: string): Plan | null {
-  if (employeeCount === 'Just me' || employeeCount === '2 to 5') return 'starter'
-  if (employeeCount === '6 to 15') return 'mid'
-  if (employeeCount === '16 to 50' || employeeCount === '50 plus') return 'pro'
-  return null
-}
-
-function getAddonTierStatus(addonId: string, plan: Plan): 'included' | 'available' {
-  if (PLAN_INCLUDED_ADDONS[plan].includes(addonId)) return 'included'
-  if (plan === 'pro') return 'included'
-  return 'available'
-}
 
 type SubmitState = 'idle' | 'submitting' | 'success' | 'error'
 
@@ -113,21 +56,11 @@ export default function IntakeForm() {
 
   const [form, setForm] = useState<FormData>(() => {
     const planParam = searchParams.get('plan') as Plan | null
-    return { ...DEFAULT_FORM, plan: planParam && planParam in PLANS ? planParam : 'starter' }
+    return { ...DEFAULT_FORM, plan: planParam && planParam in PLANS ? planParam : 'platform' }
   })
-  const [files, setFiles] = useState<File[]>([])
-  const [filePreviews, setFilePreviews] = useState<string[]>([])
-  const [isDragging, setIsDragging] = useState(false)
   const [submitState, setSubmitState] = useState<SubmitState>('idle')
   const [errorMsg, setErrorMsg] = useState('')
-  const [showCustomAddonModal, setShowCustomAddonModal] = useState(false)
-  const [customAddonName, setCustomAddonName] = useState('')
-  const [customAddonDesc, setCustomAddonDesc] = useState('')
-  const [customAddonBudget, setCustomAddonBudget] = useState('')
-  const [customAddons, setCustomAddons] = useState<Array<{ name: string; description: string; budget: string }>>([])
   const [referralToken, setReferralToken] = useState('')
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const dropRef = useRef<HTMLDivElement>(null)
 
   // Restore draft from localStorage on mount
   useEffect(() => {
@@ -138,7 +71,6 @@ export default function IntakeForm() {
         const draft = JSON.parse(saved) as FormData
         localStorage.removeItem(STORAGE_KEY)
         if (planParam && planParam in PLANS) {
-          // URL param overrides plan but restores everything else
           setForm({ ...draft, plan: planParam })
         } else {
           setForm(draft)
@@ -148,7 +80,6 @@ export default function IntakeForm() {
     } catch {
       // ignore parse errors
     }
-    // No draft — just apply URL param if present
     if (planParam && planParam in PLANS) {
       setForm((f) => ({ ...f, plan: planParam }))
     }
@@ -184,85 +115,19 @@ export default function IntakeForm() {
   }
 
   const setPlan = (newPlan: Plan) => {
-    const nowIncluded = PLAN_INCLUDED_ADDONS[newPlan]
-    setForm((f) => ({
-      ...f,
-      plan: newPlan,
-      // Drop any extras that are now included in the new plan
-      addons: f.addons.filter((id) => !nowIncluded.includes(id)),
-    }))
+    setField('plan', newPlan)
   }
 
-  const toggleAddon = (id: string) => {
-    if (getAddonTierStatus(id, form.plan) === 'included') return
-    setForm((f) => ({
-      ...f,
-      addons: f.addons.includes(id) ? f.addons.filter((a) => a !== id) : [...f.addons, id],
-    }))
-  }
-
-  // Toggling professional email auto-selects / deselects the email-with-domain add-on
-  // on plans where it is not already included (Pro already includes it).
   const toggleProfessionalEmail = (checked: boolean) => {
-    const status = getAddonTierStatus('email-with-domain', form.plan)
-    setForm((f) => ({
-      ...f,
-      wantsProfessionalEmail: checked,
-      addons: status === 'available'
-        ? checked
-          ? f.addons.includes('email-with-domain') ? f.addons : [...f.addons, 'email-with-domain']
-          : f.addons.filter((a) => a !== 'email-with-domain')
-        : f.addons,
-    }))
+    setField('wantsProfessionalEmail', checked)
   }
-
-  const addFiles = useCallback((newFiles: File[]) => {
-    const images = newFiles.filter((f) => f.type.startsWith('image/') && f.size <= 5 * 1024 * 1024)
-    setFiles((prev) => [...prev, ...images].slice(0, 8))
-    images.forEach((file) => {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setFilePreviews((prev) => [...prev, e.target?.result as string].slice(0, 8))
-      }
-      reader.readAsDataURL(file)
-    })
-  }, [])
-
-  const removeFile = (index: number) => {
-    setFiles((f) => f.filter((_, i) => i !== index))
-    setFilePreviews((p) => p.filter((_, i) => i !== index))
-  }
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault()
-      setIsDragging(false)
-      const dropped = Array.from(e.dataTransfer.files)
-      addFiles(dropped)
-    },
-    [addFiles]
-  )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitState('submitting')
     setErrorMsg('')
 
-    const photoData: string[] = []
-    for (const file of files) {
-      await new Promise<void>((resolve) => {
-        const reader = new FileReader()
-        reader.onload = (ev) => {
-          photoData.push(ev.target?.result as string)
-          resolve()
-        }
-        reader.readAsDataURL(file)
-      })
-    }
-
     try {
-      // 90-second client-side timeout — prevents the browser from hanging
-      // if the server takes too long or the connection drops
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 90_000)
 
@@ -274,13 +139,10 @@ export default function IntakeForm() {
           signal: controller.signal,
           body: JSON.stringify({
             ...form,
-            requestedPages: form.requestedPages ? parseInt(form.requestedPages) : undefined,
             domainStatus: form.domainStatus || undefined,
             existingDomain: form.existingDomain || undefined,
             preferredDomain: form.preferredDomain || undefined,
             wantsProfessionalEmail: form.wantsProfessionalEmail || undefined,
-            photos: photoData,
-            customAddons: customAddons,
             referredBy: referralToken || undefined,
           }),
         })
@@ -293,9 +155,8 @@ export default function IntakeForm() {
         throw new Error(data.error ?? 'Submission failed. Please try again.')
       }
 
-      const data = await res.json().catch(() => ({}))
+      await res.json().catch(() => ({}))
 
-      // Clear draft on successful submission
       try { localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
 
       setSubmitState('success')
@@ -308,11 +169,6 @@ export default function IntakeForm() {
       setSubmitState('error')
     }
   }
-
-  const pageLimit = PLAN_PAGE_LIMITS[form.plan]
-  const requestedPagesNum = parseInt(form.requestedPages) || 0
-  const showPageWarning = requestedPagesNum > pageLimit
-  const recommendedPlan = getRecommendedPlan(form.employeeCount)
 
   if (submitState === 'success') {
     return (
@@ -354,15 +210,14 @@ export default function IntakeForm() {
           <span className="text-teal">Your Business</span>
         </h1>
         <p className="mt-4 text-muted max-w-xl leading-relaxed">
-          Fill out the form below and we will build a fully custom website for your business.
-          Your quote updates live as you select add-ons.
+          Fill out the form below and we will get your platform set up and your business growing.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-10">
 
-          {/* Business Info */}
+          {/* Business Information */}
           <section>
             <h2 className="font-mono text-xs text-primary tracking-widest uppercase mb-6 flex items-center gap-3">
               <span className="w-4 h-px bg-accent" />
@@ -408,19 +263,7 @@ export default function IntakeForm() {
                   className="form-input"
                 />
               </FormField>
-              <FormField label="How many employees does your business have?">
-                <select
-                  value={form.employeeCount}
-                  onChange={(e) => setField('employeeCount', e.target.value)}
-                  className="form-input"
-                >
-                  <option value="">Select employee count</option>
-                  {EMPLOYEE_COUNTS.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </FormField>
-              <FormField label="Business Type" required>
+              <FormField label="HVAC Business Type" required>
                 <select
                   required
                   value={form.businessType}
@@ -428,7 +271,7 @@ export default function IntakeForm() {
                   className="form-input"
                 >
                   <option value="">Select a type</option>
-                  {BUSINESS_TYPES.map((t) => (
+                  {HVAC_TYPES.map((t) => (
                     <option key={t} value={t}>{t}</option>
                   ))}
                 </select>
@@ -462,7 +305,7 @@ export default function IntakeForm() {
               Project Details
             </h2>
             <div className="space-y-5">
-              <FormField label="Describe Your Business" required>
+              <FormField label="Tell us about your HVAC business" required>
                 <textarea
                   required
                   rows={4}
@@ -471,61 +314,6 @@ export default function IntakeForm() {
                   placeholder="Tell us what you do, who you serve, and what makes you different..."
                   className="form-input resize-none"
                 />
-              </FormField>
-              <FormField label="Primary Goal for Your Website" required>
-                <input
-                  type="text"
-                  required
-                  value={form.primaryGoal}
-                  onChange={(e) => setField('primaryGoal', e.target.value)}
-                  placeholder="e.g. Generate leads, sell products, book appointments..."
-                  className="form-input"
-                />
-              </FormField>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <FormField label="Timeline" required>
-                  <select
-                    required
-                    value={form.timeline}
-                    onChange={(e) => setField('timeline', e.target.value)}
-                    className="form-input"
-                  >
-                    <option value="">Select timeline</option>
-                    {TIMELINES.map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                </FormField>
-                <FormField label="Style Preference" required>
-                  <select
-                    required
-                    value={form.stylePreference}
-                    onChange={(e) => setField('stylePreference', e.target.value)}
-                    className="form-input"
-                  >
-                    <option value="">Select a style</option>
-                    {STYLE_PREFERENCES.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </FormField>
-              </div>
-              <FormField label="Number of Pages Requested">
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={form.requestedPages}
-                  onChange={(e) => setField('requestedPages', e.target.value)}
-                  placeholder={`Up to ${pageLimit} pages on ${PLANS[form.plan].name}`}
-                  className="form-input"
-                />
-                {showPageWarning && (
-                  <div className="mt-2 p-3 bg-yellow-950/40 border border-yellow-600/40 rounded text-xs text-yellow-400 font-mono">
-                    Your {PLANS[form.plan].name} plan includes up to {pageLimit} pages. You requested {requestedPagesNum}.
-                    Consider upgrading to {form.plan === 'starter' ? 'Growth (up to 6 pages)' : 'Pro (up to 9 pages)'} to fit your needs.
-                  </div>
-                )}
               </FormField>
               <FormField label="Specific Features or Requests">
                 <textarea
@@ -554,7 +342,7 @@ export default function IntakeForm() {
               <span className="w-4 h-px bg-accent" />
               Select Your Plan
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {(Object.entries(PLANS) as [Plan, typeof PLANS[Plan]][]).map(([id, plan]) => (
                 <button
                   key={id}
@@ -562,48 +350,25 @@ export default function IntakeForm() {
                   onClick={() => setPlan(id)}
                   className={`text-left p-5 rounded border transition-all duration-200 ${
                     form.plan === id
-                      ? 'border-primary bg-card'
+                      ? 'border-accent bg-card'
                       : 'border-border bg-card hover:border-border-light'
                   }`}
                 >
-                  <div className="font-mono text-xs tracking-widest uppercase mb-2 flex items-center gap-2 flex-wrap">
-                    {form.plan === id && (
-                      <span className="text-primary">
-                        <svg className="inline w-3 h-3 mr-1 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <div className="text-sm font-medium text-primary mb-2">{plan.name}</div>
+                  <div className="font-heading text-3xl text-primary leading-none mb-4">
+                    ${plan.monthly}
+                    <span className="text-base text-muted font-normal">/mo</span>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-sm text-muted">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="2.5" className="shrink-0 mt-0.5">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
-                      </span>
-                    )}
-                    <span className={form.plan === id ? 'text-primary' : 'text-muted'}>{plan.name}</span>
-                    {recommendedPlan === id && (
-                      <span className="bg-accent text-black font-mono text-xs rounded px-2 py-0.5">
-                        Recommended
-                      </span>
-                    )}
-                  </div>
-                  <div className="font-heading text-3xl text-primary leading-none">
-                    ${plan.upfront}
-                    <span className="font-mono text-xs text-muted font-normal"> upfront</span>
-                  </div>
-                  {id === 'mid' ? (
-                    <div className="mt-1">
-                      <span className="font-mono text-xs text-muted line-through">${plan.monthly}/mo</span>
-                      <div className="font-heading text-xl text-teal leading-none">$87.50<span className="font-mono text-xs text-muted font-normal">/mo</span></div>
-                      <div className="font-mono text-xs text-accent mt-0.5">Launch Pricing, first 3 months</div>
-                    </div>
-                  ) : id === 'pro' ? (
-                    <div className="mt-1">
-                      <span className="font-mono text-xs text-muted line-through">${plan.monthly}/mo</span>
-                      <div className="font-heading text-xl text-teal leading-none">$175<span className="font-mono text-xs text-muted font-normal">/mo</span></div>
-                      <div className="font-mono text-xs text-accent mt-0.5">Launch Pricing, first 3 months</div>
-                    </div>
-                  ) : (
-                    <div className="font-heading text-xl text-teal leading-none mt-1">
-                      ${plan.monthly}
-                      <span className="font-mono text-xs text-muted font-normal">/mo</span>
-                    </div>
-                  )}
-                  <div className="font-mono text-xs text-dim mt-1">Up to {plan.pages} pages</div>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
                 </button>
               ))}
             </div>
@@ -619,7 +384,6 @@ export default function IntakeForm() {
               Every website needs a domain name. Let us know whether you already have one or need us to register one for you.
             </p>
 
-            {/* Option picker */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               {([
                 { value: 'existing', label: 'Yes, I have a domain', sub: 'I already own a domain name' },
@@ -652,7 +416,6 @@ export default function IntakeForm() {
               ))}
             </div>
 
-            {/* Existing domain input */}
             {form.domainStatus === 'existing' && (
               <div className="space-y-3">
                 <FormField label="Your Current Domain Name">
@@ -675,7 +438,6 @@ export default function IntakeForm() {
               </div>
             )}
 
-            {/* New domain input */}
             {form.domainStatus === 'new' && (
               <div className="space-y-3">
                 <FormField label="Preferred Domain Name">
@@ -698,7 +460,6 @@ export default function IntakeForm() {
               </div>
             )}
 
-            {/* Professional email checkbox — shown once a domain option is selected */}
             {form.domainStatus !== '' && (
               <label className={`flex items-start gap-4 p-4 rounded border mt-5 cursor-pointer transition-all duration-200 ${
                 form.wantsProfessionalEmail ? 'border-primary bg-card' : 'border-border bg-card hover:border-border-light'
@@ -728,218 +489,10 @@ export default function IntakeForm() {
                     For example: hello@{form.existingDomain || form.preferredDomain?.split(' ')[0] || 'yourbusiness.com'}
                   </div>
                   <div className="font-mono text-xs text-muted mt-1">
-                    {getAddonTierStatus('email-with-domain', form.plan) === 'included'
-                      ? 'Included in your plan at no extra cost'
-                      : '+$12/mo, added to your add-ons automatically'}
+                    +$12/mo
                   </div>
                 </div>
               </label>
-            )}
-          </section>
-
-          {/* Add-ons */}
-          <section>
-            <h2 className="font-mono text-xs text-primary tracking-widest uppercase mb-2 flex items-center gap-3">
-              <span className="w-4 h-px bg-accent" />
-              Add-Ons
-            </h2>
-            <p className="text-sm text-muted mb-6">
-              Add-ons included in your plan are shown below. Select extras to add to your monthly rate.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Booking Calendar — always included on every plan */}
-              <div className="flex items-center gap-4 p-4 rounded border border-[#16a34a]/40 bg-[#16a34a]/5 cursor-default">
-                <div className="w-5 h-5 rounded border-2 border-[#16a34a] flex items-center justify-center shrink-0">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="3.5">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm text-primary font-medium">Booking Calendar</div>
-                  <div className="text-xs text-muted mt-0.5">An automated booking calendar that lets customers schedule appointments directly from your website, with automatic confirmation emails.</div>
-                </div>
-                <div className="font-mono text-sm shrink-0 text-[#16a34a] font-medium">
-                  Included
-                </div>
-              </div>
-
-              {ADDONS.map((addon) => {
-                const isIncluded = getAddonTierStatus(addon.id, form.plan) === 'included'
-                const checked = isIncluded || form.addons.includes(addon.id)
-
-                if (isIncluded) {
-                  return (
-                    <div
-                      key={addon.id}
-                      className="flex items-center gap-4 p-4 rounded border border-primary/30 bg-card cursor-default"
-                    >
-                      <div className="w-5 h-5 rounded border-2 border-primary flex items-center justify-center shrink-0">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" className="text-primary">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm text-primary font-medium">{addon.label}</div>
-                        <div className="text-xs text-muted mt-0.5">{addon.description}</div>
-                      </div>
-                      <div className="font-mono text-sm shrink-0 text-accent">
-                        Included in your plan
-                      </div>
-                    </div>
-                  )
-                }
-
-                return (
-                  <label
-                    key={addon.id}
-                    className={`flex items-center gap-4 p-4 rounded border transition-all duration-200 ${
-                      checked
-                        ? 'border-primary bg-card cursor-pointer'
-                        : 'border-border bg-card hover:border-border-light cursor-pointer'
-                    }`}
-                  >
-                    <div
-                      className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all ${
-                        checked ? 'border-primary' : 'border-dim'
-                      }`}
-                    >
-                      {checked && (
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" className="text-primary">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      )}
-                    </div>
-                    <input
-                      type="checkbox"
-                      className="sr-only"
-                      checked={checked}
-                      onChange={() => toggleAddon(addon.id)}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm text-primary font-medium">{addon.label}</div>
-                      <div className="text-xs text-muted mt-0.5">{addon.description}</div>
-                    </div>
-                    <div className="font-mono text-sm shrink-0">
-                      <span className="text-primary">+${addon.price}/mo</span>
-                    </div>
-                  </label>
-                )
-              })}
-
-              {/* Custom add-on card */}
-              <button
-                type="button"
-                onClick={() => setShowCustomAddonModal(true)}
-                className="flex items-center gap-4 p-4 rounded border border-dashed border-border bg-card hover:border-border-light cursor-pointer transition-all duration-200 text-left w-full"
-              >
-                <div className="w-5 h-5 rounded border-2 border-dim flex items-center justify-center shrink-0">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-dim">
-                    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm text-primary font-medium">Custom Add-On</div>
-                  <div className="text-xs text-muted mt-0.5">Have something specific in mind? Describe it and we will provide a custom quote.</div>
-                </div>
-                {customAddons.length > 0 && (
-                  <div className="font-mono text-xs text-accent shrink-0">{customAddons.length} added</div>
-                )}
-              </button>
-              {customAddons.length > 0 && (
-                <div className="sm:col-span-2 space-y-2">
-                  {customAddons.map((ca, i) => (
-                    <div key={i} className="flex items-start justify-between gap-3 p-3 rounded border border-accent/30 bg-accent/5">
-                      <div className="min-w-0">
-                        <div className="text-sm text-primary font-medium">{ca.name}</div>
-                        <div className="text-xs text-muted mt-0.5">{ca.description}</div>
-                        <div className="font-mono text-xs text-dim mt-0.5">Budget: {ca.budget}</div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setCustomAddons(prev => prev.filter((_, idx) => idx !== i))}
-                        className="font-mono text-xs text-muted hover:text-red-400 transition-colors shrink-0"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
-
-          {/* Photo Upload */}
-          <section>
-            <h2 className="font-mono text-xs text-primary tracking-widest uppercase mb-2 flex items-center gap-3">
-              <span className="w-4 h-px bg-accent" />
-              Reference Photos
-            </h2>
-            <p className="text-sm text-muted mb-6">
-              Upload photos of your business, products, or design inspiration. Up to 8 images.
-            </p>
-
-            <div
-              ref={dropRef}
-              onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition-all duration-300 ${
-                isDragging
-                  ? 'border-accent bg-accent/5'
-                  : 'border-border hover:border-border-light'
-              }`}
-            >
-              <div className="flex flex-col items-center gap-3">
-                <svg
-                  width="36"
-                  height="36"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke={isDragging ? '#00ff88' : 'rgb(var(--color-dim))'}
-                  strokeWidth="1.5"
-                >
-                  <path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                </svg>
-                <div>
-                  <p className={`font-mono text-sm ${isDragging ? 'text-accent' : 'text-muted'}`}>
-                    {isDragging ? 'Drop files here' : 'Drag and drop photos here'}
-                  </p>
-                  <p className="font-mono text-xs text-dim mt-1">
-                    or click to browse. PNG, JPG, WEBP up to 5MB each
-                  </p>
-                </div>
-              </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="sr-only"
-                onChange={(e) => addFiles(Array.from(e.target.files ?? []))}
-              />
-            </div>
-
-            {filePreviews.length > 0 && (
-              <div className="mt-4 grid grid-cols-4 gap-3">
-                {filePreviews.map((src, i) => (
-                  <div key={i} className="relative group aspect-square rounded overflow-hidden border border-border">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={src} alt={`Upload ${i + 1}`} className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removeFile(i)}
-                      className="absolute inset-0 bg-bg/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                      aria-label="Remove photo"
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff4444" strokeWidth="2">
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
-              </div>
             )}
           </section>
 
@@ -976,76 +529,9 @@ export default function IntakeForm() {
         </div>
 
         <div className="lg:col-span-1">
-          <QuoteCalculator selectedAddons={form.addons} selectedPlan={form.plan} />
+          <QuoteCalculator selectedPlan={form.plan} />
         </div>
       </div>
-
-      {showCustomAddonModal && (
-        <div className="fixed inset-0 bg-bg/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-          <div className="bg-card border border-border rounded w-full max-w-md">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-              <h3 className="font-heading text-xl text-primary">Custom Add-On Request</h3>
-              <button
-                type="button"
-                onClick={() => { setShowCustomAddonModal(false); setCustomAddonName(''); setCustomAddonDesc(''); setCustomAddonBudget('') }}
-                className="font-mono text-xs text-muted hover:text-primary transition-colors"
-              >
-                Close
-              </button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Service Name</label>
-                <input
-                  type="text"
-                  value={customAddonName}
-                  onChange={(e) => setCustomAddonName(e.target.value)}
-                  placeholder="e.g. Custom Appointment Reminder System"
-                  className="form-input"
-                />
-              </div>
-              <div>
-                <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">What Do You Need?</label>
-                <textarea
-                  rows={3}
-                  value={customAddonDesc}
-                  onChange={(e) => setCustomAddonDesc(e.target.value)}
-                  placeholder="Describe the service you are looking for..."
-                  className="form-input resize-none w-full"
-                />
-              </div>
-              <div>
-                <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Proposed Monthly Budget</label>
-                <input
-                  type="text"
-                  value={customAddonBudget}
-                  onChange={(e) => setCustomAddonBudget(e.target.value)}
-                  placeholder="e.g. $20 to $50 per month"
-                  className="form-input"
-                />
-              </div>
-              <button
-                type="button"
-                disabled={!customAddonName.trim() || !customAddonDesc.trim()}
-                onClick={() => {
-                  setCustomAddons(prev => [...prev, {
-                    name: customAddonName.trim(),
-                    description: customAddonDesc.trim(),
-                    budget: customAddonBudget.trim() || 'Open to discussion'
-                  }])
-                  setShowCustomAddonModal(false)
-                  setCustomAddonName('')
-                  setCustomAddonDesc('')
-                  setCustomAddonBudget('')
-                }}
-                className="w-full bg-accent text-black font-mono text-sm py-3 rounded tracking-wider hover:opacity-90 transition-opacity disabled:opacity-60"
-              >
-                Add to Request
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </form>
   )
 }
