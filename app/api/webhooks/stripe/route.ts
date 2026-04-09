@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
       const newPlan = session.metadata?.plan as string | undefined
       const updatedProject = await updateProject(projectId, {
         status: 'active',
-        plan: newPlan as 'starter' | 'mid' | 'pro' ?? project.plan,
+        plan: newPlan as 'platform' | 'platform-plus' ?? project.plan,
         stripeSessionId: session.id,
         stripeCustomerId: typeof session.customer === 'string' ? session.customer : undefined,
         stripeSubscriptionId: typeof session.subscription === 'string' ? session.subscription : undefined,

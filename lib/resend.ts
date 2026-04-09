@@ -513,10 +513,6 @@ export async function sendAdminNewProjectEmail(project: Project) {
       <h2>Project Details</h2>
       <table class="data">
         <tr><td class="key">Plan</td><td class="val">${planName}</td></tr>
-        ${project.requestedPages ? `<tr><td class="key">Pages Requested</td><td class="val">${project.requestedPages}</td></tr>` : ''}
-        <tr><td class="key">Timeline</td><td class="val">${project.timeline}</td></tr>
-        <tr><td class="key">Style</td><td class="val">${project.stylePreference}</td></tr>
-        <tr><td class="key">Primary Goal</td><td class="val">${project.primaryGoal}</td></tr>
         <tr><td class="key">Add-Ons</td><td class="val">${addonList}</td></tr>
         ${customAddonList ? `<tr><td class="key">Custom Add-Ons</td><td class="val">${customAddonList}</td></tr>` : ''}
       </table>

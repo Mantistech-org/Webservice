@@ -544,8 +544,6 @@ export default function AdminProjectPage() {
                   ['Type', project.businessType],
                   ['Location', project.location],
                   ['Website', project.currentWebsite || 'None'],
-                  ['Timeline', project.timeline],
-                  ['Style', project.stylePreference],
                 ].map(([label, value]) => (
                   <div key={label}>
                     <dt className="font-mono text-xs text-muted uppercase tracking-wider mb-0.5">{label}</dt>
@@ -650,12 +648,6 @@ export default function AdminProjectPage() {
             <div className="bg-card border border-border rounded p-6">
               <h3 className="font-mono text-xs text-emerald-700 dark:text-accent tracking-widest uppercase mb-4">Business Description</h3>
               <p className="text-sm text-teal leading-relaxed">{project.businessDescription}</p>
-              {project.primaryGoal && (
-                <>
-                  <div className="font-mono text-xs text-muted uppercase tracking-wider mt-4 mb-1">Primary Goal</div>
-                  <p className="text-sm text-teal">{project.primaryGoal}</p>
-                </>
-              )}
               {project.specificFeatures && (
                 <>
                   <div className="font-mono text-xs text-muted uppercase tracking-wider mt-4 mb-1">Specific Features</div>

@@ -43,27 +43,16 @@ const STATUS_COLORS: Record<ProjectStatus, string> = {
   generating:        'text-purple-700 dark:text-purple-400 border-purple-700/30 dark:border-purple-400/30 bg-purple-700/5 dark:bg-purple-400/5',
 }
 
-const BUSINESS_TYPES = [
-  'Restaurant / Cafe', 'Retail Store', 'Health and Wellness', 'Professional Services',
-  'Real Estate', 'Beauty and Salon', 'Fitness and Gym', 'Automotive',
-  'Construction and Trades', 'Technology', 'Education', 'Non-Profit', 'Entertainment', 'Other',
-]
-const TIMELINES = ['As soon as possible', '1 to 2 weeks', '1 month', 'Flexible']
-const STYLE_PREFERENCES = [
-  'Modern and Minimal', 'Bold and Vibrant', 'Professional and Corporate',
-  'Warm and Friendly', 'Dark and Luxury', 'Clean and Bright',
-]
+const HVAC_TYPES = ['Residential HVAC', 'Commercial HVAC', 'Both Residential and Commercial']
 
 interface AddClientForm {
   businessName: string; ownerName: string; email: string; phone: string
   businessType: string; location: string; plan: Plan; businessDescription: string
-  primaryGoal: string; timeline: string; stylePreference: string
 }
 
 const DEFAULT_ADD_FORM: AddClientForm = {
   businessName: '', ownerName: '', email: '', phone: '', businessType: '',
-  location: '', plan: 'starter', businessDescription: '', primaryGoal: '',
-  timeline: '', stylePreference: '',
+  location: '', plan: 'platform', businessDescription: '',
 }
 
 export default function AdminPage() {
@@ -575,12 +564,12 @@ export default function AdminPage() {
                     className="form-input" placeholder="+1 555 000 0000" />
                 </div>
                 <div>
-                  <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Business Type *</label>
+                  <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">HVAC Business Type *</label>
                   <select required value={addForm.businessType}
                     onChange={(e) => setAddForm(f => ({ ...f, businessType: e.target.value }))}
                     className="form-input">
                     <option value="">Select a type</option>
-                    {BUSINESS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                    {HVAC_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
                 <div>
@@ -594,27 +583,8 @@ export default function AdminPage() {
                   <select required value={addForm.plan}
                     onChange={(e) => setAddForm(f => ({ ...f, plan: e.target.value as Plan }))}
                     className="form-input">
-                    <option value="starter">Starter</option>
-                    <option value="mid">Growth</option>
-                    <option value="pro">Pro</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Timeline *</label>
-                  <select required value={addForm.timeline}
-                    onChange={(e) => setAddForm(f => ({ ...f, timeline: e.target.value }))}
-                    className="form-input">
-                    <option value="">Select timeline</option>
-                    {TIMELINES.map((t) => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Style Preference *</label>
-                  <select required value={addForm.stylePreference}
-                    onChange={(e) => setAddForm(f => ({ ...f, stylePreference: e.target.value }))}
-                    className="form-input">
-                    <option value="">Select a style</option>
-                    {STYLE_PREFERENCES.map((s) => <option key={s} value={s}>{s}</option>)}
+                    <option value="platform">Platform Only</option>
+                    <option value="platform-plus">Platform Plus Website</option>
                   </select>
                 </div>
               </div>
@@ -623,12 +593,6 @@ export default function AdminPage() {
                 <textarea required rows={3} value={addForm.businessDescription}
                   onChange={(e) => setAddForm(f => ({ ...f, businessDescription: e.target.value }))}
                   className="form-input resize-none w-full" placeholder="Tell us what the business does..." />
-              </div>
-              <div>
-                <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">Primary Goal *</label>
-                <input type="text" required value={addForm.primaryGoal}
-                  onChange={(e) => setAddForm(f => ({ ...f, primaryGoal: e.target.value }))}
-                  className="form-input" placeholder="Generate leads, sell products, book appointments..." />
               </div>
               {addError && <p className="font-mono text-xs text-red-700 dark:text-red-400">{addError}</p>}
               <button type="submit" disabled={addingClient}

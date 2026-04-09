@@ -1,5 +1,4 @@
 import { query, pgEnabled } from '@/lib/pg'
-import { PLANS } from '@/types'
 
 export type PlanPromotion = {
   label: string
@@ -60,24 +59,12 @@ function planMeta(planName: string): { plan_key: string; pages: number; features
   const isDiscount = n.includes('discount')
 
   if (n.includes('pro')) {
-    return {
-      plan_key: isDiscount ? 'pro_discount' : 'pro',
-      pages: PLANS.pro.pages,
-      features: [...PLANS.pro.features],
-    }
+    return { plan_key: isDiscount ? 'pro_discount' : 'pro', pages: 9, features: [] }
   }
   if (n.includes('growth')) {
-    return {
-      plan_key: isDiscount ? 'mid_discount' : 'mid',
-      pages: PLANS.mid.pages,
-      features: [...PLANS.mid.features],
-    }
+    return { plan_key: isDiscount ? 'mid_discount' : 'mid', pages: 6, features: [] }
   }
-  return {
-    plan_key: isDiscount ? 'starter_discount' : 'starter',
-    pages: PLANS.starter.pages,
-    features: [...PLANS.starter.features],
-  }
+  return { plan_key: isDiscount ? 'starter_discount' : 'starter', pages: 4, features: [] }
 }
 
 // Return the base tier string ('starter' | 'mid' | 'pro') for pairing

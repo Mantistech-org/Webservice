@@ -8,9 +8,9 @@ export async function POST(req: NextRequest) {
   if (!(await isAdminAuthenticated())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { businessName, ownerName, email, phone, businessType, location, plan, businessDescription, primaryGoal, timeline, stylePreference } = body
+  const { businessName, ownerName, email, phone, businessType, location, plan, businessDescription } = body
 
-  if (!businessName || !ownerName || !email || !businessType || !location || !plan || !businessDescription || !primaryGoal || !timeline || !stylePreference) {
+  if (!businessName || !ownerName || !email || !businessType || !location || !plan || !businessDescription) {
     return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 })
   }
 
@@ -34,9 +34,6 @@ export async function POST(req: NextRequest) {
     location,
     currentWebsite: '',
     businessDescription,
-    primaryGoal,
-    timeline,
-    stylePreference,
     specificFeatures: '',
     additionalNotes: '',
     addons: [],

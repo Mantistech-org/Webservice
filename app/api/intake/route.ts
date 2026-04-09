@@ -36,16 +36,11 @@ export async function POST(req: NextRequest) {
     location,
     currentWebsite,
     businessDescription,
-    primaryGoal,
-    timeline,
-    stylePreference,
     specificFeatures,
     additionalNotes,
     addons,
     plan,
     photos,
-    requestedPages,
-    customAddons,
     referredBy,
     domainStatus,
     existingDomain,
@@ -61,9 +56,6 @@ export async function POST(req: NextRequest) {
     !businessType && 'businessType',
     !location && 'location',
     !businessDescription && 'businessDescription',
-    !primaryGoal && 'primaryGoal',
-    !timeline && 'timeline',
-    !stylePreference && 'stylePreference',
     !plan && 'plan',
   ].filter(Boolean)
 
@@ -73,7 +65,7 @@ export async function POST(req: NextRequest) {
   }
   console.log('[intake] Validation passed')
 
-  const validPlans: Plan[] = ['starter', 'mid', 'pro']
+  const validPlans: Plan[] = ['platform', 'platform-plus']
   if (!validPlans.includes(plan as Plan)) {
     console.error('[intake] Invalid plan:', plan)
     return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
@@ -131,29 +123,15 @@ export async function POST(req: NextRequest) {
     location: location as string,
     currentWebsite: (currentWebsite as string) ?? '',
     businessDescription: businessDescription as string,
-    primaryGoal: primaryGoal as string,
-    timeline: timeline as string,
-    stylePreference: stylePreference as string,
     specificFeatures: (specificFeatures as string) ?? '',
     additionalNotes: (additionalNotes as string) ?? '',
     addons: Array.isArray(addons) ? (addons as string[]) : [],
-    customAddons: Array.isArray(customAddons)
-      ? (customAddons as Array<{ name: string; description: string; budget: string }>).map((ca) => ({
-          id: uuidv4(),
-          name: ca.name,
-          description: ca.description,
-          budget: ca.budget,
-          status: 'pending' as const,
-          createdAt: new Date().toISOString(),
-        }))
-      : [],
     referredBy: typeof referredBy === 'string' && referredBy ? referredBy : undefined,
     domainStatus: (domainStatus === 'existing' || domainStatus === 'new') ? domainStatus : undefined,
     existingDomain: typeof existingDomain === 'string' && existingDomain ? existingDomain : undefined,
     preferredDomain: typeof preferredDomain === 'string' && preferredDomain ? preferredDomain : undefined,
     wantsProfessionalEmail: wantsProfessionalEmail === true ? true : undefined,
     plan: plan as Plan,
-    requestedPages: typeof requestedPages === 'number' ? requestedPages : undefined,
     generatedHtml: '',
     adminNotes: '',
     uploadedFiles,
