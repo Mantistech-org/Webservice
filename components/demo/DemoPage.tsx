@@ -324,6 +324,7 @@ export default function DemoView() {
   const [businessName, setBusinessName] = useState('')
   const [businessType, setBusinessType] = useState('')
   const [gateInput,  setGateInput]      = useState('')
+  const [gateEmail,  setGateEmail]      = useState('')
   const [gateType,   setGateType]       = useState('')
   const [gateSubmitted, setGateSubmitted] = useState(false)
   const mountedPages = useRef<Set<DemoView>>(new Set())
@@ -352,6 +353,7 @@ export default function DemoView() {
     setBusinessType(type)
     sessionStorage.setItem('demo-business-name', biz)
     sessionStorage.setItem('demo-business-type', type)
+    sessionStorage.setItem('demo-email', gateEmail.trim())
     setGateSubmitted(true)
   }
 
@@ -426,6 +428,27 @@ export default function DemoView() {
                 placeholder="e.g. Riverside Heating &amp; Cooling"
                 required
                 autoFocus
+                className="w-full border rounded-lg px-4 py-3 font-mono text-sm focus:outline-none transition-colors"
+                style={{
+                  backgroundColor: '#f5f5f5',
+                  borderColor: '#d0d0d0',
+                  color: '#1a1a1a',
+                }}
+              />
+            </div>
+            <div>
+              <label
+                className="font-mono text-xs tracking-widest uppercase block mb-2"
+                style={{ color: '#555555' }}
+              >
+                Email Address
+              </label>
+              <input
+                type="email"
+                value={gateEmail}
+                onChange={(e) => setGateEmail(e.target.value)}
+                placeholder="you@yourbusiness.com"
+                required
                 className="w-full border rounded-lg px-4 py-3 font-mono text-sm focus:outline-none transition-colors"
                 style={{
                   backgroundColor: '#f5f5f5',
