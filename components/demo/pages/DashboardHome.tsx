@@ -802,8 +802,8 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             SMS
           </div>
-          <div style={{ fontSize: 14, color: '#0a0a0a', marginBottom: 6 }}>1,247 contacts</div>
-          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>Last blast sent last night</div>
+          <div style={{ fontSize: 14, color: '#0a0a0a', marginBottom: 6 }}>Cold snap outreach sent to 1,247 contacts at 11:47 PM</div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>94 replies received overnight</div>
           <div style={{ flex: 1 }} />
           <button
             onClick={() => onNavigate?.('sms')}
