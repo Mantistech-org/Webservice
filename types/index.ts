@@ -121,7 +121,6 @@ export const PLANS = {
       'Google Business Profile Management',
       'Booking Calendar',
       'Monthly Performance Report',
-      'AI Website Editor',
     ],
   },
   'platform-plus': {
