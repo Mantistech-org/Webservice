@@ -3,23 +3,22 @@
 import { useState } from 'react'
 
 const PLANS = [
-  { id: 'starter', label: 'Starter', price: 40 },
-  { id: 'mid',     label: 'Growth',  price: 70 },
-  { id: 'pro',     label: 'Pro',     price: 120 },
+  { id: 'platform',      label: 'Platform Only',         price: 199 },
+  { id: 'platform-plus', label: 'Platform Plus Website', price: 249 },
 ]
 
 const INVOICES = [
-  { date: 'Mar 1, 2026',  desc: 'Monthly subscription', amount: '$70.00',  status: 'Paid' },
-  { date: 'Feb 1, 2026',  desc: 'Monthly subscription', amount: '$70.00',  status: 'Paid' },
-  { date: 'Jan 1, 2026',  desc: 'Monthly subscription', amount: '$70.00',  status: 'Paid' },
-  { date: 'Dec 1, 2025',  desc: 'Setup fee + first month', amount: '$220.00', status: 'Paid' },
+  { date: 'Apr 1, 2026', desc: 'Monthly subscription',   amount: '$199.00', status: 'Paid' },
+  { date: 'Mar 1, 2026', desc: 'Monthly subscription',   amount: '$199.00', status: 'Paid' },
+  { date: 'Feb 1, 2026', desc: 'Monthly subscription',   amount: '$199.00', status: 'Paid' },
+  { date: 'Jan 1, 2026', desc: 'Setup + first month',    amount: '$199.00', status: 'Paid' },
 ]
 
 export default function BillingPage({ darkMode }: { darkMode?: boolean }) {
   const [showUpgrade, setShowUpgrade] = useState(false)
   const [showPayment, setShowPayment] = useState(false)
   const [showCancel, setShowCancel] = useState(false)
-  const [selectedPlan, setSelectedPlan] = useState('mid')
+  const [selectedPlan, setSelectedPlan] = useState('platform')
   const [upgraded, setUpgraded] = useState(false)
   const [paymentSaved, setPaymentSaved] = useState(false)
   const [cancelled, setCancelled] = useState(false)
@@ -53,14 +52,14 @@ export default function BillingPage({ darkMode }: { darkMode?: boolean }) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="font-heading text-2xl text-[#1a1a1a] mb-1">
-              {upgraded && selectedPlan !== 'mid'
-                ? PLANS.find(p => p.id === selectedPlan)?.label ?? 'Growth'
-                : 'Growth'} Plan
+              {upgraded && selectedPlan !== 'platform'
+                ? PLANS.find(p => p.id === selectedPlan)?.label ?? 'Platform Only'
+                : 'Platform Only'} Plan
             </div>
             <div className="font-mono text-xs text-[#888888]">
-              ${upgraded && selectedPlan !== 'mid'
-                ? PLANS.find(p => p.id === selectedPlan)?.price ?? 70
-                : 70}/month, renews April 1, 2026
+              ${upgraded && selectedPlan !== 'platform'
+                ? PLANS.find(p => p.id === selectedPlan)?.price ?? 199
+                : 199}/month, renews May 1, 2026
             </div>
           </div>
           {!cancelled && (
@@ -79,7 +78,7 @@ export default function BillingPage({ darkMode }: { darkMode?: boolean }) {
 
         {cancelled && (
           <div className="mt-4 font-mono text-xs text-red-500 border border-red-300 rounded px-3 py-2">
-            Subscription cancelled. Your site will remain active through April 1, 2026.
+            Subscription cancelled. Your site will remain active through May 1, 2026.
           </div>
         )}
 
