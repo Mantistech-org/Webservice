@@ -6,14 +6,23 @@ import Footer from '@/components/Footer'
 
 type SubmitState = 'idle' | 'submitting' | 'success' | 'error'
 
+const TIME_OPTIONS = [
+  '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
+  '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM',
+]
+
 export default function ConsultationPage() {
   const [name, setName] = useState('')
   const [businessName, setBusinessName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
+  const [preferredDate, setPreferredDate] = useState('')
+  const [preferredTime, setPreferredTime] = useState('')
   const [message, setMessage] = useState('')
   const [submitState, setSubmitState] = useState<SubmitState>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,7 +33,7 @@ export default function ConsultationPage() {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, businessName, phone, email, message }),
+        body: JSON.stringify({ name, businessName, phone, email, preferredDate, preferredTime, message }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -48,7 +57,9 @@ export default function ConsultationPage() {
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
-            <h2 className="font-heading text-5xl text-primary mb-4">We will be in touch within 24 hours.</h2>
+            <h2 className="font-heading text-4xl text-primary mb-4">
+              Your consultation has been requested for {preferredDate} at {preferredTime}. We will confirm within 24 hours.
+            </h2>
           </div>
         </div>
         <Footer />
@@ -68,7 +79,7 @@ export default function ConsultationPage() {
             Schedule a Free Consultation
           </h1>
           <p className="text-muted max-w-xl leading-relaxed">
-            Fill out the form below and we will call you within 24 hours to walk you through the platform and answer any questions.
+            Pick a date and time below and we will confirm your consultation within 24 hours.
           </p>
         </div>
 
@@ -127,6 +138,37 @@ export default function ConsultationPage() {
               placeholder="jane@acmehvac.com"
               className="form-input"
             />
+          </div>
+
+          <div>
+            <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">
+              Preferred Date <span className="text-red-600">*</span>
+            </label>
+            <input
+              type="date"
+              required
+              min={tomorrow}
+              value={preferredDate}
+              onChange={(e) => setPreferredDate(e.target.value)}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">
+              Preferred Time <span className="text-red-600">*</span>
+            </label>
+            <select
+              required
+              value={preferredTime}
+              onChange={(e) => setPreferredTime(e.target.value)}
+              className="form-input"
+            >
+              <option value="">Select a time</option>
+              {TIME_OPTIONS.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
           </div>
 
           <div>
