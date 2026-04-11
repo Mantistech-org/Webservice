@@ -16,7 +16,6 @@ const STYLE_PREFERENCES = [
   'Clean and Bright',
 ]
 
-const TIMELINES = ['As soon as possible', '1 to 2 weeks', '1 month', 'Flexible']
 
 interface FormData {
   businessName: string
@@ -39,7 +38,6 @@ interface FormData {
   // Platform Plus
   primaryGoal: string
   stylePreference: string
-  timeline: string
   requestedPages: string
   employeeCount: string
 }
@@ -63,7 +61,6 @@ const DEFAULT_FORM: FormData = {
   wantsProfessionalEmail: false,
   primaryGoal: '',
   stylePreference: '',
-  timeline: '',
   requestedPages: '',
   employeeCount: '',
 }
@@ -431,19 +428,6 @@ export default function IntakeForm() {
                     <option value="">Select a style</option>
                     {STYLE_PREFERENCES.map((s) => (
                       <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </FormField>
-                <FormField label="Timeline" required>
-                  <select
-                    required={form.plan === 'platform-plus'}
-                    value={form.timeline}
-                    onChange={(e) => setField('timeline', e.target.value)}
-                    className="form-input"
-                  >
-                    <option value="">Select a timeline</option>
-                    {TIMELINES.map((t) => (
-                      <option key={t} value={t}>{t}</option>
                     ))}
                   </select>
                 </FormField>
