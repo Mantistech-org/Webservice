@@ -1,11 +1,22 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import QuoteCalculator from './QuoteCalculator'
 import { PLANS, Plan } from '@/types'
 
 const HVAC_TYPES = ['Residential HVAC', 'Commercial HVAC', 'Both Residential and Commercial']
+
+const STYLE_PREFERENCES = [
+  'Modern and Minimal',
+  'Bold and Vibrant',
+  'Professional and Corporate',
+  'Warm and Friendly',
+  'Dark and Luxury',
+  'Clean and Bright',
+]
+
+const TIMELINES = ['As soon as possible', '1 to 2 weeks', '1 month', 'Flexible']
 
 interface FormData {
   businessName: string
@@ -25,6 +36,12 @@ interface FormData {
   existingDomain: string
   preferredDomain: string
   wantsProfessionalEmail: boolean
+  // Platform Plus
+  primaryGoal: string
+  stylePreference: string
+  timeline: string
+  requestedPages: string
+  employeeCount: string
 }
 
 const DEFAULT_FORM: FormData = {
@@ -44,6 +61,11 @@ const DEFAULT_FORM: FormData = {
   existingDomain: '',
   preferredDomain: '',
   wantsProfessionalEmail: false,
+  primaryGoal: '',
+  stylePreference: '',
+  timeline: '',
+  requestedPages: '',
+  employeeCount: '',
 }
 
 const STORAGE_KEY = 'intake_form_draft'
@@ -61,6 +83,13 @@ export default function IntakeForm() {
   const [submitState, setSubmitState] = useState<SubmitState>('idle')
   const [errorMsg, setErrorMsg] = useState('')
   const [referralToken, setReferralToken] = useState('')
+
+  // File upload state
+  const [files, setFiles] = useState<File[]>([])
+  const [filePreviews, setFilePreviews] = useState<string[]>([])
+  const [isDragging, setIsDragging] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const dropRef = useRef<HTMLDivElement>(null)
 
   // Restore draft from localStorage on mount
   useEffect(() => {
@@ -122,6 +151,28 @@ export default function IntakeForm() {
     setField('wantsProfessionalEmail', checked)
   }
 
+  const addFiles = (incoming: FileList | File[]) => {
+    const arr = Array.from(incoming).filter((f) => f.type.startsWith('image/'))
+    const remaining = 8 - files.length
+    const toAdd = arr.slice(0, remaining)
+    if (toAdd.length === 0) return
+    const previews = toAdd.map((f) => URL.createObjectURL(f))
+    setFiles((prev) => [...prev, ...toAdd])
+    setFilePreviews((prev) => [...prev, ...previews])
+  }
+
+  const removeFile = (index: number) => {
+    URL.revokeObjectURL(filePreviews[index])
+    setFiles((prev) => prev.filter((_, i) => i !== index))
+    setFilePreviews((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDragging(false)
+    addFiles(e.dataTransfer.files)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitState('submitting')
@@ -130,6 +181,21 @@ export default function IntakeForm() {
     try {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 90_000)
+
+      const photoData: string[] =
+        form.plan === 'platform-plus'
+          ? await Promise.all(
+              files.map(
+                (f) =>
+                  new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader()
+                    reader.onload = () => resolve(reader.result as string)
+                    reader.onerror = reject
+                    reader.readAsDataURL(f)
+                  })
+              )
+            )
+          : []
 
       let res: Response
       try {
@@ -144,6 +210,7 @@ export default function IntakeForm() {
             preferredDomain: form.preferredDomain || undefined,
             wantsProfessionalEmail: form.wantsProfessionalEmail || undefined,
             referredBy: referralToken || undefined,
+            photos: photoData,
           }),
         })
       } finally {
@@ -335,6 +402,111 @@ export default function IntakeForm() {
               </FormField>
             </div>
           </section>
+
+          {/* Website Details — platform-plus only */}
+          {form.plan === 'platform-plus' && (
+            <section>
+              <h2 className="font-mono text-xs text-primary tracking-widest uppercase mb-6 flex items-center gap-3">
+                <span className="w-4 h-px bg-accent" />
+                Website Details
+              </h2>
+              <div className="space-y-5">
+                <FormField label="Primary Goal for Your Website" required>
+                  <input
+                    type="text"
+                    required={form.plan === 'platform-plus'}
+                    value={form.primaryGoal}
+                    onChange={(e) => setField('primaryGoal', e.target.value)}
+                    placeholder="e.g. Generate leads, book appointments, showcase services..."
+                    className="form-input"
+                  />
+                </FormField>
+                <FormField label="Style Preference" required>
+                  <select
+                    required={form.plan === 'platform-plus'}
+                    value={form.stylePreference}
+                    onChange={(e) => setField('stylePreference', e.target.value)}
+                    className="form-input"
+                  >
+                    <option value="">Select a style</option>
+                    {STYLE_PREFERENCES.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </FormField>
+                <FormField label="Timeline" required>
+                  <select
+                    required={form.plan === 'platform-plus'}
+                    value={form.timeline}
+                    onChange={(e) => setField('timeline', e.target.value)}
+                    className="form-input"
+                  >
+                    <option value="">Select a timeline</option>
+                    {TIMELINES.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </FormField>
+                <FormField label="Number of Pages Requested">
+                  <input
+                    type="number"
+                    min={1}
+                    max={20}
+                    value={form.requestedPages}
+                    onChange={(e) => setField('requestedPages', e.target.value)}
+                    placeholder="How many pages do you need?"
+                    className="form-input"
+                  />
+                </FormField>
+                <FormField label="Photo Upload">
+                  <div
+                    ref={dropRef}
+                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded p-8 text-center cursor-pointer transition-all ${
+                      isDragging ? 'border-accent bg-accent/5' : 'border-border hover:border-border-light'
+                    }`}
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="sr-only"
+                      onChange={(e) => e.target.files && addFiles(e.target.files)}
+                    />
+                    <p className="text-sm text-muted">
+                      Drag and drop images here, or click to select
+                    </p>
+                    <p className="font-mono text-xs text-dim mt-1">
+                      Up to 8 images
+                    </p>
+                  </div>
+                  {filePreviews.length > 0 && (
+                    <div className="grid grid-cols-4 gap-2 mt-3">
+                      {filePreviews.map((src, i) => (
+                        <div key={i} className="relative aspect-square">
+                          <img src={src} alt="" className="w-full h-full object-cover rounded" />
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); removeFile(i) }}
+                            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 flex items-center justify-center text-white hover:bg-black transition-colors"
+                          >
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </FormField>
+              </div>
+            </section>
+          )}
 
           {/* Plan Selection */}
           <section>
