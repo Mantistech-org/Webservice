@@ -281,7 +281,7 @@ export default function AdminPage() {
 
   // ── Authenticated: render dashboard content (layout provides header + sidebar) ─
   const activeProjects = projects.filter((p) => p.status === 'active')
-  const estimatedMRR = activeProjects.reduce((sum, p) => sum + PLANS[p.plan].monthly, 0)
+  const estimatedMRR = activeProjects.reduce((sum, p) => sum + (PLANS[p.plan]?.monthly ?? 0), 0)
   const pendingCount = projects.filter((p) => p.status === 'admin_review').length
 
   const searchFiltered = projects.filter((p) => {

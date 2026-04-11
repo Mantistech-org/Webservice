@@ -621,9 +621,9 @@ export default function AdminProjectPage() {
               <div className="mb-4">
                 <div className="font-mono text-xs text-muted uppercase mb-1">Plan</div>
                 <div className="font-heading text-2xl text-primary capitalize">
-                  {plan.name}
+                  {plan?.name ?? project.plan}
                   <span className="font-mono text-sm text-muted ml-2 font-normal">
-                    ${plan.upfront} upfront / ${plan.monthly}/mo
+                    {plan ? `$${plan.upfront} upfront / $${plan.monthly}/mo` : ''}
                   </span>
                 </div>
               </div>
