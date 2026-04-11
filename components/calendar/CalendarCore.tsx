@@ -634,7 +634,10 @@ export default function CalendarCore({ mode, clientToken, darkMode }: CalendarCo
   const fetchEvents = useCallback(async () => {
     if (!clientToken) return
     try {
-      const res = await fetch(`/api/client/${clientToken}/events`)
+      const url = clientToken === 'admin-consultations'
+        ? '/api/admin/consultations/events'
+        : `/api/client/${clientToken}/events`
+      const res = await fetch(url)
       if (res.ok) {
         const data = await res.json()
         setEvents(data.events ?? [])
@@ -698,8 +701,11 @@ export default function CalendarCore({ mode, clientToken, darkMode }: CalendarCo
       closePanel()
       return
     }
+    const createUrl = clientToken === 'admin-consultations'
+      ? '/api/admin/consultations/events'
+      : `/api/client/${clientToken}/events`
     try {
-      const res = await fetch(`/api/client/${clientToken}/events`, {
+      const res = await fetch(createUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -714,8 +720,11 @@ export default function CalendarCore({ mode, clientToken, darkMode }: CalendarCo
       setSelectedEvent(prev => prev?.id === id ? { ...prev, ...updates } as CalEvent : prev)
       return
     }
+    const updateUrl = clientToken === 'admin-consultations'
+      ? `/api/admin/consultations/events/${id}`
+      : `/api/client/${clientToken}/events/${id}`
     try {
-      const res = await fetch(`/api/client/${clientToken}/events/${id}`, {
+      const res = await fetch(updateUrl, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...updates, action, send_email: sendEmail }),
@@ -735,8 +744,11 @@ export default function CalendarCore({ mode, clientToken, darkMode }: CalendarCo
       closePanel()
       return
     }
+    const deleteUrl = clientToken === 'admin-consultations'
+      ? `/api/admin/consultations/events/${id}`
+      : `/api/client/${clientToken}/events/${id}`
     try {
-      await fetch(`/api/client/${clientToken}/events/${id}`, { method: 'DELETE' })
+      await fetch(deleteUrl, { method: 'DELETE' })
       setEvents(prev => prev.filter(e => e.id !== id))
       closePanel()
     } catch { /* silently ignore */ }
@@ -790,7 +802,7 @@ export default function CalendarCore({ mode, clientToken, darkMode }: CalendarCo
   return (
     <div className="space-y-6">
       <div>
-        <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#3a6a8a' }}>Scheduling</p>
+        <p className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: '#00C27C' }}>Scheduling</p>
         <h2 className="font-heading text-2xl text-primary">Appointments</h2>
       </div>
 
