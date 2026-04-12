@@ -689,7 +689,68 @@ export async function sendAutomationEmail(params: {
   })
 }
 
-// ── 18. Admin password reset ─────────────────────────────────────────────────
+// ── 18. Consultation request (customer confirmation + admin notification) ─────
+export async function sendConsultationRequestEmail(params: {
+  name: string
+  businessName: string
+  email: string
+  phone: string
+  preferredDate: string
+  preferredTime: string
+  message?: string
+}) {
+  const { name, businessName, email, phone, preferredDate, preferredTime, message } = params
+
+  // Customer confirmation
+  await send({
+    from: FROM,
+    to: email,
+    subject: 'Your Consultation Request Has Been Received',
+    html: emailLayout(`
+      <h1>Consultation Request Received</h1>
+      <p>Hi ${name},</p>
+      <p>Your consultation has been requested for ${preferredDate} at ${preferredTime}. We will confirm your appointment within 24 hours.</p>
+      <div class="divider"></div>
+      <table class="data">
+        <tr><td class="key">Name</td><td class="val">${name}</td></tr>
+        <tr><td class="key">Business</td><td class="val">${businessName || 'Not provided'}</td></tr>
+        <tr><td class="key">Date</td><td class="val">${preferredDate}</td></tr>
+        <tr><td class="key">Time</td><td class="val">${preferredTime}</td></tr>
+      </table>
+      <div class="divider"></div>
+      <p class="muted">If you need to cancel or have questions, call us at (501) 669-0488 or reply to this email.</p>
+    `),
+  })
+
+  // Admin notification
+  if (ADMIN_EMAIL) {
+    await send({
+      from: FROM,
+      to: ADMIN_EMAIL,
+      subject: `New Consultation Request: ${name}`,
+      html: emailLayout(`
+        <h1>New Consultation Request</h1>
+        <p>A new consultation request has been submitted through the website.</p>
+        <div class="divider"></div>
+        <table class="data">
+          <tr><td class="key">Name</td><td class="val">${name}</td></tr>
+          <tr><td class="key">Business</td><td class="val">${businessName || 'Not provided'}</td></tr>
+          <tr><td class="key">Email</td><td class="val">${email}</td></tr>
+          <tr><td class="key">Phone</td><td class="val">${phone || 'Not provided'}</td></tr>
+          <tr><td class="key">Date</td><td class="val">${preferredDate}</td></tr>
+          <tr><td class="key">Time</td><td class="val">${preferredTime}</td></tr>
+        </table>
+        ${message ? `
+        <h2>Message</h2>
+        <div class="note-block">
+          <p>${message}</p>
+        </div>` : ''}
+      `),
+    })
+  }
+}
+
+// ── 19. Admin password reset ─────────────────────────────────────────────────
 export async function sendAdminPasswordResetEmail(params: {
   token: string
   resetUrl: string
