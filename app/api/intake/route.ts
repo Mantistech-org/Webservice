@@ -151,17 +151,20 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Step 2: Trigger AI generation via separate long-running endpoint ───────
-  // Non-blocking fetch to /api/generate — do not await so the response
-  // returns immediately while generation runs in its own request lifecycle.
-  console.log(`[intake] Triggering background AI generation for ${projectId}`)
-  const generateUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/generate`
-  fetch(generateUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ projectId }),
-  }).catch((err) => {
-    console.error(`[intake] Failed to trigger /api/generate for ${projectId}:`, err)
-  })
+  // Only platform-plus includes website generation. Platform skips this step.
+  if (plan === 'platform-plus') {
+    console.log(`[intake] Triggering background AI generation for ${projectId}`)
+    const generateUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/generate`
+    fetch(generateUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectId }),
+    }).catch((err) => {
+      console.error(`[intake] Failed to trigger /api/generate for ${projectId}:`, err)
+    })
+  } else {
+    console.log(`[intake] Skipping AI generation for plan="${plan as string}" (platform-plus only)`)
+  }
 
   // ── Step 3: Send emails (awaited — fire-and-forget is unreliable in Next.js) ──
   // Next.js App Router does not guarantee unawaited promises complete after the
