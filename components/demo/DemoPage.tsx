@@ -354,6 +354,16 @@ export default function DemoView() {
     sessionStorage.setItem('demo-business-name', biz)
     sessionStorage.setItem('demo-business-type', type)
     sessionStorage.setItem('demo-email', gateEmail.trim())
+    fetch('/api/demo/lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: gateEmail.trim(),
+        businessName: gateInput.trim(),
+        businessType: gateType.trim(),
+        sessionId,
+      }),
+    }).catch(() => {})
     setGateSubmitted(true)
   }
 

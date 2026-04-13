@@ -4,6 +4,14 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ProjectStatus, Plan, PLANS } from '@/types'
 
+interface DemoLead {
+  id: string
+  email: string
+  business_name: string | null
+  business_type: string | null
+  created_at: string
+}
+
 interface DemoSession {
   id: string
   createdAt: string
@@ -74,6 +82,8 @@ export default function AdminPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [demoSessions, setDemoSessions] = useState<DemoSession[]>([])
   const [demoLoading, setDemoLoading] = useState(false)
+  const [demoLeads, setDemoLeads] = useState<DemoLead[]>([])
+  const [demoLeadsLoading, setDemoLeadsLoading] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const [addForm, setAddForm] = useState<AddClientForm>(DEFAULT_ADD_FORM)
   const [addingClient, setAddingClient] = useState(false)
@@ -85,7 +95,7 @@ export default function AdminPage() {
         if (r.ok) { setAuthed(true); return r.json() }
         setAuthed(false); return null
       })
-      .then((data) => { if (data) { setProjects(data.projects); loadDemoSessions() } })
+      .then((data) => { if (data) { setProjects(data.projects); loadDemoSessions(); loadDemoLeads() } })
       .catch(() => setAuthed(false))
   }, [])
 
@@ -105,6 +115,14 @@ export default function AdminPage() {
       .finally(() => setDemoLoading(false))
   }
 
+  const loadDemoLeads = () => {
+    setDemoLeadsLoading(true)
+    fetch('/api/admin/demo-leads')
+      .then((r) => r.json())
+      .then((data) => setDemoLeads(data.leads ?? []))
+      .finally(() => setDemoLeadsLoading(false))
+  }
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoggingIn(true); setLoginError('')
@@ -116,7 +134,7 @@ export default function AdminPage() {
     if (res.ok && data.mfaRequired) {
       setMfaPending(true); setMfaCode(''); setMfaError(''); setMfaErrorType(''); setResent(false)
     } else if (res.ok) {
-      setAuthed(true); loadProjects(); loadDemoSessions()
+      setAuthed(true); loadProjects(); loadDemoSessions(); loadDemoLeads()
     } else {
       setLoginError(data.error ?? 'Incorrect password.')
     }
@@ -472,6 +490,56 @@ export default function AdminPage() {
                     </div>
                   )
                 })}
+              </div>
+            )}
+          </div>
+
+          {/* Demo Leads */}
+          <div className="pt-10 border-t border-border mb-16">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="font-heading text-3xl text-primary mb-1">Demo Leads</h2>
+                <p className="font-mono text-sm text-muted">
+                  {demoLeads.length} lead{demoLeads.length !== 1 ? 's' : ''} captured
+                </p>
+              </div>
+              <button onClick={loadDemoLeads} disabled={demoLeadsLoading}
+                className="font-mono text-xs text-muted hover:text-primary transition-colors tracking-wider">
+                {demoLeadsLoading ? 'Loading...' : 'Refresh'}
+              </button>
+            </div>
+
+            {demoLeads.length === 0 ? (
+              <div className="text-center py-12 font-mono text-sm text-muted">
+                No demo leads yet. Leads are captured when visitors submit the demo gate form.
+              </div>
+            ) : (
+              <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm dark:shadow-none">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b border-border">
+                      {['Email', 'Business Name', 'Business Type', 'Date'].map((h) => (
+                        <th key={h} className="px-5 py-3 text-left font-mono text-xs text-muted tracking-widest uppercase">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {demoLeads.map((lead, i) => (
+                      <tr key={lead.id} className={i < demoLeads.length - 1 ? 'border-b border-border' : ''}>
+                        <td className="px-5 py-4 font-mono text-sm text-primary">{lead.email}</td>
+                        <td className="px-5 py-4 font-mono text-sm text-muted">{lead.business_name ?? '—'}</td>
+                        <td className="px-5 py-4 font-mono text-sm text-muted">{lead.business_type ?? '—'}</td>
+                        <td className="px-5 py-4 font-mono text-xs text-muted whitespace-nowrap">
+                          {new Date(lead.created_at).toLocaleDateString('en-US', {
+                            month: 'short', day: 'numeric', year: 'numeric',
+                          })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
