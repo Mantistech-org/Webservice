@@ -310,6 +310,19 @@ function MissedCallPage({ businessName }: { businessName: string }) {
   )
 }
 
+// ── Engagement tracker ───────────────────────────────────────────────────────
+
+const trackEngagement = (event: string, detail?: string) => {
+  const sessionId = sessionStorage.getItem('demo-session-id')
+  const email = sessionStorage.getItem('demo-email')
+  if (!sessionId) return
+  fetch('/api/demo/engagement', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId, email, event, detail }),
+  }).catch(() => {})
+}
+
 // Retained for backward-compat with ClientDashboard
 export interface DemoContact {
   name: string
@@ -376,7 +389,7 @@ export default function DemoView() {
       case 'dashboard': return (
         <DashboardHome
           businessName={businessName}
-          onNavigateToWeather={() => setActivePage('weather')}
+          onNavigateToWeather={() => { trackEngagement('activate_now_click'); setActivePage('weather') }}
           onNavigate={setActivePage}
         />
       )
@@ -519,7 +532,7 @@ export default function DemoView() {
       <Sidebar
         expanded={sidebarExpanded}
         activePage={activePage}
-        onNavigate={setActivePage}
+        onNavigate={(page) => { trackEngagement('tab_click', page); setActivePage(page) }}
       />
 
       <main

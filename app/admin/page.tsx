@@ -4,11 +4,19 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ProjectStatus, Plan, PLANS } from '@/types'
 
+interface DemoLeadEvent {
+  event: string
+  detail: string | null
+  at: string
+}
+
 interface DemoLead {
   id: string
   email: string
   business_name: string | null
   business_type: string | null
+  engaged: boolean
+  events: DemoLeadEvent[]
   created_at: string
 }
 
@@ -84,6 +92,7 @@ export default function AdminPage() {
   const [demoLoading, setDemoLoading] = useState(false)
   const [demoLeads, setDemoLeads] = useState<DemoLead[]>([])
   const [demoLeadsLoading, setDemoLeadsLoading] = useState(false)
+  const [demoLeadsTab, setDemoLeadsTab] = useState<'engaged' | 'all'>('engaged')
   const [showAddModal, setShowAddModal] = useState(false)
   const [addForm, setAddForm] = useState<AddClientForm>(DEFAULT_ADD_FORM)
   const [addingClient, setAddingClient] = useState(false)
@@ -500,7 +509,7 @@ export default function AdminPage() {
               <div>
                 <h2 className="font-heading text-3xl text-primary mb-1">Demo Leads</h2>
                 <p className="font-mono text-sm text-muted">
-                  {demoLeads.length} lead{demoLeads.length !== 1 ? 's' : ''} captured
+                  {demoLeads.filter((l) => l.engaged).length} engaged &middot; {demoLeads.length} total
                 </p>
               </div>
               <button onClick={loadDemoLeads} disabled={demoLeadsLoading}
@@ -509,39 +518,120 @@ export default function AdminPage() {
               </button>
             </div>
 
-            {demoLeads.length === 0 ? (
-              <div className="text-center py-12 font-mono text-sm text-muted">
-                No demo leads yet. Leads are captured when visitors submit the demo gate form.
-              </div>
-            ) : (
-              <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm dark:shadow-none">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b border-border">
-                      {['Email', 'Business Name', 'Business Type', 'Date'].map((h) => (
-                        <th key={h} className="px-5 py-3 text-left font-mono text-xs text-muted tracking-widest uppercase">
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {demoLeads.map((lead, i) => (
-                      <tr key={lead.id} className={i < demoLeads.length - 1 ? 'border-b border-border' : ''}>
-                        <td className="px-5 py-4 font-mono text-sm text-primary">{lead.email}</td>
-                        <td className="px-5 py-4 font-mono text-sm text-muted">{lead.business_name ?? '—'}</td>
-                        <td className="px-5 py-4 font-mono text-sm text-muted">{lead.business_type ?? '—'}</td>
-                        <td className="px-5 py-4 font-mono text-xs text-muted whitespace-nowrap">
-                          {new Date(lead.created_at).toLocaleDateString('en-US', {
-                            month: 'short', day: 'numeric', year: 'numeric',
-                          })}
-                        </td>
+            {/* Tabs */}
+            <div className="flex gap-1 mb-5 border-b border-border">
+              {(['engaged', 'all'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setDemoLeadsTab(tab)}
+                  className={`font-mono text-xs tracking-wider px-4 py-2 -mb-px border-b-2 transition-colors ${
+                    demoLeadsTab === tab
+                      ? 'border-accent text-emerald-700 dark:text-accent'
+                      : 'border-transparent text-muted hover:text-primary'
+                  }`}
+                >
+                  {tab === 'engaged' ? 'Engaged Leads' : 'All Demo Leads'}
+                </button>
+              ))}
+            </div>
+
+            {(() => {
+              const rows = demoLeadsTab === 'engaged'
+                ? demoLeads.filter((l) => l.engaged)
+                : demoLeads
+
+              if (rows.length === 0) {
+                return (
+                  <div className="text-center py-12 font-mono text-sm text-muted">
+                    {demoLeadsTab === 'engaged'
+                      ? 'No engaged leads yet. Engaged leads clicked Activate Now in the demo.'
+                      : 'No demo leads yet. Leads are captured when visitors submit the demo gate form.'}
+                  </div>
+                )
+              }
+
+              if (demoLeadsTab === 'engaged') {
+                return (
+                  <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm dark:shadow-none">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="border-b border-border">
+                          {['Email', 'Business Name', 'Date', 'Actions Taken'].map((h) => (
+                            <th key={h} className="px-5 py-3 text-left font-mono text-xs text-muted tracking-widest uppercase">
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map((lead, i) => (
+                          <tr key={lead.id} className={i < rows.length - 1 ? 'border-b border-border' : ''}>
+                            <td className="px-5 py-4 font-mono text-sm text-primary">{lead.email}</td>
+                            <td className="px-5 py-4 font-mono text-sm text-muted">{lead.business_name ?? '—'}</td>
+                            <td className="px-5 py-4 font-mono text-xs text-muted whitespace-nowrap">
+                              {new Date(lead.created_at).toLocaleDateString('en-US', {
+                                month: 'short', day: 'numeric', year: 'numeric',
+                              })}
+                            </td>
+                            <td className="px-5 py-4">
+                              <div className="flex flex-wrap gap-1.5">
+                                {(lead.events ?? []).map((ev, j) => (
+                                  <span key={j} className="font-mono text-xs bg-bg border border-border text-primary/70 dark:text-white/60 px-2 py-0.5 rounded">
+                                    {ev.detail ? `${ev.event}: ${ev.detail}` : ev.event}
+                                  </span>
+                                ))}
+                                {(lead.events ?? []).length === 0 && (
+                                  <span className="font-mono text-xs text-muted">—</span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              }
+
+              return (
+                <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm dark:shadow-none">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="border-b border-border">
+                        {['Email', 'Business Name', 'Business Type', 'Date'].map((h) => (
+                          <th key={h} className="px-5 py-3 text-left font-mono text-xs text-muted tracking-widest uppercase">
+                            {h}
+                          </th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    </thead>
+                    <tbody>
+                      {rows.map((lead, i) => (
+                        <tr key={lead.id} className={i < rows.length - 1 ? 'border-b border-border' : ''}>
+                          <td className="px-5 py-4 font-mono text-sm text-primary">
+                            <div className="flex items-center gap-2">
+                              {lead.email}
+                              {lead.engaged && (
+                                <span className="font-mono text-xs text-emerald-700 dark:text-accent border border-emerald-700/30 dark:border-accent/30 bg-emerald-700/5 dark:bg-accent/5 px-2 py-0.5 rounded-full">
+                                  Engaged
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-5 py-4 font-mono text-sm text-muted">{lead.business_name ?? '—'}</td>
+                          <td className="px-5 py-4 font-mono text-sm text-muted">{lead.business_type ?? '—'}</td>
+                          <td className="px-5 py-4 font-mono text-xs text-muted whitespace-nowrap">
+                            {new Date(lead.created_at).toLocaleDateString('en-US', {
+                              month: 'short', day: 'numeric', year: 'numeric',
+                            })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )
+            })()}
           </div>
 
           {/* Referrals */}
