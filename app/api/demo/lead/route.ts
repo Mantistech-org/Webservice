@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { query, pgEnabled } from '@/lib/pg'
+import { enrollLeadInCampaigns } from '@/lib/campaigns'
 
 // Run this once in your Supabase SQL editor to create the table:
 //
@@ -27,6 +28,9 @@ export async function POST(req: Request) {
          ON CONFLICT DO NOTHING`,
         [email.trim(), businessName?.trim() || null, businessType?.trim() || null, sessionId?.trim() || null]
       ).catch(err => console.error('[demo/lead] DB insert failed:', err))
+
+      enrollLeadInCampaigns(email.trim(), businessName?.trim() || null, 'all')
+        .catch(err => console.error('[demo/lead] enrollLeadInCampaigns failed:', err))
     }
   } catch (err) {
     console.error('[demo/lead] unexpected error:', err)
