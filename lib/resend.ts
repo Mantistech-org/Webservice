@@ -750,7 +750,29 @@ export async function sendConsultationRequestEmail(params: {
   }
 }
 
-// ── 19. Admin password reset ─────────────────────────────────────────────────
+// ── 19. Demo lead campaign email ──────────────────────────────────────────────
+export async function sendDemoLeadCampaignEmail(params: {
+  to: string
+  subject: string
+  body: string
+  businessName?: string | null
+}) {
+  const { to, subject, body, businessName } = params
+  const greeting = businessName ? `Hi ${businessName},` : 'Hi there,'
+  await send({
+    from: FROM,
+    to,
+    subject,
+    html: emailLayout(`
+      <p>${greeting}</p>
+      ${body.split('\n').filter(Boolean).map((line) => `<p>${line}</p>`).join('')}
+      <div class="divider"></div>
+      <p class="muted">Mantis Tech &mdash; (501) 669-0488 &mdash; mantistech.org</p>
+    `),
+  })
+}
+
+// ── 20. Admin password reset ─────────────────────────────────────────────────
 export async function sendAdminPasswordResetEmail(params: {
   token: string
   resetUrl: string
