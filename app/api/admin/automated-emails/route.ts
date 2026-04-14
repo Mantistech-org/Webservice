@@ -1,28 +1,8 @@
 import { NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/auth'
 import { query, pgEnabled } from '@/lib/pg'
-import { sendDemoLeadCampaignEmail } from '@/lib/resend'
 
-const CREATE_TABLE_SQL = `
-  CREATE TABLE IF NOT EXISTS public.email_campaigns (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    campaign_name text NOT NULL,
-    subject text NOT NULL,
-    body text NOT NULL,
-    audience text NOT NULL,
-    recipient_count integer NOT NULL DEFAULT 0,
-    sent_at timestamptz NOT NULL DEFAULT now()
-  )
-`
-
-let tableReady = false
-async function ensureTable() {
-  if (tableReady || !pgEnabled) return
-  await query(CREATE_TABLE_SQL)
-  tableReady = true
-}
-
-// GET — return campaign history
+// GET — all campaigns with their emails and enrollment/send counts
 export async function GET() {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -33,78 +13,104 @@ export async function GET() {
   }
 
   try {
-    await ensureTable()
     const campaigns = await query<{
       id: string
-      campaign_name: string
-      subject: string
+      name: string
       audience: string
-      recipient_count: number
-      sent_at: string
+      status: string
+      created_at: string
+      enrollment_count: string
+      sent_count: string
     }>(
-      `SELECT id, campaign_name, subject, audience, recipient_count, sent_at
-       FROM public.email_campaigns
-       ORDER BY sent_at DESC`
+      `SELECT
+         c.id,
+         c.name,
+         c.audience,
+         c.status,
+         c.created_at,
+         COUNT(DISTINCT e.id) AS enrollment_count,
+         COUNT(DISTINCT s.id) AS sent_count
+       FROM public.email_campaigns c
+       LEFT JOIN public.campaign_enrollments e ON e.campaign_id = c.id
+       LEFT JOIN public.campaign_sends s ON s.enrollment_id = e.id
+       GROUP BY c.id
+       ORDER BY c.created_at DESC`
     )
-    return NextResponse.json({ campaigns })
+
+    const emails = await query<{
+      id: string
+      campaign_id: string
+      step_number: number
+      days_after_enrollment: number
+      subject: string
+      body: string
+    }>(
+      `SELECT id, campaign_id, step_number, days_after_enrollment, subject, body
+       FROM public.campaign_emails
+       ORDER BY campaign_id, step_number`
+    )
+
+    const emailsByCampaign = emails.reduce<Record<string, typeof emails>>((acc, e) => {
+      if (!acc[e.campaign_id]) acc[e.campaign_id] = []
+      acc[e.campaign_id].push(e)
+      return acc
+    }, {})
+
+    return NextResponse.json({
+      campaigns: campaigns.map((c) => ({
+        id: c.id,
+        name: c.name,
+        audience: c.audience,
+        status: c.status,
+        created_at: c.created_at,
+        emails: (emailsByCampaign[c.id] ?? []).map(({ campaign_id: _cid, ...e }) => e),
+        enrollmentCount: Number(c.enrollment_count),
+        sentCount: Number(c.sent_count),
+      })),
+    })
   } catch (err) {
     console.error('[admin/automated-emails] GET error:', err)
     return NextResponse.json({ campaigns: [] })
   }
 }
 
-// POST — send a campaign
+// POST — create a new campaign with its email steps
 export async function POST(req: Request) {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { campaignName, subject, body, audience } = await req.json()
-
-  if (!campaignName || !subject || !body || !audience) {
-    return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 })
   }
 
   if (!pgEnabled) {
     return NextResponse.json({ error: 'Database not configured.' }, { status: 503 })
   }
 
-  try {
-    await ensureTable()
+  const { name, audience, emails } = await req.json()
 
-    // Fetch recipients
-    const leads = await query<{ email: string; business_name: string | null }>(
-      audience === 'engaged'
-        ? `SELECT email, business_name FROM public.demo_leads WHERE engaged = true`
-        : `SELECT email, business_name FROM public.demo_leads`
+  if (!name || !audience || !Array.isArray(emails) || emails.length === 0) {
+    return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 })
+  }
+
+  try {
+    const [campaign] = await query<{ id: string }>(
+      `INSERT INTO public.email_campaigns (name, audience)
+       VALUES ($1, $2)
+       RETURNING id`,
+      [name, audience]
     )
 
-    // Send to each recipient — fire all in parallel, log individual failures
     await Promise.all(
-      leads.map((lead) =>
-        sendDemoLeadCampaignEmail({
-          to: lead.email,
-          subject,
-          body,
-          businessName: lead.business_name,
-        }).catch((err) =>
-          console.error(`[admin/automated-emails] Failed to send to ${lead.email}:`, err)
+      emails.map((e: { step_number: number; days_after_enrollment: number; subject: string; body: string }) =>
+        query(
+          `INSERT INTO public.campaign_emails (campaign_id, step_number, days_after_enrollment, subject, body)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [campaign.id, e.step_number, e.days_after_enrollment, e.subject, e.body]
         )
       )
     )
 
-    const recipientCount = leads.length
-
-    // Save campaign record
-    await query(
-      `INSERT INTO public.email_campaigns (campaign_name, subject, body, audience, recipient_count)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [campaignName, subject, body, audience, recipientCount]
-    )
-
-    return NextResponse.json({ success: true, recipientCount })
+    return NextResponse.json({ success: true, campaignId: campaign.id })
   } catch (err) {
     console.error('[admin/automated-emails] POST error:', err)
-    return NextResponse.json({ error: 'Failed to send campaign.' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to create campaign.' }, { status: 500 })
   }
 }
