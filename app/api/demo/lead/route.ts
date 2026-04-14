@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabase, supabaseEnabled } from '@/lib/supabase'
+import { query, pgEnabled } from '@/lib/pg'
 
 // Run this once in your Supabase SQL editor to create the table:
 //
@@ -20,20 +20,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true })
     }
 
-    if (supabaseEnabled) {
-      const { error } = await supabase.from('demo_leads').insert({
-        email,
-        business_name: businessName ?? null,
-        business_type: businessType ?? null,
-        session_id: sessionId ?? null,
-      })
-
-      if (error) {
-        console.error('[demo/lead] insert error:', error.message)
-        if (error.message?.includes('relation') && error.message?.includes('does not exist')) {
-          console.error('[demo/lead] Run the CREATE TABLE migration in your Supabase SQL editor.')
-        }
-      }
+    if (pgEnabled) {
+      await query(
+        `INSERT INTO public.demo_leads (email, business_name, business_type, session_id)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT DO NOTHING`,
+        [email.trim(), businessName?.trim() || null, businessType?.trim() || null, sessionId?.trim() || null]
+      ).catch(err => console.error('[demo/lead] DB insert failed:', err))
     }
   } catch (err) {
     console.error('[demo/lead] unexpected error:', err)

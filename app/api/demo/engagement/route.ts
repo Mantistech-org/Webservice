@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { supabase, supabaseEnabled } from '@/lib/supabase'
+import { query, pgEnabled } from '@/lib/pg'
 
-// Run once in your Supabase SQL editor to add the new columns:
+// Run once to add the new columns:
 //
 // ALTER TABLE public.demo_leads ADD COLUMN IF NOT EXISTS events jsonb NOT NULL DEFAULT '[]';
 // ALTER TABLE public.demo_leads ADD COLUMN IF NOT EXISTS engaged boolean NOT NULL DEFAULT false;
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true })
     }
 
-    if (!supabaseEnabled) {
+    if (!pgEnabled) {
       return NextResponse.json({ success: true })
     }
 
@@ -22,29 +22,28 @@ export async function POST(req: Request) {
     const isEngaging = event === 'activate_now_click'
 
     // Look up existing row by session_id
-    const { data: existing } = await supabase
-      .from('demo_leads')
-      .select('id, events, engaged')
-      .eq('session_id', sessionId)
-      .maybeSingle()
+    const rows = await query<{ id: string; events: unknown[]; engaged: boolean }>(
+      `SELECT id, events, engaged FROM public.demo_leads WHERE session_id = $1 LIMIT 1`,
+      [sessionId]
+    )
 
-    if (existing) {
+    if (rows.length > 0) {
+      const existing = rows[0]
       const currentEvents = Array.isArray(existing.events) ? existing.events : []
-      await supabase
-        .from('demo_leads')
-        .update({
-          events: [...currentEvents, newEvent],
-          engaged: existing.engaged || isEngaging,
-        })
-        .eq('id', existing.id)
+      await query(
+        `UPDATE public.demo_leads
+         SET events = $1::jsonb, engaged = $2
+         WHERE id = $3`,
+        [JSON.stringify([...currentEvents, newEvent]), existing.engaged || isEngaging, existing.id]
+      ).catch(err => console.error('[demo/engagement] DB update failed:', err))
     } else if (email) {
       // Gate form not yet persisted (e.g. race condition) — insert minimal row
-      await supabase.from('demo_leads').insert({
-        email,
-        session_id: sessionId,
-        events: [newEvent],
-        engaged: isEngaging,
-      })
+      await query(
+        `INSERT INTO public.demo_leads (email, session_id, events, engaged)
+         VALUES ($1, $2, $3::jsonb, $4)
+         ON CONFLICT DO NOTHING`,
+        [email, sessionId, JSON.stringify([newEvent]), isEngaging]
+      ).catch(err => console.error('[demo/engagement] DB insert failed:', err))
     }
   } catch (err) {
     console.error('[demo/engagement] unexpected error:', err)
