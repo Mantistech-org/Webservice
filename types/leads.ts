@@ -12,6 +12,7 @@ export interface OutreachLead {
   status: 'new' | 'called' | 'emailed' | 'bounced'
   notes: string | null
   last_emailed_at: string | null
+  deleted_at: string | null
   created_at: string
   updated_at: string
 }

@@ -6,7 +6,15 @@ import type { OutreachLead } from '@/types/leads'
 
 export type { OutreachLead }
 
+let migrated = false
+async function ensureMigration() {
+  if (migrated) return
+  await query(`ALTER TABLE public.outreach_leads ADD COLUMN IF NOT EXISTS deleted_at timestamptz`)
+  migrated = true
+}
+
 // GET /api/admin/leads — list all outreach leads
+// ?deleted=true returns soft-deleted rows; otherwise returns active rows
 export async function GET(req: NextRequest) {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -16,13 +24,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ leads: [] })
   }
 
+  await ensureMigration()
+
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status')
   const search = searchParams.get('search')
+  const deleted = searchParams.get('deleted') === 'true'
 
   let sql = 'SELECT * FROM public.outreach_leads'
   const params: unknown[] = []
   const conditions: string[] = []
+
+  conditions.push(deleted ? 'deleted_at IS NOT NULL' : 'deleted_at IS NULL')
 
   if (status && status !== 'all') {
     params.push(status)
@@ -33,7 +46,7 @@ export async function GET(req: NextRequest) {
     conditions.push(`(business_name ILIKE $${params.length} OR address ILIKE $${params.length})`)
   }
 
-  if (conditions.length) sql += ' WHERE ' + conditions.join(' AND ')
+  sql += ' WHERE ' + conditions.join(' AND ')
   sql += ' ORDER BY created_at DESC'
 
   try {
@@ -132,4 +145,63 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ saved, skipped })
+}
+
+// DELETE /api/admin/leads?id= — soft delete a lead (sets deleted_at = NOW())
+export async function DELETE(req: NextRequest) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!pgEnabled) {
+    return NextResponse.json({ error: 'Database not configured.' }, { status: 503 })
+  }
+
+  await ensureMigration()
+
+  const { searchParams } = new URL(req.url)
+  const id = searchParams.get('id')
+  if (!id) return NextResponse.json({ error: 'id is required.' }, { status: 400 })
+
+  try {
+    await query(
+      `UPDATE public.outreach_leads SET deleted_at = NOW() WHERE id = $1`,
+      [id]
+    )
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    console.error('[leads] DELETE failed:', err)
+    return NextResponse.json({ error: 'Delete failed.' }, { status: 500 })
+  }
+}
+
+// PATCH /api/admin/leads?id=&action=restore — restore a soft-deleted lead
+export async function PATCH(req: NextRequest) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!pgEnabled) {
+    return NextResponse.json({ error: 'Database not configured.' }, { status: 503 })
+  }
+
+  await ensureMigration()
+
+  const { searchParams } = new URL(req.url)
+  const id = searchParams.get('id')
+  const action = searchParams.get('action')
+
+  if (!id) return NextResponse.json({ error: 'id is required.' }, { status: 400 })
+  if (action !== 'restore') return NextResponse.json({ error: 'Unknown action.' }, { status: 400 })
+
+  try {
+    await query(
+      `UPDATE public.outreach_leads SET deleted_at = NULL WHERE id = $1`,
+      [id]
+    )
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    console.error('[leads] PATCH restore failed:', err)
+    return NextResponse.json({ error: 'Restore failed.' }, { status: 500 })
+  }
 }

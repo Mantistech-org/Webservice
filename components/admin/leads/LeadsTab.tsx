@@ -33,6 +33,7 @@ const CSV_FIELDS: (keyof OutreachLead)[] = [
 export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps) {
   const [leads, setLeads] = useState<OutreachLead[]>([])
   const [loading, setLoading] = useState(true)
+  const [viewMode, setViewMode] = useState<'active' | 'deleted'>('active')
   const [statusFilter, setStatusFilter] = useState('all')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [search, setSearch] = useState('')
@@ -41,26 +42,32 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   const fetchLeads = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
       const params = new URLSearchParams()
-      if (statusFilter !== 'all') params.set('status', statusFilter)
-      if (search) params.set('search', search)
+      if (viewMode === 'deleted') {
+        params.set('deleted', 'true')
+      } else {
+        if (statusFilter !== 'all') params.set('status', statusFilter)
+        if (search) params.set('search', search)
+      }
       const res = await fetch(`/api/admin/leads?${params}`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Failed to load leads.')
       setLeads(data.leads ?? [])
       onLeadsChange(data.leads ?? [])
       setSelectedIds(new Set())
+      setConfirmDeleteId(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load leads.')
     } finally {
       setLoading(false)
     }
-  }, [statusFilter, search, onLeadsChange])
+  }, [viewMode, statusFilter, search, onLeadsChange])
 
   useEffect(() => { fetchLeads() }, [fetchLeads, refreshSignal])
 
@@ -95,14 +102,29 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
     }
   }
 
-  const deleteLead = async (id: string) => {
-    if (!confirm('Delete this lead?')) return
+  const handleDeleteClick = async (id: string) => {
+    if (confirmDeleteId !== id) {
+      setConfirmDeleteId(id)
+      return
+    }
+    setConfirmDeleteId(null)
     try {
-      await fetch(`/api/admin/leads/${id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/admin/leads?id=${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Delete failed.')
       setLeads((prev) => prev.filter((l) => l.id !== id))
       setSelectedIds((prev) => { const next = new Set(prev); next.delete(id); return next })
     } catch {
       setError('Delete failed.')
+    }
+  }
+
+  const restoreLead = async (id: string) => {
+    try {
+      const res = await fetch(`/api/admin/leads?id=${id}&action=restore`, { method: 'PATCH' })
+      if (!res.ok) throw new Error('Restore failed.')
+      setLeads((prev) => prev.filter((l) => l.id !== id))
+    } catch {
+      setError('Restore failed.')
     }
   }
 
@@ -158,9 +180,9 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
           {['all', 'new', 'called', 'emailed', 'bounced'].map((s) => (
             <button
               key={s}
-              onClick={() => setStatusFilter(s)}
+              onClick={() => { setStatusFilter(s); setViewMode('active') }}
               className={`font-mono text-xs px-3 py-1.5 rounded border transition-colors ${
-                statusFilter === s
+                viewMode === 'active' && statusFilter === s
                   ? 'bg-accent text-black border-accent'
                   : 'border-border text-muted hover:text-primary'
               }`}
@@ -168,23 +190,37 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
               {s.charAt(0).toUpperCase() + s.slice(1)}
             </button>
           ))}
+          <button
+            onClick={() => setViewMode('deleted')}
+            className={`font-mono text-xs px-3 py-1.5 rounded border transition-colors ${
+              viewMode === 'deleted'
+                ? 'bg-accent text-black border-accent'
+                : 'border-border text-muted hover:text-primary'
+            }`}
+          >
+            Deleted Leads
+          </button>
         </div>
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="bg-bg border border-border text-primary rounded px-3 py-1.5 font-mono text-xs focus:outline-none focus:border-accent transition-colors"
-        >
-          {categories.map((c) => (
-            <option key={c} value={c}>{c === 'all' ? 'All categories' : c}</option>
-          ))}
-        </select>
-        <input
-          type="text"
-          placeholder="Search by name or address..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="bg-bg border border-border text-primary rounded px-3 py-1.5 font-mono text-xs focus:outline-none focus:border-accent transition-colors w-64"
-        />
+        {viewMode === 'active' && (
+          <>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="bg-bg border border-border text-primary rounded px-3 py-1.5 font-mono text-xs focus:outline-none focus:border-accent transition-colors"
+            >
+              {categories.map((c) => (
+                <option key={c} value={c}>{c === 'all' ? 'All categories' : c}</option>
+              ))}
+            </select>
+            <input
+              type="text"
+              placeholder="Search by name or address..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="bg-bg border border-border text-primary rounded px-3 py-1.5 font-mono text-xs focus:outline-none focus:border-accent transition-colors w-64"
+            />
+          </>
+        )}
         <button
           onClick={fetchLeads}
           className="font-mono text-xs px-3 py-1.5 border border-border rounded text-muted hover:text-primary transition-colors"
@@ -215,7 +251,9 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
         </div>
       ) : leads.length === 0 ? (
         <div className="text-center py-16 font-mono text-sm text-muted">
-          No leads found. Use the Search tab to find and save prospects.
+          {viewMode === 'deleted'
+            ? 'No deleted leads.'
+            : 'No leads found. Use the Search tab to find and save prospects.'}
         </div>
       ) : (
         <div className="bg-card border border-border rounded overflow-hidden">
@@ -328,7 +366,14 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      {editingId === lead.id ? (
+                      {viewMode === 'deleted' ? (
+                        <button
+                          onClick={() => restoreLead(lead.id)}
+                          className="text-muted hover:text-primary transition-colors"
+                        >
+                          Restore
+                        </button>
+                      ) : editingId === lead.id ? (
                         <div className="flex gap-2">
                           <button
                             onClick={() => saveEdit(lead.id)}
@@ -350,10 +395,14 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
                             Edit
                           </button>
                           <button
-                            onClick={() => deleteLead(lead.id)}
-                            className="text-muted hover:text-red-500 transition-colors"
+                            onClick={() => handleDeleteClick(lead.id)}
+                            className={`transition-colors ${
+                              confirmDeleteId === lead.id
+                                ? 'text-red-600 dark:text-red-400'
+                                : 'text-muted hover:text-red-500'
+                            }`}
                           >
-                            Delete
+                            {confirmDeleteId === lead.id ? 'Confirm Delete' : 'Delete'}
                           </button>
                         </div>
                       )}
