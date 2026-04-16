@@ -135,6 +135,7 @@ function ChevronDown({ open }: { open: boolean }) {
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard',          icon: <HomeIcon /> },
   { id: 'weather',   label: 'Weather Activation', icon: <CloudIcon />, featured: true },
+  { id: 'crm',       label: 'CRM',               icon: <UsersIcon /> },
   { id: 'bookings',  label: 'Bookings',           icon: <CalendarIcon /> },
   { id: 'review',    label: 'Reviews',            icon: <StarIcon /> },
   { id: 'seo',       label: 'SEO',                icon: <SearchIcon /> },
@@ -142,7 +143,6 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'email',        label: 'Email Marketing',   icon: <MailIcon /> },
   { id: 'gbp',          label: 'Google Business',   icon: <MapPinIcon /> },
   { id: 'missed-call',  label: 'Missed Call Reply', icon: <PhoneIcon /> },
-  { id: 'crm',          label: 'CRM',               icon: <UsersIcon /> },
   { id: 'settings',     label: 'Settings',          icon: <GearIcon /> },
 ]
 
