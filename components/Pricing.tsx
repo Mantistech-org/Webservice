@@ -4,7 +4,6 @@ const PLAN_ONLY_FEATURES = [
   'Weather Activation System',
   'Booking Calendar',
   'Review Management',
-  'SEO Optimization',
   'SMS and Text Marketing',
   'Automated Email Marketing',
   'Missed Call Auto-Reply',
@@ -15,6 +14,7 @@ const PLAN_ONLY_FEATURES = [
 
 const PLAN_PLUS_FEATURES = [
   'Everything in Platform Only',
+  'SEO Optimization',
   'Custom HVAC Website (48-hour build)',
   'Fast, mobile-optimized, built to rank',
   'Connected to every platform tool from day one',
