@@ -14,6 +14,7 @@ import CalendarPage from './tabs/CalendarPage'
 import SMSTextMarketing from './tabs/SMSTextMarketing'
 import WeatherActivation from './tabs/WeatherActivation'
 import EmailMarketing from './tabs/EmailMarketing'
+import CRM from './tabs/CRM'
 
 // ── Shared style constants ────────────────────────────────────────────────────
 
@@ -401,6 +402,7 @@ export default function DemoView() {
       case 'email':       return <EmailMarketing sessionId={sessionId} contacts={[]} onAddContacts={() => {}} />
       case 'gbp':         return <GBPPage businessName={businessName} />
       case 'missed-call': return <MissedCallPage businessName={businessName} />
+      case 'crm':         return <CRM sessionId={sessionId} businessName={businessName} />
       case 'performance': return <PerformancePage />
       case 'settings':
       case 'billing':     return <BillingPage />

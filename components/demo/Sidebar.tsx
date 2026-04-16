@@ -12,6 +12,7 @@ export type DemoView =
   | 'email'
   | 'gbp'
   | 'missed-call'
+  | 'crm'
   | 'performance'
   | 'settings'
   | 'billing'
@@ -102,6 +103,16 @@ function PhoneIcon() {
     </svg>
   )
 }
+function UsersIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 00-3-3.87" />
+      <path d="M16 3.13a4 4 0 010 7.75" />
+    </svg>
+  )
+}
 function GearIcon() {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -131,6 +142,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'email',        label: 'Email Marketing',   icon: <MailIcon /> },
   { id: 'gbp',          label: 'Google Business',   icon: <MapPinIcon /> },
   { id: 'missed-call',  label: 'Missed Call Reply', icon: <PhoneIcon /> },
+  { id: 'crm',          label: 'CRM',               icon: <UsersIcon /> },
   { id: 'settings',     label: 'Settings',          icon: <GearIcon /> },
 ]
 
