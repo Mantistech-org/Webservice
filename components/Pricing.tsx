@@ -67,7 +67,7 @@ export default function Pricing() {
                 <span className="font-mono text-sm text-muted ml-2 font-normal">/month</span>
               </div>
               <p className="font-mono text-xs text-muted mb-6">
-                For contractors who already have a website.
+                For contractors ready to grow their business.
               </p>
               <ul className="space-y-3 flex-1">
                 {PLAN_ONLY_FEATURES.map((feature) => (
@@ -100,7 +100,7 @@ export default function Pricing() {
                 <span className="font-mono text-sm text-muted ml-2 font-normal">/month</span>
               </div>
               <p className="font-mono text-xs text-muted mb-6">
-                For contractors who need a custom HVAC website included.
+                For contractors who want a custom HVAC website built and managed for them.
               </p>
               <ul className="space-y-3 flex-1">
                 {PLAN_PLUS_FEATURES.map((feature) => (
