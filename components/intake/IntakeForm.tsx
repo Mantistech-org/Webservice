@@ -608,7 +608,7 @@ export default function IntakeForm() {
                       For example: hello@{form.existingDomain || form.preferredDomain?.split(' ')[0] || 'yourbusiness.com'}
                     </div>
                     <div className="font-mono text-xs text-muted mt-1">
-                      +$12/mo
+                      Included with Platform Plus
                     </div>
                   </div>
                 </label>
