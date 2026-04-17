@@ -1568,9 +1568,8 @@ export default function PricingPage() {
                       onChange={(e) => setCouponForm((f) => ({ ...f, applies_to: e.target.value }))}
                       className="form-input w-full">
                       <option value="all">All Plans</option>
-                      <option value="starter">Starter Only</option>
-                      <option value="mid">Growth Only</option>
-                      <option value="pro">Pro Only</option>
+                      <option value="platform">Platform Only</option>
+                      <option value="platform-plus">Platform Plus</option>
                     </select>
                   </div>
                   <div>
