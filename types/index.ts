@@ -126,7 +126,7 @@ export const PLANS = {
   'platform-plus': {
     name: 'Platform Plus Website',
     upfront: 0,
-    monthly: 249,
+    monthly: 299,
     pages: 0,
     features: [
       'Everything in Platform Only',
