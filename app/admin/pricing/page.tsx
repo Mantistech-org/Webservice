@@ -159,6 +159,13 @@ const BLANK_ADDON: AddonForm = {
 
 const DESCRIPTION_PREVIEW_LENGTH = 180
 
+// ── Plans ──────────────────────────────────────────────────────────────────────
+
+const PLANS = [
+  { id: 'platform', name: 'Mantis Tech Platform Only', monthly: 199, serviceKey: 'stripe_price_platform_monthly' },
+  { id: 'platform-plus', name: 'Mantis Tech Platform Plus', monthly: 299, serviceKey: 'stripe_price_platform-plus_monthly' },
+]
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function PricingPage() {
@@ -1101,7 +1108,7 @@ export default function PricingPage() {
               <p className="font-mono text-xs text-muted mb-2">No plan cards found.</p>
               <p className="font-mono text-xs text-dim">
                 Run the <code className="font-mono">scripts/plan-cards-migration.sql</code> migration
-                in Supabase to create and seed the 6 plan cards.
+                in Supabase to create and seed the 2 plan cards (Platform Only, Platform Plus).
               </p>
             </div>
           ) : (
