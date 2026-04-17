@@ -14,6 +14,8 @@ const PLAN_ONLY_FEATURES = [
 
 const PLAN_PLUS_FEATURES = [
   'Everything in Platform Only',
+  'CRM',
+  'AI Voice Agent',
   'SEO Optimization',
   'Custom HVAC Website (48-hour build)',
   'Fast, mobile-optimized, built to rank',
