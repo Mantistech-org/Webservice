@@ -508,9 +508,9 @@ function CustomerCard({
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function CRM({ sessionId: _sessionId, businessName }: CRMProps) {
-  const [search, setSearch]           = useState('')
-  const [openLetters, setOpenLetters] = useState<Set<string>>(new Set())
-  const [notes, setNotes]             = useState<Record<number, string>>(
+  const [search, setSearch]         = useState('')
+  const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [notes, setNotes]           = useState<Record<number, string>>(
     Object.fromEntries(CUSTOMERS.map((c) => [c.id, c.notes]))
   )
 
@@ -525,15 +525,6 @@ export default function CRM({ sessionId: _sessionId, businessName }: CRMProps) {
 
   const grouped = groupByLetter(SORTED_CUSTOMERS)
   const letters = Object.keys(grouped).sort()
-
-  const toggleLetter = (letter: string) => {
-    setOpenLetters((prev) => {
-      const next = new Set(prev)
-      if (next.has(letter)) next.delete(letter)
-      else next.add(letter)
-      return next
-    })
-  }
 
   const updateNote = (id: number, val: string) =>
     setNotes((prev) => ({ ...prev, [id]: val }))
@@ -572,6 +563,7 @@ export default function CRM({ sessionId: _sessionId, businessName }: CRMProps) {
 
       {/* Customer list */}
       {isSearching ? (
+        /* Flat search results — full cards */
         <div>
           {filteredFlat.length === 0 ? (
             <div style={{ ...OUTER_CARD, textAlign: 'center', padding: '40px 20px', color: '#9ca3af', fontSize: 14 }}>
@@ -584,38 +576,60 @@ export default function CRM({ sessionId: _sessionId, businessName }: CRMProps) {
           )}
         </div>
       ) : (
+        /* Alphabetical groups — static headers, clickable name rows */
         <div style={{ ...OUTER_CARD, padding: 0, overflow: 'hidden' }}>
-          {letters.map((letter, idx) => {
-            const isOpen = openLetters.has(letter)
-            const group  = grouped[letter]
-            const isLast = idx === letters.length - 1
+          {letters.map((letter) => {
+            const group = grouped[letter]
             return (
               <div key={letter}>
-                <button
-                  onClick={() => toggleLetter(letter)}
-                  style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                    paddingLeft: 16, paddingRight: 16, paddingTop: 14, paddingBottom: 14,
-                    backgroundColor: '#ffffff', border: 'none',
-                    borderBottom: isOpen || !isLast ? '1px solid rgba(0,0,0,0.06)' : 'none',
-                    cursor: 'pointer', textAlign: 'left',
-                  }}
-                >
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#111827', minWidth: 14 }}>{letter}</span>
+                {/* Static letter header — not clickable */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  paddingLeft: 16, paddingRight: 16, paddingTop: 10, paddingBottom: 10,
+                  backgroundColor: '#f9fafb',
+                  borderBottom: '1px solid rgba(0,0,0,0.06)',
+                }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>{letter}</span>
                   <span style={{ fontSize: 12, color: '#6b7280' }}>({group.length})</span>
-                  <div style={{ flex: 1 }} />
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"
-                    style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', flexShrink: 0 }}>
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
-                <div style={{ maxHeight: isOpen ? 10000 : 0, overflow: 'hidden', transition: 'max-height 250ms ease' }}>
-                  <div style={{ padding: '0 16px 16px' }}>
-                    {group.map((c) => (
-                      <CustomerCard key={c.id} customer={c} note={notes[c.id]} onNoteChange={(v) => updateNote(c.id, v)} businessName={businessName} />
-                    ))}
-                  </div>
                 </div>
+
+                {/* Clickable customer name rows */}
+                {group.map((c) => {
+                  const isExpanded = expandedId === c.id
+                  return (
+                    <div key={c.id}>
+                      <button
+                        onClick={() => setExpandedId(isExpanded ? null : c.id)}
+                        style={{
+                          width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                          paddingLeft: 24, paddingRight: 16, paddingTop: 12, paddingBottom: 12,
+                          backgroundColor: isExpanded ? '#f9fafb' : '#ffffff',
+                          border: 'none', borderBottom: '1px solid rgba(0,0,0,0.06)',
+                          cursor: 'pointer', textAlign: 'left',
+                        }}
+                      >
+                        <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: '#111827' }}>{c.name}</span>
+                        <span style={STATUS_STYLE[c.status]}>{c.status}</span>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"
+                          style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.18s', flexShrink: 0, marginLeft: 8 }}>
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </button>
+
+                      {/* Inline expanded detail card */}
+                      {isExpanded && (
+                        <div style={{ padding: '0 16px 16px', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+                          <CustomerCard
+                            customer={c}
+                            note={notes[c.id]}
+                            onNoteChange={(v) => updateNote(c.id, v)}
+                            businessName={businessName}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )
           })}
