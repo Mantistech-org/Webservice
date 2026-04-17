@@ -587,7 +587,7 @@ export default function CRM({ sessionId: _sessionId, businessName }: CRMProps) {
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: 10,
                   paddingLeft: 16, paddingRight: 16, paddingTop: 10, paddingBottom: 10,
-                  backgroundColor: '#f9fafb',
+                  backgroundColor: '#f3f4f6',
                   borderBottom: '1px solid rgba(0,0,0,0.06)',
                 }}>
                   <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>{letter}</span>
