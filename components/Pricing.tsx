@@ -21,6 +21,7 @@ const PLAN_PLUS_FEATURES = [
   'Fast, mobile-optimized, built to rank',
   'Connected to every platform tool from day one',
   'Unlimited content updates',
+  'Invoicing System',
 ]
 
 function CheckIcon() {
