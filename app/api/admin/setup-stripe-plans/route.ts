@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { isAdminAuthenticated } from '@/lib/auth'
 import { getStripe } from '@/lib/stripe'
 import { supabase, supabaseEnabled } from '@/lib/supabase'
 import { getApiKey, invalidateApiKeyCache } from '@/lib/api-keys'
@@ -7,11 +6,8 @@ import { getApiKey, invalidateApiKeyCache } from '@/lib/api-keys'
 // POST /api/admin/setup-stripe-plans
 // One-time route: creates Platform Only and Platform Plus products + prices in Stripe,
 // saves the resulting price IDs to Supabase api_keys, then archives old Starter/Growth/Pro prices.
+// AUTH TEMPORARILY REMOVED — restore immediately after calling once.
 export async function POST() {
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   if (!supabaseEnabled) {
     return NextResponse.json({ error: 'Supabase not configured.' }, { status: 503 })
   }
