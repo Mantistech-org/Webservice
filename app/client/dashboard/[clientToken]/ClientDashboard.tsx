@@ -17,6 +17,7 @@ import CalendarCore from '@/components/calendar/CalendarCore'
 import type { DemoContact } from '@/components/demo/DemoPage'
 
 import { PLANS, PLAN_INCLUDED_ADDONS, Plan, ChangeRequest, ClientNotification } from '@/types'
+import type { DashboardConfig } from '@/lib/configure-dashboard'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -541,9 +542,12 @@ interface DashboardPageProps {
   darkMode: boolean
   onMarkRead: () => void
   analytics: AnalyticsData | null
+  dashConfig: DashboardConfig | null
+  welcomeDismissed: boolean
+  onDismissWelcome: () => void
 }
 
-function DashboardPage({ project, clientToken, darkMode, onMarkRead, analytics }: DashboardPageProps) {
+function DashboardPage({ project, clientToken, darkMode, onMarkRead, analytics, dashConfig, welcomeDismissed, onDismissWelcome }: DashboardPageProps) {
   const bg          = darkMode ? '#1e1e1e' : '#e8e8e8'
   const borderC     = darkMode ? '#333333' : '#d0d0d0'
   const textPrimary = darkMode ? '#f0f0f0' : '#1a1a1a'
@@ -569,6 +573,28 @@ function DashboardPage({ project, clientToken, darkMode, onMarkRead, analytics }
 
   return (
     <div className="space-y-6">
+      {/* Welcome message banner — shown once, dismissable */}
+      {dashConfig?.welcomeMessage && !welcomeDismissed && (
+        <div
+          className="rounded border p-4 flex items-start justify-between gap-4"
+          style={{
+            backgroundColor: darkMode ? 'rgba(0,255,136,0.06)' : 'rgba(0,255,136,0.08)',
+            borderColor: 'rgba(0,255,136,0.35)',
+          }}
+        >
+          <p className="font-mono text-xs leading-relaxed flex-1" style={{ color: textPrimary }}>
+            {dashConfig.welcomeMessage}
+          </p>
+          <button
+            onClick={onDismissWelcome}
+            className="shrink-0 font-mono text-xs px-3 py-1.5 rounded transition-opacity hover:opacity-80"
+            style={{ backgroundColor: '#00ff88', color: '#1a1a1a' }}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Unread notifications banner */}
       {unreadNotifications.length > 0 && (
         <div
@@ -642,6 +668,99 @@ function DashboardPage({ project, clientToken, darkMode, onMarkRead, analytics }
           </div>
         ))}
       </div>
+
+      {/* Automation Settings — pre-populated from AI config */}
+      {dashConfig && (dashConfig.missedCallReply || dashConfig.reviewRequestSms || (dashConfig.smsTemplates?.length > 0)) && (
+        <div className="space-y-4">
+          <div className="font-mono text-xs tracking-widest uppercase" style={{ color: textMuted }}>
+            Automation Settings
+          </div>
+
+          {/* Missed Call Auto-Reply */}
+          {dashConfig.missedCallReply && (
+            <div className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
+              <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: textMuted }}>
+                Missed Call Auto-Reply
+              </div>
+              <p className="font-mono text-xs mb-3" style={{ color: darkMode ? '#888888' : '#666666' }}>
+                This SMS is sent automatically when a customer calls and no one answers.
+              </p>
+              <div
+                className="rounded p-3 font-mono text-xs leading-relaxed"
+                style={{
+                  backgroundColor: darkMode ? '#252525' : '#f5f5f5',
+                  borderColor: darkMode ? '#3a3a3a' : '#d0d0d0',
+                  border: '1px solid',
+                  color: textPrimary,
+                }}
+              >
+                {dashConfig.missedCallReply}
+              </div>
+              <p className="font-mono text-xs mt-2" style={{ color: textDim }}>
+                {dashConfig.missedCallReply.length}/160 characters
+              </p>
+            </div>
+          )}
+
+          {/* Review Request SMS */}
+          {dashConfig.reviewRequestSms && (
+            <div className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
+              <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: textMuted }}>
+                Review Request SMS
+              </div>
+              <p className="font-mono text-xs mb-3" style={{ color: darkMode ? '#888888' : '#666666' }}>
+                Sent to customers after a completed job to request a Google review.
+              </p>
+              <div
+                className="rounded p-3 font-mono text-xs leading-relaxed"
+                style={{
+                  backgroundColor: darkMode ? '#252525' : '#f5f5f5',
+                  border: '1px solid',
+                  borderColor: darkMode ? '#3a3a3a' : '#d0d0d0',
+                  color: textPrimary,
+                }}
+              >
+                {dashConfig.reviewRequestSms}
+              </div>
+              <p className="font-mono text-xs mt-2" style={{ color: textDim }}>
+                {dashConfig.reviewRequestSms.length}/160 characters
+              </p>
+            </div>
+          )}
+
+          {/* Weather Event SMS Templates */}
+          {dashConfig.smsTemplates?.length > 0 && (
+            <div className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
+              <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: textMuted }}>
+                Weather Event SMS Templates
+              </div>
+              <p className="font-mono text-xs mb-4" style={{ color: darkMode ? '#888888' : '#666666' }}>
+                SMS blasts triggered by local weather events. Sent to your customer list automatically.
+              </p>
+              <div className="space-y-3">
+                {(['Cold Snap', 'Heat Wave', 'Seasonal Promotion'] as const).map((label, i) => (
+                  dashConfig.smsTemplates[i] ? (
+                    <div key={label}>
+                      <div className="font-mono text-xs mb-1.5" style={{ color: textMuted }}>{label}</div>
+                      <div
+                        className="rounded p-3 font-mono text-xs leading-relaxed"
+                        style={{
+                          backgroundColor: darkMode ? '#252525' : '#f5f5f5',
+                          border: '1px solid',
+                          borderColor: darkMode ? '#3a3a3a' : '#d0d0d0',
+                          color: textPrimary,
+                        }}
+                      >
+                        {dashConfig.smsTemplates[i]}
+                      </div>
+                    </div>
+                  ) : null
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Website Traffic Chart */}
       <div className="rounded border p-5" style={{ backgroundColor: bg, borderColor: borderC }}>
@@ -1044,8 +1163,12 @@ export default function ClientDashboard() {
   const searchParams = useSearchParams()
   const adminPreview = searchParams.get('admin_preview') === 'true'
 
-  const [project, setProject]     = useState<ProjectData | null>(null)
-  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
+  const [project, setProject]         = useState<ProjectData | null>(null)
+  const [analytics, setAnalytics]     = useState<AnalyticsData | null>(null)
+  const [dashConfig, setDashConfig]   = useState<DashboardConfig | null>(null)
+  const [welcomeDismissed, setWelcomeDismissed] = useState<boolean>(() => {
+    try { return localStorage.getItem(`welcome-dismissed-${clientToken}`) === 'true' } catch { return false }
+  })
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState('')
   const [sidebarExpanded, setSidebarExpanded] = useState(true)
@@ -1097,12 +1220,28 @@ export default function ClientDashboard() {
     } catch {
       // silently ignore — dashboard shows 0 leads
     }
+
+    // Dashboard config is non-critical
+    try {
+      const configRes = await fetch(`/api/client/${clientToken}/config`)
+      if (configRes.ok) {
+        const configData = await configRes.json() as { config: DashboardConfig | null }
+        if (configData.config) setDashConfig(configData.config)
+      }
+    } catch {
+      // silently ignore — automation settings will not appear
+    }
   }
 
   useEffect(() => {
     fetchProject()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientToken])
+
+  const handleDismissWelcome = () => {
+    try { localStorage.setItem(`welcome-dismissed-${clientToken}`, 'true') } catch {}
+    setWelcomeDismissed(true)
+  }
 
   const handleMarkRead = async () => {
     try {
@@ -1191,6 +1330,9 @@ export default function ClientDashboard() {
             darkMode={darkMode}
             onMarkRead={handleMarkRead}
             analytics={analytics}
+            dashConfig={dashConfig}
+            welcomeDismissed={welcomeDismissed}
+            onDismissWelcome={handleDismissWelcome}
           />
         )
       case 'website':
