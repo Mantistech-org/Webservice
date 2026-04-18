@@ -7,6 +7,7 @@ import { saveProject } from '@/lib/db'
 import { sendAdminNewProjectEmail, sendIntakeConfirmationEmail } from '@/lib/resend'
 import { getApiKey } from '@/lib/api-keys'
 import { rateLimit } from '@/lib/rate-limit'
+import { configureClientDashboard } from '@/lib/configure-dashboard'
 
 // No maxDuration needed — response returns immediately now
 export const maxDuration = 30
@@ -150,8 +151,15 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // ── Step 2: Trigger AI generation via separate long-running endpoint ───────
-  // Only platform-plus includes website generation. Platform skips this step.
+  // ── Step 2: Trigger background tasks (non-blocking) ────────────────────────
+
+  // Dashboard configuration runs for all plans.
+  console.log(`[intake] Triggering background dashboard configuration for ${projectId}`)
+  configureClientDashboard(project).catch((err) => {
+    console.error(`[intake] configureClientDashboard failed for ${projectId}:`, err)
+  })
+
+  // Website generation only runs for platform-plus.
   if (plan === 'platform-plus') {
     console.log(`[intake] Triggering background AI generation for ${projectId}`)
     const generateUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/generate`
@@ -163,7 +171,7 @@ export async function POST(req: NextRequest) {
       console.error(`[intake] Failed to trigger /api/generate for ${projectId}:`, err)
     })
   } else {
-    console.log(`[intake] Skipping AI generation for plan="${plan as string}" (platform-plus only)`)
+    console.log(`[intake] Skipping website generation for plan="${plan as string}" (platform-plus only)`)
   }
 
   // ── Step 3: Send emails (awaited — fire-and-forget is unreliable in Next.js) ──
