@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Project, ProjectStatus, PLANS, ADDONS, ADDONS as ALL_ADDONS } from '@/types'
+import type { DashboardConfig } from '@/lib/configure-dashboard'
 
 const STATUS_LABELS: Record<ProjectStatus, string> = {
   admin_review: 'Awaiting Review',
@@ -65,6 +66,26 @@ export default function AdminProjectPage() {
   const [applyingDiscount, setApplyingDiscount] = useState(false)
   const [discountMsg, setDiscountMsg] = useState('')
 
+  // ── Dashboard Config tab ──────────────────────────────────────────────────
+  const [mainTab, setMainTab] = useState<'website' | 'config'>('website')
+  const [dashConfig, setDashConfig] = useState<DashboardConfig | null>(null)
+  const [configLoading, setConfigLoading] = useState(false)
+  const [cfgEdits, setCfgEdits] = useState({
+    missedCallReply:        '',
+    reviewRequestSms:       '',
+    reviewRequestEmail:     '',
+    gbpPostTemplates:       ['', '', ''] as [string, string, string],
+    smsTemplates:           ['', '', ''] as [string, string, string],
+    emailTemplates:         ['', '', ''] as [string, string, string],
+    serviceAreaDescription: '',
+    welcomeMessage:         '',
+  })
+  const [savingCfgField, setSavingCfgField] = useState<string | null>(null)
+  const [regenField, setRegenField]         = useState<string | null>(null)
+  const [configMsg, setConfigMsg]           = useState<{ field: string; text: string; ok: boolean } | null>(null)
+  const [sendingToClient, setSendingToClient]   = useState(false)
+  const [sendToClientMsg, setSendToClientMsg]   = useState('')
+
   const fetchProject = useCallback(async () => {
     try {
       const res = await fetch(`/api/admin/projects/${id}`)
@@ -82,6 +103,28 @@ export default function AdminProjectPage() {
   }, [id, router])
 
   useEffect(() => { fetchProject() }, [fetchProject])
+
+  const fetchConfig = useCallback(async () => {
+    setConfigLoading(true)
+    try {
+      const res = await fetch(`/api/admin/projects/${id}/config`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.config) {
+          setDashConfig(data.config as DashboardConfig)
+          initCfgEdits(data.config as DashboardConfig)
+        }
+      }
+    } finally {
+      setConfigLoading(false)
+    }
+  }, [id])
+
+  useEffect(() => {
+    if (mainTab === 'config' && !dashConfig && !configLoading) {
+      void fetchConfig()
+    }
+  }, [mainTab, dashConfig, configLoading, fetchConfig])
 
   // Poll every 3s while status is 'generating'; stop automatically when it changes
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -300,6 +343,122 @@ export default function AdminProjectPage() {
     }
   }
 
+  // ── Dashboard Config helpers ──────────────────────────────────────────────
+
+  function padThree(arr: string[]): [string, string, string] {
+    return ([...arr, '', '', ''].slice(0, 3)) as [string, string, string]
+  }
+
+  function initCfgEdits(cfg: DashboardConfig) {
+    setCfgEdits({
+      missedCallReply:        cfg.missedCallReply,
+      reviewRequestSms:       cfg.reviewRequestSms,
+      reviewRequestEmail:     cfg.reviewRequestEmail,
+      gbpPostTemplates:       padThree(cfg.gbpPostTemplates),
+      smsTemplates:           padThree(cfg.smsTemplates),
+      emailTemplates:         padThree(cfg.emailTemplates),
+      serviceAreaDescription: cfg.serviceAreaDescription,
+      welcomeMessage:         cfg.welcomeMessage,
+    })
+  }
+
+  async function handleSaveCfgField(fieldName: string) {
+    setSavingCfgField(fieldName)
+    setConfigMsg(null)
+    try {
+      const value = cfgEdits[fieldName as keyof typeof cfgEdits]
+      const res = await fetch(`/api/admin/projects/${id}/config`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates: { [fieldName]: value } }),
+      })
+      const data = await res.json()
+      if (res.ok && data.config) {
+        setDashConfig(data.config as DashboardConfig)
+        setConfigMsg({ field: fieldName, text: 'Saved.', ok: true })
+      } else {
+        setConfigMsg({ field: fieldName, text: (data as { error?: string }).error ?? 'Save failed.', ok: false })
+      }
+    } catch {
+      setConfigMsg({ field: fieldName, text: 'Network error.', ok: false })
+    } finally {
+      setSavingCfgField(null)
+    }
+  }
+
+  async function handleRegenCfgField(fieldName: string) {
+    setRegenField(fieldName)
+    setConfigMsg(null)
+    try {
+      const res = await fetch(`/api/admin/projects/${id}/config`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ regenerateField: fieldName }),
+      })
+      const data = await res.json()
+      if (res.ok && data.config) {
+        setDashConfig(data.config as DashboardConfig)
+        initCfgEdits(data.config as DashboardConfig)
+        setConfigMsg({ field: fieldName, text: 'Regenerated.', ok: true })
+      } else {
+        setConfigMsg({ field: fieldName, text: (data as { error?: string }).error ?? 'Regeneration failed.', ok: false })
+      }
+    } catch {
+      setConfigMsg({ field: fieldName, text: 'Network error.', ok: false })
+    } finally {
+      setRegenField(null)
+    }
+  }
+
+  async function handleRegenAllCfg() {
+    setRegenField('all')
+    setConfigMsg(null)
+    try {
+      const res = await fetch(`/api/admin/projects/${id}/config`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ regenerate: true }),
+      })
+      const data = await res.json()
+      if (res.ok && data.config) {
+        setDashConfig(data.config as DashboardConfig)
+        initCfgEdits(data.config as DashboardConfig)
+        setConfigMsg({ field: 'all', text: 'All fields regenerated.', ok: true })
+      } else {
+        setConfigMsg({ field: 'all', text: (data as { error?: string }).error ?? 'Regeneration failed.', ok: false })
+      }
+    } catch {
+      setConfigMsg({ field: 'all', text: 'Network error.', ok: false })
+    } finally {
+      setRegenField(null)
+    }
+  }
+
+  async function handleSendToClient() {
+    if (!project) return
+    setSendingToClient(true)
+    setSendToClientMsg('')
+    const endpoint = project.plan === 'platform-plus' ? 'approve' : 'activate'
+    try {
+      const res = await fetch(`/api/admin/projects/${id}/${endpoint}`, { method: 'POST' })
+      if (res.ok) {
+        const data = await res.json()
+        setProject((p) => p ? { ...p, status: (data as { project: Project }).project.status } : p)
+        setSendToClientMsg(
+          project.plan === 'platform-plus'
+            ? 'Sent to client for review. Status set to Client Review.'
+            : 'Project activated. Client can access their dashboard.'
+        )
+      } else {
+        setSendToClientMsg('Failed to send to client.')
+      }
+    } catch {
+      setSendToClientMsg('Network error.')
+    } finally {
+      setSendingToClient(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -339,7 +498,27 @@ export default function AdminProjectPage() {
         <span className="font-mono text-xs text-dim ml-auto hidden sm:block">ID: {project.id}</span>
       </div>
 
+      {/* Main tab bar */}
+      <div className="border-b border-border px-6">
+        <div className="flex gap-1">
+          {(['website', 'config'] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setMainTab(t)}
+              className={`font-mono text-xs tracking-widest uppercase px-5 py-2.5 border-b-2 transition-colors ${
+                mainTab === t
+                  ? 'border-accent text-accent'
+                  : 'border-transparent text-muted hover:text-primary'
+              }`}
+            >
+              {t === 'website' ? 'Website' : 'Dashboard Config'}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {mainTab === 'website' && (
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
 
           {/* Preview / Edit tabs */}
@@ -932,6 +1111,309 @@ export default function AdminProjectPage() {
             </div>
           </div>
         </div>
+        )}
+
+        {/* ── Dashboard Config tab ──────────────────────────────────────────── */}
+        {mainTab === 'config' && (
+          <div className="max-w-3xl mx-auto">
+            <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
+              <div>
+                <h2 className="font-heading text-2xl text-primary">Dashboard Config</h2>
+                <p className="font-mono text-xs text-muted mt-1">
+                  AI-generated automations and content pre-loaded into this client&apos;s platform.
+                </p>
+              </div>
+              <button
+                onClick={handleRegenAllCfg}
+                disabled={regenField !== null}
+                className="font-mono text-xs border border-border px-4 py-2 rounded text-muted hover:border-accent hover:text-accent transition-all disabled:opacity-60 flex items-center gap-2 shrink-0"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                  className={regenField === 'all' ? 'animate-spin' : ''}>
+                  <polyline points="23 4 23 10 17 10" />
+                  <polyline points="1 20 1 14 7 14" />
+                  <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                </svg>
+                {regenField === 'all' ? 'Regenerating...' : 'Regenerate All'}
+              </button>
+            </div>
+
+            {configMsg?.field === 'all' && (
+              <p className={`font-mono text-xs mb-6 ${configMsg.ok ? 'text-accent' : 'text-red-400'}`}>
+                {configMsg.text}
+              </p>
+            )}
+
+            {configLoading ? (
+              <p className="font-mono text-xs text-muted animate-pulse">Loading config...</p>
+            ) : !dashConfig ? (
+              <div className="bg-card border border-border rounded p-8 text-center">
+                <p className="font-mono text-xs text-muted mb-2">No dashboard configuration generated yet.</p>
+                <p className="font-mono text-xs text-dim mb-6">
+                  Config is generated automatically when a client submits the intake form. You can also generate it manually.
+                </p>
+                <button
+                  onClick={handleRegenAllCfg}
+                  disabled={regenField !== null}
+                  className="font-mono text-xs bg-accent text-black px-5 py-2.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60"
+                >
+                  {regenField === 'all' ? 'Generating...' : 'Generate Now'}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+
+                {/* ── Single textarea fields ──────────────────────────────────── */}
+
+                {/* Missed Call Auto-Reply */}
+                <div className="bg-card border border-border rounded p-6">
+                  <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
+                    <h3 className="font-mono text-xs text-accent tracking-widest uppercase">Missed Call Auto-Reply</h3>
+                    <button onClick={() => handleRegenCfgField('missedCallReply')} disabled={regenField !== null}
+                      className="font-mono text-xs text-muted hover:text-accent transition-colors disabled:opacity-50">
+                      {regenField === 'missedCallReply' ? 'Regenerating...' : 'Regenerate'}
+                    </button>
+                  </div>
+                  <p className="font-mono text-xs text-dim mb-3">Auto-reply SMS when a call is missed. Max 160 characters.</p>
+                  <textarea rows={3} value={cfgEdits.missedCallReply}
+                    onChange={(e) => setCfgEdits((p) => ({ ...p, missedCallReply: e.target.value }))}
+                    className="form-input w-full resize-y text-sm mb-3" />
+                  {configMsg?.field === 'missedCallReply' && (
+                    <p className={`font-mono text-xs mb-2 ${configMsg.ok ? 'text-accent' : 'text-red-400'}`}>{configMsg.text}</p>
+                  )}
+                  <button onClick={() => handleSaveCfgField('missedCallReply')} disabled={savingCfgField !== null}
+                    className="font-mono text-xs bg-accent text-black px-4 py-1.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60">
+                    {savingCfgField === 'missedCallReply' ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+
+                {/* Review Request SMS */}
+                <div className="bg-card border border-border rounded p-6">
+                  <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
+                    <h3 className="font-mono text-xs text-accent tracking-widest uppercase">Review Request SMS</h3>
+                    <button onClick={() => handleRegenCfgField('reviewRequestSms')} disabled={regenField !== null}
+                      className="font-mono text-xs text-muted hover:text-accent transition-colors disabled:opacity-50">
+                      {regenField === 'reviewRequestSms' ? 'Regenerating...' : 'Regenerate'}
+                    </button>
+                  </div>
+                  <p className="font-mono text-xs text-dim mb-3">Sent to customers after a completed job asking for a Google review.</p>
+                  <textarea rows={3} value={cfgEdits.reviewRequestSms}
+                    onChange={(e) => setCfgEdits((p) => ({ ...p, reviewRequestSms: e.target.value }))}
+                    className="form-input w-full resize-y text-sm mb-3" />
+                  {configMsg?.field === 'reviewRequestSms' && (
+                    <p className={`font-mono text-xs mb-2 ${configMsg.ok ? 'text-accent' : 'text-red-400'}`}>{configMsg.text}</p>
+                  )}
+                  <button onClick={() => handleSaveCfgField('reviewRequestSms')} disabled={savingCfgField !== null}
+                    className="font-mono text-xs bg-accent text-black px-4 py-1.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60">
+                    {savingCfgField === 'reviewRequestSms' ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+
+                {/* Review Request Email */}
+                <div className="bg-card border border-border rounded p-6">
+                  <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
+                    <h3 className="font-mono text-xs text-accent tracking-widest uppercase">Review Request Email</h3>
+                    <button onClick={() => handleRegenCfgField('reviewRequestEmail')} disabled={regenField !== null}
+                      className="font-mono text-xs text-muted hover:text-accent transition-colors disabled:opacity-50">
+                      {regenField === 'reviewRequestEmail' ? 'Regenerating...' : 'Regenerate'}
+                    </button>
+                  </div>
+                  <p className="font-mono text-xs text-dim mb-3">Email version of the review request. First line is the subject.</p>
+                  <textarea rows={10} value={cfgEdits.reviewRequestEmail}
+                    onChange={(e) => setCfgEdits((p) => ({ ...p, reviewRequestEmail: e.target.value }))}
+                    className="form-input w-full resize-y text-sm mb-3" />
+                  {configMsg?.field === 'reviewRequestEmail' && (
+                    <p className={`font-mono text-xs mb-2 ${configMsg.ok ? 'text-accent' : 'text-red-400'}`}>{configMsg.text}</p>
+                  )}
+                  <button onClick={() => handleSaveCfgField('reviewRequestEmail')} disabled={savingCfgField !== null}
+                    className="font-mono text-xs bg-accent text-black px-4 py-1.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60">
+                    {savingCfgField === 'reviewRequestEmail' ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+
+                {/* ── GBP Post Templates ────────────────────────────────────── */}
+                <div className="bg-card border border-border rounded p-6">
+                  <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
+                    <h3 className="font-mono text-xs text-accent tracking-widest uppercase">Google Business Profile Posts</h3>
+                    <button onClick={() => handleRegenCfgField('gbpPostTemplates')} disabled={regenField !== null}
+                      className="font-mono text-xs text-muted hover:text-accent transition-colors disabled:opacity-50">
+                      {regenField === 'gbpPostTemplates' ? 'Regenerating...' : 'Regenerate'}
+                    </button>
+                  </div>
+                  <p className="font-mono text-xs text-dim mb-4">3 weather-triggered GBP post templates. Max 300 characters each.</p>
+                  <div className="space-y-4">
+                    {(['Cold Snap Alert', 'Heat Wave Alert', 'Seasonal Transition'] as const).map((label, i) => (
+                      <div key={i}>
+                        <div className="font-mono text-xs text-muted mb-1">{label}</div>
+                        <textarea rows={3} value={cfgEdits.gbpPostTemplates[i]}
+                          onChange={(e) => {
+                            const arr = [...cfgEdits.gbpPostTemplates] as [string, string, string]
+                            arr[i] = e.target.value
+                            setCfgEdits((p) => ({ ...p, gbpPostTemplates: arr }))
+                          }}
+                          className="form-input w-full resize-y text-sm" />
+                      </div>
+                    ))}
+                  </div>
+                  {configMsg?.field === 'gbpPostTemplates' && (
+                    <p className={`font-mono text-xs mt-3 mb-2 ${configMsg.ok ? 'text-accent' : 'text-red-400'}`}>{configMsg.text}</p>
+                  )}
+                  <button onClick={() => handleSaveCfgField('gbpPostTemplates')} disabled={savingCfgField !== null}
+                    className="font-mono text-xs bg-accent text-black px-4 py-1.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60 mt-4">
+                    {savingCfgField === 'gbpPostTemplates' ? 'Saving...' : 'Save All'}
+                  </button>
+                </div>
+
+                {/* ── SMS Blast Templates ───────────────────────────────────── */}
+                <div className="bg-card border border-border rounded p-6">
+                  <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
+                    <h3 className="font-mono text-xs text-accent tracking-widest uppercase">SMS Blast Templates</h3>
+                    <button onClick={() => handleRegenCfgField('smsTemplates')} disabled={regenField !== null}
+                      className="font-mono text-xs text-muted hover:text-accent transition-colors disabled:opacity-50">
+                      {regenField === 'smsTemplates' ? 'Regenerating...' : 'Regenerate'}
+                    </button>
+                  </div>
+                  <p className="font-mono text-xs text-dim mb-4">3 SMS blast templates for weather event campaigns. Max 160 characters each.</p>
+                  <div className="space-y-4">
+                    {(['Cold Snap Campaign', 'Heat Wave Campaign', 'Seasonal Promotion'] as const).map((label, i) => (
+                      <div key={i}>
+                        <div className="font-mono text-xs text-muted mb-1">{label}</div>
+                        <textarea rows={3} value={cfgEdits.smsTemplates[i]}
+                          onChange={(e) => {
+                            const arr = [...cfgEdits.smsTemplates] as [string, string, string]
+                            arr[i] = e.target.value
+                            setCfgEdits((p) => ({ ...p, smsTemplates: arr }))
+                          }}
+                          className="form-input w-full resize-y text-sm" />
+                      </div>
+                    ))}
+                  </div>
+                  {configMsg?.field === 'smsTemplates' && (
+                    <p className={`font-mono text-xs mt-3 mb-2 ${configMsg.ok ? 'text-accent' : 'text-red-400'}`}>{configMsg.text}</p>
+                  )}
+                  <button onClick={() => handleSaveCfgField('smsTemplates')} disabled={savingCfgField !== null}
+                    className="font-mono text-xs bg-accent text-black px-4 py-1.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60 mt-4">
+                    {savingCfgField === 'smsTemplates' ? 'Saving...' : 'Save All'}
+                  </button>
+                </div>
+
+                {/* ── Email Campaign Templates ──────────────────────────────── */}
+                <div className="bg-card border border-border rounded p-6">
+                  <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
+                    <h3 className="font-mono text-xs text-accent tracking-widest uppercase">Email Campaign Templates</h3>
+                    <button onClick={() => handleRegenCfgField('emailTemplates')} disabled={regenField !== null}
+                      className="font-mono text-xs text-muted hover:text-accent transition-colors disabled:opacity-50">
+                      {regenField === 'emailTemplates' ? 'Regenerating...' : 'Regenerate'}
+                    </button>
+                  </div>
+                  <p className="font-mono text-xs text-dim mb-4">3 weather-triggered email campaign templates. First line of each is the subject.</p>
+                  <div className="space-y-4">
+                    {(['Cold Snap Email', 'Heat Wave Email', 'Seasonal Maintenance Email'] as const).map((label, i) => (
+                      <div key={i}>
+                        <div className="font-mono text-xs text-muted mb-1">{label}</div>
+                        <textarea rows={10} value={cfgEdits.emailTemplates[i]}
+                          onChange={(e) => {
+                            const arr = [...cfgEdits.emailTemplates] as [string, string, string]
+                            arr[i] = e.target.value
+                            setCfgEdits((p) => ({ ...p, emailTemplates: arr }))
+                          }}
+                          className="form-input w-full resize-y text-sm" />
+                      </div>
+                    ))}
+                  </div>
+                  {configMsg?.field === 'emailTemplates' && (
+                    <p className={`font-mono text-xs mt-3 mb-2 ${configMsg.ok ? 'text-accent' : 'text-red-400'}`}>{configMsg.text}</p>
+                  )}
+                  <button onClick={() => handleSaveCfgField('emailTemplates')} disabled={savingCfgField !== null}
+                    className="font-mono text-xs bg-accent text-black px-4 py-1.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60 mt-4">
+                    {savingCfgField === 'emailTemplates' ? 'Saving...' : 'Save All'}
+                  </button>
+                </div>
+
+                {/* Service Area Description */}
+                <div className="bg-card border border-border rounded p-6">
+                  <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
+                    <h3 className="font-mono text-xs text-accent tracking-widest uppercase">Service Area Description</h3>
+                    <button onClick={() => handleRegenCfgField('serviceAreaDescription')} disabled={regenField !== null}
+                      className="font-mono text-xs text-muted hover:text-accent transition-colors disabled:opacity-50">
+                      {regenField === 'serviceAreaDescription' ? 'Regenerating...' : 'Regenerate'}
+                    </button>
+                  </div>
+                  <p className="font-mono text-xs text-dim mb-3">Displayed on the client&apos;s platform to describe their coverage area.</p>
+                  <textarea rows={3} value={cfgEdits.serviceAreaDescription}
+                    onChange={(e) => setCfgEdits((p) => ({ ...p, serviceAreaDescription: e.target.value }))}
+                    className="form-input w-full resize-y text-sm mb-3" />
+                  {configMsg?.field === 'serviceAreaDescription' && (
+                    <p className={`font-mono text-xs mb-2 ${configMsg.ok ? 'text-accent' : 'text-red-400'}`}>{configMsg.text}</p>
+                  )}
+                  <button onClick={() => handleSaveCfgField('serviceAreaDescription')} disabled={savingCfgField !== null}
+                    className="font-mono text-xs bg-accent text-black px-4 py-1.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60">
+                    {savingCfgField === 'serviceAreaDescription' ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+
+                {/* Welcome Message */}
+                <div className="bg-card border border-border rounded p-6">
+                  <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
+                    <h3 className="font-mono text-xs text-accent tracking-widest uppercase">Welcome Message</h3>
+                    <button onClick={() => handleRegenCfgField('welcomeMessage')} disabled={regenField !== null}
+                      className="font-mono text-xs text-muted hover:text-accent transition-colors disabled:opacity-50">
+                      {regenField === 'welcomeMessage' ? 'Regenerating...' : 'Regenerate'}
+                    </button>
+                  </div>
+                  <p className="font-mono text-xs text-dim mb-3">Shown on the client dashboard on first login.</p>
+                  <textarea rows={4} value={cfgEdits.welcomeMessage}
+                    onChange={(e) => setCfgEdits((p) => ({ ...p, welcomeMessage: e.target.value }))}
+                    className="form-input w-full resize-y text-sm mb-3" />
+                  {configMsg?.field === 'welcomeMessage' && (
+                    <p className={`font-mono text-xs mb-2 ${configMsg.ok ? 'text-accent' : 'text-red-400'}`}>{configMsg.text}</p>
+                  )}
+                  <button onClick={() => handleSaveCfgField('welcomeMessage')} disabled={savingCfgField !== null}
+                    className="font-mono text-xs bg-accent text-black px-4 py-1.5 rounded hover:opacity-90 transition-opacity disabled:opacity-60">
+                    {savingCfgField === 'welcomeMessage' ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+
+                {/* ── Send to Client ────────────────────────────────────────── */}
+                <div className="bg-card border border-accent/30 rounded p-6">
+                  <h3 className="font-mono text-xs text-accent tracking-widest uppercase mb-2">Send to Client</h3>
+                  <p className="font-mono text-xs text-muted mb-5">
+                    {project.plan === 'platform-plus'
+                      ? 'Sets status to Client Review and sends the client a link to review and approve their website.'
+                      : 'Activates the account and sends the client access to their Platform Only dashboard.'}
+                  </p>
+                  {project.status === 'active' ? (
+                    <div className="font-mono text-xs text-accent border border-accent/30 rounded px-4 py-2.5 text-center">
+                      Project is already active.
+                    </div>
+                  ) : project.status === 'client_review' ? (
+                    <div className="font-mono text-xs text-blue-400 border border-blue-400/30 rounded px-4 py-2.5 text-center">
+                      Already sent to client for review.
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleSendToClient}
+                      disabled={sendingToClient}
+                      className="w-full bg-accent text-black font-mono text-sm py-3 rounded tracking-wider hover:opacity-90 transition-opacity disabled:opacity-60 glow-accent"
+                    >
+                      {sendingToClient
+                        ? 'Sending...'
+                        : project.plan === 'platform-plus'
+                          ? 'Send for Client Review'
+                          : 'Activate and Send Dashboard Access'}
+                    </button>
+                  )}
+                  {sendToClientMsg && (
+                    <p className={`font-mono text-xs mt-3 ${sendToClientMsg.includes('Failed') || sendToClientMsg.includes('error') ? 'text-red-400' : 'text-accent'}`}>
+                      {sendToClientMsg}
+                    </p>
+                  )}
+                </div>
+
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {showRegenModal && (
