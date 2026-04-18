@@ -184,7 +184,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <aside className="w-56 shrink-0 sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto border-r border-white/10 bg-[#555555] dark:bg-[#303030]">
           <AdminNav />
         </aside>
-        <main className="flex-1 min-w-0 flex flex-col [&>*]:!pt-6">
+        <main className="flex-1 min-w-0 flex flex-col mt-[73px]">
           {children}
         </main>
       </div>
