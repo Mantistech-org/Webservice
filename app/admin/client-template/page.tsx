@@ -35,15 +35,5 @@ export default function ClientTemplatePage() {
   if (authed === null) return null
   if (!authed) return null
 
-  return (
-    <>
-      <div className="px-8 py-6 border-b border-border shrink-0">
-        <h1 className="font-heading text-5xl text-primary mb-1">Client Dashboard Template</h1>
-        <p className="font-mono text-sm text-muted">
-          Preview of the client-facing Mantis Tech dashboard.
-        </p>
-      </div>
-      <DemoView />
-    </>
-  )
+  return <DemoView />
 }

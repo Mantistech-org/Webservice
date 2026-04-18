@@ -6,7 +6,7 @@ import ThemeToggle from '@/components/ThemeToggle'
 import AdminNav from '@/components/admin/AdminNav'
 
 // Pages under /admin that should never show the admin chrome (login flows)
-const PUBLIC_PREFIXES = ['/admin/reset-password']
+const PUBLIC_PREFIXES = ['/admin/reset-password', '/admin/client-template']
 
 // ── Database status indicator ──────────────────────────────────────────────
 
