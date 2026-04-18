@@ -23,12 +23,12 @@ export default function ClientTemplatePage() {
           setAuthed(true)
         } else {
           setAuthed(false)
-          router.push('/admin/login')
+          router.push('/admin')
         }
       })
       .catch(() => {
         setAuthed(false)
-        router.push('/admin/login')
+        router.push('/admin')
       })
   }, [router])
 
