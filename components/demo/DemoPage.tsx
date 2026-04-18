@@ -331,7 +331,7 @@ export interface DemoContact {
   source: 'upload' | 'leads'
 }
 
-export default function DemoView() {
+export default function DemoView({ hideBanner }: { hideBanner?: boolean } = {}) {
   const [sidebarExpanded, setSidebarExpanded] = useState(true)
   const [activePage, setActivePage]     = useState<DemoView>('dashboard')
   const [sessionId,  setSessionId]      = useState('')
@@ -546,28 +546,30 @@ export default function DemoView() {
         }}
       >
         {/* Free trial banner */}
-        <div style={{ backgroundColor: '#000000' }}>
-          <div className="px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <span
-                className="font-mono text-xs tracking-widest uppercase px-2 py-0.5 rounded"
-                style={{ backgroundColor: '#00ff88', color: '#000000' }}
+        {!hideBanner && (
+          <div style={{ backgroundColor: '#000000' }}>
+            <div className="px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span
+                  className="font-mono text-xs tracking-widest uppercase px-2 py-0.5 rounded"
+                  style={{ backgroundColor: '#00ff88', color: '#000000' }}
+                >
+                  Free Trial
+                </span>
+                <p className="font-mono text-xs" style={{ color: '#aaaaaa' }}>
+                  Try all Mantis Tech tools at no cost. No sign-up required.
+                </p>
+              </div>
+              <Link
+                href="/consultation"
+                className="shrink-0 font-mono text-xs px-5 py-2 rounded-lg tracking-wider whitespace-nowrap transition-opacity hover:opacity-80"
+                style={{ backgroundColor: '#f0f0f0', color: '#000000' }}
               >
-                Free Trial
-              </span>
-              <p className="font-mono text-xs" style={{ color: '#aaaaaa' }}>
-                Try all Mantis Tech tools at no cost. No sign-up required.
-              </p>
+                Get Set Up Today
+              </Link>
             </div>
-            <Link
-              href="/consultation"
-              className="shrink-0 font-mono text-xs px-5 py-2 rounded-lg tracking-wider whitespace-nowrap transition-opacity hover:opacity-80"
-              style={{ backgroundColor: '#f0f0f0', color: '#000000' }}
-            >
-              Get Set Up Today
-            </Link>
           </div>
-        </div>
+        )}
 
         {/* Page content - lazy mount for persistence */}
         <div style={{ padding: 24 }}>
