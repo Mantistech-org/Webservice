@@ -13,6 +13,122 @@ interface DashboardProps {
 
 const ACTIVITY_FEED: Array<{ text: string; time: string }> = []
 
+// ── Weather API types ─────────────────────────────────────────────────────────
+
+interface WeatherForecastDay {
+  date: string
+  dayLabel: string
+  highF: number
+  lowF: number
+  condition: string
+  precipChance: number
+}
+
+interface WeatherData {
+  location: string
+  current: {
+    tempF: number
+    condition: string
+    humidity: number
+    windMph: number
+  }
+  forecast: WeatherForecastDay[]
+  alerts: Array<{ type: string; description: string; severity: string }>
+  trigger: {
+    active: boolean
+    type: 'cold_snap' | 'heat_wave' | null
+    severity: 'moderate' | 'severe' | null
+    reason: string | null
+  }
+}
+
+// ── Condition icon ────────────────────────────────────────────────────────────
+
+function conditionIcon(condition: string) {
+  const c = condition.toLowerCase()
+
+  const svgProps = {
+    width: 16,
+    height: 16,
+    viewBox: '0 0 24 24',
+    fill: 'none' as const,
+    stroke: '#9ca3af',
+    strokeWidth: 2,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+    style: { flexShrink: 0 as const },
+  }
+
+  if (c.includes('thunder') || c.includes('storm') || c.includes('lightning')) {
+    // Cloud with lightning bolt
+    return (
+      <svg {...svgProps}>
+        <path d="M19 16.9A5 5 0 0018 7h-1.26A8 8 0 104 15.25" />
+        <polyline points="13 11 9 17 15 17 11 23" />
+      </svg>
+    )
+  }
+
+  if (c.includes('snow') || c.includes('freez') || c.includes('sleet') || c.includes('ice') || c.includes('blizzard') || c.includes('flurr')) {
+    // Snowflake
+    return (
+      <svg {...svgProps}>
+        <line x1="12" y1="2" x2="12" y2="22" />
+        <line x1="2" y1="12" x2="22" y2="12" />
+        <line x1="5.64" y1="5.64" x2="18.36" y2="18.36" />
+        <line x1="18.36" y1="5.64" x2="5.64" y2="18.36" />
+        <circle cx="12" cy="12" r="2" />
+      </svg>
+    )
+  }
+
+  if (c.includes('rain') || c.includes('shower') || c.includes('drizzle') || c.includes('precip')) {
+    // Cloud with rain drops
+    return (
+      <svg {...svgProps}>
+        <line x1="16" y1="13" x2="16" y2="21" />
+        <line x1="8" y1="13" x2="8" y2="21" />
+        <line x1="12" y1="15" x2="12" y2="23" />
+        <path d="M20 16.58A5 5 0 0018 7h-1.26A8 8 0 104 15.25" />
+      </svg>
+    )
+  }
+
+  if (c.includes('overcast') || c.includes('cloudy') || c.includes('fog') || c.includes('mist') || c.includes('haze')) {
+    // Single cloud
+    return (
+      <svg {...svgProps}>
+        <path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z" />
+      </svg>
+    )
+  }
+
+  if (c.includes('partly') || c.includes('mostly') || c.includes('scattered')) {
+    // Sun with cloud (partly cloudy)
+    return (
+      <svg {...svgProps}>
+        <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        <circle cx="10" cy="10" r="3" />
+        <path d="M20 15h-1.17A4 4 0 108 16.93V17h12a3 3 0 000-6z" />
+      </svg>
+    )
+  }
+
+  // Sunny / Clear — default
+  return (
+    <svg {...svgProps}>
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  )
+}
 
 // ── Map data ──────────────────────────────────────────────────────────────────
 
@@ -254,7 +370,32 @@ function CityMap() {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
+const WEATHER_LOCATION = 'Little Rock, AR'
+
 export default function DashboardHome({ businessName, onNavigateToWeather, onNavigate }: DashboardProps) {
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
+  const [weatherLoading, setWeatherLoading] = useState(true)
+
+  useEffect(() => {
+    fetch(`/api/weather?location=${encodeURIComponent(WEATHER_LOCATION)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: WeatherData | null) => {
+        setWeatherData(data)
+        setWeatherLoading(false)
+      })
+      .catch(() => setWeatherLoading(false))
+  }, [])
+
+  const trigger = weatherData?.trigger
+  const forecast = weatherData?.forecast ?? []
+  const isEventActive = trigger?.active === true
+
+  // Derive event display values
+  const eventTitle = trigger?.type === 'heat_wave' ? 'Heat Wave Detected' : 'Cold Snap Detected'
+  const eventDotColor = trigger?.severity === 'severe' ? '#ef4444' : '#f59e0b'
+  const eventLabelColor = trigger?.severity === 'severe' ? '#ef4444' : '#f59e0b'
+  const severityLabel = trigger?.severity === 'severe' ? 'Severe' : 'Moderate'
+
   return (
     // Negative margin bleeds to edge of parent's 24px padding, then re-applies it
     // so the #F8F8F8 background fills the entire content area.
@@ -286,106 +427,204 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           flexDirection: 'column',
           boxSizing: 'border-box',
         }}>
-          {/* Label */}
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-            <span style={{
-              display: 'inline-block',
-              width: 7, height: 7,
-              borderRadius: '50%',
-              backgroundColor: '#00C27C',
-              flexShrink: 0,
-              marginRight: 7,
-            }} />
-            <span style={{
-              fontSize: 11,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: '#00C27C',
-              fontWeight: 600,
-            }}>
-              Monitoring
-            </span>
-          </div>
 
-          {/* Headline */}
-          <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 24, marginBottom: 8 }}>
-            All Clear
-          </div>
+          {weatherLoading ? (
+            /* ── Loading state ── */
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
+                <span style={{
+                  display: 'inline-block', width: 7, height: 7,
+                  borderRadius: '50%', backgroundColor: '#4b5563',
+                  flexShrink: 0, marginRight: 7,
+                }} />
+                <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#4b5563', fontWeight: 600 }}>
+                  Checking
+                </span>
+              </div>
+              <div style={{ color: '#6b7280', fontWeight: 600, fontSize: 16, marginBottom: 8 }}>
+                Checking conditions...
+              </div>
+              <div style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.5 }}>
+                Fetching live weather data for your service area.
+              </div>
+            </>
+          ) : isEventActive ? (
+            /* ── Weather event active state ── */
+            <>
+              {/* Label */}
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
+                <span style={{
+                  display: 'inline-block', width: 7, height: 7,
+                  borderRadius: '50%', backgroundColor: eventDotColor,
+                  flexShrink: 0, marginRight: 7,
+                }} />
+                <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: eventLabelColor, fontWeight: 600 }}>
+                  Weather Event Active
+                </span>
+              </div>
 
-          {/* Subline */}
-          <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 20, lineHeight: 1.5 }}>
-            No weather events detected in your service area.
-          </div>
+              {/* Headline */}
+              <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 22, marginBottom: 8 }}>
+                {eventTitle}
+              </div>
 
-          {/* Divider */}
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', marginBottom: 20 }} />
+              {/* Severity badge */}
+              <div style={{ marginBottom: 12 }}>
+                <span style={{
+                  display: 'inline-block',
+                  fontSize: 11, fontWeight: 600,
+                  color: eventLabelColor,
+                  border: `1px solid ${eventLabelColor}`,
+                  borderRadius: 4,
+                  padding: '2px 8px',
+                  letterSpacing: '0.05em',
+                }}>
+                  {severityLabel}
+                </span>
+              </div>
 
-          {/* Forecast snapshot */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
+              {/* Reason */}
+              {trigger?.reason && (
+                <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 20, lineHeight: 1.5 }}>
+                  {trigger.reason}
+                </div>
+              )}
 
-            {/* Today — partly cloudy */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                <path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z" />
-              </svg>
-              <span style={{ fontSize: 13, color: '#ffffff', flex: 1 }}>Today</span>
-              <span style={{ fontSize: 13, color: '#9ca3af' }}>72F / 54F</span>
-            </div>
+              {/* Divider */}
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', marginBottom: 20 }} />
 
-            {/* Tomorrow — sunny */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                <circle cx="12" cy="12" r="5" />
-                <line x1="12" y1="1" x2="12" y2="3" />
-                <line x1="12" y1="21" x2="12" y2="23" />
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                <line x1="1" y1="12" x2="3" y2="12" />
-                <line x1="21" y1="12" x2="23" y2="12" />
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-              </svg>
-              <span style={{ fontSize: 13, color: '#ffffff', flex: 1 }}>Tomorrow</span>
-              <span style={{ fontSize: 13, color: '#9ca3af' }}>78F / 58F</span>
-            </div>
+              {/* Forecast rows (real data) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
+                {forecast.slice(0, 3).map((day) => (
+                  <div key={day.date} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    {conditionIcon(day.condition)}
+                    <span style={{ fontSize: 13, color: '#ffffff', flex: 1 }}>{day.dayLabel}</span>
+                    <span style={{ fontSize: 13, color: '#9ca3af' }}>
+                      {day.highF}F / {day.lowF}F
+                    </span>
+                  </div>
+                ))}
+              </div>
 
-            {/* Wednesday — rain */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                <line x1="16" y1="13" x2="16" y2="21" />
-                <line x1="8" y1="13" x2="8" y2="21" />
-                <line x1="12" y1="15" x2="12" y2="23" />
-                <path d="M20 16.58A5 5 0 0018 7h-1.26A8 8 0 104 15.25" />
-              </svg>
-              <span style={{ fontSize: 13, color: '#ffffff', flex: 1 }}>Wednesday</span>
-              <span style={{ fontSize: 13, color: '#9ca3af' }}>65F / 49F</span>
-            </div>
+              {/* Activate Now button */}
+              <button
+                onClick={() => onNavigateToWeather?.()}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = `${eventDotColor}22` }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+                style={{
+                  display: 'block', textAlign: 'center', width: '100%', boxSizing: 'border-box',
+                  backgroundColor: 'transparent', border: `1px solid ${eventDotColor}`, color: eventLabelColor,
+                  fontSize: 13, fontWeight: 600, padding: '10px 0', borderRadius: 6,
+                  cursor: 'pointer', transition: 'background-color 0.15s ease', marginTop: 20,
+                }}
+              >
+                Activate Now
+              </button>
+            </>
+          ) : (
+            /* ── All Clear / monitoring state ── */
+            <>
+              {/* Label */}
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
+                <span style={{
+                  display: 'inline-block', width: 7, height: 7,
+                  borderRadius: '50%', backgroundColor: '#00C27C',
+                  flexShrink: 0, marginRight: 7,
+                }} />
+                <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00C27C', fontWeight: 600 }}>
+                  Monitoring
+                </span>
+              </div>
 
-          </div>
+              {/* Headline */}
+              <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 24, marginBottom: 8 }}>
+                All Clear
+              </div>
 
-          {/* Next check status */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 20, marginBottom: 16 }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
-            <span style={{ fontSize: 12, color: '#6b7280' }}>Next check in 4 hours</span>
-          </div>
+              {/* Subline */}
+              <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 20, lineHeight: 1.5 }}>
+                No weather events detected in your service area.
+              </div>
 
-          {/* View Full Forecast button */}
-          <button
-            onClick={() => onNavigateToWeather?.()}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,194,124,0.1)' }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
-            style={{
-              display: 'block', textAlign: 'center', width: '100%', boxSizing: 'border-box',
-              backgroundColor: 'transparent', border: '1px solid #00C27C', color: '#00C27C',
-              fontSize: 13, fontWeight: 600, padding: '10px 0', borderRadius: 6,
-              cursor: 'pointer', transition: 'background-color 0.15s ease',
-            }}
-          >
-            View Full Forecast
-          </button>
+              {/* Divider */}
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', marginBottom: 20 }} />
+
+              {/* Forecast rows (real data when available, static fallback when null) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
+                {forecast.length > 0 ? forecast.slice(0, 3).map((day) => (
+                  <div key={day.date} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    {conditionIcon(day.condition)}
+                    <span style={{ fontSize: 13, color: '#ffffff', flex: 1 }}>{day.dayLabel}</span>
+                    <span style={{ fontSize: 13, color: '#9ca3af' }}>
+                      {day.highF}F / {day.lowF}F
+                      {day.precipChance > 0 ? ` · ${day.precipChance}%` : ''}
+                    </span>
+                  </div>
+                )) : (
+                  /* Static fallback if API returned no forecast rows */
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                        <path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z" />
+                      </svg>
+                      <span style={{ fontSize: 13, color: '#ffffff', flex: 1 }}>Today</span>
+                      <span style={{ fontSize: 13, color: '#9ca3af' }}>— / —</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                        <circle cx="12" cy="12" r="5" />
+                        <line x1="12" y1="1" x2="12" y2="3" />
+                        <line x1="12" y1="21" x2="12" y2="23" />
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                        <line x1="1" y1="12" x2="3" y2="12" />
+                        <line x1="21" y1="12" x2="23" y2="12" />
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                      </svg>
+                      <span style={{ fontSize: 13, color: '#ffffff', flex: 1 }}>Tomorrow</span>
+                      <span style={{ fontSize: 13, color: '#9ca3af' }}>— / —</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                        <line x1="16" y1="13" x2="16" y2="21" />
+                        <line x1="8" y1="13" x2="8" y2="21" />
+                        <line x1="12" y1="15" x2="12" y2="23" />
+                        <path d="M20 16.58A5 5 0 0018 7h-1.26A8 8 0 104 15.25" />
+                      </svg>
+                      <span style={{ fontSize: 13, color: '#ffffff', flex: 1 }}>Next day</span>
+                      <span style={{ fontSize: 13, color: '#9ca3af' }}>— / —</span>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Next check status */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 20, marginBottom: 16 }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span style={{ fontSize: 12, color: '#6b7280' }}>Next check in 4 hours</span>
+              </div>
+
+              {/* View Full Forecast button */}
+              <button
+                onClick={() => onNavigateToWeather?.()}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,194,124,0.1)' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+                style={{
+                  display: 'block', textAlign: 'center', width: '100%', boxSizing: 'border-box',
+                  backgroundColor: 'transparent', border: '1px solid #00C27C', color: '#00C27C',
+                  fontSize: 13, fontWeight: 600, padding: '10px 0', borderRadius: 6,
+                  cursor: 'pointer', transition: 'background-color 0.15s ease',
+                }}
+              >
+                View Full Forecast
+              </button>
+            </>
+          )}
+
         </div>
 
         {/* Right: map card */}
