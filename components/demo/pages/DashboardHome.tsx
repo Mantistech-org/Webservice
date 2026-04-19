@@ -93,24 +93,6 @@ function CityMap() {
         clickable: false,
       })
 
-      // Weather pill — sits on the east edge of the service area circle
-      // 15000m radius at lat 34.7465 = ~0.1712 degrees longitude
-      const weatherTemp = '28F'
-      const weatherEvent = 'Cold Snap'
-      const pillText = `${weatherTemp}: ${weatherEvent}`
-      const pillW = 110, pillH = 26
-      const pillSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${pillW}" height="${pillH}"><rect width="${pillW}" height="${pillH}" rx="6" fill="rgba(20,20,20,0.85)"/><text x="${pillW / 2}" y="${pillH / 2}" text-anchor="middle" dominant-baseline="central" font-family="Arial,sans-serif" font-size="11" fill="white">${pillText}</text></svg>`
-      const weatherPillMarker = new gm.Marker({
-        map,
-        position: { lat: 34.7465, lng: -92.1184 },
-        icon: {
-          url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(pillSvg)}`,
-          scaledSize: new gm.Size(pillW, pillH),
-          anchor: new gm.Point(0, pillH / 2),
-        },
-        clickable: false,
-      })
-
       // Individual pin markers (shown at zoom >= 14)
       const individualMarkers = JOB_LATLNGS.map((pos) =>
         new gm.Marker({ map, position: pos, clickable: false, visible: false })
@@ -143,18 +125,6 @@ function CityMap() {
         clusterMarkers.forEach((m) => m.setVisible(!showIndividual))
       }
       map.addListener('zoom_changed', updateVisibility)
-
-      // Toggle bottom-right cold snap pill based on whether weather pill is in view
-      const coldSnapPillEl = mapDivRef.current?.parentElement?.querySelector<HTMLElement>('[data-cold-snap-pill]')
-      const updatePillVisibility = () => {
-        if (!coldSnapPillEl) return
-        const bounds = map.getBounds()
-        const pillPos = weatherPillMarker.getPosition()
-        if (bounds && pillPos) {
-          coldSnapPillEl.style.display = bounds.contains(pillPos) ? 'none' : 'block'
-        }
-      }
-      map.addListener('bounds_changed', updatePillVisibility)
 
       // Zip code boundary layer
       fetch(
@@ -193,20 +163,7 @@ function CityMap() {
     document.head.appendChild(script)
   }, [apiKey])
 
-  // Cold snap pill — absolute HTML, informational label not a geographic marker
-  const coldSnapPill = (
-    <div data-cold-snap-pill style={{
-      position: 'absolute', bottom: 12, right: 12,
-      backgroundColor: 'rgba(0,0,0,0.62)', borderRadius: 20,
-      padding: '6px 12px', pointerEvents: 'none',
-    }}>
-      <span style={{ color: '#ffffff', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
-        Cold snap active: 28F tonight
-      </span>
-    </div>
-  )
-
-  // SVG overlays used in fallback/loading states (service area, job dots, cold tint)
+  // SVG overlays used in fallback/loading states (service area, job dots)
   const fallbackOverlay = (
     <svg
       viewBox={`0 0 ${W} ${H}`}
@@ -221,7 +178,6 @@ function CityMap() {
           <circle cx={dot.cx} cy={dot.cy} r={4} fill="#00ff88" />
         </g>
       ))}
-      <rect width={W} height={H} fill="rgba(59,130,246,0.12)" />
     </svg>
   )
 
@@ -247,12 +203,11 @@ function CityMap() {
           <line x1={0} y1={290} x2={220} y2={H} stroke="#333333" strokeWidth="2" />
         </svg>
         {fallbackOverlay}
-        {coldSnapPill}
       </div>
     )
   }
 
-  // Map legend — bottom left, above the cold snap pill
+  // Map legend — bottom left
   const mapLegend = (
     <div style={{
       position: 'absolute', bottom: 48, left: 12,
@@ -293,7 +248,6 @@ function CityMap() {
       {/* Show placeholder overlays while key is still being fetched */}
       {apiKey === null && fallbackOverlay}
       {mapLegend}
-      {coldSnapPill}
     </div>
   )
 }
