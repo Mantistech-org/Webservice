@@ -315,41 +315,15 @@ function CityMap() {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function DashboardHome({ businessName, onNavigateToWeather, onNavigate }: DashboardProps) {
-  const [activating, setActivating] = useState(false)
-
-  const handleActivate = () => {
-    if (activating) return
-    setActivating(true)
-    setTimeout(() => {
-      setActivating(false)
-      if (typeof window !== 'undefined') {
-        window.history.pushState({}, '', window.location.pathname + '?autoactivate=true')
-      }
-      onNavigateToWeather?.()
-    }, 1500)
-  }
-
+export default function DashboardHome({ businessName, onNavigate }: DashboardProps) {
   return (
     // Negative margin bleeds to edge of parent's 24px padding, then re-applies it
     // so the #F8F8F8 background fills the entire content area.
     <div className="demo-dashboard" style={{ margin: -24, padding: 24, backgroundColor: '#F8F8F8', minHeight: '100%' }}>
       <style>{`
-        @keyframes dotPulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.35; }
-        }
-        @keyframes glowPulse {
-          0%, 100% { box-shadow: 0 0 10px 3px rgba(0,255,136,0.45); }
-          50% { box-shadow: 0 0 24px 10px rgba(0,255,136,0.12); }
-        }
         @keyframes jobRipple {
           0%   { transform: scale(1); opacity: 0.8; }
           100% { transform: scale(4.5); opacity: 0; }
-        }
-        @keyframes loadingBar {
-          from { width: 0%; }
-          to   { width: 100%; }
         }
       `}</style>
 
@@ -363,7 +337,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
         overflow: 'hidden',
       }}>
 
-        {/* Left: weather activation card */}
+        {/* Left: weather monitoring card */}
         <div style={{
           backgroundColor: '#1e1e1e',
           borderRadius: 8,
@@ -372,109 +346,50 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           display: 'flex',
           flexDirection: 'column',
           boxSizing: 'border-box',
-          position: 'relative',
-          overflow: 'hidden',
         }}>
-          {/* Loading bar */}
-          {activating && (
-            <div style={{
-              position: 'absolute',
-              top: 0, left: 0,
-              height: 3,
-              width: '100%',
-              backgroundColor: 'rgba(255,255,255,0.08)',
+          {/* Label */}
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+            <span style={{
+              display: 'inline-block',
+              width: 7, height: 7,
+              borderRadius: '50%',
+              backgroundColor: '#6b7280',
+              flexShrink: 0,
+              marginRight: 7,
+            }} />
+            <span style={{
+              fontSize: 11,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: '#6b7280',
             }}>
-              <div style={{
-                height: '100%',
-                backgroundColor: '#00C27C',
-                animation: 'loadingBar 1.5s linear forwards',
-              }} />
-            </div>
-          )}
-          {/* Top zone: label + headline + stat pills */}
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-              <span style={{
-                display: 'inline-block',
-                width: 7, height: 7,
-                borderRadius: '50%',
-                backgroundColor: '#00ff88',
-                flexShrink: 0,
-                animation: 'dotPulse 2s ease-in-out infinite',
-                marginRight: 7,
-              }} />
-              <span style={{
-                fontSize: 9,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                color: '#00ff88',
-              }}>
-                Weather Event Active
-              </span>
-            </div>
-            <div style={{ color: '#ffffff', fontWeight: 700, fontSize: '1.1rem', marginBottom: 12 }}>
-              Cold Snap Detected
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <span style={{
-                backgroundColor: 'rgba(255,255,255,0.08)',
-                color: '#ffffff',
-                fontSize: 13,
-                borderRadius: 6,
-                padding: '6px 10px',
-              }}>
-                28F Tonight
-              </span>
-              <span style={{
-                backgroundColor: 'rgba(255,255,255,0.08)',
-                color: '#ffffff',
-                fontSize: 13,
-                borderRadius: 6,
-                padding: '6px 10px',
-              }}>
-                Forecast: 3 days
-              </span>
-            </div>
+              Monitoring
+            </span>
           </div>
 
-          {/* Middle zone: button + subtext */}
-          <div style={{ marginBottom: 16 }}>
-            <button
-              onClick={handleActivate}
-              disabled={activating}
-              style={{
-                display: 'block',
-                width: '100%',
-                backgroundColor: '#00ff88',
-                color: '#000000',
-                fontWeight: 700,
-                fontSize: '0.8rem',
-                letterSpacing: '0.05em',
-                padding: '10px 0',
-                borderRadius: 6,
-                border: 'none',
-                cursor: activating ? 'default' : 'pointer',
-                animation: activating ? 'none' : 'glowPulse 2s ease-in-out infinite',
-                opacity: activating ? 0.75 : 1,
-                marginBottom: 10,
-              }}
-            >
-              {activating ? 'Activating...' : 'Activate Now'}
-            </button>
-            <p style={{
-              fontSize: '0.7rem',
-              color: '#9ca3af',
-              textAlign: 'center',
-              margin: 0,
-            }}>
-              Your platform is ready. Activate to fill your schedule.
-            </p>
+          {/* Headline */}
+          <div style={{ color: '#111827', fontWeight: 700, fontSize: 22, marginBottom: 8 }}>
+            All Clear
+          </div>
+
+          {/* Subline */}
+          <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 16, lineHeight: 1.5 }}>
+            No weather events detected in your service area.
+          </div>
+
+          {/* Next check row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <span style={{ fontSize: 12, color: '#6b7280' }}>Next check in 4 hours</span>
           </div>
 
           {/* Divider */}
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', marginBottom: 10 }} />
 
-          {/* Bottom zone: two-column tool grid */}
+          {/* Tool rows */}
           <div style={{ flex: 1 }}>
             {ACTIVATION_ITEMS.map((item, i) => (
               <div key={i} style={{
@@ -491,7 +406,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
                     display: 'inline-block',
                     width: 6, height: 6,
                     borderRadius: '50%',
-                    backgroundColor: '#00C27C',
+                    backgroundColor: '#6b7280',
                     flexShrink: 0,
                   }} />
                   <span style={{ fontSize: 13, color: '#ffffff' }}>
@@ -500,13 +415,13 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
                 </div>
                 <span style={{
                   backgroundColor: 'rgba(255,255,255,0.08)',
-                  color: '#ffffff',
+                  color: '#6b7280',
                   fontSize: 11,
                   borderRadius: 5,
                   padding: '4px 8px',
                   flexShrink: 0,
                 }}>
-                  Ready
+                  Standby
                 </span>
               </div>
             ))}

@@ -1,7 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-
 interface Props {
   sessionId: string
   businessName?: string
@@ -288,51 +286,7 @@ function WebsiteBannerPanel({ onConfirm }: { onConfirm: () => void }) {
 
 // ── Main component ──────────────────────────────────────────────────────────── (deploy)
 
-export default function WeatherActivation({ businessName = 'Your Business' }: Props) {
-  const [checkedItems,    setCheckedItems]    = useState<Set<number>>(new Set())
-  const [animatingIdx,    setAnimatingIdx]    = useState<number | null>(null)
-  const [sequenceRunning, setSequenceRunning] = useState(false)
-  const [expandedTools,   setExpandedTools]   = useState<Set<number>>(new Set())
-  const [adDuration,      setAdDuration]      = useState(3)
-
-  const allDone = checkedItems.size === 5
-
-  const toggleExpand = (i: number) => {
-    if (checkedItems.has(i)) return
-    setExpandedTools(prev => {
-      const next = new Set(prev)
-      next.has(i) ? next.delete(i) : next.add(i)
-      return next
-    })
-  }
-
-  const confirmTool = (i: number) => {
-    setCheckedItems(prev => new Set(prev).add(i))
-    setExpandedTools(prev => {
-      const next = new Set(prev)
-      next.delete(i)
-      return next
-    })
-  }
-
-  const runSequence = () => {
-    if (sequenceRunning) return
-    setSequenceRunning(true)
-    setExpandedTools(new Set())
-    const toActivate = [0, 1, 2, 3, 4]
-    toActivate.forEach((toolIdx, position) => {
-      setTimeout(() => {
-        setAnimatingIdx(toolIdx)
-        setTimeout(() => {
-          setCheckedItems(prev => new Set(prev).add(toolIdx))
-          setAnimatingIdx(null)
-        }, 200)
-      }, position * 600)
-    })
-    const duration = (toActivate.length - 1) * 600 + 400
-    setTimeout(() => setSequenceRunning(false), duration)
-  }
-
+export default function WeatherActivation({}: Props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
@@ -376,149 +330,49 @@ export default function WeatherActivation({ businessName = 'Your Business' }: Pr
         })}
       </div>
 
-      {/* ── Section 2: Active weather event card ── */}
+      {/* ── Section 2: Monitoring card ── */}
       <div style={{
         backgroundColor: '#1a1a1a',
         borderRadius: 12,
         padding: 24,
-        borderTop: '3px solid #00C27C',
       }}>
-        {/* Top row: label + stat pills */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#00C27C', flexShrink: 0 }} />
-            <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00C27C', fontWeight: 600 }}>
-              Active Weather Event
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {['28F Tonight', '3 Day Event', '87% Humidity'].map(pill => (
-              <div key={pill} style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: '#ffffff', fontSize: 12, borderRadius: 6, padding: '6px 10px', whiteSpace: 'nowrap' }}>
-                {pill}
-              </div>
-            ))}
-          </div>
+        {/* Label */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#6b7280', flexShrink: 0 }} />
+          <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b7280', fontWeight: 600 }}>
+            Monitoring Your Area
+          </span>
         </div>
 
-        {/* Headline */}
-        <div style={{ fontSize: 18, fontWeight: 600, color: '#ffffff', lineHeight: 1.3, marginBottom: 6 }}>
-          Cold snap detected. 28F forecast tonight in your service area.
+        {/* Description */}
+        <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.5 }}>
+          No weather triggers detected. Your platform will activate automatically when conditions are met.
         </div>
 
-        {/* Subline */}
-        <div style={{ fontSize: 14, color: '#9ca3af', marginBottom: 24 }}>
-          {allDone
-            ? 'Activation triggered at 11:47 PM.'
-            : 'Your platform is ready to activate. All 5 tools are standing by.'
-          }
-        </div>
-
-        {/* Tool accordion rows */}
+        {/* Tool rows */}
         <div>
-          {ITEMS.map((item, i) => {
-            const isChecked   = checkedItems.has(i)
-            const isAnimating = animatingIdx === i
-            const isExpanded  = expandedTools.has(i)
-
-            return (
-              <div key={i}>
-                <div
-                  onClick={() => toggleExpand(i)}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    paddingTop: 14, paddingBottom: 14,
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
-                    cursor: isChecked ? 'default' : 'pointer',
-                    opacity: isAnimating ? 0.7 : 1,
-                    transition: 'opacity 0.2s ease',
-                  }}
-                >
-                  {/* Left: indicator + name + description */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    {isChecked ? (
-                      <div style={{
-                        width: 20, height: 20, borderRadius: '50%',
-                        backgroundColor: '#00C27C',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        flexShrink: 0,
-                      }}>
-                        <CheckmarkSvg size={10} color="white" />
-                      </div>
-                    ) : (
-                      <div style={{
-                        width: 20, height: 20, borderRadius: '50%',
-                        border: '1.5px solid #6b7280',
-                        flexShrink: 0,
-                      }} />
-                    )}
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 500, color: '#ffffff' }}>{item.label}</div>
-                      <div style={{ fontSize: 12, color: '#9ca3af' }}>{item.description}</div>
-                    </div>
-                  </div>
-
-                  {/* Right: status + chevron */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 12, color: isChecked ? '#00C27C' : '#9ca3af', fontWeight: isChecked ? 600 : 400 }}>
-                      {isChecked ? item.activatedStatus : 'Ready'}
-                    </span>
-                    {!isChecked && <ChevronIcon open={isExpanded} />}
-                  </div>
+          {ITEMS.map((item, i) => (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              paddingTop: 14, paddingBottom: 14,
+              borderBottom: i < ITEMS.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{
+                  width: 20, height: 20, borderRadius: '50%',
+                  border: '1.5px solid #6b7280',
+                  flexShrink: 0,
+                }} />
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: '#ffffff' }}>{item.label}</div>
+                  <div style={{ fontSize: 12, color: '#9ca3af' }}>{item.description}</div>
                 </div>
-
-                {/* Accordion panel */}
-                {isExpanded && !isChecked && (
-                  <div style={{
-                    backgroundColor: 'rgba(255,255,255,0.04)',
-                    borderRadius: 12,
-                    padding: 16,
-                    marginTop: 12,
-                    marginBottom: 8,
-                  }}>
-                    {i === 0 && <AutomatedAdsPanel adDuration={adDuration} setAdDuration={setAdDuration} onConfirm={() => confirmTool(0)} />}
-                    {i === 1 && <CustomerOutreachPanel businessName={businessName} onConfirm={() => confirmTool(1)} />}
-                    {i === 2 && <GBPPanel onConfirm={() => confirmTool(2)} />}
-                    {i === 3 && <MissedCallPanel onConfirm={() => confirmTool(3)} />}
-                    {i === 4 && <WebsiteBannerPanel onConfirm={() => confirmTool(4)} />}
-                  </div>
-                )}
               </div>
-            )
-          })}
-        </div>
-
-        {/* Activate All Tools button */}
-        {!allDone && (
-          <button
-            onClick={runSequence}
-            disabled={sequenceRunning}
-            style={{
-              width: '100%',
-              backgroundColor: '#00C27C', color: '#ffffff',
-              fontWeight: 600, fontSize: 14, padding: 16,
-              borderRadius: 12, border: 'none',
-              cursor: sequenceRunning ? 'default' : 'pointer',
-              opacity: sequenceRunning ? 0.75 : 1,
-              marginTop: 16,
-            }}
-          >
-            {sequenceRunning ? 'Activating...' : 'Activate All Tools'}
-          </button>
-        )}
-
-      </div>
-
-      {/* ── Impact stats — shown after all tools activated ── */}
-      {allDone && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-          {IMPACT_STATS.map((stat) => (
-            <div key={stat.value} style={{ backgroundColor: 'rgba(0,194,124,0.08)', border: '1px solid rgba(0,194,124,0.3)', borderRadius: 12, padding: '14px 10px', textAlign: 'center' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#00C27C', lineHeight: 1.3 }}>{stat.value}</div>
-              <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>{stat.label}</div>
+              <span style={{ fontSize: 12, color: '#6b7280' }}>Standby</span>
             </div>
           ))}
         </div>
-      )}
+      </div>
 
       {/* ── Section 3: Activation History ── */}
       <div>
