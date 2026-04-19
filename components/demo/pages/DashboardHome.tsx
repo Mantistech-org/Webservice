@@ -11,14 +11,6 @@ interface DashboardProps {
 
 // ── Static data ────────────────────────────────────────────────────────────────
 
-const ACTIVATION_ITEMS = [
-  { label: 'Automated Ads'           },
-  { label: 'Customer Outreach'       },
-  { label: 'Google Business Profile' },
-  { label: 'Missed Call Auto-Reply'  },
-  { label: 'Website Banner'          },
-]
-
 const ACTIVITY_FEED = [
   { text: 'Cold snap activation fired automatically',    time: '11:47 PM' },
   { text: 'Customer outreach sent to 1,247 contacts',    time: '11:47 PM' },
@@ -315,7 +307,7 @@ function CityMap() {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function DashboardHome({ businessName, onNavigate }: DashboardProps) {
+export default function DashboardHome({ businessName, onNavigateToWeather, onNavigate }: DashboardProps) {
   return (
     // Negative margin bleeds to edge of parent's 24px padding, then re-applies it
     // so the #F8F8F8 background fills the entire content area.
@@ -339,7 +331,7 @@ export default function DashboardHome({ businessName, onNavigate }: DashboardPro
 
         {/* Left: weather monitoring card */}
         <div style={{
-          backgroundColor: '#1e1e1e',
+          backgroundColor: '#1a1a1a',
           borderRadius: 8,
           padding: 24,
           height: '100%',
@@ -348,12 +340,12 @@ export default function DashboardHome({ businessName, onNavigate }: DashboardPro
           boxSizing: 'border-box',
         }}>
           {/* Label */}
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
             <span style={{
               display: 'inline-block',
               width: 7, height: 7,
               borderRadius: '50%',
-              backgroundColor: '#6b7280',
+              backgroundColor: '#00C27C',
               flexShrink: 0,
               marginRight: 7,
             }} />
@@ -361,24 +353,71 @@ export default function DashboardHome({ businessName, onNavigate }: DashboardPro
               fontSize: 11,
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
-              color: '#6b7280',
+              color: '#00C27C',
+              fontWeight: 600,
             }}>
               Monitoring
             </span>
           </div>
 
           {/* Headline */}
-          <div style={{ color: '#111827', fontWeight: 700, fontSize: 22, marginBottom: 8 }}>
+          <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 24, marginBottom: 8 }}>
             All Clear
           </div>
 
           {/* Subline */}
-          <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 16, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 20, lineHeight: 1.5 }}>
             No weather events detected in your service area.
           </div>
 
-          {/* Next check row */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
+          {/* Divider */}
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', marginBottom: 20 }} />
+
+          {/* Forecast snapshot */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
+
+            {/* Today — partly cloudy */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z" />
+              </svg>
+              <span style={{ fontSize: 13, color: '#ffffff', flex: 1 }}>Today</span>
+              <span style={{ fontSize: 13, color: '#9ca3af' }}>72F / 54F</span>
+            </div>
+
+            {/* Tomorrow — sunny */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+              </svg>
+              <span style={{ fontSize: 13, color: '#ffffff', flex: 1 }}>Tomorrow</span>
+              <span style={{ fontSize: 13, color: '#9ca3af' }}>78F / 58F</span>
+            </div>
+
+            {/* Wednesday — rain */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <line x1="16" y1="13" x2="16" y2="21" />
+                <line x1="8" y1="13" x2="8" y2="21" />
+                <line x1="12" y1="15" x2="12" y2="23" />
+                <path d="M20 16.58A5 5 0 0018 7h-1.26A8 8 0 104 15.25" />
+              </svg>
+              <span style={{ fontSize: 13, color: '#ffffff', flex: 1 }}>Wednesday</span>
+              <span style={{ fontSize: 13, color: '#9ca3af' }}>65F / 49F</span>
+            </div>
+
+          </div>
+
+          {/* Next check status */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 20, marginBottom: 16 }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
@@ -386,46 +425,20 @@ export default function DashboardHome({ businessName, onNavigate }: DashboardPro
             <span style={{ fontSize: 12, color: '#6b7280' }}>Next check in 4 hours</span>
           </div>
 
-          {/* Divider */}
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', marginBottom: 10 }} />
-
-          {/* Tool rows */}
-          <div style={{ flex: 1 }}>
-            {ACTIVATION_ITEMS.map((item, i) => (
-              <div key={i} style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingTop: 7,
-                paddingBottom: 7,
-                borderBottom: i < ACTIVATION_ITEMS.length - 1
-                  ? '1px solid rgba(255,255,255,0.06)' : 'none',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{
-                    display: 'inline-block',
-                    width: 6, height: 6,
-                    borderRadius: '50%',
-                    backgroundColor: '#6b7280',
-                    flexShrink: 0,
-                  }} />
-                  <span style={{ fontSize: 13, color: '#ffffff' }}>
-                    {item.label}
-                  </span>
-                </div>
-                <span style={{
-                  backgroundColor: 'rgba(255,255,255,0.08)',
-                  color: '#6b7280',
-                  fontSize: 11,
-                  borderRadius: 5,
-                  padding: '4px 8px',
-                  flexShrink: 0,
-                }}>
-                  Standby
-                </span>
-              </div>
-            ))}
-          </div>
+          {/* View Full Forecast button */}
+          <button
+            onClick={() => onNavigateToWeather?.()}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,194,124,0.1)' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+            style={{
+              display: 'block', textAlign: 'center', width: '100%', boxSizing: 'border-box',
+              backgroundColor: 'transparent', border: '1px solid #00C27C', color: '#00C27C',
+              fontSize: 13, fontWeight: 600, padding: '10px 0', borderRadius: 6,
+              cursor: 'pointer', transition: 'background-color 0.15s ease',
+            }}
+          >
+            View Full Forecast
+          </button>
         </div>
 
         {/* Right: map card */}
