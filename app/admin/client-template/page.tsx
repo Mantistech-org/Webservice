@@ -8,7 +8,7 @@ import DemoView from '@/components/demo/DemoPage'
 // DemoView's useEffect finds the value and skips the gate form.
 if (typeof window !== 'undefined') {
   if (!sessionStorage.getItem('demo-business-name')) {
-    sessionStorage.setItem('demo-business-name', 'Your Business Name')
+    sessionStorage.setItem('demo-business-name', '')
   }
 }
 

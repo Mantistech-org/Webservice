@@ -16,11 +16,7 @@ const ITEMS = [
   { label: 'Website Banner',          description: 'Banner ready to go live',              activatedStatus: 'Live'                   },
 ]
 
-const ACTIVATION_HISTORY = [
-  { date: 'Jan 14, 2026', event: 'Cold Snap', jobs: 9,  revenue: '$6,300' },
-  { date: 'Aug 7, 2025',  event: 'Heat Wave', jobs: 14, revenue: '$9,800' },
-  { date: 'Jun 19, 2025', event: 'Heat Wave', jobs: 11, revenue: '$7,700' },
-]
+const ACTIVATION_HISTORY: Array<{ date: string; event: string; jobs: number; revenue: string }> = []
 
 const IMPACT_STATS = [
   { value: '9 Jobs Captured',          label: 'Jobs from this activation' },

@@ -553,7 +553,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
               marginBottom: 10,
               letterSpacing: '-0.02em',
             }}>
-              $14,200
+              $0
             </div>
             <p style={{
               fontSize: '0.9rem',
@@ -561,7 +561,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
               lineHeight: 1.5,
               margin: 0,
             }}>
-              11 jobs booked through your platform this month
+              0 jobs booked through your platform this month
             </p>
           </div>
 
@@ -570,9 +570,9 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
             {/* Stat rows */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {[
-                { label: 'Jobs Booked',            value: '11' },
-                { label: 'Missed Calls Recovered', value: '24' },
-                { label: 'New Reviews This Month', value: '3'  },
+                { label: 'Jobs Booked',            value: '0' },
+                { label: 'Missed Calls Recovered', value: '0' },
+                { label: 'New Reviews This Month', value: '0' },
               ].map((row, i, arr) => (
                 <div
                   key={row.label}
@@ -605,21 +605,6 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
 
             {/* Divider */}
             <div style={{ borderTop: '1px solid #E5E7EB', margin: '20px 0 16px' }} />
-
-            {/* Green activation note */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <span style={{
-                display: 'inline-block',
-                width: 8, height: 8,
-                borderRadius: '50%',
-                backgroundColor: '#00cc66',
-                flexShrink: 0,
-                animation: 'dotPulse 2s ease-in-out infinite',
-              }} />
-              <span style={{ fontSize: '0.85rem', color: '#00aa55', lineHeight: 1.4 }}>
-                3 booked during last night&apos;s cold snap activation
-              </span>
-            </div>
 
             {/* Report button */}
             <button
@@ -670,26 +655,9 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             Bookings, Today
           </div>
-          {[
-            { time: '7:00 AM',  name: 'James Perkins'   },
-            { time: '8:30 AM',  name: 'Michelle Carter' },
-            { time: '10:00 AM', name: 'Ray Dominguez'   },
-            { time: '11:30 AM', name: 'Donna Howell'    },
-            { time: '1:00 PM',  name: 'Brian Stokes'    },
-          ].map((slot, i, arr) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '9px 0',
-              borderBottom: i < arr.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 13, color: '#6b7280', flexShrink: 0, width: 58 }}>{slot.time}</span>
-                <span style={{ width: 3, height: 20, backgroundColor: '#00C27C', borderRadius: 2, flexShrink: 0, display: 'inline-block' }} />
-                <span style={{ fontSize: 14, fontWeight: 500, color: '#0a0a0a' }}>{slot.name}</span>
-              </div>
-              <span style={{ fontSize: 13, color: '#00C27C', flexShrink: 0 }}>Confirmed</span>
-            </div>
-          ))}
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: 14 }}>
+            No bookings yet
+          </div>
           <button
             onClick={() => onNavigate?.('bookings')}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,204,102,0.08)' }}
@@ -718,30 +686,8 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             Reviews
           </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
-            <span style={{ fontSize: 48, fontWeight: 700, lineHeight: 1, color: '#0a0a0a' }}>4.9</span>
-            <span style={{ fontSize: 36, color: '#F59E0B', lineHeight: 1 }}>&#9733;</span>
-            <span style={{ fontSize: 14, color: '#6b7280', alignSelf: 'flex-end', paddingBottom: 2 }}>out of 5</span>
-          </div>
-          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>3 new reviews this month</div>
-          <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
-            {[
-              { color: '#00C27C', text: '4 negative spam reviews removed this month' },
-              { color: '#00C27C', text: '94% positive sentiment across all reviews'  },
-              { color: '#9ca3af', text: 'Last review received: 2 days ago'           },
-            ].map((row, i) => (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '9px 0',
-                borderBottom: i < 2 ? '1px solid rgba(0,0,0,0.06)' : 'none',
-              }}>
-                <span style={{
-                  display: 'inline-block', width: 8, height: 8,
-                  borderRadius: '50%', backgroundColor: row.color, flexShrink: 0,
-                }} />
-                <span style={{ fontSize: 14, color: '#0a0a0a' }}>{row.text}</span>
-              </div>
-            ))}
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: 14, marginBottom: 16 }}>
+            No reviews yet
           </div>
           <button
             onClick={() => onNavigate?.('review')}
@@ -771,8 +717,8 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             SEO
           </div>
-          <div style={{ fontSize: 14, color: '#0a0a0a', marginBottom: 6 }}>12 local keywords ranking</div>
-          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>847 impressions this month</div>
+          <div style={{ fontSize: 14, color: '#0a0a0a', marginBottom: 6 }}>0 local keywords ranking</div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>0 impressions this month</div>
           <div style={{ flex: 1 }} />
           <button
             onClick={() => onNavigate?.('seo')}
@@ -802,8 +748,8 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             SMS
           </div>
-          <div style={{ fontSize: 14, color: '#0a0a0a', marginBottom: 6 }}>Cold snap outreach sent to 1,247 contacts at 11:47 PM</div>
-          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>94 replies received overnight</div>
+          <div style={{ fontSize: 14, color: '#0a0a0a', marginBottom: 6 }}>0 contacts</div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>No messages sent yet</div>
           <div style={{ flex: 1 }} />
           <button
             onClick={() => onNavigate?.('sms')}
