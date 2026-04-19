@@ -11,14 +11,7 @@ interface DashboardProps {
 
 // ── Static data ────────────────────────────────────────────────────────────────
 
-const ACTIVITY_FEED = [
-  { text: 'Cold snap activation fired automatically',    time: '11:47 PM' },
-  { text: 'Customer outreach sent to 1,247 contacts',    time: '11:47 PM' },
-  { text: 'Automated Ads campaign activated',            time: '11:48 PM' },
-  { text: 'Missed call auto-reply enabled',              time: '11:48 PM' },
-  { text: '3 new Google reviews received',               time: '8:22 AM'  },
-  { text: 'Booking confirmed, Ray Dominguez, 10:00 AM',  time: '7:45 AM'  },
-]
+const ACTIVITY_FEED: Array<{ text: string; time: string }> = []
 
 
 // ── Map data ──────────────────────────────────────────────────────────────────
@@ -714,7 +707,11 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
         }}>
           Recent Activity
         </div>
-        {ACTIVITY_FEED.map((item, i) => (
+        {ACTIVITY_FEED.length === 0 ? (
+          <div style={{ fontSize: 14, color: '#9ca3af', textAlign: 'center', padding: '16px 0' }}>
+            No activity yet. Events will appear here once your platform is active.
+          </div>
+        ) : ACTIVITY_FEED.map((item, i) => (
           <div
             key={i}
             style={{
