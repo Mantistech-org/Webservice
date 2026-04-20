@@ -16,7 +16,7 @@ const faqs = [
   {
     question: 'Do I need to have a website already to use Platform Only?',
     answer:
-      'Yes. Platform Only connects to your existing website. If you do not have a website or want to replace your current one, Platform Plus includes a custom HVAC website built specifically for your business.',
+      'No, our tools work with or without your current website.',
   },
   {
     question: 'How does the missed call auto-reply work?',
