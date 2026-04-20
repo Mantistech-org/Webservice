@@ -60,48 +60,6 @@ const DEFAULT_AUTOMATIONS: Omit<EmailAutomation, 'id'>[] = [
   { trigger: 'appointment_reminder',    subject: 'Reminder: upcoming appointment',        body: 'Hi [customer_name], this is a reminder that you have an appointment on [date] at [time].',                        enabled: true },
 ]
 
-// ── Demo mock data ─────────────────────────────────────────────────────────────
-
-function md(day: number, mo = 0): string {
-  const now = new Date()
-  const d = new Date(now.getFullYear(), now.getMonth() + mo, Math.min(day, new Date(now.getFullYear(), now.getMonth() + mo + 1, 0).getDate()))
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-const DEMO_EVENTS: CalEvent[] = [
-  { id: 'h1', title: 'Consultation',     event_date: md(8,  -1), event_time: '09:00', customer_name: 'George Patel',    customer_email: 'gpatel@gmail.com',   customer_phone: '(555) 100-2200', notes: '',                           status: 'confirmed', source: 'manual'          },
-  { id: 'h2', title: 'Discovery Call',   event_date: md(15, -1), event_time: '10:30', customer_name: 'Sandra Lin',      customer_email: 'slin@outlook.com',   customer_phone: '(555) 200-3300', notes: '',                           status: 'confirmed', source: 'website_booking' },
-  { id: 'h3', title: 'Strategy Session', event_date: md(22, -1), event_time: '13:00', customer_name: 'Felix Morgan',    customer_email: 'fmorgan@yahoo.com',  customer_phone: '(555) 300-4400', notes: '',                           status: 'cancelled', source: 'manual'          },
-  { id: '1',  title: 'Consultation',     event_date: md(2),      event_time: '09:00', customer_name: 'Sarah Mitchell',  customer_email: 'sarah@gmail.com',    customer_phone: '(555) 201-3344', notes: 'Referred by a colleague',    status: 'confirmed', source: 'manual'          },
-  { id: '2',  title: 'Strategy Session', event_date: md(3),      event_time: '10:30', customer_name: 'Marcus Webb',     customer_email: 'mwebb@outlook.com',  customer_phone: '(555) 389-2211', notes: '',                           status: 'confirmed', source: 'website_booking' },
-  { id: '3',  title: 'Discovery Call',   event_date: md(4),      event_time: '08:00', customer_name: 'Priya Sharma',    customer_email: 'priya@yahoo.com',    customer_phone: '(555) 445-6677', notes: 'Interested in full package', status: 'confirmed', source: 'website_booking' },
-  { id: '4',  title: 'Follow-up',        event_date: md(4),      event_time: '14:00', customer_name: 'Derek Collins',   customer_email: 'dcollins@email.com', customer_phone: '(555) 512-0099', notes: '',                           status: 'confirmed', source: 'manual'          },
-  { id: '5',  title: 'Onboarding',       event_date: md(5),      event_time: '09:00', customer_name: 'Amanda Torres',   customer_email: 'atorres@gmail.com',  customer_phone: '(555) 623-8877', notes: 'First session',             status: 'confirmed', source: 'manual'          },
-  { id: '6',  title: 'Consultation',     event_date: md(5),      event_time: '11:00', customer_name: 'Ryan Nguyen',     customer_email: 'ryan@outlook.com',   customer_phone: '(555) 734-9900', notes: '',                           status: 'pending',   source: 'website_booking' },
-  { id: '7',  title: 'Check-in',         event_date: md(5),      event_time: '14:30', customer_name: 'Lisa Fernandez',  customer_email: 'lisa@gmail.com',     customer_phone: '(555) 845-1122', notes: '',                           status: 'pending',   source: 'manual'          },
-  { id: '8',  title: 'Review Meeting',   event_date: md(6),      event_time: '10:00', customer_name: 'Tom Blackwell',   customer_email: 'tblack@email.com',   customer_phone: '(555) 956-2244', notes: '',                           status: 'confirmed', source: 'manual'          },
-  { id: '9',  title: 'Strategy Session', event_date: md(7),      event_time: '09:30', customer_name: 'Keisha Johnson',  customer_email: 'kjohnson@gmail.com', customer_phone: '(555) 677-3355', notes: '',                           status: 'confirmed', source: 'website_booking' },
-  { id: '10', title: 'Consultation',     event_date: md(9),      event_time: '08:00', customer_name: 'Nathan Cross',    customer_email: 'ncross@yahoo.com',   customer_phone: '(555) 178-4466', notes: 'Budget discussion first',    status: 'pending',   source: 'manual'          },
-  { id: '11', title: 'Onboarding',       event_date: md(10),     event_time: '11:00', customer_name: 'Olivia Park',     customer_email: 'opark@gmail.com',    customer_phone: '(555) 289-5577', notes: '',                           status: 'confirmed', source: 'manual'          },
-  { id: '12', title: 'Discovery Call',   event_date: md(11),     event_time: '13:00', customer_name: 'Benjamin Holt',   customer_email: 'bholt@outlook.com',  customer_phone: '(555) 390-6688', notes: '',                           status: 'confirmed', source: 'website_booking' },
-  { id: '13', title: 'Follow-up',        event_date: md(12),     event_time: '09:00', customer_name: 'Chloe Rivera',    customer_email: 'crivera@gmail.com',  customer_phone: '(555) 401-7799', notes: '',                           status: 'cancelled', source: 'manual'          },
-  { id: '14', title: 'Check-in',         event_date: md(13),     event_time: '10:30', customer_name: 'James Patterson', customer_email: 'jpatterson@email.com', customer_phone: '(555) 512-8800', notes: '',                        status: 'confirmed', source: 'manual'          },
-  { id: '15', title: 'Consultation',     event_date: md(14),     event_time: '09:00', customer_name: 'Sofia Chen',      customer_email: 'sofia@gmail.com',    customer_phone: '(555) 623-9911', notes: 'Referred by Priya',          status: 'pending',   source: 'website_booking' },
-  { id: '16', title: 'Review Meeting',   event_date: md(16),     event_time: '14:00', customer_name: 'Tyler Marsh',     customer_email: 'tmarsh@yahoo.com',   customer_phone: '(555) 734-0022', notes: '',                           status: 'confirmed', source: 'manual'          },
-  { id: '17', title: 'Strategy Session', event_date: md(17),     event_time: '10:00', customer_name: 'Dana Reeves',     customer_email: 'dreeves@gmail.com',  customer_phone: '(555) 845-1133', notes: '',                           status: 'confirmed', source: 'manual'          },
-  { id: '18', title: 'Onboarding',       event_date: md(18),     event_time: '08:30', customer_name: 'Carlos Mendez',   customer_email: 'cmendez@outlook.com', customer_phone: '(555) 956-2244', notes: 'Has multiple locations',    status: 'confirmed', source: 'website_booking' },
-  { id: '19', title: 'Check-in',         event_date: md(19),     event_time: '11:30', customer_name: 'Rachel Kim',      customer_email: 'rkim@gmail.com',     customer_phone: '(555) 067-3355', notes: '',                           status: 'pending',   source: 'manual'          },
-  { id: '20', title: 'Follow-up',        event_date: md(20),     event_time: '13:00', customer_name: 'Aaron Fields',    customer_email: 'afields@email.com',  customer_phone: '(555) 178-4466', notes: '',                           status: 'confirmed', source: 'manual'          },
-  { id: '21', title: 'Discovery Call',   event_date: md(21),     event_time: '09:00', customer_name: 'Megan Stone',     customer_email: 'mstone@gmail.com',   customer_phone: '(555) 289-5577', notes: '',                           status: 'cancelled', source: 'website_booking' },
-  { id: '22', title: 'Consultation',     event_date: md(23),     event_time: '10:00', customer_name: 'David Wu',        customer_email: 'dwu@yahoo.com',      customer_phone: '(555) 390-6688', notes: 'Prefers afternoons',         status: 'confirmed', source: 'manual'          },
-  { id: '23', title: 'Review Meeting',   event_date: md(24),     event_time: '14:00', customer_name: 'Emily Grant',     customer_email: 'egrant@gmail.com',   customer_phone: '(555) 401-7799', notes: '',                           status: 'pending',   source: 'website_booking' },
-  { id: '24', title: 'Strategy Session', event_date: md(25),     event_time: '09:30', customer_name: 'Chris Lawson',    customer_email: 'clawson@outlook.com', customer_phone: '(555) 512-8800', notes: '',                         status: 'confirmed', source: 'manual'          },
-  { id: '25', title: 'Onboarding',       event_date: md(26),     event_time: '11:00', customer_name: 'Natalie Brooks',  customer_email: 'nbrooks@gmail.com',  customer_phone: '(555) 623-9911', notes: '',                           status: 'confirmed', source: 'website_booking' },
-  { id: '26', title: 'Check-in',         event_date: md(27),     event_time: '13:30', customer_name: 'Jason Hall',      customer_email: 'jhall@email.com',    customer_phone: '(555) 734-0022', notes: '',                           status: 'pending',   source: 'manual'          },
-  { id: '27', title: 'Consultation',     event_date: md(28),     event_time: '09:00', customer_name: 'Isabel Torres',   customer_email: 'itorres@gmail.com',  customer_phone: '(555) 845-1133', notes: '',                           status: 'confirmed', source: 'manual'          },
-  { id: '28', title: 'Follow-up',        event_date: md(29),     event_time: '10:00', customer_name: 'Andrew Mills',    customer_email: 'amills@yahoo.com',   customer_phone: '(555) 956-2244', notes: '',                           status: 'confirmed', source: 'website_booking' },
-  { id: '29', title: 'Discovery Call',   event_date: md(30),     event_time: '14:30', customer_name: 'Victoria Lane',   customer_email: 'vlane@gmail.com',    customer_phone: '(555) 067-3355', notes: 'Wants long-term partnership', status: 'pending',  source: 'manual'          },
-]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -663,7 +621,7 @@ export default function CalendarCore({ mode, clientToken, darkMode }: CalendarCo
       fetchEvents()
       fetchAutomations()
     } else {
-      setEvents(DEMO_EVENTS)
+      setEvents([])
       setAutomations(DEFAULT_AUTOMATIONS.map((a, i) => ({ ...a, id: `demo-${i}` })))
     }
   }, [mode, fetchEvents, fetchAutomations])
