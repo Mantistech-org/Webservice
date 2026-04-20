@@ -1,5 +1,7 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+
 interface Props {
   sessionId: string
   businessName?: string
@@ -16,30 +18,59 @@ const ITEMS = [
 
 const ACTIVATION_HISTORY: Array<{ date: string; event: string; jobs: number; revenue: string }> = []
 
-const IMPACT_STATS = [
-  { value: '9 Jobs Captured',          label: 'Jobs from this activation' },
-  { value: '$6,300 Revenue Generated', label: 'Estimated revenue captured' },
-  { value: '1,247 Contacts Reached',   label: 'Outreach recipients'       },
-]
+// ── Monthly averages for south region (AR default) ────────────────────────────
 
-const FORECAST_DAYS = [
-  { day: 'TODAY', date: 'Apr 6',  high: 34, low: 28, condition: 'Cold Snap',      icon: 'snowflake', activate: true  },
-  { day: 'TUE',   date: 'Apr 7',  high: 31, low: 22, condition: 'Freeze Warning', icon: 'snowflake', activate: true  },
-  { day: 'WED',   date: 'Apr 8',  high: 38, low: 26, condition: 'Cold Snap',      icon: 'snowflake', activate: true  },
-  { day: 'THU',   date: 'Apr 9',  high: 45, low: 33, condition: 'Overcast',       icon: 'cloud',     activate: false },
-  { day: 'FRI',   date: 'Apr 10', high: 52, low: 38, condition: 'Clearing',       icon: 'cloud',     activate: false },
-  { day: 'SAT',   date: 'Apr 11', high: 61, low: 44, condition: 'Clear',          icon: 'sun',       activate: false },
-  { day: 'SUN',   date: 'Apr 12', high: 65, low: 47, condition: 'Clear',          icon: 'sun',       activate: false },
-]
+type MonthKey = 'jan'|'feb'|'mar'|'apr'|'may'|'jun'|'jul'|'aug'|'sep'|'oct'|'nov'|'dec'
 
-const DAY_DETAILS: Record<string, Array<{ label: string; value: string }>> = {
-  TODAY: [{ label: "Tonight's Low", value: '28F' }, { label: 'Wind Speed', value: '19 MPH' }, { label: 'Humidity', value: '87%' }],
-  TUE:   [{ label: "Tonight's Low", value: '22F' }, { label: 'Wind Speed', value: '19 MPH' }, { label: 'Humidity', value: '87%' }],
-  WED:   [{ label: "Tonight's Low", value: '26F' }, { label: 'Wind Speed', value: '14 MPH' }, { label: 'Humidity', value: '79%' }],
-  THU:   [{ label: 'High',          value: '45F' }, { label: 'Wind Speed', value: '12 MPH' }, { label: 'Humidity', value: '64%' }],
-  FRI:   [{ label: 'High',          value: '52F' }, { label: 'Wind Speed', value: '8 MPH'  }, { label: 'Humidity', value: '55%' }],
-  SAT:   [{ label: 'High',          value: '61F' }, { label: 'Wind Speed', value: '6 MPH'  }, { label: 'Humidity', value: '48%' }],
-  SUN:   [{ label: 'High',          value: '65F' }, { label: 'Wind Speed', value: '5 MPH'  }, { label: 'Humidity', value: '45%' }],
+const SOUTH_MONTHLY: Record<MonthKey, { high: number; low: number }> = {
+  jan: { high: 52, low: 32 }, feb: { high: 57, low: 36 },
+  mar: { high: 65, low: 44 }, apr: { high: 74, low: 53 },
+  may: { high: 81, low: 61 }, jun: { high: 88, low: 69 },
+  jul: { high: 92, low: 73 }, aug: { high: 91, low: 72 },
+  sep: { high: 85, low: 65 }, oct: { high: 74, low: 53 },
+  nov: { high: 63, low: 42 }, dec: { high: 54, low: 34 },
+}
+
+const MONTH_KEYS: MonthKey[] = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec']
+
+function shouldActivate(highF: number, lowF: number): boolean {
+  const avgs = SOUTH_MONTHLY[MONTH_KEYS[new Date().getMonth()] ?? 'jan']
+  return lowF <= avgs.low - 15 || highF >= avgs.high + 10
+}
+
+// ── Weather API types ─────────────────────────────────────────────────────────
+
+interface WeatherForecastDay {
+  date: string
+  dayLabel: string
+  highF: number
+  lowF: number
+  condition: string
+  precipChance: number
+}
+
+interface WeatherData {
+  forecast: WeatherForecastDay[]
+  trigger: {
+    active: boolean
+    type: 'cold_snap' | 'heat_wave' | null
+    severity: 'moderate' | 'severe' | null
+    reason: string | null
+  }
+}
+
+// ── Label helpers ─────────────────────────────────────────────────────────────
+
+function shortLabel(dayLabel: string): string {
+  if (dayLabel === 'Today') return 'TODAY'
+  if (dayLabel === 'Tomorrow') return 'TMR'
+  return dayLabel.slice(0, 3).toUpperCase()
+}
+
+function formatDate(dateStr: string): string {
+  if (!dateStr) return ''
+  const d = new Date(dateStr + 'T12:00:00')
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 // ── Icon components ────────────────────────────────────────────────────────────
@@ -68,9 +99,39 @@ function CloudIcon({ size = 20 }: { size?: number }) {
   )
 }
 
+function RainIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="16" y1="13" x2="16" y2="21" />
+      <line x1="8"  y1="13" x2="8"  y2="21" />
+      <line x1="12" y1="15" x2="12" y2="23" />
+      <path d="M20 16.58A5 5 0 0018 7h-1.26A8 8 0 104 15.25" />
+    </svg>
+  )
+}
+
+function ThunderIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 16.9A5 5 0 0018 7h-1.26A8 8 0 104 15.25" />
+      <polyline points="13 11 9 17 15 17 11 23" />
+    </svg>
+  )
+}
+
+function PartlyCloudyIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+      <circle cx="10" cy="10" r="3" />
+      <path d="M20 15h-1.17A4 4 0 108 16.93V17h12a3 3 0 000-6z" />
+    </svg>
+  )
+}
+
 function SunIcon({ size = 20 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="5" />
       <line x1="12" y1="1"    x2="12" y2="3"    />
       <line x1="12" y1="21"   x2="12" y2="23"   />
@@ -84,9 +145,22 @@ function SunIcon({ size = 20 }: { size?: number }) {
   )
 }
 
+function conditionToIconType(condition: string): string {
+  const c = condition.toLowerCase()
+  if (c.includes('thunder') || c.includes('storm') || c.includes('lightning')) return 'thunder'
+  if (c.includes('snow') || c.includes('freez') || c.includes('sleet') || c.includes('ice') || c.includes('blizzard') || c.includes('flurr')) return 'snowflake'
+  if (c.includes('rain') || c.includes('shower') || c.includes('drizzle') || c.includes('precip')) return 'rain'
+  if (c.includes('overcast') || c.includes('fog') || c.includes('mist') || c.includes('haze')) return 'cloud'
+  if (c.includes('partly') || c.includes('mostly') || c.includes('scattered') || c.includes('cloudy')) return 'partly'
+  return 'sun'
+}
+
 function WeatherIcon({ type, size = 20 }: { type: string; size?: number }) {
   if (type === 'snowflake') return <SnowflakeIcon size={size} />
+  if (type === 'rain')      return <RainIcon size={size} />
+  if (type === 'thunder')   return <ThunderIcon size={size} />
   if (type === 'cloud')     return <CloudIcon size={size} />
+  if (type === 'partly')    return <PartlyCloudyIcon size={size} />
   return <SunIcon size={size} />
 }
 
@@ -284,94 +358,253 @@ function WebsiteBannerPanel({ onConfirm }: { onConfirm: () => void }) {
   )
 }
 
-// ── Main component ──────────────────────────────────────────────────────────── (deploy)
+// Suppress unused-variable warnings for panel components reserved for future use
+void AutomatedAdsPanel
+void CustomerOutreachPanel
+void GBPPanel
+void MissedCallPanel
+void WebsiteBannerPanel
+void ChevronIcon
 
-export default function WeatherActivation({}: Props) {
+// ── Main component ─────────────────────────────────────────────────────────────
+
+const WEATHER_LOCATION = 'Little Rock, AR'
+
+export default function WeatherActivation({ businessName: _businessName }: Props) {
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
+  const [weatherLoading, setWeatherLoading] = useState(true)
+
+  useEffect(() => {
+    fetch(`/api/weather?location=${encodeURIComponent(WEATHER_LOCATION)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: WeatherData | null) => {
+        setWeatherData(data)
+        setWeatherLoading(false)
+      })
+      .catch(() => setWeatherLoading(false))
+  }, [])
+
+  const trigger = weatherData?.trigger
+  const forecast = weatherData?.forecast ?? []
+  const isEventActive = trigger?.active === true
+
+  const eventTitle = trigger?.type === 'heat_wave' ? 'Heat Wave Detected' : 'Cold Snap Detected'
+  const eventDotColor = trigger?.severity === 'severe' ? '#ef4444' : '#f59e0b'
+  const eventLabelColor = trigger?.severity === 'severe' ? '#ef4444' : '#f59e0b'
+  const severityLabel = trigger?.severity === 'severe' ? 'Severe' : 'Moderate'
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
       {/* ── Section 1: 7-day forecast row ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
-        {FORECAST_DAYS.map((day) => {
-          const details = DAY_DETAILS[day.day]
-          return (
+        {weatherLoading ? (
+          // Loading skeleton — 7 placeholder cards
+          Array.from({ length: 7 }).map((_, i) => (
             <div
-              key={day.day}
+              key={i}
               style={{
-                backgroundColor: day.activate ? 'rgba(0,194,124,0.04)' : '#ffffff',
+                backgroundColor: '#ffffff',
                 borderRadius: 12,
                 border: '1px solid rgba(0,0,0,0.08)',
-                borderLeft: day.activate ? '3px solid #00C27C' : '1px solid rgba(0,0,0,0.08)',
                 padding: 12,
-                textAlign: 'center',
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                minHeight: 130,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               }}
             >
-              <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#374151', marginBottom: 1, fontWeight: 600 }}>{day.day}</div>
-              <div style={{ fontSize: 11, color: '#4b5563', marginBottom: 6 }}>{day.date}</div>
-              <div style={{ marginBottom: 6 }}><WeatherIcon type={day.icon} size={20} /></div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', marginBottom: 2 }}>{day.high}F / {day.low}F</div>
-              <div style={{ fontSize: 10, color: '#4b5563', marginBottom: 6 }}>{day.condition}</div>
-              <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: 6, width: '100%', textAlign: 'left' }}>
-                {details.map((stat) => (
-                  <div key={stat.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                    <span style={{ fontSize: 11, color: '#4b5563' }}>{stat.label}</span>
-                    <span style={{ fontSize: 12, fontWeight: 500, color: '#111827' }}>{stat.value}</span>
-                  </div>
-                ))}
-              </div>
-              {day.activate && (
-                <div style={{ fontSize: 10, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 999, padding: '2px 6px', whiteSpace: 'nowrap', marginTop: 6 }}>
-                  Activation Recommended
-                </div>
-              )}
+              <div style={{ width: 32, height: 8, backgroundColor: '#f3f4f6', borderRadius: 4, marginBottom: 6 }} />
+              <div style={{ width: 24, height: 8, backgroundColor: '#f3f4f6', borderRadius: 4 }} />
             </div>
-          )
-        })}
+          ))
+        ) : forecast.length > 0 ? (
+          forecast.slice(0, 7).map((day) => {
+            const activate = shouldActivate(day.highF, day.lowF)
+            const iconType = conditionToIconType(day.condition)
+            const isColdActivate = activate && day.lowF < day.highF - 10
+            return (
+              <div
+                key={day.date}
+                style={{
+                  backgroundColor: activate ? 'rgba(0,194,124,0.04)' : '#ffffff',
+                  borderRadius: 12,
+                  border: '1px solid rgba(0,0,0,0.08)',
+                  borderLeft: activate ? '3px solid #00C27C' : '1px solid rgba(0,0,0,0.08)',
+                  padding: 12,
+                  textAlign: 'center',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                }}
+              >
+                <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#374151', marginBottom: 1, fontWeight: 600 }}>
+                  {shortLabel(day.dayLabel)}
+                </div>
+                <div style={{ fontSize: 11, color: '#4b5563', marginBottom: 6 }}>
+                  {formatDate(day.date)}
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <WeatherIcon type={iconType} size={20} />
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
+                  {day.highF}F / {day.lowF}F
+                </div>
+                <div style={{ fontSize: 10, color: '#4b5563', marginBottom: 6 }}>
+                  {day.condition}
+                </div>
+                <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: 6, width: '100%', textAlign: 'left' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                    <span style={{ fontSize: 11, color: '#4b5563' }}>{isColdActivate ? "Tonight's Low" : 'High'}</span>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: '#111827' }}>
+                      {isColdActivate ? `${day.lowF}F` : `${day.highF}F`}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 11, color: '#4b5563' }}>Precip</span>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: '#111827' }}>
+                      {day.precipChance}%
+                    </span>
+                  </div>
+                </div>
+                {activate && (
+                  <div style={{ fontSize: 10, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 999, padding: '2px 6px', whiteSpace: 'nowrap', marginTop: 6 }}>
+                    Activation Recommended
+                  </div>
+                )}
+              </div>
+            )
+          })
+        ) : (
+          // No data — show a single message spanning the grid
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#9ca3af', fontSize: 14, padding: '24px 0' }}>
+            Forecast unavailable
+          </div>
+        )}
       </div>
 
-      {/* ── Section 2: Monitoring card ── */}
-      <div style={{
-        backgroundColor: '#1a1a1a',
-        borderRadius: 12,
-        padding: 24,
-      }}>
-        {/* Label */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-          <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#6b7280', flexShrink: 0 }} />
-          <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b7280', fontWeight: 600 }}>
-            Monitoring Your Area
-          </span>
-        </div>
+      {/* ── Section 2: Monitoring / event card ── */}
+      <div style={{ backgroundColor: '#1a1a1a', borderRadius: 12, padding: 24 }}>
 
-        {/* Description */}
-        <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.5 }}>
-          No weather triggers detected. Your platform will activate automatically when conditions are met.
-        </div>
-
-        {/* Tool rows */}
-        <div>
-          {ITEMS.map((item, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              paddingTop: 14, paddingBottom: 14,
-              borderBottom: i < ITEMS.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{
-                  width: 20, height: 20, borderRadius: '50%',
-                  border: '1.5px solid #6b7280',
-                  flexShrink: 0,
-                }} />
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: '#ffffff' }}>{item.label}</div>
-                  <div style={{ fontSize: 12, color: '#9ca3af' }}>{item.description}</div>
-                </div>
-              </div>
-              <span style={{ fontSize: 12, color: '#6b7280' }}>Standby</span>
+        {weatherLoading ? (
+          // Loading state
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4b5563', flexShrink: 0 }} />
+              <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#4b5563', fontWeight: 600 }}>
+                Checking
+              </span>
             </div>
-          ))}
-        </div>
+            <div style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.5 }}>
+              Fetching live weather data for your service area...
+            </div>
+          </>
+        ) : isEventActive ? (
+          // ── Weather event active ──
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: eventDotColor, flexShrink: 0 }} />
+              <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: eventLabelColor, fontWeight: 600 }}>
+                Weather Event Active
+              </span>
+            </div>
+
+            <div style={{ fontSize: 20, fontWeight: 700, color: '#ffffff', marginBottom: 8 }}>
+              {eventTitle}
+            </div>
+
+            <div style={{ marginBottom: 12 }}>
+              <span style={{
+                display: 'inline-block',
+                fontSize: 11, fontWeight: 600,
+                color: eventLabelColor,
+                border: `1px solid ${eventLabelColor}`,
+                borderRadius: 4,
+                padding: '2px 8px',
+                letterSpacing: '0.05em',
+              }}>
+                {severityLabel}
+              </span>
+            </div>
+
+            {trigger?.reason && (
+              <div style={{ fontSize: 14, color: '#9ca3af', marginBottom: 24, lineHeight: 1.5 }}>
+                {trigger.reason}
+              </div>
+            )}
+
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginBottom: 16 }} />
+
+            {/* Tool rows showing what will activate */}
+            <div style={{ marginBottom: 24 }}>
+              {ITEMS.map((item, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  paddingTop: 12, paddingBottom: 12,
+                  borderBottom: i < ITEMS.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{
+                      width: 20, height: 20, borderRadius: '50%',
+                      backgroundColor: 'rgba(0,194,124,0.15)',
+                      border: '1.5px solid #00C27C',
+                      flexShrink: 0,
+                    }} />
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 500, color: '#ffffff' }}>{item.label}</div>
+                      <div style={{ fontSize: 12, color: '#9ca3af' }}>{item.description}</div>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 12, color: '#00C27C' }}>Ready</span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              style={{
+                display: 'block', width: '100%', textAlign: 'center',
+                backgroundColor: '#00C27C', border: 'none', color: '#ffffff',
+                fontSize: 14, fontWeight: 700, padding: '12px 0', borderRadius: 8,
+                cursor: 'pointer',
+              }}
+            >
+              Activate All Tools
+            </button>
+          </>
+        ) : (
+          // ── All Clear / monitoring state ──
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#6b7280', flexShrink: 0 }} />
+              <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b7280', fontWeight: 600 }}>
+                Monitoring Your Area
+              </span>
+            </div>
+
+            <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.5 }}>
+              No weather triggers detected. Your platform will activate automatically when conditions are met.
+            </div>
+
+            <div>
+              {ITEMS.map((item, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  paddingTop: 14, paddingBottom: 14,
+                  borderBottom: i < ITEMS.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{
+                      width: 20, height: 20, borderRadius: '50%',
+                      border: '1.5px solid #6b7280',
+                      flexShrink: 0,
+                    }} />
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 500, color: '#ffffff' }}>{item.label}</div>
+                      <div style={{ fontSize: 12, color: '#9ca3af' }}>{item.description}</div>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 12, color: '#6b7280' }}>Standby</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* ── Section 3: Activation History ── */}
@@ -390,7 +623,13 @@ export default function WeatherActivation({}: Props) {
                 </tr>
               </thead>
               <tbody>
-                {ACTIVATION_HISTORY.map((row, i) => (
+                {ACTIVATION_HISTORY.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} style={{ fontSize: 14, color: '#9ca3af', textAlign: 'center', paddingTop: 20, paddingBottom: 20 }}>
+                      No activations yet
+                    </td>
+                  </tr>
+                ) : ACTIVATION_HISTORY.map((row, i) => (
                   <tr key={i} style={{ borderBottom: i < ACTIVATION_HISTORY.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>
                     <td style={{ fontSize: 14, color: '#374151', paddingRight: 24, paddingTop: 14, paddingBottom: 14 }}>{row.date}</td>
                     <td style={{ fontSize: 14, color: '#374151', paddingRight: 24, paddingTop: 14, paddingBottom: 14 }}>{row.event}</td>
