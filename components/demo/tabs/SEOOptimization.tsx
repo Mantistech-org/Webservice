@@ -131,6 +131,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
   const [businessName, setBusinessName] = useState('')
   const [businessType, setBusinessType] = useState('')
   const [location, setLocation] = useState('')
+  const [websiteUrl, setWebsiteUrl] = useState('')
   const [editingProfile, setEditingProfile] = useState(true)
 
   // Analysis state
@@ -150,10 +151,11 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
-        const parsed = JSON.parse(saved) as { businessName: string; businessType: string; location: string }
+        const parsed = JSON.parse(saved) as { businessName: string; businessType: string; location: string; websiteUrl?: string }
         setBusinessName(parsed.businessName || '')
         setBusinessType(parsed.businessType || '')
         setLocation(parsed.location || '')
+        setWebsiteUrl(parsed.websiteUrl || '')
         if (parsed.businessName && parsed.businessType && parsed.location) {
           setEditingProfile(false)
         }
@@ -166,7 +168,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
   // Save profile to localStorage whenever fields change
   const saveProfile = () => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ businessName, businessType, location }))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ businessName, businessType, location, websiteUrl }))
     } catch {
       // ignore
     }
@@ -269,18 +271,24 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
         </div>
         <div className="p-6">
           {!editingProfile ? (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <div>
-                <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">Business Name</div>
-                <div className="font-mono text-sm text-primary">{businessName}</div>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div>
+                  <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">Business Name</div>
+                  <div className="font-mono text-sm text-primary">{businessName}</div>
+                </div>
+                <div>
+                  <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">Type of Business</div>
+                  <div className="font-mono text-sm text-primary">{businessType}</div>
+                </div>
+                <div>
+                  <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">City and State</div>
+                  <div className="font-mono text-sm text-primary">{location}</div>
+                </div>
               </div>
               <div>
-                <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">Type of Business</div>
-                <div className="font-mono text-sm text-primary">{businessType}</div>
-              </div>
-              <div>
-                <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">City and State</div>
-                <div className="font-mono text-sm text-primary">{location}</div>
+                <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">Website URL</div>
+                <div className="font-mono text-sm text-primary">{websiteUrl || <span className="text-muted">Not set</span>}</div>
               </div>
             </div>
           ) : (
@@ -298,6 +306,10 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
                   <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">City and State</label>
                   <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Portland, OR" className={inputClass} />
                 </div>
+              </div>
+              <div>
+                <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Website URL <span className="normal-case tracking-normal text-dim">(optional)</span></label>
+                <input type="url" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} placeholder="https://yourbusiness.com" className={inputClass} />
               </div>
               {allFieldsFilled && (
                 <button
@@ -557,7 +569,9 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
                   const pageIndex = parseInt(change.id.split('-')[1] ?? '0')
                   const title = result.pageTitles[pageIndex] ?? result.pageTitles[0]
                   const meta = result.metaDescriptions[pageIndex] ?? result.metaDescriptions[0]
-                  const siteUrl = `${businessName.toLowerCase().replace(/\s+/g, '')}.com`
+                  const siteUrl = websiteUrl
+                    ? websiteUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
+                    : `${businessName.toLowerCase().replace(/\s+/g, '')}.com`
 
                   return (
                     <div key={change.id} className="bg-card border border-border rounded overflow-hidden">
