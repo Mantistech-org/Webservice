@@ -8,6 +8,8 @@ interface Props {
   darkMode?: boolean
 }
 
+const SERVICE_AREA = 'Little Rock, AR'
+
 const ITEMS = [
   { label: 'Automated Ads',          description: 'Google Search, Facebook, Instagram',  activatedStatus: 'Active'                 },
   { label: 'Customer Outreach',       description: '1,247 contacts ready',                 activatedStatus: 'Sent to 1,247 contacts' },
@@ -368,7 +370,7 @@ void ChevronIcon
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-const WEATHER_LOCATION = 'Little Rock, AR'
+const WEATHER_LOCATION = SERVICE_AREA
 
 export default function WeatherActivation({ businessName: _businessName }: Props) {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null)

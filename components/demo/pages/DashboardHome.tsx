@@ -9,6 +9,8 @@ interface DashboardProps {
   onNavigate?: (page: DemoView) => void
 }
 
+const SERVICE_AREA = 'Little Rock, AR'
+
 // ── Static data ────────────────────────────────────────────────────────────────
 
 const ACTIVITY_FEED: Array<{ text: string; time: string }> = []
@@ -370,7 +372,7 @@ function CityMap() {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-const WEATHER_LOCATION = 'Little Rock, AR'
+const WEATHER_LOCATION = SERVICE_AREA
 
 export default function DashboardHome({ businessName, onNavigateToWeather, onNavigate }: DashboardProps) {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
