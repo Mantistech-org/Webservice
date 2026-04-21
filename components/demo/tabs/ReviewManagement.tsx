@@ -6,29 +6,12 @@ interface Props { sessionId: string; darkMode?: boolean }
 interface ReviewResult { response: string }
 
 const MOCK_REVIEWS = {
-  google: [
-    { author: 'Frank D.',   stars: 5, date: 'Mar 18', text: 'Called at midnight when our furnace went out. Technician arrived in 45 minutes and had heat back by 2 AM. Absolutely outstanding.', responded: true  },
-    { author: 'Janet R.',   stars: 2, date: 'Mar 12', text: 'Technician showed up 3 hours late with no call. The repair itself was fine but communication really needs to improve.', responded: false },
-    { author: 'Marcus T.',  stars: 5, date: 'Feb 28', text: 'Replaced our entire HVAC system in one day. Clean, professional, and priced honestly. Would not use anyone else.', responded: true  },
-    { author: 'Cindy P.',   stars: 5, date: 'Feb 20', text: 'AC went out during a heat wave and they squeezed us in same day. Absolute lifesavers. Highly recommend.', responded: true  },
-  ],
-  yelp: [
-    { author: 'Bob H.',     stars: 4, date: 'Mar 1',  text: 'Great technicians, very knowledgeable about our older unit. Honest about what needed replacing versus what could wait.', responded: true  },
-    { author: 'Stacy W.',   stars: 1, date: 'Feb 26', text: 'Quoted one price and charged another at the end. Asked about the difference and felt brushed off. Very disappointing.', responded: false },
-    { author: 'Greg M.',    stars: 5, date: 'Feb 18', text: 'Have used them three times now. Always on time, always fair. Best HVAC company in the area by far.', responded: true  },
-  ],
-  facebook: [
-    { author: 'Donna K.',   stars: 5, date: 'Mar 2',  text: 'Fast, professional, and they cleaned up after themselves. My furnace is running better than it has in years.', responded: true  },
-    { author: 'Carlos V.',  stars: 3, date: 'Feb 27', text: 'Decent service but the tech seemed rushed. Repair was done correctly and the price was fair though.', responded: false },
-    { author: 'Amy F.',     stars: 4, date: 'Feb 22', text: 'Very happy with the heat pump tune-up. Explained everything clearly and no surprise charges at the end.', responded: true  },
-  ],
+  google:   [] as Array<{ author: string; stars: number; date: string; text: string; responded: boolean }>,
+  yelp:     [] as Array<{ author: string; stars: number; date: string; text: string; responded: boolean }>,
+  facebook: [] as Array<{ author: string; stars: number; date: string; text: string; responded: boolean }>,
 }
 
-const FLAGGED_REVIEWS = [
-  { author: 'John D.', text: 'Terrible service, never going back!!', flag: 'New account, no review history' },
-  { author: 'User9284', text: 'Worst place ever do not go here', flag: 'Posted 5 identical reviews across businesses' },
-  { author: 'Anonymous_7', text: 'Bad bad bad', flag: 'Flagged keyword pattern detected' },
-]
+const FLAGGED_REVIEWS: Array<{ author: string; text: string; flag: string }> = []
 
 function Stars({ n }: { n: number }) {
   return (
@@ -104,10 +87,10 @@ export default function ReviewManagement({ sessionId, darkMode }: Props) {
           {/* Analytics bar */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Total Reviews', value: '47', sub: 'across all platforms' },
-              { label: 'Average Rating', value: '4.2', sub: 'out of 5.0' },
-              { label: 'Reviews This Month', value: '12', sub: 'new reviews' },
-              { label: 'Response Rate', value: '83%', sub: 'of reviews answered' },
+              { label: 'Total Reviews', value: '0', sub: 'across all platforms' },
+              { label: 'Average Rating', value: '0', sub: 'out of 5.0' },
+              { label: 'Reviews This Month', value: '0', sub: 'new reviews' },
+              { label: 'Response Rate', value: '0%', sub: 'of reviews answered' },
             ].map((stat) => (
               <div key={stat.label} className="bg-card border border-border rounded p-4">
                 <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">{stat.label}</div>
@@ -162,6 +145,13 @@ export default function ReviewManagement({ sessionId, darkMode }: Props) {
                 </button>
               ))}
             </div>
+
+            {/* Empty state */}
+            {unanswered.length === 0 && answered.length === 0 && (
+              <div className="bg-card border border-border rounded p-6 text-center">
+                <p className="font-mono text-sm text-muted">No reviews yet. Reviews will appear here once your platform is connected.</p>
+              </div>
+            )}
 
             {/* Unanswered reviews */}
             {unanswered.length > 0 && (
@@ -307,8 +297,8 @@ export default function ReviewManagement({ sessionId, darkMode }: Props) {
               {/* Stat pills */}
               <div style={{ display: 'flex', gap: 10 }}>
                 {[
-                  { value: '47 Requests Sent', label: 'This Month' },
-                  { value: '31%',              label: 'Conversion Rate' },
+                  { value: '0 Requests Sent', label: 'This Month' },
+                  { value: '0%',             label: 'Conversion Rate' },
                 ].map((pill) => (
                   <div
                     key={pill.label}
@@ -359,30 +349,11 @@ export default function ReviewManagement({ sessionId, darkMode }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {[
-                  { customer: 'James Perkins',  job: 'Furnace Repair',       sent: 'Apr 6, 2:14 PM',  status: 'Review Left' },
-                  { customer: 'Michelle Carter', job: 'AC Tune-Up',           sent: 'Apr 5, 4:30 PM',  status: 'Opened'      },
-                  { customer: 'Ray Dominguez',   job: 'System Install',       sent: 'Apr 5, 11:00 AM', status: 'Review Left' },
-                  { customer: 'Donna Howell',    job: 'Heat Pump Service',    sent: 'Apr 4, 3:45 PM',  status: 'Sent'        },
-                  { customer: 'Brian Stokes',    job: 'Furnace Replacement',  sent: 'Apr 3, 1:20 PM',  status: 'Review Left' },
-                ].map((row, i, arr) => {
-                  const pill =
-                    row.status === 'Review Left' ? { bg: 'rgba(0,194,124,0.1)',   color: '#00C27C' } :
-                    row.status === 'Opened'      ? { bg: 'rgba(245,158,11,0.1)',  color: '#F59E0B' } :
-                                                   { bg: 'rgba(0,0,0,0.05)',      color: '#6b7280' }
-                  return (
-                    <tr key={i} style={{ borderBottom: i < arr.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>
-                      <td style={{ padding: '14px 20px', fontSize: 14, color: '#111827', fontWeight: 500 }}>{row.customer}</td>
-                      <td style={{ padding: '14px 20px', fontSize: 14, color: '#111827' }}>{row.job}</td>
-                      <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280' }}>{row.sent}</td>
-                      <td style={{ padding: '14px 20px' }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: pill.color, backgroundColor: pill.bg, borderRadius: 4, padding: '3px 10px' }}>
-                          {row.status}
-                        </span>
-                      </td>
-                    </tr>
-                  )
-                })}
+                <tr>
+                  <td colSpan={4} style={{ padding: '20px', fontSize: 14, color: '#9ca3af', textAlign: 'center' }}>
+                    No requests sent yet
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
