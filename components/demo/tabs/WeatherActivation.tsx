@@ -398,11 +398,11 @@ export default function WeatherActivation({ businessName: _businessName }: Props
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-      {/* ── Section 1: 7-day forecast row ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
+      {/* ── Section 1: 5-day forecast row ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
         {weatherLoading ? (
-          // Loading skeleton — 7 placeholder cards
-          Array.from({ length: 7 }).map((_, i) => (
+          // Loading skeleton — 5 placeholder cards
+          Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
               style={{
@@ -419,7 +419,7 @@ export default function WeatherActivation({ businessName: _businessName }: Props
             </div>
           ))
         ) : forecast.length > 0 ? (
-          forecast.slice(0, 7).map((day) => {
+          forecast.slice(0, 5).map((day) => {
             const activate = shouldActivate(day.highF, day.lowF)
             const iconType = conditionToIconType(day.condition)
             const isColdActivate = activate && day.lowF < day.highF - 10
