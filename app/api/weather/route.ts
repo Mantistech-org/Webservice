@@ -284,34 +284,43 @@ function parseCurrent(raw: GoogleCurrentConditions): CurrentData {
   }
 }
 
-function parseForecast(raw: GoogleForecastResponse): ForecastDay[] {
-  const days = raw.forecastDays ?? []
-  return days.slice(0, 5).map((day, i) => {
-    // Build an ISO date string from displayDate or interval startTime
-    let dateStr = ''
-    if (day.displayDate) {
-      const { year = 2025, month = 1, day: d = 1 } = day.displayDate
-      dateStr = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`
-    } else if (day.interval?.startTime) {
-      dateStr = day.interval.startTime.slice(0, 10)
-    }
+// WMO weather code → human-readable condition
+function wmoCondition(code: number): string {
+  if (code === 0) return 'Clear'
+  if (code === 1) return 'Mostly Clear'
+  if (code === 2) return 'Partly Cloudy'
+  if (code === 3) return 'Overcast'
+  if (code <= 49) return 'Foggy'
+  if (code <= 59) return 'Drizzle'
+  if (code <= 69) return 'Rain'
+  if (code <= 79) return 'Snow'
+  if (code <= 82) return 'Rain Showers'
+  if (code <= 84) return 'Snow Showers'
+  if (code <= 99) return 'Thunderstorm'
+  return 'Unknown'
+}
 
-    const daytime = day.daytimeForecast ?? {}
-    const overnight = day.overnightForecast ?? {}
-    const precipChance = Math.max(
-      daytime.precipitation?.probability?.percent ?? 0,
-      overnight.precipitation?.probability?.percent ?? 0,
-    )
+interface OpenMeteoResponse {
+  daily?: {
+    time?: string[]
+    temperature_2m_max?: number[]
+    temperature_2m_min?: number[]
+    weathercode?: number[]
+    precipitation_probability_max?: number[]
+  }
+}
 
-    return {
-      date: dateStr,
-      dayLabel: getDayLabel(dateStr, i),
-      highF: Math.round(day.maxTemperature?.degrees ?? 70),
-      lowF: Math.round(day.minTemperature?.degrees ?? 55),
-      condition: daytime.weatherCondition?.description?.text ?? 'Unknown',
-      precipChance,
-    }
-  })
+function parseForecast(raw: OpenMeteoResponse): ForecastDay[] {
+  const daily = raw.daily ?? {}
+  const times = daily.time ?? []
+  return times.slice(0, 7).map((dateStr, i) => ({
+    date: dateStr,
+    dayLabel: getDayLabel(dateStr, i),
+    highF: Math.round(daily.temperature_2m_max?.[i] ?? 70),
+    lowF: Math.round(daily.temperature_2m_min?.[i] ?? 55),
+    condition: wmoCondition(daily.weathercode?.[i] ?? 0),
+    precipChance: Math.round(daily.precipitation_probability_max?.[i] ?? 0),
+  }))
 }
 
 function parseAlerts(raw: GoogleForecastResponse): Alert[] {
@@ -347,16 +356,15 @@ export async function GET(req: NextRequest) {
   }
   const { lat, lng } = geocodeData.results[0].geometry.location
 
-  const baseUrl = 'https://weather.googleapis.com/v1'
+  const googleBase = 'https://weather.googleapis.com/v1'
+  const openMeteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_probability_max&temperature_unit=fahrenheit&forecast_days=7&timezone=auto`
 
-  // Fetch current conditions and 7-day forecast in parallel
+  // Fetch current conditions (Google) and 7-day forecast (Open-Meteo) in parallel
   const [currentRes, forecastRes] = await Promise.all([
-    fetch(`${baseUrl}/currentConditions:lookup?key=${apiKey}&location.latitude=${lat}&location.longitude=${lng}&unitsSystem=IMPERIAL`, {
+    fetch(`${googleBase}/currentConditions:lookup?key=${apiKey}&location.latitude=${lat}&location.longitude=${lng}&unitsSystem=IMPERIAL`, {
       next: { revalidate: 900 }, // cache 15 min
     }),
-    fetch(`${baseUrl}/forecast/days:lookup?key=${apiKey}&location.latitude=${lat}&location.longitude=${lng}&days=5&unitsSystem=IMPERIAL`, {
-      next: { revalidate: 900 },
-    }),
+    fetch(openMeteoUrl, { next: { revalidate: 900 } }),
   ])
 
   if (!currentRes.ok) {
@@ -377,12 +385,12 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const [currentRaw, forecastRaw]: [GoogleCurrentConditions, GoogleForecastResponse] =
+  const [currentRaw, forecastRaw]: [GoogleCurrentConditions, OpenMeteoResponse] =
     await Promise.all([currentRes.json(), forecastRes.json()])
 
   const current = parseCurrent(currentRaw)
   const forecast = parseForecast(forecastRaw)
-  const alerts = parseAlerts(forecastRaw)
+  const alerts = parseAlerts({ weatherAlerts: [] })
 
   const region = detectRegion(location)
   const month = new Date().getMonth() // 0-indexed
