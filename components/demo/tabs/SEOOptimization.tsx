@@ -308,7 +308,7 @@ export default function SEOOptimization({ sessionId, darkMode }: Props) {
                 </div>
               </div>
               <div>
-                <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Website URL <span className="normal-case tracking-normal text-dim">(optional)</span></label>
+                <label className="font-mono text-xs text-muted tracking-widest uppercase block mb-2">Website URL</label>
                 <input type="url" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} placeholder="https://yourbusiness.com" className={inputClass} />
               </div>
               {allFieldsFilled && (
