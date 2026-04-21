@@ -337,15 +337,24 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Google API key not configured' }, { status: 503 })
   }
 
-  const encodedLocation = encodeURIComponent(location)
+  // Geocode the location text to coordinates
+  const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${apiKey}`
+  const geocodeRes = await fetch(geocodeUrl, { next: { revalidate: 86400 } }) // cache 24h
+  const geocodeData = await geocodeRes.json()
+  if (!geocodeRes.ok || !geocodeData.results?.[0]) {
+    console.error('[weather] geocode error:', geocodeRes.status, geocodeData.status)
+    return NextResponse.json({ error: 'Could not geocode location' }, { status: 400 })
+  }
+  const { lat, lng } = geocodeData.results[0].geometry.location
+
   const baseUrl = 'https://weather.googleapis.com/v1'
 
   // Fetch current conditions and 7-day forecast in parallel
   const [currentRes, forecastRes] = await Promise.all([
-    fetch(`${baseUrl}/currentConditions:lookup?key=${apiKey}&location.address=${encodedLocation}`, {
+    fetch(`${baseUrl}/currentConditions:lookup?key=${apiKey}&location.latitude=${lat}&location.longitude=${lng}`, {
       next: { revalidate: 900 }, // cache 15 min
     }),
-    fetch(`${baseUrl}/forecast/days:lookup?key=${apiKey}&location.address=${encodedLocation}&days=7`, {
+    fetch(`${baseUrl}/forecast/days:lookup?key=${apiKey}&location.latitude=${lat}&location.longitude=${lng}&days=7`, {
       next: { revalidate: 900 },
     }),
   ])
