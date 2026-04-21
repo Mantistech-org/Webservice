@@ -354,7 +354,7 @@ export async function GET(req: NextRequest) {
     fetch(`${baseUrl}/currentConditions:lookup?key=${apiKey}&location.latitude=${lat}&location.longitude=${lng}&unitsSystem=IMPERIAL`, {
       next: { revalidate: 900 }, // cache 15 min
     }),
-    fetch(`${baseUrl}/forecast/days:lookup?key=${apiKey}&location.latitude=${lat}&location.longitude=${lng}&days=7&unitsSystem=IMPERIAL`, {
+    fetch(`${baseUrl}/forecast/days:lookup?key=${apiKey}&location.latitude=${lat}&location.longitude=${lng}&days=10&unitsSystem=IMPERIAL`, {
       next: { revalidate: 900 },
     }),
   ])
