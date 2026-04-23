@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface Props {
   sessionId: string
@@ -375,6 +375,9 @@ const WEATHER_LOCATION = SERVICE_AREA
 export default function WeatherActivation({ businessName: _businessName }: Props) {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
   const [weatherLoading, setWeatherLoading] = useState(true)
+  const [tooltipVisible, setTooltipVisible] = useState(false)
+  const [tooltipOpacity, setTooltipOpacity] = useState(0)
+  const tooltipScheduled = useRef(false)
 
   useEffect(() => {
     fetch(`/api/weather?location=${encodeURIComponent(WEATHER_LOCATION)}`)
@@ -385,6 +388,87 @@ export default function WeatherActivation({ businessName: _businessName }: Props
       })
       .catch(() => setWeatherLoading(false))
   }, [])
+
+  // Show tooltip on first visit once weather has loaded
+  useEffect(() => {
+    if (weatherLoading) return
+    if (tooltipScheduled.current) return
+    if (typeof window === 'undefined') return
+    if (window.location.pathname.includes('admin')) return
+    if (sessionStorage.getItem('demo-weather-tooltip-dismissed')) return
+    tooltipScheduled.current = true
+    const timerId = setTimeout(() => {
+      setTooltipVisible(true)
+      requestAnimationFrame(() => setTooltipOpacity(1))
+    }, 500)
+    return () => clearTimeout(timerId)
+  }, [weatherLoading])
+
+  const dismissWeatherTooltip = () => {
+    sessionStorage.setItem('demo-weather-tooltip-dismissed', '1')
+    setTooltipOpacity(0)
+    setTimeout(() => setTooltipVisible(false), 300)
+  }
+
+  const weatherTooltip = tooltipVisible ? (
+    <div
+      style={{
+        position: 'absolute',
+        right: -260,
+        top: 0,
+        width: 240,
+        backgroundColor: '#ffffff',
+        border: '1px solid rgba(0,194,124,0.3)',
+        borderRadius: 8,
+        padding: '12px 16px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+        zIndex: 50,
+        opacity: tooltipOpacity,
+        transition: 'opacity 0.3s ease',
+      }}
+    >
+      <div style={{
+        position: 'absolute',
+        left: -8,
+        top: 16,
+        width: 0,
+        height: 0,
+        borderRight: '8px solid rgba(0,194,124,0.3)',
+        borderTop: '8px solid transparent',
+        borderBottom: '8px solid transparent',
+      }} />
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+        <span style={{
+          display: 'inline-block',
+          width: 8,
+          height: 8,
+          borderRadius: '50%',
+          backgroundColor: '#00C27C',
+          flexShrink: 0,
+          marginTop: 4,
+          animation: 'tooltipPulse 1.5s ease-in-out infinite',
+        }} />
+        <p style={{ fontSize: 13, color: '#1a1a1a', lineHeight: 1.5, margin: 0 }}>
+          Expand each tool to preview and adjust before deploying. Activate when ready.
+        </p>
+      </div>
+      <div style={{ textAlign: 'right', marginTop: 8 }}>
+        <button
+          onClick={dismissWeatherTooltip}
+          style={{
+            fontSize: 11,
+            color: '#6b7280',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 0,
+          }}
+        >
+          Got it
+        </button>
+      </div>
+    </div>
+  ) : null
 
   const trigger = weatherData?.trigger
   const forecast = weatherData?.forecast ?? []
@@ -397,6 +481,12 @@ export default function WeatherActivation({ businessName: _businessName }: Props
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <style>{`
+        @keyframes tooltipPulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50%       { opacity: 0.5; transform: scale(0.8); }
+        }
+      `}</style>
 
       {/* ── Section 1: 7-day forecast row ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
@@ -558,16 +648,19 @@ export default function WeatherActivation({ businessName: _businessName }: Props
               ))}
             </div>
 
-            <button
-              style={{
-                display: 'block', width: '100%', textAlign: 'center',
-                backgroundColor: '#00C27C', border: 'none', color: '#ffffff',
-                fontSize: 14, fontWeight: 700, padding: '12px 0', borderRadius: 8,
-                cursor: 'pointer',
-              }}
-            >
-              Activate All Tools
-            </button>
+            <div style={{ position: 'relative' }}>
+              <button
+                style={{
+                  display: 'block', width: '100%', textAlign: 'center',
+                  backgroundColor: '#00C27C', border: 'none', color: '#ffffff',
+                  fontSize: 14, fontWeight: 700, padding: '12px 0', borderRadius: 8,
+                  cursor: 'pointer',
+                }}
+              >
+                Activate All Tools
+              </button>
+              {weatherTooltip}
+            </div>
           </>
         ) : (
           // ── All Clear / monitoring state ──
@@ -589,7 +682,9 @@ export default function WeatherActivation({ businessName: _businessName }: Props
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   paddingTop: 14, paddingBottom: 14,
                   borderBottom: i < ITEMS.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                  position: i === 0 ? 'relative' : undefined,
                 }}>
+                  {i === 0 && weatherTooltip}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{
                       width: 20, height: 20, borderRadius: '50%',

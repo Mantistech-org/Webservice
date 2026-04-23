@@ -392,6 +392,7 @@ export default function DemoView({ hideBanner }: { hideBanner?: boolean } = {}) 
           businessName={businessName}
           onNavigateToWeather={() => { trackEngagement('activate_now_click'); setActivePage('weather') }}
           onNavigate={setActivePage}
+          isActive={activePage === 'dashboard'}
         />
       )
       case 'weather':     return <WeatherActivation sessionId={sessionId} businessName={businessName} />
@@ -406,7 +407,7 @@ export default function DemoView({ hideBanner }: { hideBanner?: boolean } = {}) 
       case 'performance': return <PerformancePage />
       case 'settings':
       case 'billing':     return <BillingPage />
-      default:            return <DashboardHome businessName={businessName} onNavigateToWeather={() => setActivePage('weather')} onNavigate={setActivePage} />
+      default:            return <DashboardHome businessName={businessName} onNavigateToWeather={() => setActivePage('weather')} onNavigate={setActivePage} isActive={activePage === 'dashboard'} />
     }
   }
 

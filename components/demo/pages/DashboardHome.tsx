@@ -7,6 +7,7 @@ interface DashboardProps {
   businessName?: string
   onNavigateToWeather?: () => void
   onNavigate?: (page: DemoView) => void
+  isActive?: boolean
 }
 
 const SERVICE_AREA = 'Little Rock, AR'
@@ -374,9 +375,12 @@ function CityMap() {
 
 const WEATHER_LOCATION = SERVICE_AREA
 
-export default function DashboardHome({ businessName, onNavigateToWeather, onNavigate }: DashboardProps) {
+export default function DashboardHome({ businessName, onNavigateToWeather, onNavigate, isActive }: DashboardProps) {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
   const [weatherLoading, setWeatherLoading] = useState(true)
+  const [tooltipVisible, setTooltipVisible] = useState(false)
+  const [tooltipOpacity, setTooltipOpacity] = useState(0)
+  const isEventActiveRef = useRef(false)
 
   useEffect(() => {
     fetch(`/api/weather?location=${encodeURIComponent(WEATHER_LOCATION)}`)
@@ -388,9 +392,38 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
       .catch(() => setWeatherLoading(false))
   }, [])
 
+  // Show tooltip 2s after mount for first-time visitors only
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (window.location.pathname.includes('admin')) return
+    if (sessionStorage.getItem('demo-tooltip-dismissed')) return
+    const timerId = setTimeout(() => {
+      if (!isEventActiveRef.current) return
+      setTooltipVisible(true)
+      requestAnimationFrame(() => setTooltipOpacity(1))
+    }, 2000)
+    return () => clearTimeout(timerId)
+  }, [])
+
+  // Hide tooltip when dashboard tab is deactivated
+  useEffect(() => {
+    if (!isActive && tooltipVisible) {
+      setTooltipOpacity(0)
+      const t = setTimeout(() => setTooltipVisible(false), 300)
+      return () => clearTimeout(t)
+    }
+  }, [isActive, tooltipVisible])
+
+  const dismissDashTooltip = () => {
+    sessionStorage.setItem('demo-tooltip-dismissed', '1')
+    setTooltipOpacity(0)
+    setTimeout(() => setTooltipVisible(false), 300)
+  }
+
   const trigger = weatherData?.trigger
   const forecast = weatherData?.forecast ?? []
   const isEventActive = trigger?.active === true
+  isEventActiveRef.current = isEventActive
 
   // Derive event display values
   const eventTitle = trigger?.type === 'heat_wave' ? 'Heat Wave Detected' : 'Cold Snap Detected'
@@ -407,6 +440,10 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           0%   { transform: scale(1); opacity: 0.8; }
           100% { transform: scale(4.5); opacity: 0; }
         }
+        @keyframes tooltipPulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50%       { opacity: 0.5; transform: scale(0.8); }
+        }
       `}</style>
 
       {/* ── Section 1: Hero row ── */}
@@ -416,7 +453,6 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
         gap: 24,
         alignItems: 'stretch',
         height: 520,
-        overflow: 'hidden',
       }}>
 
         {/* Left: weather monitoring card */}
@@ -508,20 +544,81 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
                 ))}
               </div>
 
-              {/* Activate Now button */}
-              <button
-                onClick={() => onNavigateToWeather?.()}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = `${eventDotColor}22` }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
-                style={{
-                  display: 'block', textAlign: 'center', width: '100%', boxSizing: 'border-box',
-                  backgroundColor: 'transparent', border: `1px solid ${eventDotColor}`, color: eventLabelColor,
-                  fontSize: 13, fontWeight: 600, padding: '10px 0', borderRadius: 6,
-                  cursor: 'pointer', transition: 'background-color 0.15s ease', marginTop: 20,
-                }}
-              >
-                Activate Now
-              </button>
+              {/* Activate Now button with tooltip */}
+              <div style={{ position: 'relative', marginTop: 20 }}>
+                <button
+                  onClick={() => onNavigateToWeather?.()}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = `${eventDotColor}22` }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+                  style={{
+                    display: 'block', textAlign: 'center', width: '100%', boxSizing: 'border-box',
+                    backgroundColor: 'transparent', border: `1px solid ${eventDotColor}`, color: eventLabelColor,
+                    fontSize: 13, fontWeight: 600, padding: '10px 0', borderRadius: 6,
+                    cursor: 'pointer', transition: 'background-color 0.15s ease',
+                  }}
+                >
+                  Activate Now
+                </button>
+                {tooltipVisible && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      right: -260,
+                      top: 0,
+                      width: 240,
+                      backgroundColor: '#ffffff',
+                      border: '1px solid rgba(0,194,124,0.3)',
+                      borderRadius: 8,
+                      padding: '12px 16px',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                      zIndex: 50,
+                      opacity: tooltipOpacity,
+                      transition: 'opacity 0.3s ease',
+                    }}
+                  >
+                    <div style={{
+                      position: 'absolute',
+                      left: -8,
+                      top: 16,
+                      width: 0,
+                      height: 0,
+                      borderRight: '8px solid rgba(0,194,124,0.3)',
+                      borderTop: '8px solid transparent',
+                      borderBottom: '8px solid transparent',
+                    }} />
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <span style={{
+                        display: 'inline-block',
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        backgroundColor: '#00C27C',
+                        flexShrink: 0,
+                        marginTop: 4,
+                        animation: 'tooltipPulse 1.5s ease-in-out infinite',
+                      }} />
+                      <p style={{ fontSize: 13, color: '#1a1a1a', lineHeight: 1.5, margin: 0 }}>
+                        Cold snap detected in your area. Click here to get ahead of jobs before your competitors do.
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'right', marginTop: 8 }}>
+                      <button
+                        onClick={dismissDashTooltip}
+                        style={{
+                          fontSize: 11,
+                          color: '#6b7280',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: 0,
+                        }}
+                      >
+                        Got it
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </>
           ) : (
             /* ── All Clear / monitoring state ── */
