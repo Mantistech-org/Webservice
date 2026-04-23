@@ -4,14 +4,6 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DemoView from '@/components/demo/DemoPage'
 
-// Seed sessionStorage at module load time (before any React rendering) so
-// DemoView's useEffect finds the value and skips the gate form.
-if (typeof window !== 'undefined') {
-  if (!sessionStorage.getItem('demo-business-name')) {
-    sessionStorage.setItem('demo-business-name', '')
-  }
-}
-
 export default function ClientTemplatePage() {
   const router = useRouter()
   const [authed, setAuthed] = useState<boolean | null>(null)
