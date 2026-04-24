@@ -407,7 +407,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
     const timerId = setTimeout(() => {
       setTooltipVisible(true)
       requestAnimationFrame(() => setTooltipOpacity(1))
-    }, 2000)
+    }, 400)
     return () => clearTimeout(timerId)
   }, [])
 
@@ -616,9 +616,9 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
                   <div
                     style={{
                       position: 'absolute',
-                      bottom: -130,
-                      left: 0,
-                      width: 320,
+                      top: 0,
+                      left: 'calc(100% + 12px)',
+                      width: 260,
                       backgroundColor: '#0a0a0a',
                       border: '1px solid rgba(0,194,124,0.3)',
                       borderRadius: 8,
@@ -631,14 +631,13 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
                   >
                     <div style={{
                       position: 'absolute',
-                      top: -8,
-                      left: '50%',
-                      transform: 'translateX(-50%)',
+                      top: 14,
+                      left: -8,
                       width: 0,
                       height: 0,
-                      borderBottom: '8px solid #0a0a0a',
-                      borderLeft: '8px solid transparent',
-                      borderRight: '8px solid transparent',
+                      borderRight: '8px solid #0a0a0a',
+                      borderTop: '8px solid transparent',
+                      borderBottom: '8px solid transparent',
                     }} />
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                       <span style={{

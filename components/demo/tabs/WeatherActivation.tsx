@@ -528,7 +528,7 @@ export default function WeatherActivation({ sessionId: _sessionId, businessName 
             <div
               style={{
                 position: 'absolute',
-                bottom: -130,
+                bottom: 'calc(100% + 10px)',
                 left: 0,
                 width: 320,
                 backgroundColor: '#0a0a0a',
@@ -543,12 +543,12 @@ export default function WeatherActivation({ sessionId: _sessionId, businessName 
             >
               <div style={{
                 position: 'absolute',
-                top: -8,
+                bottom: -8,
                 left: '50%',
                 transform: 'translateX(-50%)',
                 width: 0,
                 height: 0,
-                borderBottom: '8px solid #0a0a0a',
+                borderTop: '8px solid #0a0a0a',
                 borderLeft: '8px solid transparent',
                 borderRight: '8px solid transparent',
               }} />
