@@ -622,7 +622,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
                       right: -340,
                       top: 0,
                       width: 320,
-                      backgroundColor: '#111827',
+                      backgroundColor: '#0a0a0a',
                       border: '1px solid rgba(0,194,124,0.3)',
                       borderRadius: 8,
                       padding: '12px 16px',
@@ -638,7 +638,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
                       top: 16,
                       width: 0,
                       height: 0,
-                      borderRight: '8px solid #111827',
+                      borderRight: '8px solid #0a0a0a',
                       borderTop: '8px solid transparent',
                       borderBottom: '8px solid transparent',
                     }} />
