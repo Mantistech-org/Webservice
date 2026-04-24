@@ -16,6 +16,21 @@ const SERVICE_AREA = 'Little Rock, AR'
 
 const ACTIVITY_FEED: Array<{ text: string; time: string }> = []
 
+// ── Demo preset data (shown when real weather has no active event) ─────────────
+
+const DEMO_TRIGGER = {
+  active: true,
+  type: 'cold_snap' as const,
+  severity: 'moderate' as const,
+  reason: 'Temperatures dropping 18°F below seasonal average over the next 72 hours. High demand for heating services expected.',
+}
+
+const DEMO_FORECAST = [
+  { date: 'demo-0', dayLabel: 'Tomorrow', highF: 48, lowF: 31, condition: 'Partly Cloudy', precipChance: 20 },
+  { date: 'demo-1', dayLabel: 'Saturday', highF: 42, lowF: 27, condition: 'Overcast',      precipChance: 40 },
+  { date: 'demo-2', dayLabel: 'Sunday',   highF: 39, lowF: 24, condition: 'Snow Showers',  precipChance: 70 },
+]
+
 // ── Weather API types ─────────────────────────────────────────────────────────
 
 interface WeatherForecastDay {
@@ -420,9 +435,9 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
     setTimeout(() => setTooltipVisible(false), 300)
   }
 
-  const trigger = weatherData?.trigger
-  const forecast = weatherData?.forecast ?? []
-  const isEventActive = trigger?.active === true
+  const trigger = weatherData?.trigger?.active ? weatherData.trigger : DEMO_TRIGGER
+  const forecast = weatherData?.forecast?.length ? weatherData.forecast : DEMO_FORECAST
+  const isEventActive = !weatherLoading
   isEventActiveRef.current = isEventActive
 
   // Derive event display values
@@ -766,7 +781,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
               marginBottom: 10,
               letterSpacing: '-0.02em',
             }}>
-              $0
+              $14,200
             </div>
             <p style={{
               fontSize: '0.9rem',
@@ -774,7 +789,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
               lineHeight: 1.5,
               margin: 0,
             }}>
-              0 jobs booked through your platform this month
+              11 jobs booked through your platform this month
             </p>
           </div>
 
@@ -783,9 +798,9 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
             {/* Stat rows */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {[
-                { label: 'Jobs Booked',            value: '0' },
-                { label: 'Missed Calls Recovered', value: '0' },
-                { label: 'New Reviews This Month', value: '0' },
+                { label: 'Jobs Booked',            value: '11' },
+                { label: 'Missed Calls Recovered', value: '24' },
+                { label: 'New Reviews This Month', value: '3'  },
               ].map((row, i, arr) => (
                 <div
                   key={row.label}
