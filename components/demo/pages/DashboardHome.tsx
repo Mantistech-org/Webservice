@@ -498,10 +498,10 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
                 <span style={{
                   display: 'inline-block', width: 7, height: 7,
-                  borderRadius: '50%', backgroundColor: '#f59e0b',
+                  borderRadius: '50%', backgroundColor: '#00C27C',
                   flexShrink: 0, marginRight: 7,
                 }} />
-                <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#f59e0b', fontWeight: 600 }}>
+                <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00C27C', fontWeight: 600 }}>
                   Weather Event Active
                 </span>
               </div>
@@ -527,6 +527,53 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
                 }}>
                   Forecast: 3 days
                 </span>
+              </div>
+
+              {/* 3-day forecast cards */}
+              <div style={{ display: 'flex', gap: 8, margin: '12px 0' }}>
+                {/* Today - Partly Cloudy */}
+                <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 6, padding: '8px 12px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 11, color: '#9ca3af', textTransform: 'uppercase', marginBottom: 4 }}>Today</div>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 4px', display: 'block' }}>
+                    <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                    <circle cx="10" cy="10" r="3" />
+                    <path d="M20 15h-1.17A4 4 0 108 16.93V17h12a3 3 0 000-6z" />
+                  </svg>
+                  <div style={{ fontSize: 12, color: '#ffffff', marginBottom: 4 }}>Partly Cloudy</div>
+                  <div style={{ fontSize: 13, color: '#ffffff', fontWeight: 600 }}>79F</div>
+                  <div style={{ fontSize: 12, color: '#9ca3af' }}>61F</div>
+                </div>
+                {/* Tomorrow - Rain */}
+                <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 6, padding: '8px 12px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 11, color: '#9ca3af', textTransform: 'uppercase', marginBottom: 4 }}>Tomorrow</div>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 4px', display: 'block' }}>
+                    <line x1="16" y1="13" x2="16" y2="21" />
+                    <line x1="8" y1="13" x2="8" y2="21" />
+                    <line x1="12" y1="15" x2="12" y2="23" />
+                    <path d="M20 16.58A5 5 0 0018 7h-1.26A8 8 0 104 15.25" />
+                  </svg>
+                  <div style={{ fontSize: 12, color: '#ffffff', marginBottom: 4 }}>Rain</div>
+                  <div style={{ fontSize: 13, color: '#ffffff', fontWeight: 600 }}>68F</div>
+                  <div style={{ fontSize: 12, color: '#9ca3af' }}>62F</div>
+                </div>
+                {/* Wednesday - Sunny */}
+                <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 6, padding: '8px 12px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 11, color: '#9ca3af', textTransform: 'uppercase', marginBottom: 4 }}>Wednesday</div>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 4px', display: 'block' }}>
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                  </svg>
+                  <div style={{ fontSize: 12, color: '#ffffff', marginBottom: 4 }}>Sunny</div>
+                  <div style={{ fontSize: 13, color: '#ffffff', fontWeight: 600 }}>76F</div>
+                  <div style={{ fontSize: 12, color: '#9ca3af' }}>63F</div>
+                </div>
               </div>
 
               {/* Divider */}
