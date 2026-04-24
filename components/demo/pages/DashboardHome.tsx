@@ -922,8 +922,24 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             Bookings, Today
           </div>
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: 14 }}>
-            No bookings yet
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0 }}>
+            {[
+              { name: 'James Perkins',   service: 'AC Tune-Up',        time: 'Today 10:00 AM'    },
+              { name: 'Michelle Carter', service: 'Filter Replacement', time: 'Today 2:30 PM'     },
+              { name: 'Ray Dominguez',   service: 'System Inspection',  time: 'Tomorrow 9:00 AM'  },
+            ].map((b, i, arr) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 0',
+                borderBottom: i < arr.length - 1 ? '1px solid #F3F4F6' : 'none',
+              }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{b.name}</div>
+                  <div style={{ fontSize: 12, color: '#6b7280' }}>{b.service}</div>
+                </div>
+                <div style={{ fontSize: 12, color: '#6b7280', flexShrink: 0 }}>{b.time}</div>
+              </div>
+            ))}
           </div>
           <button
             onClick={() => onNavigate?.('bookings')}
@@ -953,8 +969,41 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             Reviews
           </div>
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: 14, marginBottom: 16 }}>
-            No reviews yet
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <div style={{ display: 'flex', gap: 2 }}>
+                {[1,2,3,4,5].map((s) => (
+                  <svg key={s} width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B" stroke="none">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                ))}
+              </div>
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>4.9</span>
+              <span style={{ fontSize: 12, color: '#6b7280' }}>47 reviews</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginTop: 10 }}>
+              {[
+                { author: 'James P.',   text: 'They came out same day during the cold snap. Unbelievable service.',  stars: 5 },
+                { author: 'Michelle C.', text: 'Had my AC running in under an hour. Will definitely call again.',     stars: 5 },
+              ].map((r, i, arr) => (
+                <div key={i} style={{
+                  padding: '8px 0',
+                  borderBottom: i < arr.length - 1 ? '1px solid #F3F4F6' : 'none',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                    <div style={{ display: 'flex', gap: 1 }}>
+                      {[1,2,3,4,5].map((s) => (
+                        <svg key={s} width="10" height="10" viewBox="0 0 24 24" fill="#F59E0B" stroke="none">
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                      ))}
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: '#374151' }}>{r.author}</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>{r.text}</div>
+                </div>
+              ))}
+            </div>
           </div>
           <button
             onClick={() => onNavigate?.('review')}
@@ -984,8 +1033,8 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             SEO
           </div>
-          <div style={{ fontSize: 14, color: '#0a0a0a', marginBottom: 6 }}>0 local keywords ranking</div>
-          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>0 impressions this month</div>
+          <div style={{ fontSize: 14, color: '#0a0a0a', marginBottom: 6 }}>12 local keywords ranking</div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>1,847 impressions this month</div>
           <div style={{ flex: 1 }} />
           <button
             onClick={() => onNavigate?.('seo')}
@@ -1015,8 +1064,9 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             SMS
           </div>
-          <div style={{ fontSize: 14, color: '#0a0a0a', marginBottom: 6 }}>0 contacts</div>
-          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>No messages sent yet</div>
+          <div style={{ fontSize: 14, color: '#0a0a0a', marginBottom: 6 }}>1,247 contacts</div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>Cold snap outreach sent to 1,247 contacts at 11:47 PM</div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>94 replies received overnight</div>
           <div style={{ flex: 1 }} />
           <button
             onClick={() => onNavigate?.('sms')}
