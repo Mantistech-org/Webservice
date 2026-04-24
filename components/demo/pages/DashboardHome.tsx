@@ -619,9 +619,11 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
                   <div
                     style={{
                       position: 'absolute',
-                      right: -340,
-                      top: 0,
+                      bottom: -120,
+                      left: 0,
+                      right: 0,
                       width: 320,
+                      margin: '0 auto',
                       backgroundColor: '#0a0a0a',
                       border: '1px solid rgba(0,194,124,0.3)',
                       borderRadius: 8,
@@ -634,13 +636,14 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
                   >
                     <div style={{
                       position: 'absolute',
-                      left: -8,
-                      top: 16,
+                      top: -8,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
                       width: 0,
                       height: 0,
-                      borderRight: '8px solid #0a0a0a',
-                      borderTop: '8px solid transparent',
-                      borderBottom: '8px solid transparent',
+                      borderBottom: '8px solid #0a0a0a',
+                      borderLeft: '8px solid transparent',
+                      borderRight: '8px solid transparent',
                     }} />
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                       <span style={{

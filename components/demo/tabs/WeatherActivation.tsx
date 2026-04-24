@@ -1,14 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 
 interface Props {
   sessionId: string
   businessName?: string
   darkMode?: boolean
 }
-
-const SERVICE_AREA = 'Little Rock, AR'
 
 const ITEMS = [
   { label: 'Automated Ads',          description: 'Google Search, Facebook, Instagram',  activatedStatus: 'Active'                 },
@@ -40,26 +38,17 @@ function shouldActivate(highF: number, lowF: number): boolean {
   return lowF <= avgs.low - 15 || highF >= avgs.high + 10
 }
 
-// ── Weather API types ─────────────────────────────────────────────────────────
+// ── Static demo forecast (7 days of cold snap conditions) ─────────────────────
 
-interface WeatherForecastDay {
-  date: string
-  dayLabel: string
-  highF: number
-  lowF: number
-  condition: string
-  precipChance: number
-}
-
-interface WeatherData {
-  forecast: WeatherForecastDay[]
-  trigger: {
-    active: boolean
-    type: 'cold_snap' | 'heat_wave' | null
-    severity: 'moderate' | 'severe' | null
-    reason: string | null
-  }
-}
+const DEMO_FORECAST = [
+  { key: 'demo-0', dayLabel: 'Today',     highF: 48, lowF: 28, condition: 'Snow Showers',  precipChance: 70 },
+  { key: 'demo-1', dayLabel: 'Tomorrow',  highF: 42, lowF: 24, condition: 'Overcast',       precipChance: 40 },
+  { key: 'demo-2', dayLabel: 'Saturday',  highF: 39, lowF: 22, condition: 'Snow Showers',   precipChance: 75 },
+  { key: 'demo-3', dayLabel: 'Sunday',    highF: 44, lowF: 29, condition: 'Partly Cloudy',  precipChance: 20 },
+  { key: 'demo-4', dayLabel: 'Monday',    highF: 51, lowF: 33, condition: 'Partly Cloudy',  precipChance: 15 },
+  { key: 'demo-5', dayLabel: 'Tuesday',   highF: 56, lowF: 38, condition: 'Sunny',          precipChance: 10 },
+  { key: 'demo-6', dayLabel: 'Wednesday', highF: 58, lowF: 40, condition: 'Sunny',          precipChance: 5  },
+]
 
 // ── Label helpers ─────────────────────────────────────────────────────────────
 
@@ -67,12 +56,6 @@ function shortLabel(dayLabel: string): string {
   if (dayLabel === 'Today') return 'TODAY'
   if (dayLabel === 'Tomorrow') return 'TMR'
   return dayLabel.slice(0, 3).toUpperCase()
-}
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return ''
-  const d = new Date(dateStr + 'T12:00:00')
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 // ── Icon components ────────────────────────────────────────────────────────────
@@ -360,348 +343,165 @@ function WebsiteBannerPanel({ onConfirm }: { onConfirm: () => void }) {
   )
 }
 
-// Suppress unused-variable warnings for panel components reserved for future use
-void AutomatedAdsPanel
-void CustomerOutreachPanel
-void GBPPanel
-void MissedCallPanel
-void WebsiteBannerPanel
-void ChevronIcon
-
 // ── Main component ─────────────────────────────────────────────────────────────
 
-const WEATHER_LOCATION = SERVICE_AREA
+export default function WeatherActivation({ sessionId: _sessionId, businessName = 'Your HVAC Business' }: Props) {
+  const [expandedItem, setExpandedItem] = useState<number | null>(null)
+  const [adDuration, setAdDuration] = useState(3)
+  const [activatedItems, setActivatedItems] = useState<Set<number>>(new Set())
 
-export default function WeatherActivation({ businessName: _businessName }: Props) {
-  const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
-  const [weatherLoading, setWeatherLoading] = useState(true)
-  const [tooltipVisible, setTooltipVisible] = useState(false)
-  const [tooltipOpacity, setTooltipOpacity] = useState(0)
-  const tooltipScheduled = useRef(false)
-
-  useEffect(() => {
-    fetch(`/api/weather?location=${encodeURIComponent(WEATHER_LOCATION)}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: WeatherData | null) => {
-        setWeatherData(data)
-        setWeatherLoading(false)
-      })
-      .catch(() => setWeatherLoading(false))
-  }, [])
-
-  // Show tooltip on first visit once weather has loaded
-  useEffect(() => {
-    if (weatherLoading) return
-    if (tooltipScheduled.current) return
-    if (typeof window === 'undefined') return
-    if (window.location.pathname.includes('admin')) return
-    if (sessionStorage.getItem('demo-weather-tooltip-dismissed')) return
-    tooltipScheduled.current = true
-    const timerId = setTimeout(() => {
-      setTooltipVisible(true)
-      requestAnimationFrame(() => setTooltipOpacity(1))
-    }, 500)
-    return () => clearTimeout(timerId)
-  }, [weatherLoading])
-
-  const dismissWeatherTooltip = () => {
-    sessionStorage.setItem('demo-weather-tooltip-dismissed', '1')
-    setTooltipOpacity(0)
-    setTimeout(() => setTooltipVisible(false), 300)
+  const confirmItem = (i: number) => {
+    setActivatedItems((prev) => { const s = new Set(prev); s.add(i); return s })
+    setExpandedItem(null)
   }
-
-  const weatherTooltip = tooltipVisible ? (
-    <div
-      style={{
-        position: 'absolute',
-        right: -260,
-        top: 0,
-        width: 240,
-        backgroundColor: '#ffffff',
-        border: '1px solid rgba(0,194,124,0.3)',
-        borderRadius: 8,
-        padding: '12px 16px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
-        zIndex: 50,
-        opacity: tooltipOpacity,
-        transition: 'opacity 0.3s ease',
-      }}
-    >
-      <div style={{
-        position: 'absolute',
-        left: -8,
-        top: 16,
-        width: 0,
-        height: 0,
-        borderRight: '8px solid rgba(0,194,124,0.3)',
-        borderTop: '8px solid transparent',
-        borderBottom: '8px solid transparent',
-      }} />
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-        <span style={{
-          display: 'inline-block',
-          width: 8,
-          height: 8,
-          borderRadius: '50%',
-          backgroundColor: '#00C27C',
-          flexShrink: 0,
-          marginTop: 4,
-          animation: 'tooltipPulse 1.5s ease-in-out infinite',
-        }} />
-        <p style={{ fontSize: 13, color: '#1a1a1a', lineHeight: 1.5, margin: 0 }}>
-          Expand each tool to preview and adjust before deploying. Activate when ready.
-        </p>
-      </div>
-      <div style={{ textAlign: 'right', marginTop: 8 }}>
-        <button
-          onClick={dismissWeatherTooltip}
-          style={{
-            fontSize: 11,
-            color: '#6b7280',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 0,
-          }}
-        >
-          Got it
-        </button>
-      </div>
-    </div>
-  ) : null
-
-  const trigger = weatherData?.trigger
-  const forecast = weatherData?.forecast ?? []
-  const isEventActive = trigger?.active === true
-
-  const eventTitle = trigger?.type === 'heat_wave' ? 'Heat Wave Detected' : 'Cold Snap Detected'
-  const eventDotColor = trigger?.severity === 'severe' ? '#ef4444' : '#f59e0b'
-  const eventLabelColor = trigger?.severity === 'severe' ? '#ef4444' : '#f59e0b'
-  const severityLabel = trigger?.severity === 'severe' ? 'Severe' : 'Moderate'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <style>{`
-        @keyframes tooltipPulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50%       { opacity: 0.5; transform: scale(0.8); }
-        }
-      `}</style>
 
       {/* ── Section 1: 7-day forecast row ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
-        {weatherLoading ? (
-          // Loading skeleton — 7 placeholder cards
-          Array.from({ length: 7 }).map((_, i) => (
+        {DEMO_FORECAST.map((day) => {
+          const activate = shouldActivate(day.highF, day.lowF)
+          const iconType = conditionToIconType(day.condition)
+          return (
             <div
-              key={i}
+              key={day.key}
               style={{
-                backgroundColor: '#ffffff',
+                backgroundColor: activate ? 'rgba(0,194,124,0.04)' : '#ffffff',
                 borderRadius: 12,
-                border: '1px solid rgba(0,0,0,0.08)',
+                border: activate ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(0,0,0,0.08)',
+                borderLeft: activate ? '3px solid #00C27C' : '1px solid rgba(0,0,0,0.08)',
                 padding: 12,
-                minHeight: 130,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                textAlign: 'center',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
               }}
             >
-              <div style={{ width: 32, height: 8, backgroundColor: '#f3f4f6', borderRadius: 4, marginBottom: 6 }} />
-              <div style={{ width: 24, height: 8, backgroundColor: '#f3f4f6', borderRadius: 4 }} />
+              <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#374151', marginBottom: 6, fontWeight: 600 }}>
+                {shortLabel(day.dayLabel)}
+              </div>
+              <div style={{ marginBottom: 6 }}>
+                <WeatherIcon type={iconType} size={20} />
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
+                {day.highF}F / {day.lowF}F
+              </div>
+              <div style={{ fontSize: 10, color: '#4b5563', marginBottom: 6 }}>
+                {day.condition}
+              </div>
+              <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: 6, width: '100%', textAlign: 'left' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                  <span style={{ fontSize: 11, color: '#4b5563' }}>Low</span>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: '#111827' }}>{day.lowF}F</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 11, color: '#4b5563' }}>Precip</span>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: '#111827' }}>{day.precipChance}%</span>
+                </div>
+              </div>
+              {activate && (
+                <div style={{ fontSize: 10, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 999, padding: '2px 6px', whiteSpace: 'nowrap', marginTop: 6 }}>
+                  Activation Recommended
+                </div>
+              )}
             </div>
-          ))
-        ) : forecast.length > 0 ? (
-          forecast.slice(0, 7).map((day) => {
-            const activate = shouldActivate(day.highF, day.lowF)
-            const iconType = conditionToIconType(day.condition)
-            const isColdActivate = activate && day.lowF < day.highF - 10
+          )
+        })}
+      </div>
+
+      {/* ── Section 2: Active weather event card ── */}
+      <div style={{ backgroundColor: '#1a1a1a', borderRadius: 12, padding: 24 }}>
+
+        {/* Label */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#00C27C', flexShrink: 0 }} />
+          <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00C27C', fontWeight: 600 }}>
+            Active Weather Event
+          </span>
+        </div>
+
+        {/* Description */}
+        <div style={{ fontSize: 14, color: '#9ca3af', marginBottom: 16, lineHeight: 1.5 }}>
+          Cold snap detected. 28F forecast tonight in your service area.
+        </div>
+
+        {/* Stat pills */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+          {['28F Tonight', '3 Day Event', '87% Humidity'].map((pill) => (
+            <span key={pill} style={{
+              fontSize: 12, fontWeight: 600, color: '#ffffff',
+              backgroundColor: 'rgba(255,255,255,0.08)',
+              borderRadius: 6, padding: '5px 12px',
+            }}>
+              {pill}
+            </span>
+          ))}
+        </div>
+
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginBottom: 8 }} />
+
+        {/* Tool accordion rows */}
+        <div style={{ marginBottom: 24 }}>
+          {ITEMS.map((item, i) => {
+            const isOpen = expandedItem === i
+            const isActivated = activatedItems.has(i)
             return (
-              <div
-                key={day.date}
-                style={{
-                  backgroundColor: activate ? 'rgba(0,194,124,0.04)' : '#ffffff',
-                  borderRadius: 12,
-                  border: '1px solid rgba(0,0,0,0.08)',
-                  borderLeft: activate ? '3px solid #00C27C' : '1px solid rgba(0,0,0,0.08)',
-                  padding: 12,
-                  textAlign: 'center',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center',
-                }}
-              >
-                <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#374151', marginBottom: 1, fontWeight: 600 }}>
-                  {shortLabel(day.dayLabel)}
-                </div>
-                <div style={{ fontSize: 11, color: '#4b5563', marginBottom: 6 }}>
-                  {formatDate(day.date)}
-                </div>
-                <div style={{ marginBottom: 6 }}>
-                  <WeatherIcon type={iconType} size={20} />
-                </div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
-                  {day.highF}F / {day.lowF}F
-                </div>
-                <div style={{ fontSize: 10, color: '#4b5563', marginBottom: 6 }}>
-                  {day.condition}
-                </div>
-                <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: 6, width: '100%', textAlign: 'left' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                    <span style={{ fontSize: 11, color: '#4b5563' }}>{isColdActivate ? "Tonight's Low" : 'High'}</span>
-                    <span style={{ fontSize: 12, fontWeight: 500, color: '#111827' }}>
-                      {isColdActivate ? `${day.lowF}F` : `${day.highF}F`}
-                    </span>
+              <div key={i}>
+                <div
+                  onClick={() => setExpandedItem(isOpen ? null : i)}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    paddingTop: 14, paddingBottom: 14, cursor: 'pointer',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{
+                      width: 20, height: 20, borderRadius: '50%',
+                      backgroundColor: isActivated ? '#00C27C' : 'rgba(0,194,124,0.15)',
+                      border: '1.5px solid #00C27C',
+                      flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      {isActivated && <CheckmarkSvg size={8} color="white" />}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 500, color: '#ffffff' }}>{item.label}</div>
+                      <div style={{ fontSize: 12, color: '#9ca3af' }}>{item.description}</div>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 11, color: '#4b5563' }}>Precip</span>
-                    <span style={{ fontSize: 12, fontWeight: 500, color: '#111827' }}>
-                      {day.precipChance}%
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 12, color: '#00C27C' }}>
+                      {isActivated ? item.activatedStatus : 'Ready'}
                     </span>
+                    <ChevronIcon open={isOpen} />
                   </div>
                 </div>
-                {activate && (
-                  <div style={{ fontSize: 10, color: '#00C27C', fontWeight: 600, backgroundColor: 'rgba(0,194,124,0.12)', borderRadius: 999, padding: '2px 6px', whiteSpace: 'nowrap', marginTop: 6 }}>
-                    Activation Recommended
+                {isOpen && (
+                  <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 16, marginBottom: 4 }}>
+                    {i === 0 && <AutomatedAdsPanel adDuration={adDuration} setAdDuration={setAdDuration} onConfirm={() => confirmItem(i)} />}
+                    {i === 1 && <CustomerOutreachPanel businessName={businessName} onConfirm={() => confirmItem(i)} />}
+                    {i === 2 && <GBPPanel onConfirm={() => confirmItem(i)} />}
+                    {i === 3 && <MissedCallPanel onConfirm={() => confirmItem(i)} />}
+                    {i === 4 && <WebsiteBannerPanel onConfirm={() => confirmItem(i)} />}
                   </div>
                 )}
               </div>
             )
-          })
-        ) : (
-          // No data — show a single message spanning the grid
-          <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#9ca3af', fontSize: 14, padding: '24px 0' }}>
-            Forecast unavailable
-          </div>
-        )}
-      </div>
+          })}
+        </div>
 
-      {/* ── Section 2: Monitoring / event card ── */}
-      <div style={{ backgroundColor: '#1a1a1a', borderRadius: 12, padding: 24 }}>
+        {/* Activate All Tools button */}
+        <button
+          style={{
+            display: 'block', width: '100%', textAlign: 'center',
+            backgroundColor: '#00C27C', border: 'none', color: '#ffffff',
+            fontSize: 14, fontWeight: 700, padding: '12px 0', borderRadius: 8,
+            cursor: 'pointer',
+          }}
+        >
+          Activate All Tools
+        </button>
 
-        {weatherLoading ? (
-          // Loading state
-          <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4b5563', flexShrink: 0 }} />
-              <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#4b5563', fontWeight: 600 }}>
-                Checking
-              </span>
-            </div>
-            <div style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.5 }}>
-              Fetching live weather data for your service area...
-            </div>
-          </>
-        ) : isEventActive ? (
-          // ── Weather event active ──
-          <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: eventDotColor, flexShrink: 0 }} />
-              <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: eventLabelColor, fontWeight: 600 }}>
-                Weather Event Active
-              </span>
-            </div>
-
-            <div style={{ fontSize: 20, fontWeight: 700, color: '#ffffff', marginBottom: 8 }}>
-              {eventTitle}
-            </div>
-
-            <div style={{ marginBottom: 12 }}>
-              <span style={{
-                display: 'inline-block',
-                fontSize: 11, fontWeight: 600,
-                color: eventLabelColor,
-                border: `1px solid ${eventLabelColor}`,
-                borderRadius: 4,
-                padding: '2px 8px',
-                letterSpacing: '0.05em',
-              }}>
-                {severityLabel}
-              </span>
-            </div>
-
-            {trigger?.reason && (
-              <div style={{ fontSize: 14, color: '#9ca3af', marginBottom: 24, lineHeight: 1.5 }}>
-                {trigger.reason}
-              </div>
-            )}
-
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginBottom: 16 }} />
-
-            {/* Tool rows showing what will activate */}
-            <div style={{ marginBottom: 24 }}>
-              {ITEMS.map((item, i) => (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  paddingTop: 12, paddingBottom: 12,
-                  borderBottom: i < ITEMS.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{
-                      width: 20, height: 20, borderRadius: '50%',
-                      backgroundColor: 'rgba(0,194,124,0.15)',
-                      border: '1.5px solid #00C27C',
-                      flexShrink: 0,
-                    }} />
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 500, color: '#ffffff' }}>{item.label}</div>
-                      <div style={{ fontSize: 12, color: '#9ca3af' }}>{item.description}</div>
-                    </div>
-                  </div>
-                  <span style={{ fontSize: 12, color: '#00C27C' }}>Ready</span>
-                </div>
-              ))}
-            </div>
-
-            <div style={{ position: 'relative' }}>
-              <button
-                style={{
-                  display: 'block', width: '100%', textAlign: 'center',
-                  backgroundColor: '#00C27C', border: 'none', color: '#ffffff',
-                  fontSize: 14, fontWeight: 700, padding: '12px 0', borderRadius: 8,
-                  cursor: 'pointer',
-                }}
-              >
-                Activate All Tools
-              </button>
-              {weatherTooltip}
-            </div>
-          </>
-        ) : (
-          // ── All Clear / monitoring state ──
-          <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#6b7280', flexShrink: 0 }} />
-              <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b7280', fontWeight: 600 }}>
-                Monitoring Your Area
-              </span>
-            </div>
-
-            <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.5 }}>
-              No weather triggers detected. Your platform will activate automatically when conditions are met.
-            </div>
-
-            <div>
-              {ITEMS.map((item, i) => (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  paddingTop: 14, paddingBottom: 14,
-                  borderBottom: i < ITEMS.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                  position: i === 0 ? 'relative' : undefined,
-                }}>
-                  {i === 0 && weatherTooltip}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{
-                      width: 20, height: 20, borderRadius: '50%',
-                      border: '1.5px solid #6b7280',
-                      flexShrink: 0,
-                    }} />
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 500, color: '#ffffff' }}>{item.label}</div>
-                      <div style={{ fontSize: 12, color: '#9ca3af' }}>{item.description}</div>
-                    </div>
-                  </div>
-                  <span style={{ fontSize: 12, color: '#6b7280' }}>Standby</span>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
       </div>
 
       {/* ── Section 3: Activation History ── */}
