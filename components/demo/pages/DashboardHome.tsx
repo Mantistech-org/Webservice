@@ -18,13 +18,6 @@ const ACTIVITY_FEED: Array<{ text: string; time: string }> = []
 
 // ── Demo preset data (shown when real weather has no active event) ─────────────
 
-const DEMO_TRIGGER = {
-  active: true,
-  type: 'cold_snap' as const,
-  severity: 'moderate' as const,
-  reason: 'Temperatures dropping 18°F below seasonal average over the next 72 hours. High demand for heating services expected.',
-}
-
 const DEMO_FORECAST = [
   { date: 'demo-0', dayLabel: 'Tomorrow', highF: 48, lowF: 31, condition: 'Partly Cloudy', precipChance: 20 },
   { date: 'demo-1', dayLabel: 'Saturday', highF: 42, lowF: 27, condition: 'Overcast',      precipChance: 40 },
@@ -435,16 +428,9 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
     setTimeout(() => setTooltipVisible(false), 300)
   }
 
-  const trigger = weatherData?.trigger?.active ? weatherData.trigger : DEMO_TRIGGER
   const forecast = weatherData?.forecast?.length ? weatherData.forecast : DEMO_FORECAST
   const isEventActive = !weatherLoading
   isEventActiveRef.current = isEventActive
-
-  // Derive event display values
-  const eventTitle = trigger?.type === 'heat_wave' ? 'Heat Wave Detected' : 'Cold Snap Detected'
-  const eventDotColor = trigger?.severity === 'severe' ? '#ef4444' : '#f59e0b'
-  const eventLabelColor = trigger?.severity === 'severe' ? '#ef4444' : '#f59e0b'
-  const severityLabel = trigger?.severity === 'severe' ? 'Severe' : 'Moderate'
 
   return (
     // Negative margin bleeds to edge of parent's 24px padding, then re-applies it
@@ -458,6 +444,10 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
         @keyframes tooltipPulse {
           0%, 100% { opacity: 1; transform: scale(1); }
           50%       { opacity: 0.5; transform: scale(0.8); }
+        }
+        @keyframes activatePulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(0,194,124,0.5); }
+          50%       { box-shadow: 0 0 0 8px rgba(0,194,124,0); }
         }
       `}</style>
 
@@ -502,58 +492,63 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
               </div>
             </>
           ) : isEventActive ? (
-            /* ── Weather event active state ── */
+            /* ── Weather event active state (static demo) ── */
             <>
               {/* Label */}
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
                 <span style={{
                   display: 'inline-block', width: 7, height: 7,
-                  borderRadius: '50%', backgroundColor: eventDotColor,
+                  borderRadius: '50%', backgroundColor: '#f59e0b',
                   flexShrink: 0, marginRight: 7,
                 }} />
-                <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: eventLabelColor, fontWeight: 600 }}>
+                <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#f59e0b', fontWeight: 600 }}>
                   Weather Event Active
                 </span>
               </div>
 
               {/* Headline */}
-              <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 22, marginBottom: 8 }}>
-                {eventTitle}
+              <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 22, marginBottom: 12 }}>
+                Cold Snap Detected
               </div>
 
-              {/* Severity badge */}
-              <div style={{ marginBottom: 12 }}>
+              {/* Pills */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
                 <span style={{
-                  display: 'inline-block',
-                  fontSize: 11, fontWeight: 600,
-                  color: eventLabelColor,
-                  border: `1px solid ${eventLabelColor}`,
-                  borderRadius: 4,
-                  padding: '2px 8px',
-                  letterSpacing: '0.05em',
+                  fontSize: 12, fontWeight: 600, color: '#ffffff',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  borderRadius: 4, padding: '3px 10px',
                 }}>
-                  {severityLabel}
+                  28°F Tonight
+                </span>
+                <span style={{
+                  fontSize: 12, fontWeight: 600, color: '#ffffff',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  borderRadius: 4, padding: '3px 10px',
+                }}>
+                  Forecast: 3 days
                 </span>
               </div>
 
-              {/* Reason */}
-              {trigger?.reason && (
-                <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 20, lineHeight: 1.5 }}>
-                  {trigger.reason}
-                </div>
-              )}
-
               {/* Divider */}
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', marginBottom: 20 }} />
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', marginBottom: 16 }} />
 
-              {/* Forecast rows (real data) */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
-                {forecast.slice(0, 3).map((day) => (
-                  <div key={day.date} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    {conditionIcon(day.condition)}
-                    <span style={{ fontSize: 13, color: '#ffffff', flex: 1 }}>{day.dayLabel}</span>
-                    <span style={{ fontSize: 13, color: '#9ca3af' }}>
-                      {day.highF}F / {day.lowF}F
+              {/* Tool rows */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
+                {[
+                  'Automated Ads',
+                  'Customer Outreach',
+                  'Google Business Profile',
+                  'Missed Call Auto-Reply',
+                  'Website Banner',
+                ].map((tool) => (
+                  <div key={tool} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 13, color: '#d1d5db' }}>{tool}</span>
+                    <span style={{
+                      fontSize: 11, fontWeight: 600, color: '#00C27C',
+                      backgroundColor: 'rgba(0,194,124,0.12)',
+                      borderRadius: 4, padding: '2px 8px',
+                    }}>
+                      Ready
                     </span>
                   </div>
                 ))}
@@ -563,13 +558,12 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
               <div style={{ position: 'relative', marginTop: 20 }}>
                 <button
                   onClick={() => onNavigateToWeather?.()}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = `${eventDotColor}22` }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
                   style={{
                     display: 'block', textAlign: 'center', width: '100%', boxSizing: 'border-box',
-                    backgroundColor: 'transparent', border: `1px solid ${eventDotColor}`, color: eventLabelColor,
-                    fontSize: 13, fontWeight: 600, padding: '10px 0', borderRadius: 6,
-                    cursor: 'pointer', transition: 'background-color 0.15s ease',
+                    backgroundColor: '#00C27C', border: 'none', color: '#ffffff',
+                    fontSize: 13, fontWeight: 700, padding: '11px 0', borderRadius: 6,
+                    cursor: 'pointer',
+                    animation: 'activatePulse 2s ease-in-out infinite',
                   }}
                 >
                   Activate Now
@@ -578,10 +572,10 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
                   <div
                     style={{
                       position: 'absolute',
-                      right: -260,
+                      right: -340,
                       top: 0,
-                      width: 240,
-                      backgroundColor: '#ffffff',
+                      width: 320,
+                      backgroundColor: '#111827',
                       border: '1px solid rgba(0,194,124,0.3)',
                       borderRadius: 8,
                       padding: '12px 16px',
@@ -597,7 +591,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
                       top: 16,
                       width: 0,
                       height: 0,
-                      borderRight: '8px solid rgba(0,194,124,0.3)',
+                      borderRight: '8px solid #111827',
                       borderTop: '8px solid transparent',
                       borderBottom: '8px solid transparent',
                     }} />
@@ -612,7 +606,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
                         marginTop: 4,
                         animation: 'tooltipPulse 1.5s ease-in-out infinite',
                       }} />
-                      <p style={{ fontSize: 13, color: '#1a1a1a', lineHeight: 1.5, margin: 0 }}>
+                      <p style={{ fontSize: 13, color: '#ffffff', lineHeight: 1.5, margin: 0 }}>
                         Cold snap detected in your area. Click here to get ahead of jobs before your competitors do.
                       </p>
                     </div>
@@ -621,7 +615,8 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
                         onClick={dismissDashTooltip}
                         style={{
                           fontSize: 11,
-                          color: '#6b7280',
+                          color: '#ffffff',
+                          fontWeight: 600,
                           background: 'none',
                           border: 'none',
                           cursor: 'pointer',
