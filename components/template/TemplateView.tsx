@@ -15,6 +15,7 @@ import SMSTextMarketing from '@/components/demo/tabs/SMSTextMarketing'
 import WeatherActivation from '@/components/template/tabs/WeatherActivation'
 import EmailMarketing from '@/components/demo/tabs/EmailMarketing'
 import CRM from '@/components/template/tabs/CRM'
+import Integrations from '@/components/template/tabs/Integrations'
 
 // ── Shared style constants ────────────────────────────────────────────────────
 
@@ -398,6 +399,7 @@ export default function TemplateView({ hideBanner, skipGate }: { hideBanner?: bo
       case 'missed-call': return <MissedCallPage businessName={businessName} />
       case 'crm':         return <CRM sessionId={sessionId} businessName={businessName} />
       case 'performance': return <PerformancePage />
+      case 'integrations': return <Integrations />
       case 'settings':
       case 'billing':     return <BillingPage />
       default:            return <DashboardHome businessName={businessName} onNavigateToWeather={() => setActivePage('weather')} onNavigate={setActivePage} isActive={activePage === 'dashboard'} />
