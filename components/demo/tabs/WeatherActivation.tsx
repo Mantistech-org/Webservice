@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface Props {
   sessionId: string
@@ -349,6 +349,28 @@ export default function WeatherActivation({ sessionId: _sessionId, businessName 
   const [expandedItem, setExpandedItem] = useState<number | null>(null)
   const [adDuration, setAdDuration] = useState(3)
   const [activatedItems, setActivatedItems] = useState<Set<number>>(new Set())
+  const [tooltipVisible, setTooltipVisible] = useState(false)
+  const [tooltipOpacity, setTooltipOpacity] = useState(0)
+  const tooltipScheduled = useRef(false)
+
+  useEffect(() => {
+    if (tooltipScheduled.current) return
+    if (typeof window === 'undefined') return
+    if (window.location.pathname.includes('admin')) return
+    if (sessionStorage.getItem('demo-weather-tooltip-dismissed')) return
+    tooltipScheduled.current = true
+    const timerId = setTimeout(() => {
+      setTooltipVisible(true)
+      requestAnimationFrame(() => setTooltipOpacity(1))
+    }, 500)
+    return () => clearTimeout(timerId)
+  }, [])
+
+  const dismissWeatherTooltip = () => {
+    sessionStorage.setItem('demo-weather-tooltip-dismissed', '1')
+    setTooltipOpacity(0)
+    setTimeout(() => setTooltipVisible(false), 300)
+  }
 
   const confirmItem = (i: number) => {
     setActivatedItems((prev) => { const s = new Set(prev); s.add(i); return s })
@@ -490,17 +512,79 @@ export default function WeatherActivation({ sessionId: _sessionId, businessName 
           })}
         </div>
 
-        {/* Activate All Tools button */}
-        <button
-          style={{
-            display: 'block', width: '100%', textAlign: 'center',
-            backgroundColor: '#00C27C', border: 'none', color: '#ffffff',
-            fontSize: 14, fontWeight: 700, padding: '12px 0', borderRadius: 8,
-            cursor: 'pointer',
-          }}
-        >
-          Activate All Tools
-        </button>
+        {/* Activate All Tools button + tooltip */}
+        <div style={{ position: 'relative' }}>
+          <button
+            style={{
+              display: 'block', width: '100%', textAlign: 'center',
+              backgroundColor: '#00C27C', border: 'none', color: '#ffffff',
+              fontSize: 14, fontWeight: 700, padding: '12px 0', borderRadius: 8,
+              cursor: 'pointer',
+            }}
+          >
+            Activate All Tools
+          </button>
+          {tooltipVisible && (
+            <div
+              style={{
+                position: 'absolute',
+                bottom: -130,
+                left: 0,
+                width: 320,
+                backgroundColor: '#0a0a0a',
+                border: '1px solid rgba(0,194,124,0.3)',
+                borderRadius: 8,
+                padding: '12px 16px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                zIndex: 50,
+                opacity: tooltipOpacity,
+                transition: 'opacity 0.3s ease',
+              }}
+            >
+              <div style={{
+                position: 'absolute',
+                top: -8,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: 0,
+                height: 0,
+                borderBottom: '8px solid #0a0a0a',
+                borderLeft: '8px solid transparent',
+                borderRight: '8px solid transparent',
+              }} />
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <span style={{
+                  display: 'inline-block',
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  backgroundColor: '#00C27C',
+                  flexShrink: 0,
+                  marginTop: 4,
+                }} />
+                <p style={{ fontSize: 13, color: '#ffffff', lineHeight: 1.5, margin: 0 }}>
+                  Expand each tool to preview and adjust before deploying. Activate when ready.
+                </p>
+              </div>
+              <div style={{ textAlign: 'right', marginTop: 8 }}>
+                <button
+                  onClick={dismissWeatherTooltip}
+                  style={{
+                    fontSize: 11,
+                    color: '#ffffff',
+                    fontWeight: 600,
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                  }}
+                >
+                  Got it
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
       </div>
 

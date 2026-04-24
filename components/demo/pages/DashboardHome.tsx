@@ -388,7 +388,6 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
   const [weatherLoading, setWeatherLoading] = useState(true)
   const [tooltipVisible, setTooltipVisible] = useState(false)
   const [tooltipOpacity, setTooltipOpacity] = useState(0)
-  const isEventActiveRef = useRef(false)
 
   useEffect(() => {
     fetch(`/api/weather?location=${encodeURIComponent(WEATHER_LOCATION)}`)
@@ -406,7 +405,6 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
     if (window.location.pathname.includes('admin')) return
     if (sessionStorage.getItem('demo-tooltip-dismissed')) return
     const timerId = setTimeout(() => {
-      if (!isEventActiveRef.current) return
       setTooltipVisible(true)
       requestAnimationFrame(() => setTooltipOpacity(1))
     }, 2000)
@@ -430,7 +428,6 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
 
   const forecast = weatherData?.forecast?.length ? weatherData.forecast : DEMO_FORECAST
   const isEventActive = !weatherLoading
-  isEventActiveRef.current = isEventActive
 
   return (
     // Negative margin bleeds to edge of parent's 24px padding, then re-applies it
@@ -619,16 +616,14 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
                   <div
                     style={{
                       position: 'absolute',
-                      bottom: -120,
+                      bottom: -130,
                       left: 0,
-                      right: 0,
                       width: 320,
-                      margin: '0 auto',
                       backgroundColor: '#0a0a0a',
                       border: '1px solid rgba(0,194,124,0.3)',
                       borderRadius: 8,
                       padding: '12px 16px',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
                       zIndex: 50,
                       opacity: tooltipOpacity,
                       transition: 'opacity 0.3s ease',
