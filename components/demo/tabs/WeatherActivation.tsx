@@ -462,7 +462,7 @@ export default function WeatherActivation({ sessionId: _sessionId, businessName 
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginBottom: 8 }} />
 
         {/* Tool accordion rows */}
-        <div style={{ marginBottom: 24 }}>
+        <div style={{ marginBottom: 24, position: 'relative' }}>
           {ITEMS.map((item, i) => {
             const isOpen = expandedItem === i
             const isActivated = activatedItems.has(i)
@@ -510,27 +510,13 @@ export default function WeatherActivation({ sessionId: _sessionId, businessName 
               </div>
             )
           })}
-        </div>
-
-        {/* Activate All Tools button + tooltip */}
-        <div style={{ position: 'relative' }}>
-          <button
-            style={{
-              display: 'block', width: '100%', textAlign: 'center',
-              backgroundColor: '#00C27C', border: 'none', color: '#ffffff',
-              fontSize: 14, fontWeight: 700, padding: '12px 0', borderRadius: 8,
-              cursor: 'pointer',
-            }}
-          >
-            Activate All Tools
-          </button>
           {tooltipVisible && (
             <div
               style={{
                 position: 'absolute',
-                bottom: 'calc(100% + 10px)',
-                left: 0,
-                width: 320,
+                top: 'calc(100% + 10px)',
+                right: 0,
+                width: 300,
                 backgroundColor: '#0a0a0a',
                 border: '1px solid rgba(0,194,124,0.3)',
                 borderRadius: 8,
@@ -543,12 +529,11 @@ export default function WeatherActivation({ sessionId: _sessionId, businessName 
             >
               <div style={{
                 position: 'absolute',
-                bottom: -8,
-                left: '50%',
-                transform: 'translateX(-50%)',
+                top: -8,
+                right: 40,
                 width: 0,
                 height: 0,
-                borderTop: '8px solid #0a0a0a',
+                borderBottom: '8px solid #0a0a0a',
                 borderLeft: '8px solid transparent',
                 borderRight: '8px solid transparent',
               }} />
@@ -585,6 +570,18 @@ export default function WeatherActivation({ sessionId: _sessionId, businessName 
             </div>
           )}
         </div>
+
+        {/* Activate All Tools button */}
+        <button
+          style={{
+            display: 'block', width: '100%', textAlign: 'center',
+            backgroundColor: '#00C27C', border: 'none', color: '#ffffff',
+            fontSize: 14, fontWeight: 700, padding: '12px 0', borderRadius: 8,
+            cursor: 'pointer',
+          }}
+        >
+          Activate All Tools
+        </button>
 
       </div>
 
