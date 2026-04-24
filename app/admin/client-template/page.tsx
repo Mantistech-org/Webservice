@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import DemoView from '@/components/demo/DemoPage'
+import TemplateView from '@/components/template/TemplateView'
 
 export default function ClientTemplatePage() {
   const router = useRouter()
@@ -27,5 +27,5 @@ export default function ClientTemplatePage() {
   if (authed === null) return null
   if (!authed) return null
 
-  return <DemoView hideBanner skipGate />
+  return <TemplateView hideBanner skipGate />
 }
