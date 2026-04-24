@@ -27,5 +27,5 @@ export default function ClientTemplatePage() {
   if (authed === null) return null
   if (!authed) return null
 
-  return <DemoView hideBanner />
+  return <DemoView hideBanner skipGate />
 }

@@ -331,7 +331,7 @@ export interface DemoContact {
   source: 'upload' | 'leads'
 }
 
-export default function DemoView({ hideBanner }: { hideBanner?: boolean } = {}) {
+export default function DemoView({ hideBanner, skipGate }: { hideBanner?: boolean; skipGate?: boolean } = {}) {
   const [sidebarExpanded, setSidebarExpanded] = useState(true)
   const [activePage, setActivePage]     = useState<DemoView>('dashboard')
   const [sessionId,  setSessionId]      = useState('')
@@ -340,10 +340,11 @@ export default function DemoView({ hideBanner }: { hideBanner?: boolean } = {}) 
   const [gateInput,  setGateInput]      = useState('')
   const [gateEmail,  setGateEmail]      = useState('')
   const [gateType,   setGateType]       = useState('')
-  const [gateSubmitted, setGateSubmitted] = useState(false)
+  const [gateSubmitted, setGateSubmitted] = useState(!!skipGate)
   const mountedPages = useRef<Set<DemoView>>(new Set())
 
   useEffect(() => {
+    if (skipGate) return
     const stored = sessionStorage.getItem('demo-session-id')
     if (stored) {
       setSessionId(stored)
@@ -356,7 +357,7 @@ export default function DemoView({ hideBanner }: { hideBanner?: boolean } = {}) 
     const storedType = sessionStorage.getItem('demo-business-type')
     if (storedBiz) { setBusinessName(storedBiz); setGateSubmitted(true) }
     if (storedType) setBusinessType(storedType)
-  }, [])
+  }, [skipGate])
 
   const handleGateSubmit = (e: React.FormEvent) => {
     e.preventDefault()
