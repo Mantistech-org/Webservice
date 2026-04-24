@@ -353,7 +353,8 @@ function CityMap() {
 const WEATHER_LOCATION = SERVICE_AREA
 
 export default function DashboardHome({ businessName, onNavigateToWeather, onNavigate, isActive }: DashboardProps) {
-  const [weatherLoading] = useState(false)
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
+  const [weatherLoading, setWeatherLoading] = useState(true)
   const [tooltipVisible, setTooltipVisible] = useState(false)
   const [tooltipOpacity, setTooltipOpacity] = useState(0)
   const isEventActiveRef = useRef(false)
@@ -373,8 +374,15 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
     setTimeout(() => setTooltipVisible(false), 300)
   }
 
-  const trigger = null as WeatherData['trigger'] | null
-  const forecast: WeatherForecastDay[] = []
+  useEffect(() => {
+    fetch(`/api/weather?location=${encodeURIComponent(WEATHER_LOCATION)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: WeatherData | null) => { setWeatherData(data); setWeatherLoading(false) })
+      .catch(() => setWeatherLoading(false))
+  }, [])
+
+  const trigger = weatherData?.trigger ?? null
+  const forecast = weatherData?.forecast ?? []
   const isEventActive = false
   isEventActiveRef.current = isEventActive
 
@@ -383,8 +391,6 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
   const eventDotColor = trigger?.severity === 'severe' ? '#ef4444' : '#f59e0b'
   const eventLabelColor = trigger?.severity === 'severe' ? '#ef4444' : '#f59e0b'
   const severityLabel = trigger?.severity === 'severe' ? 'Severe' : 'Moderate'
-
-  void WEATHER_LOCATION
 
   return (
     <div className="demo-dashboard" style={{ margin: -24, padding: 24, backgroundColor: '#F8F8F8', minHeight: '100%' }}>

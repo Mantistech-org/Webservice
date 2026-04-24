@@ -185,7 +185,8 @@ void SERVICE_AREA
 const WEATHER_LOCATION = SERVICE_AREA
 
 export default function WeatherActivation({ businessName: _businessName }: Props) {
-  const [weatherLoading] = useState(false)
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
+  const [weatherLoading, setWeatherLoading] = useState(true)
   const [tooltipVisible, setTooltipVisible] = useState(false)
   const [tooltipOpacity, setTooltipOpacity] = useState(0)
   const tooltipScheduled = useRef(false)
@@ -210,6 +211,13 @@ export default function WeatherActivation({ businessName: _businessName }: Props
     setTooltipOpacity(0)
     setTimeout(() => setTooltipVisible(false), 300)
   }
+
+  useEffect(() => {
+    fetch(`/api/weather?location=${encodeURIComponent(WEATHER_LOCATION)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: WeatherData | null) => { setWeatherData(data); setWeatherLoading(false) })
+      .catch(() => setWeatherLoading(false))
+  }, [])
 
   const weatherTooltip = tooltipVisible ? (
     <div
@@ -271,22 +279,8 @@ export default function WeatherActivation({ businessName: _businessName }: Props
     </div>
   ) : null
 
-  const trigger = null as WeatherData['trigger'] | null
-  const forecast: WeatherForecastDay[] = []
+  const forecast = weatherData?.forecast ?? []
   const isEventActive = false
-
-  void WEATHER_LOCATION
-  void trigger
-
-  const eventTitle = 'Cold Snap Detected'
-  const eventDotColor = '#f59e0b'
-  const eventLabelColor = '#f59e0b'
-  const severityLabel = 'Moderate'
-
-  void eventTitle
-  void eventDotColor
-  void eventLabelColor
-  void severityLabel
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -373,7 +367,7 @@ export default function WeatherActivation({ businessName: _businessName }: Props
           })
         ) : (
           <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#9ca3af', fontSize: 14, padding: '24px 0' }}>
-            Forecast unavailable
+            Checking conditions...
           </div>
         )}
       </div>
