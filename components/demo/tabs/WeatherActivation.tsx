@@ -462,12 +462,12 @@ export default function WeatherActivation({ sessionId: _sessionId, businessName 
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginBottom: 8 }} />
 
         {/* Tool accordion rows */}
-        <div style={{ marginBottom: 24, position: 'relative' }}>
+        <div style={{ marginBottom: 24 }}>
           {ITEMS.map((item, i) => {
             const isOpen = expandedItem === i
             const isActivated = activatedItems.has(i)
             return (
-              <div key={i}>
+              <div key={i} style={i === 0 ? { position: 'relative' } : undefined}>
                 <div
                   onClick={() => setExpandedItem(isOpen ? null : i)}
                   style={{
@@ -507,68 +507,68 @@ export default function WeatherActivation({ sessionId: _sessionId, businessName 
                     {i === 4 && <WebsiteBannerPanel onConfirm={() => confirmItem(i)} />}
                   </div>
                 )}
+                {i === 0 && tooltipVisible && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 8px)',
+                      right: 0,
+                      width: 300,
+                      backgroundColor: '#0a0a0a',
+                      border: '1px solid rgba(0,194,124,0.3)',
+                      borderRadius: 8,
+                      padding: '12px 16px',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                      zIndex: 50,
+                      opacity: tooltipOpacity,
+                      transition: 'opacity 0.3s ease',
+                    }}
+                  >
+                    <div style={{
+                      position: 'absolute',
+                      top: -8,
+                      right: 40,
+                      width: 0,
+                      height: 0,
+                      borderBottom: '8px solid #0a0a0a',
+                      borderLeft: '8px solid transparent',
+                      borderRight: '8px solid transparent',
+                    }} />
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <span style={{
+                        display: 'inline-block',
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        backgroundColor: '#00C27C',
+                        flexShrink: 0,
+                        marginTop: 4,
+                      }} />
+                      <p style={{ fontSize: 13, color: '#ffffff', lineHeight: 1.5, margin: 0 }}>
+                        Expand each tool to preview and adjust before deploying. Activate when ready.
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'right', marginTop: 8 }}>
+                      <button
+                        onClick={dismissWeatherTooltip}
+                        style={{
+                          fontSize: 11,
+                          color: '#ffffff',
+                          fontWeight: 600,
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: 0,
+                        }}
+                      >
+                        Got it
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )
           })}
-          {tooltipVisible && (
-            <div
-              style={{
-                position: 'absolute',
-                top: 'calc(100% + 10px)',
-                right: 0,
-                width: 300,
-                backgroundColor: '#0a0a0a',
-                border: '1px solid rgba(0,194,124,0.3)',
-                borderRadius: 8,
-                padding: '12px 16px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-                zIndex: 50,
-                opacity: tooltipOpacity,
-                transition: 'opacity 0.3s ease',
-              }}
-            >
-              <div style={{
-                position: 'absolute',
-                top: -8,
-                right: 40,
-                width: 0,
-                height: 0,
-                borderBottom: '8px solid #0a0a0a',
-                borderLeft: '8px solid transparent',
-                borderRight: '8px solid transparent',
-              }} />
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                <span style={{
-                  display: 'inline-block',
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  backgroundColor: '#00C27C',
-                  flexShrink: 0,
-                  marginTop: 4,
-                }} />
-                <p style={{ fontSize: 13, color: '#ffffff', lineHeight: 1.5, margin: 0 }}>
-                  Expand each tool to preview and adjust before deploying. Activate when ready.
-                </p>
-              </div>
-              <div style={{ textAlign: 'right', marginTop: 8 }}>
-                <button
-                  onClick={dismissWeatherTooltip}
-                  style={{
-                    fontSize: 11,
-                    color: '#ffffff',
-                    fontWeight: 600,
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: 0,
-                  }}
-                >
-                  Got it
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Activate All Tools button */}
