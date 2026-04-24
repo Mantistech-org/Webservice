@@ -16,21 +16,6 @@ const SERVICE_AREA = 'Little Rock, AR'
 
 const ACTIVITY_FEED: Array<{ text: string; time: string }> = []
 
-// ── Demo preset data (shown when real weather has no active event) ─────────────
-
-const DEMO_TRIGGER = {
-  active: true,
-  type: 'cold_snap' as const,
-  severity: 'moderate' as const,
-  reason: 'Temperatures dropping 18°F below seasonal average over the next 72 hours. High demand for heating services expected.',
-}
-
-const DEMO_FORECAST = [
-  { date: 'demo-0', dayLabel: 'Tomorrow', highF: 48, lowF: 31, condition: 'Partly Cloudy', precipChance: 20 },
-  { date: 'demo-1', dayLabel: 'Saturday', highF: 42, lowF: 27, condition: 'Overcast',      precipChance: 40 },
-  { date: 'demo-2', dayLabel: 'Sunday',   highF: 39, lowF: 24, condition: 'Snow Showers',  precipChance: 70 },
-]
-
 // ── Weather API types ─────────────────────────────────────────────────────────
 
 interface WeatherForecastDay {
@@ -435,9 +420,9 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
     setTimeout(() => setTooltipVisible(false), 300)
   }
 
-  const trigger = weatherData?.trigger?.active ? weatherData.trigger : DEMO_TRIGGER
-  const forecast = weatherData?.forecast?.length ? weatherData.forecast : DEMO_FORECAST
-  const isEventActive = !weatherLoading
+  const trigger = weatherData?.trigger
+  const forecast = weatherData?.forecast ?? []
+  const isEventActive = trigger?.active === true
   isEventActiveRef.current = isEventActive
 
   // Derive event display values
@@ -781,7 +766,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
               marginBottom: 10,
               letterSpacing: '-0.02em',
             }}>
-              $8,240
+              $0
             </div>
             <p style={{
               fontSize: '0.9rem',
@@ -789,7 +774,7 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
               lineHeight: 1.5,
               margin: 0,
             }}>
-              31 jobs booked through your platform this month
+              0 jobs booked through your platform this month
             </p>
           </div>
 
@@ -798,9 +783,9 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
             {/* Stat rows */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {[
-                { label: 'Jobs Booked',            value: '31' },
-                { label: 'Missed Calls Recovered', value: '8'  },
-                { label: 'New Reviews This Month', value: '6'  },
+                { label: 'Jobs Booked',            value: '0' },
+                { label: 'Missed Calls Recovered', value: '0' },
+                { label: 'New Reviews This Month', value: '0' },
               ].map((row, i, arr) => (
                 <div
                   key={row.label}
@@ -883,8 +868,8 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             Bookings, Today
           </div>
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1a1a1a', fontSize: 22, fontWeight: 700 }}>
-            7
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: 14 }}>
+            No bookings yet
           </div>
           <button
             onClick={() => onNavigate?.('bookings')}
@@ -914,8 +899,8 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             Reviews
           </div>
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1a1a1a', fontSize: 22, fontWeight: 700, marginBottom: 16 }}>
-            4.8 ★
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: 14, marginBottom: 16 }}>
+            No reviews yet
           </div>
           <button
             onClick={() => onNavigate?.('review')}
@@ -945,8 +930,8 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             SEO
           </div>
-          <div style={{ fontSize: 14, color: '#0a0a0a', marginBottom: 6 }}>12 local keywords ranking</div>
-          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>4,200 impressions this month</div>
+          <div style={{ fontSize: 14, color: '#0a0a0a', marginBottom: 6 }}>0 local keywords ranking</div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>0 impressions this month</div>
           <div style={{ flex: 1 }} />
           <button
             onClick={() => onNavigate?.('seo')}
@@ -976,8 +961,8 @@ export default function DashboardHome({ businessName, onNavigateToWeather, onNav
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: 16 }}>
             SMS
           </div>
-          <div style={{ fontSize: 14, color: '#0a0a0a', marginBottom: 6 }}>48 contacts</div>
-          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>3 campaigns sent this month</div>
+          <div style={{ fontSize: 14, color: '#0a0a0a', marginBottom: 6 }}>0 contacts</div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>No messages sent yet</div>
           <div style={{ flex: 1 }} />
           <button
             onClick={() => onNavigate?.('sms')}
