@@ -45,7 +45,19 @@ const PLAN: MaintenancePlan = {
   monthlyRate: 19,
 }
 
-const CUSTOMERS: Customer[] = []
+const CUSTOMERS: Customer[] = [
+  { id: 1,  name: 'James Perkins',   address: '4821 Kavanaugh Blvd, Little Rock AR',   phone: '(501) 442-8831', email: 'james.perkins@email.com', systemType: 'Central AC + Furnace', installYear: 2016, serialNumber: 'TRN-2016-44821', lastService: 'Mar 12, 2026', status: 'Due for Service', maintenancePlan: null,                                      lifetimeValue: 1240, notes: 'Filter replacement overdue' },
+  { id: 2,  name: 'Michelle Carter', address: '2204 N University Ave, Little Rock AR', phone: '(501) 881-2204', email: 'm.carter@gmail.com',        systemType: 'Heat Pump',            installYear: 2019, serialNumber: 'CAR-2019-22041', lastService: 'Jan 8, 2026',  status: 'Up to Date',     maintenancePlan: { ...PLAN, renewalDate: 'Sep 1, 2026' },  lifetimeValue: 890,  notes: '' },
+  { id: 11, name: 'Derek Collins',   address: '3301 Fair Park Blvd, Little Rock AR',   phone: '(501) 663-3301', email: 'd.collins@gmail.com',       systemType: 'Central AC + Furnace', installYear: 2014, serialNumber: 'TRN-2014-33011', lastService: 'Sep 18, 2025', status: 'Overdue',        maintenancePlan: null,                                      lifetimeValue: 1840, notes: 'Capacitor replaced last visit, compressor making noise' },
+  { id: 3,  name: 'Ray Dominguez',   address: '7713 Geyer Springs Rd, Little Rock AR', phone: '(501) 334-7713', email: 'ray.d@outlook.com',         systemType: 'Central AC + Furnace', installYear: 2013, serialNumber: 'TRN-2013-77131', lastService: 'Nov 3, 2025',  status: 'Overdue',        maintenancePlan: null,                                      lifetimeValue: 2150, notes: 'Unit is 13 years old, recommend replacement consult' },
+  { id: 4,  name: 'Donna Howell',    address: '1502 Rebsamen Park Rd, Little Rock AR', phone: '(501) 663-1502', email: 'donna.howell@yahoo.com',    systemType: 'Mini Split',           installYear: 2021, serialNumber: 'MTS-2021-15021', lastService: 'Feb 20, 2026', status: 'Up to Date',     maintenancePlan: { ...PLAN, renewalDate: 'Nov 15, 2026' }, lifetimeValue: 480,  notes: '' },
+  { id: 5,  name: 'Brian Stokes',    address: '908 W Markham St, Little Rock AR',      phone: '(501) 221-9088', email: 'bstokes@business.net',      systemType: 'Central AC + Furnace', installYear: 2017, serialNumber: 'TRN-2017-90882', lastService: 'Dec 14, 2025', status: 'Due for Service', maintenancePlan: { ...PLAN, renewalDate: 'Mar 20, 2027' }, lifetimeValue: 1580, notes: 'Requested spring tune-up' },
+  { id: 6,  name: 'Linda Park',      address: '3318 JFK Blvd, North Little Rock AR',   phone: '(501) 758-3318', email: 'linda.park@email.com',      systemType: 'Heat Pump',            installYear: 2020, serialNumber: 'CAR-2020-33182', lastService: 'Mar 1, 2026',  status: 'Up to Date',     maintenancePlan: { ...PLAN, renewalDate: 'Jan 8, 2027' },  lifetimeValue: 720,  notes: '' },
+  { id: 7,  name: 'Frank Nguyen',    address: '5501 Baseline Rd, Little Rock AR',      phone: '(501) 562-5501', email: 'fnguyen@gmail.com',         systemType: 'Central AC + Furnace', installYear: 2011, serialNumber: 'TRN-2011-55015', lastService: 'Aug 22, 2025', status: 'Overdue',        maintenancePlan: null,                                      lifetimeValue: 2380, notes: 'Unit is 15 years old, compressor showing wear' },
+  { id: 8,  name: 'Sarah Mitchell',  address: '2109 S University Ave, Little Rock AR', phone: '(501) 664-2109', email: 's.mitchell@email.com',      systemType: 'Mini Split',           installYear: 2022, serialNumber: 'MTS-2022-21092', lastService: 'Jan 30, 2026', status: 'Up to Date',     maintenancePlan: null,                                      lifetimeValue: 280,  notes: '' },
+  { id: 9,  name: 'Carlos Rivera',   address: '6620 Colonel Glenn Rd, Little Rock AR', phone: '(501) 490-6620', email: 'carlos.r@outlook.com',      systemType: 'Central AC + Furnace', installYear: 2015, serialNumber: 'TRN-2015-66206', lastService: 'Oct 11, 2025', status: 'Due for Service', maintenancePlan: null,                                      lifetimeValue: 1690, notes: 'Wants to discuss maintenance plan' },
+  { id: 10, name: 'Amanda Foster',   address: '1844 Cantrell Rd, Little Rock AR',      phone: '(501) 372-1844', email: 'afoster@yahoo.com',         systemType: 'Central AC + Furnace', installYear: 2018, serialNumber: 'CAR-2018-18441', lastService: 'Feb 5, 2026',  status: 'Up to Date',     maintenancePlan: null,                                      lifetimeValue: 840,  notes: '' },
+]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -115,10 +127,10 @@ const STATUS_STYLE: Record<CustomerStatus, React.CSSProperties> = {
 }
 
 const STATS = [
-  { label: 'Total Customers',     value: 0, color: '#111827' },
-  { label: 'On Maintenance Plan', value: 0, color: '#00C27C' },
-  { label: 'Due for Service',     value: 0, color: '#F59E0B' },
-  { label: 'Overdue',             value: 0, color: '#ef4444' },
+  { label: 'Total Customers',     value: 10, color: '#111827' },
+  { label: 'On Maintenance Plan', value: 4,  color: '#00C27C' },
+  { label: 'Due for Service',     value: 3,  color: '#F59E0B' },
+  { label: 'Overdue',             value: 2,  color: '#ef4444' },
 ]
 
 const SERVICE_TYPES = ['Annual Tune-Up', 'Filter Replacement', 'Repair Visit', 'Replacement Consult', 'Other']
