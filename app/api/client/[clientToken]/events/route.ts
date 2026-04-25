@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProjectByClientToken } from '@/lib/db'
 import { query, pgEnabled } from '@/lib/pg'
+import { sendNewBookingNotificationEmail } from '@/lib/resend'
 
 export async function GET(
   _req: NextRequest,
@@ -56,7 +57,34 @@ export async function POST(
         status, source,
       ]
     )
-    return NextResponse.json({ event: rows[0] }, { status: 201 })
+    const event = rows[0]
+
+    // Add CRM record for the customer (no-op if already exists)
+    if (customer_name || customer_email || customer_phone) {
+      await query(
+        `INSERT INTO public.client_customers (project_id, name, phone, email, source)
+         VALUES ($1, $2, $3, $4, 'booking')
+         ON CONFLICT DO NOTHING`,
+        [project.id, customer_name || null, customer_phone || null, customer_email || null]
+      ).catch((err) => console.error('[events] CRM insert failed:', err))
+    }
+
+    // Notify project owner
+    if (project.email) {
+      sendNewBookingNotificationEmail({
+        businessName: project.businessName,
+        ownerEmail: project.email,
+        customerName: customer_name || null,
+        customerEmail: customer_email || null,
+        customerPhone: customer_phone || null,
+        title: title.trim(),
+        eventDate: event_date,
+        eventTime: event_time || null,
+        notes: notes || null,
+      }).catch((err) => console.error('[events] Booking email failed:', err))
+    }
+
+    return NextResponse.json({ event }, { status: 201 })
   } catch (err) {
     console.error('[events] POST failed:', err)
     return NextResponse.json({ error: 'Failed to create event' }, { status: 500 })

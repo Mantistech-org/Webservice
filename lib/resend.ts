@@ -772,6 +772,39 @@ export async function sendDemoLeadCampaignEmail(params: {
   })
 }
 
+// ── 21. New booking created via client dashboard calendar ────────────────────
+export async function sendNewBookingNotificationEmail(params: {
+  businessName: string
+  ownerEmail: string
+  customerName?: string | null
+  customerEmail?: string | null
+  customerPhone?: string | null
+  title: string
+  eventDate: string
+  eventTime?: string | null
+  notes?: string | null
+}) {
+  const { businessName, ownerEmail, customerName, customerEmail, customerPhone, title, eventDate, eventTime, notes } = params
+  const subject = `New Booking: ${businessName}`
+  const html = emailLayout(`
+    <h1>New Booking Created</h1>
+    <p>A new booking has been added to the calendar for <strong>${businessName}</strong>.</p>
+    <div class="divider"></div>
+    <table class="data">
+      <tr><td class="key">Service</td><td class="val">${title}</td></tr>
+      <tr><td class="key">Date</td><td class="val">${eventDate}</td></tr>
+      <tr><td class="key">Time</td><td class="val">${eventTime || 'Not specified'}</td></tr>
+      <tr><td class="key">Customer</td><td class="val">${customerName || 'Not provided'}</td></tr>
+      <tr><td class="key">Email</td><td class="val">${customerEmail || 'Not provided'}</td></tr>
+      <tr><td class="key">Phone</td><td class="val">${customerPhone || 'Not provided'}</td></tr>
+    </table>
+    ${notes ? `<h2>Notes</h2><div class="note-block"><p>${notes}</p></div>` : ''}
+  `)
+
+  const targets = [ownerEmail, 'support@mantistech.org'].filter(Boolean)
+  await Promise.all(targets.map(to => send({ from: FROM, to, subject, html }).catch(err => console.error('[resend] Booking notification to', to, 'failed:', err))))
+}
+
 // ── 20. Admin password reset ─────────────────────────────────────────────────
 export async function sendAdminPasswordResetEmail(params: {
   token: string
