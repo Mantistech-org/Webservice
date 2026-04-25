@@ -1,4 +1,6 @@
 'use client'
+// DEMO ONLY — Do not import or reference template components here.
+// Template components live in components/template/ and must remain separate.
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'

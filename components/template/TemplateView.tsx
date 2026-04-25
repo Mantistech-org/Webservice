@@ -1,4 +1,7 @@
 'use client'
+// TEMPLATE ONLY — Do not import or reference demo components here except for
+// tabs that are shared read-only (Bookings, Reviews, SEO, SMS, Email, GBP, MissedCall, Settings).
+// Never modify components/demo/ files from this context.
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
