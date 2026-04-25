@@ -61,6 +61,49 @@ const DEFAULT_AUTOMATIONS: Omit<EmailAutomation, 'id'>[] = [
 ]
 
 
+// ── Demo mock data ─────────────────────────────────────────────────────────────
+
+function md(day: number, mo = 0): string {
+  const now = new Date()
+  const d = new Date(now.getFullYear(), now.getMonth() + mo, Math.min(day, new Date(now.getFullYear(), now.getMonth() + mo + 1, 0).getDate()))
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+const DEMO_EVENTS: CalEvent[] = [
+  { id: 'h1', title: 'AC Tune-Up',         event_date: md(8,  -1), event_time: '09:00', customer_name: 'James Perkins',    customer_email: 'james.perkins@email.com',   customer_phone: '(501) 442-8831', notes: '',                              status: 'confirmed', source: 'manual'          },
+  { id: 'h2', title: 'Filter Replacement',  event_date: md(15, -1), event_time: '10:30', customer_name: 'Michelle Carter',  customer_email: 'm.carter@gmail.com',        customer_phone: '(501) 881-2204', notes: '',                              status: 'confirmed', source: 'website_booking' },
+  { id: 'h3', title: 'System Inspection',   event_date: md(22, -1), event_time: '13:00', customer_name: 'Ray Dominguez',    customer_email: 'ray.dominguez@gmail.com',   customer_phone: '(501) 773-5590', notes: '',                              status: 'cancelled', source: 'manual'          },
+  { id: '1',  title: 'AC Tune-Up',          event_date: md(2),      event_time: '09:00', customer_name: 'Donna Howell',     customer_email: 'donna.howell@gmail.com',    customer_phone: '(501) 334-7821', notes: 'Annual maintenance plan',       status: 'confirmed', source: 'manual'          },
+  { id: '2',  title: 'Furnace Inspection',  event_date: md(3),      event_time: '10:30', customer_name: 'Brian Stokes',     customer_email: 'bstokes@outlook.com',       customer_phone: '(501) 558-4413', notes: '',                              status: 'confirmed', source: 'website_booking' },
+  { id: '3',  title: 'Duct Cleaning',       event_date: md(4),      event_time: '08:00', customer_name: 'Linda Park',       customer_email: 'lpark@yahoo.com',           customer_phone: '(501) 229-0054', notes: 'Full system clean requested',   status: 'confirmed', source: 'website_booking' },
+  { id: '4',  title: 'Emergency Repair',    event_date: md(4),      event_time: '14:00', customer_name: 'Frank Nguyen',     customer_email: 'fnguyen@email.com',         customer_phone: '(501) 667-3892', notes: 'Compressor issue',              status: 'confirmed', source: 'manual'          },
+  { id: '5',  title: 'New Unit Install',    event_date: md(5),      event_time: '09:00', customer_name: 'Carlos Rivera',    customer_email: 'crivera@gmail.com',         customer_phone: '(501) 445-7760', notes: 'Full system replacement',       status: 'confirmed', source: 'manual'          },
+  { id: '6',  title: 'AC Tune-Up',          event_date: md(5),      event_time: '11:00', customer_name: 'James Perkins',    customer_email: 'james.perkins@email.com',   customer_phone: '(501) 442-8831', notes: '',                              status: 'pending',   source: 'website_booking' },
+  { id: '7',  title: 'Filter Replacement',  event_date: md(5),      event_time: '14:30', customer_name: 'Donna Howell',     customer_email: 'donna.howell@gmail.com',    customer_phone: '(501) 334-7821', notes: '',                              status: 'pending',   source: 'manual'          },
+  { id: '8',  title: 'System Inspection',   event_date: md(6),      event_time: '10:00', customer_name: 'Derek Collins',    customer_email: 'd.collins@gmail.com',       customer_phone: '(501) 663-3301', notes: '',                              status: 'confirmed', source: 'manual'          },
+  { id: '9',  title: 'Furnace Inspection',  event_date: md(7),      event_time: '09:30', customer_name: 'Michelle Carter',  customer_email: 'm.carter@gmail.com',        customer_phone: '(501) 881-2204', notes: '',                              status: 'confirmed', source: 'website_booking' },
+  { id: '10', title: 'Emergency Repair',    event_date: md(9),      event_time: '08:00', customer_name: 'Ray Dominguez',    customer_email: 'ray.dominguez@gmail.com',   customer_phone: '(501) 773-5590', notes: 'No heat — urgent',             status: 'pending',   source: 'manual'          },
+  { id: '11', title: 'New Unit Install',    event_date: md(10),     event_time: '11:00', customer_name: 'Brian Stokes',     customer_email: 'bstokes@outlook.com',       customer_phone: '(501) 558-4413', notes: '',                              status: 'confirmed', source: 'manual'          },
+  { id: '12', title: 'Duct Cleaning',       event_date: md(11),     event_time: '13:00', customer_name: 'Linda Park',       customer_email: 'lpark@yahoo.com',           customer_phone: '(501) 229-0054', notes: '',                              status: 'confirmed', source: 'website_booking' },
+  { id: '13', title: 'AC Tune-Up',          event_date: md(12),     event_time: '09:00', customer_name: 'Frank Nguyen',     customer_email: 'fnguyen@email.com',         customer_phone: '(501) 667-3892', notes: '',                              status: 'cancelled', source: 'manual'          },
+  { id: '14', title: 'System Inspection',   event_date: md(13),     event_time: '10:30', customer_name: 'Carlos Rivera',    customer_email: 'crivera@gmail.com',         customer_phone: '(501) 445-7760', notes: '',                              status: 'confirmed', source: 'manual'          },
+  { id: '15', title: 'Furnace Inspection',  event_date: md(14),     event_time: '09:00', customer_name: 'Donna Howell',     customer_email: 'donna.howell@gmail.com',    customer_phone: '(501) 334-7821', notes: 'Referred by James Perkins',     status: 'pending',   source: 'website_booking' },
+  { id: '16', title: 'Filter Replacement',  event_date: md(16),     event_time: '14:00', customer_name: 'Derek Collins',    customer_email: 'd.collins@gmail.com',       customer_phone: '(501) 663-3301', notes: '',                              status: 'confirmed', source: 'manual'          },
+  { id: '17', title: 'Emergency Repair',    event_date: md(17),     event_time: '10:00', customer_name: 'Brian Stokes',     customer_email: 'bstokes@outlook.com',       customer_phone: '(501) 558-4413', notes: '',                              status: 'confirmed', source: 'manual'          },
+  { id: '18', title: 'New Unit Install',    event_date: md(18),     event_time: '08:30', customer_name: 'Linda Park',       customer_email: 'lpark@yahoo.com',           customer_phone: '(501) 229-0054', notes: 'Upgrading to heat pump',        status: 'confirmed', source: 'website_booking' },
+  { id: '19', title: 'AC Tune-Up',          event_date: md(19),     event_time: '11:30', customer_name: 'James Perkins',    customer_email: 'james.perkins@email.com',   customer_phone: '(501) 442-8831', notes: '',                              status: 'pending',   source: 'manual'          },
+  { id: '20', title: 'System Inspection',   event_date: md(20),     event_time: '13:00', customer_name: 'Frank Nguyen',     customer_email: 'fnguyen@email.com',         customer_phone: '(501) 667-3892', notes: '',                              status: 'confirmed', source: 'manual'          },
+  { id: '21', title: 'Duct Cleaning',       event_date: md(21),     event_time: '09:00', customer_name: 'Carlos Rivera',    customer_email: 'crivera@gmail.com',         customer_phone: '(501) 445-7760', notes: '',                              status: 'cancelled', source: 'website_booking' },
+  { id: '22', title: 'Furnace Inspection',  event_date: md(23),     event_time: '10:00', customer_name: 'Michelle Carter',  customer_email: 'm.carter@gmail.com',        customer_phone: '(501) 881-2204', notes: 'Checking heat exchanger',       status: 'confirmed', source: 'manual'          },
+  { id: '23', title: 'Emergency Repair',    event_date: md(24),     event_time: '14:00', customer_name: 'Ray Dominguez',    customer_email: 'ray.dominguez@gmail.com',   customer_phone: '(501) 773-5590', notes: '',                              status: 'pending',   source: 'website_booking' },
+  { id: '24', title: 'AC Tune-Up',          event_date: md(25),     event_time: '09:30', customer_name: 'Derek Collins',    customer_email: 'd.collins@gmail.com',       customer_phone: '(501) 663-3301', notes: '',                              status: 'confirmed', source: 'manual'          },
+  { id: '25', title: 'New Unit Install',    event_date: md(26),     event_time: '11:00', customer_name: 'Donna Howell',     customer_email: 'donna.howell@gmail.com',    customer_phone: '(501) 334-7821', notes: '',                              status: 'confirmed', source: 'website_booking' },
+  { id: '26', title: 'Filter Replacement',  event_date: md(27),     event_time: '13:30', customer_name: 'Brian Stokes',     customer_email: 'bstokes@outlook.com',       customer_phone: '(501) 558-4413', notes: '',                              status: 'pending',   source: 'manual'          },
+  { id: '27', title: 'System Inspection',   event_date: md(28),     event_time: '09:00', customer_name: 'Linda Park',       customer_email: 'lpark@yahoo.com',           customer_phone: '(501) 229-0054', notes: '',                              status: 'confirmed', source: 'manual'          },
+  { id: '28', title: 'Furnace Inspection',  event_date: md(29),     event_time: '10:00', customer_name: 'Frank Nguyen',     customer_email: 'fnguyen@email.com',         customer_phone: '(501) 667-3892', notes: '',                              status: 'confirmed', source: 'website_booking' },
+  { id: '29', title: 'Duct Cleaning',       event_date: md(30),     event_time: '14:30', customer_name: 'Carlos Rivera',    customer_email: 'crivera@gmail.com',         customer_phone: '(501) 445-7760', notes: 'Wants full duct inspection',    status: 'pending',   source: 'manual'          },
+]
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function toDateStr(d: Date): string {
@@ -621,7 +664,7 @@ export default function CalendarCore({ mode, clientToken, darkMode }: CalendarCo
       fetchEvents()
       fetchAutomations()
     } else {
-      setEvents([])
+      setEvents(DEMO_EVENTS)
       setAutomations(DEFAULT_AUTOMATIONS.map((a, i) => ({ ...a, id: `demo-${i}` })))
     }
   }, [mode, fetchEvents, fetchAutomations])
