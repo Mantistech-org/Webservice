@@ -341,6 +341,9 @@ export default function TemplateView({ hideBanner, skipGate }: { hideBanner?: bo
   const mountedPages = useRef<Set<DemoView>>(new Set())
 
   useEffect(() => {
+    const storedToken = sessionStorage.getItem('demo-client-token')
+    if (storedToken) setClientToken(storedToken)
+
     if (skipGate) return
     const stored = sessionStorage.getItem('demo-session-id')
     if (stored) {
@@ -350,12 +353,10 @@ export default function TemplateView({ hideBanner, skipGate }: { hideBanner?: bo
       sessionStorage.setItem('demo-session-id', id)
       setSessionId(id)
     }
-    const storedBiz   = sessionStorage.getItem('demo-business-name')
-    const storedType  = sessionStorage.getItem('demo-business-type')
-    const storedToken = sessionStorage.getItem('demo-client-token')
+    const storedBiz  = sessionStorage.getItem('demo-business-name')
+    const storedType = sessionStorage.getItem('demo-business-type')
     if (storedBiz) { setBusinessName(storedBiz); setGateSubmitted(true) }
     if (storedType) setBusinessType(storedType)
-    if (storedToken) setClientToken(storedToken)
   }, [skipGate])
 
   const handleGateSubmit = (e: React.FormEvent) => {
@@ -547,6 +548,15 @@ export default function TemplateView({ hideBanner, skipGate }: { hideBanner?: bo
           minHeight: 'calc(100vh - 56px)',
         }}
       >
+        {/* No-client warning */}
+        {!clientToken && (
+          <div style={{ padding: '10px 24px', backgroundColor: '#f9fafb', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+            <span style={{ fontSize: 13, color: '#6b7280' }}>
+              No client linked. Go to Admin and open a client project to use this template with real data.
+            </span>
+          </div>
+        )}
+
         {/* Free trial banner */}
         {!hideBanner && (
           <div style={{ backgroundColor: '#000000' }}>

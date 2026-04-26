@@ -10,8 +10,15 @@ export default function ClientTemplatePage() {
 
   useEffect(() => {
     fetch('/api/admin/projects')
-      .then((r) => {
+      .then(async (r) => {
         if (r.ok) {
+          const data = await r.json() as { projects?: { clientToken?: string }[] }
+          const firstProject = data.projects?.[0]
+          if (firstProject?.clientToken) {
+            sessionStorage.setItem('demo-client-token', firstProject.clientToken)
+          } else {
+            sessionStorage.setItem('demo-client-token', 'template-preview')
+          }
           setAuthed(true)
         } else {
           setAuthed(false)
