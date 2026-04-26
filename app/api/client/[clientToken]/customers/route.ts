@@ -2,7 +2,39 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getProjectByClientToken } from '@/lib/db'
 import { query, pgEnabled } from '@/lib/pg'
 
-const TEMPLATE_PROJECT_ID = 'template-project-id'
+// ── Template-preview fallback ─────────────────────────────────────────────────
+
+const TEMPLATE_PROJECT_ID = 'a0000000-0000-0000-0000-000000000001'
+
+const TEMPLATE_PROJECT = {
+  id:           TEMPLATE_PROJECT_ID,
+  clientToken:  'template-preview',
+  adminToken:   'template-admin',
+  businessName: 'Your Business Name',
+  ownerName:    'Template Admin',
+  email:        'template@mantistech.org',
+  plan:         'platform-plus',
+  status:       'active',
+  createdAt:    new Date().toISOString(),
+  updatedAt:    new Date().toISOString(),
+}
+
+async function resolveProjectId(clientToken: string): Promise<string | null> {
+  const project = await getProjectByClientToken(clientToken)
+  if (project) return project.id
+  if (clientToken !== 'template-preview') return null
+  if (pgEnabled) {
+    await query(
+      `INSERT INTO public.projects (id, admin_token, client_token, data, created_at, updated_at)
+       VALUES ($1, $2, $3, $4::jsonb, NOW(), NOW())
+       ON CONFLICT (id) DO NOTHING`,
+      [TEMPLATE_PROJECT_ID, 'template-admin', 'template-preview', JSON.stringify(TEMPLATE_PROJECT)]
+    )
+  }
+  return TEMPLATE_PROJECT_ID
+}
+
+// ── Schema init ───────────────────────────────────────────────────────────────
 
 let schemaReady = false
 
@@ -59,14 +91,15 @@ function calcServiceStatus(lastServiceDate: string | null | undefined): string {
   return 'Overdue'
 }
 
+// ── Handlers ──────────────────────────────────────────────────────────────────
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ clientToken: string }> }
 ) {
   const { clientToken } = await params
 
-  const project = await getProjectByClientToken(clientToken)
-  const projectId = project?.id ?? (clientToken === 'template-preview' ? TEMPLATE_PROJECT_ID : null)
+  const projectId = await resolveProjectId(clientToken)
   if (!projectId) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
@@ -128,8 +161,7 @@ export async function POST(
 ) {
   const { clientToken } = await params
 
-  const project = await getProjectByClientToken(clientToken)
-  const projectId = project?.id ?? (clientToken === 'template-preview' ? TEMPLATE_PROJECT_ID : null)
+  const projectId = await resolveProjectId(clientToken)
   if (!projectId) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }

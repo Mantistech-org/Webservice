@@ -2,7 +2,39 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getProjectByClientToken } from '@/lib/db'
 import { query, pgEnabled } from '@/lib/pg'
 
-const TEMPLATE_PROJECT_ID = 'template-project-id'
+// ── Template-preview fallback ─────────────────────────────────────────────────
+
+const TEMPLATE_PROJECT_ID = 'a0000000-0000-0000-0000-000000000001'
+
+const TEMPLATE_PROJECT = {
+  id:           TEMPLATE_PROJECT_ID,
+  clientToken:  'template-preview',
+  adminToken:   'template-admin',
+  businessName: 'Your Business Name',
+  ownerName:    'Template Admin',
+  email:        'template@mantistech.org',
+  plan:         'platform-plus',
+  status:       'active',
+  createdAt:    new Date().toISOString(),
+  updatedAt:    new Date().toISOString(),
+}
+
+async function resolveProjectId(clientToken: string): Promise<string | null> {
+  const project = await getProjectByClientToken(clientToken)
+  if (project) return project.id
+  if (clientToken !== 'template-preview') return null
+  if (pgEnabled) {
+    await query(
+      `INSERT INTO public.projects (id, admin_token, client_token, data, created_at, updated_at)
+       VALUES ($1, $2, $3, $4::jsonb, NOW(), NOW())
+       ON CONFLICT (id) DO NOTHING`,
+      [TEMPLATE_PROJECT_ID, 'template-admin', 'template-preview', JSON.stringify(TEMPLATE_PROJECT)]
+    )
+  }
+  return TEMPLATE_PROJECT_ID
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function calcServiceStatus(lastServiceDate: string | null | undefined): string {
   if (!lastServiceDate) return 'Up to Date'
@@ -12,14 +44,15 @@ function calcServiceStatus(lastServiceDate: string | null | undefined): string {
   return 'Overdue'
 }
 
+// ── Handlers ──────────────────────────────────────────────────────────────────
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ clientToken: string; customerId: string }> }
 ) {
   const { clientToken, customerId } = await params
 
-  const project = await getProjectByClientToken(clientToken)
-  const projectId = project?.id ?? (clientToken === 'template-preview' ? TEMPLATE_PROJECT_ID : null)
+  const projectId = await resolveProjectId(clientToken)
   if (!projectId) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
@@ -29,7 +62,6 @@ export async function GET(
   }
 
   try {
-    // Verify customer belongs to this project
     const customers = await query(
       `SELECT id FROM customers WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL`,
       [customerId, projectId]
@@ -56,8 +88,7 @@ export async function POST(
 ) {
   const { clientToken, customerId } = await params
 
-  const project = await getProjectByClientToken(clientToken)
-  const projectId = project?.id ?? (clientToken === 'template-preview' ? TEMPLATE_PROJECT_ID : null)
+  const projectId = await resolveProjectId(clientToken)
   if (!projectId) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
@@ -83,7 +114,6 @@ export async function POST(
   }
 
   try {
-    // Verify customer belongs to this project
     const customers = await query(
       `SELECT id FROM customers WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL`,
       [customerId, projectId]
@@ -92,7 +122,6 @@ export async function POST(
       return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
     }
 
-    // Insert history entry
     const inserted = await query(
       `INSERT INTO client_service_history (customer_id, project_id, service_date, service_type, technician, cost, notes)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -108,7 +137,6 @@ export async function POST(
       ]
     )
 
-    // Recalculate lifetime_value, last_service_date, and service_status
     const [agg] = await query<{ total: string; latest: string | null }>(
       `SELECT COALESCE(SUM(cost), 0) AS total, MAX(service_date)::text AS latest
        FROM client_service_history WHERE customer_id = $1`,
