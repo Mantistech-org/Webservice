@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getProjectByClientToken } from '@/lib/db'
 import { query, pgEnabled } from '@/lib/pg'
 
+const TEMPLATE_PROJECT_ID = 'template-project-id'
+
 function calcServiceStatus(lastServiceDate: string | null | undefined): string {
   if (!lastServiceDate) return 'Up to Date'
   const months = (Date.now() - new Date(lastServiceDate).getTime()) / (1000 * 60 * 60 * 24 * 30.44)
@@ -17,7 +19,8 @@ export async function GET(
   const { clientToken, customerId } = await params
 
   const project = await getProjectByClientToken(clientToken)
-  if (!project) {
+  const projectId = project?.id ?? (clientToken === 'template-preview' ? TEMPLATE_PROJECT_ID : null)
+  if (!projectId) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
@@ -29,7 +32,7 @@ export async function GET(
     // Verify customer belongs to this project
     const customers = await query(
       `SELECT id FROM customers WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL`,
-      [customerId, project.id]
+      [customerId, projectId]
     )
     if (!customers[0]) {
       return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
@@ -54,7 +57,8 @@ export async function POST(
   const { clientToken, customerId } = await params
 
   const project = await getProjectByClientToken(clientToken)
-  if (!project) {
+  const projectId = project?.id ?? (clientToken === 'template-preview' ? TEMPLATE_PROJECT_ID : null)
+  if (!projectId) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
@@ -82,7 +86,7 @@ export async function POST(
     // Verify customer belongs to this project
     const customers = await query(
       `SELECT id FROM customers WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL`,
-      [customerId, project.id]
+      [customerId, projectId]
     )
     if (!customers[0]) {
       return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
@@ -95,7 +99,7 @@ export async function POST(
        RETURNING *`,
       [
         customerId,
-        project.id,
+        projectId,
         service_date,
         service_type,
         technician ?? null,

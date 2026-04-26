@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getProjectByClientToken } from '@/lib/db'
 import { query, pgEnabled } from '@/lib/pg'
 
+const TEMPLATE_PROJECT_ID = 'template-project-id'
+
 let schemaReady = false
 
 async function ensureSchema() {
@@ -64,7 +66,8 @@ export async function GET(
   const { clientToken } = await params
 
   const project = await getProjectByClientToken(clientToken)
-  if (!project) {
+  const projectId = project?.id ?? (clientToken === 'template-preview' ? TEMPLATE_PROJECT_ID : null)
+  if (!projectId) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
@@ -104,7 +107,7 @@ export async function GET(
        WHERE c.project_id = $1 AND c.deleted_at IS NULL
        GROUP BY c.id
        ORDER BY c.name ASC`,
-      [project.id]
+      [projectId]
     )
 
     return NextResponse.json({
@@ -126,7 +129,8 @@ export async function POST(
   const { clientToken } = await params
 
   const project = await getProjectByClientToken(clientToken)
-  if (!project) {
+  const projectId = project?.id ?? (clientToken === 'template-preview' ? TEMPLATE_PROJECT_ID : null)
+  if (!projectId) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
@@ -175,7 +179,7 @@ export async function POST(
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
        RETURNING id`,
       [
-        project.id,
+        projectId,
         name,
         phone ?? null,
         email ?? null,
