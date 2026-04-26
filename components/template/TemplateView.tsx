@@ -331,6 +331,7 @@ export default function TemplateView({ hideBanner, skipGate }: { hideBanner?: bo
   const [sidebarExpanded, setSidebarExpanded] = useState(true)
   const [activePage, setActivePage]     = useState<DemoView>('dashboard')
   const [sessionId,  setSessionId]      = useState('')
+  const [clientToken, setClientToken]   = useState('')
   const [businessName, setBusinessName] = useState('')
   const [businessType, setBusinessType] = useState('')
   const [gateInput,  setGateInput]      = useState('')
@@ -349,10 +350,12 @@ export default function TemplateView({ hideBanner, skipGate }: { hideBanner?: bo
       sessionStorage.setItem('demo-session-id', id)
       setSessionId(id)
     }
-    const storedBiz  = sessionStorage.getItem('demo-business-name')
-    const storedType = sessionStorage.getItem('demo-business-type')
+    const storedBiz   = sessionStorage.getItem('demo-business-name')
+    const storedType  = sessionStorage.getItem('demo-business-type')
+    const storedToken = sessionStorage.getItem('demo-client-token')
     if (storedBiz) { setBusinessName(storedBiz); setGateSubmitted(true) }
     if (storedType) setBusinessType(storedType)
+    if (storedToken) setClientToken(storedToken)
   }, [skipGate])
 
   const handleGateSubmit = (e: React.FormEvent) => {
@@ -400,7 +403,7 @@ export default function TemplateView({ hideBanner, skipGate }: { hideBanner?: bo
       case 'email':       return <EmailMarketing sessionId={sessionId} contacts={[]} onAddContacts={() => {}} />
       case 'gbp':         return <GBPPage businessName={businessName} />
       case 'missed-call': return <MissedCallPage businessName={businessName} />
-      case 'crm':         return <CRM sessionId={sessionId} businessName={businessName} />
+      case 'crm':         return <CRM clientToken={clientToken} businessName={businessName} />
       case 'performance': return <PerformancePage />
       case 'integrations': return <Integrations />
       case 'settings':

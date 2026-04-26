@@ -1,86 +1,43 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 interface CRMProps {
-  sessionId: string
+  clientToken: string
   businessName: string
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type CustomerStatus = 'Up to Date' | 'Due for Service' | 'Overdue'
-
-interface MaintenancePlan {
-  active: boolean
-  name: string
-  includes: string
-  renewalDate: string
-  monthlyRate: number
-}
-
 interface Customer {
-  id: number
+  id: string
+  project_id: string
   name: string
-  address: string
-  phone: string
-  email: string
-  systemType: string
-  installYear: number
-  serialNumber: string
-  lastService: string
-  status: CustomerStatus
-  maintenancePlan: MaintenancePlan | null
-  lifetimeValue: number
-  notes: string
+  phone: string | null
+  email: string | null
+  address: string | null
+  equipment_type: string | null
+  install_year: number | null
+  serial_number: string | null
+  last_service_date: string | null
+  notes: string | null
+  source: string | null
+  service_status: string
+  maintenance_plan?: boolean
+  lifetime_value: number
+  created_at: string
+  updated_at: string
 }
 
-// ── Mock data ─────────────────────────────────────────────────────────────────
-
-const PLAN: MaintenancePlan = {
-  active: true,
-  name: 'Annual Comfort Plan',
-  includes: 'Two tune-ups per year, priority scheduling, 15% parts discount',
-  renewalDate: '',
-  monthlyRate: 19,
-}
-
-void PLAN
-
-const CUSTOMERS: Customer[] = []
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-const SORTED_CUSTOMERS = [...CUSTOMERS].sort((a, b) => {
-  const lastA = a.name.split(' ').pop()!.toLowerCase()
-  const lastB = b.name.split(' ').pop()!.toLowerCase()
-  return lastA !== lastB ? lastA.localeCompare(lastB) : a.name.localeCompare(b.name)
-})
-
-function getLastInitial(name: string): string {
-  return (name.split(' ').pop() ?? name)[0].toUpperCase()
-}
-
-function groupByLetter(list: Customer[]): Record<string, Customer[]> {
-  const groups: Record<string, Customer[]> = {}
-  for (const c of list) {
-    const letter = getLastInitial(c.name)
-    if (!groups[letter]) groups[letter] = []
-    groups[letter].push(c)
-  }
-  return groups
-}
-
-function shiftMonths(dateStr: string, monthsAgo: number): string {
-  const d = new Date(dateStr)
-  d.setMonth(d.getMonth() - monthsAgo)
-  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-}
-
-function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr)
-  d.setDate(d.getDate() + days)
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+interface HistoryEntry {
+  id: string
+  customer_id: string
+  service_date: string
+  service_type: string
+  technician: string | null
+  cost: number | string
+  notes: string | null
+  created_at: string
 }
 
 // ── Style constants ───────────────────────────────────────────────────────────
@@ -110,62 +67,266 @@ const COL_LABEL: React.CSSProperties = {
   marginBottom: 8,
 }
 
-const STATUS_STYLE: Record<CustomerStatus, React.CSSProperties> = {
+const STATUS_STYLE: Record<string, React.CSSProperties> = {
   'Up to Date':      { backgroundColor: 'rgba(0,194,124,0.1)',  color: '#00C27C', fontSize: 11, fontWeight: 600, borderRadius: 5, padding: '3px 10px', whiteSpace: 'nowrap' },
   'Due for Service': { backgroundColor: 'rgba(245,158,11,0.1)', color: '#F59E0B', fontSize: 11, fontWeight: 600, borderRadius: 5, padding: '3px 10px', whiteSpace: 'nowrap' },
   'Overdue':         { backgroundColor: 'rgba(239,68,68,0.1)',  color: '#ef4444', fontSize: 11, fontWeight: 600, borderRadius: 5, padding: '3px 10px', whiteSpace: 'nowrap' },
 }
 
-const STATS = [
-  { label: 'Total Customers',     value: 0, color: '#111827' },
-  { label: 'On Maintenance Plan', value: 0, color: '#00C27C' },
-  { label: 'Due for Service',     value: 0, color: '#F59E0B' },
-  { label: 'Overdue',             value: 0, color: '#ef4444' },
+const SERVICE_TYPES = [
+  'Annual Tune-Up',
+  'Filter Replacement',
+  'Repair Visit',
+  'Replacement Consult',
+  'Emergency Service',
+  'Other',
 ]
 
-const SERVICE_TYPES = ['Annual Tune-Up', 'Filter Replacement', 'Repair Visit', 'Replacement Consult', 'Other']
-const TIME_OPTIONS  = ['8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM']
+const INPUT_STYLE: React.CSSProperties = {
+  width: '100%',
+  padding: '9px 12px',
+  fontSize: 13,
+  color: '#111827',
+  border: '1px solid rgba(0,0,0,0.12)',
+  borderRadius: 8,
+  outline: 'none',
+  boxSizing: 'border-box',
+  fontFamily: 'inherit',
+  backgroundColor: '#ffffff',
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function getLastInitial(name: string): string {
+  return (name.split(' ').pop() ?? name)[0].toUpperCase()
+}
+
+function groupByLetter(list: Customer[]): Record<string, Customer[]> {
+  const groups: Record<string, Customer[]> = {}
+  for (const c of list) {
+    const letter = getLastInitial(c.name)
+    if (!groups[letter]) groups[letter] = []
+    groups[letter].push(c)
+  }
+  return groups
+}
+
+function fmtDate(d: string): string {
+  try {
+    return new Date(d + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  } catch {
+    return d
+  }
+}
+
+function addDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr + 'T12:00')
+  d.setDate(d.getDate() + days)
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+// ── Add Customer modal ────────────────────────────────────────────────────────
+
+function AddCustomerModal({
+  clientToken,
+  onClose,
+  onAdded,
+}: {
+  clientToken: string
+  onClose: () => void
+  onAdded: (customer: Customer) => void
+}) {
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [address, setAddress] = useState('')
+  const [equipmentType, setEquipmentType] = useState('')
+  const [installYear, setInstallYear] = useState('')
+  const [serialNumber, setSerialNumber] = useState('')
+  const [lastServiceDate, setLastServiceDate] = useState('')
+  const [notes, setNotes] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [formError, setFormError] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim() || submitting) return
+    setSubmitting(true)
+    setFormError('')
+    try {
+      const res = await fetch(`/api/client/${clientToken}/customers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          phone: phone.trim() || undefined,
+          email: email.trim() || undefined,
+          address: address.trim() || undefined,
+          equipment_type: equipmentType.trim() || undefined,
+          install_year: installYear ? parseInt(installYear, 10) : undefined,
+          serial_number: serialNumber.trim() || undefined,
+          last_service_date: lastServiceDate || undefined,
+          notes: notes.trim() || undefined,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setFormError((data as { error?: string }).error ?? 'Failed to add customer')
+        return
+      }
+      onAdded((data as { customer: Customer }).customer)
+    } catch {
+      setFormError('Failed to add customer')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const canSubmit = name.trim().length > 0 && !submitting
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div style={{ backgroundColor: '#ffffff', borderRadius: 12, padding: 24, width: '100%', maxWidth: 520, boxShadow: '0 20px 60px rgba(0,0,0,0.18)', maxHeight: '90vh', overflowY: 'auto' }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: '0 0 20px' }}>Add Customer</h2>
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+            <div>
+              <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>
+                Name <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              <input
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Full name"
+                style={INPUT_STYLE}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Phone</label>
+                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(555) 000-0000" style={INPUT_STYLE} />
+              </div>
+              <div>
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Email</label>
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@email.com" style={INPUT_STYLE} />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Address</label>
+              <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="123 Main St, City, OH" style={INPUT_STYLE} />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Equipment Type</label>
+                <input value={equipmentType} onChange={(e) => setEquipmentType(e.target.value)} placeholder="Central AC, Heat Pump..." style={INPUT_STYLE} />
+              </div>
+              <div>
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Install Year</label>
+                <input
+                  type="number"
+                  min="1970"
+                  max={new Date().getFullYear()}
+                  value={installYear}
+                  onChange={(e) => setInstallYear(e.target.value)}
+                  placeholder="2018"
+                  style={INPUT_STYLE}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Serial Number</label>
+                <input value={serialNumber} onChange={(e) => setSerialNumber(e.target.value)} placeholder="SN-XXXXXXXXX" style={INPUT_STYLE} />
+              </div>
+              <div>
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Last Service Date</label>
+                <input type="date" value={lastServiceDate} onChange={(e) => setLastServiceDate(e.target.value)} style={INPUT_STYLE} />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Notes</label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Any notes about this customer..."
+                rows={3}
+                style={{ ...INPUT_STYLE, resize: 'vertical' }}
+              />
+            </div>
+
+            {formError && <div style={{ fontSize: 13, color: '#ef4444' }}>{formError}</div>}
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 20 }}>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{ padding: '9px 18px', fontSize: 13, backgroundColor: 'transparent', color: '#6b7280', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 8, cursor: 'pointer' }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!canSubmit}
+              style={{ padding: '9px 18px', fontSize: 13, fontWeight: 600, backgroundColor: canSubmit ? '#00C27C' : '#d1d5db', color: '#ffffff', border: 'none', borderRadius: 8, cursor: canSubmit ? 'pointer' : 'default' }}
+            >
+              {submitting ? 'Adding...' : 'Add Customer'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
 
 // ── Customer card ─────────────────────────────────────────────────────────────
 
 function CustomerCard({
   customer,
-  note,
-  onNoteChange,
+  clientToken,
   businessName,
+  onNoteChange,
+  onRefresh,
 }: {
   customer: Customer
-  note: string
-  onNoteChange: (val: string) => void
+  clientToken: string
   businessName: string
+  onNoteChange: (id: string, note: string) => void
+  onRefresh: () => void
 }) {
-  const age          = 2026 - customer.installYear
-  const ageWarning   = age >= 10
-  const warrantyExp  = age > 10
-  const underWarranty = age < 5
-  const firstName    = customer.name.split(' ')[0]
+  const firstName = customer.name.split(' ')[0]
 
-  const history = [
-    { date: customer.lastService,                  type: 'Annual Tune-Up',       tech: 'Marcus R.', cost: '$89'  },
-    { date: shiftMonths(customer.lastService, 12), type: 'Filter Replacement',   tech: 'Marcus R.', cost: '$45'  },
-    { date: shiftMonths(customer.lastService, 30), type: 'Refrigerant Recharge', tech: 'James K.',  cost: '$185' },
-  ]
+  const [history, setHistory]         = useState<HistoryEntry[]>([])
+  const [histLoading, setHistLoading] = useState(true)
+  const [note, setNote]               = useState(customer.notes ?? '')
 
-  const [followUpOpen, setFollowUpOpen]   = useState(false)
-  const [followUpTab,  setFollowUpTab]    = useState<'sms' | 'email'>('sms')
-  const [smsText,      setSmsText]        = useState(
+  const [followUpOpen, setFollowUpOpen] = useState(false)
+  const [followUpTab,  setFollowUpTab]  = useState<'sms' | 'email'>('sms')
+  const [smsText,      setSmsText]      = useState(
     `Hi ${firstName}, this is ${businessName}. We noticed it's been a while since your last HVAC service. We'd love to schedule a quick check-up to keep your system running smoothly. Reply here or call us to book.`
   )
-  const [emailSubject, setEmailSubject]   = useState(`Time for your HVAC check-up, ${firstName}`)
-  const [emailBody,    setEmailBody]      = useState(
-    `Hi ${firstName},\n\nWe hope you're doing well. We're reaching out because it's been a while since your last HVAC service at ${customer.address}.\n\nRegular maintenance keeps your system running efficiently and prevents unexpected breakdowns. We'd love to schedule a check-up at your convenience.\n\nGive us a call or reply to this email to book your appointment.\n\nBest,\n${businessName}`
+  const [emailSubject, setEmailSubject] = useState(`Time for your HVAC check-up, ${firstName}`)
+  const [emailBody,    setEmailBody]    = useState(
+    `Hi ${firstName},\n\nWe hope you're doing well. We're reaching out because it's been a while since your last HVAC service${customer.address ? ` at ${customer.address}` : ''}.\n\nRegular maintenance keeps your system running efficiently and prevents unexpected breakdowns. We'd love to schedule a check-up at your convenience.\n\nGive us a call or reply to this email to book your appointment.\n\nBest,\n${businessName}`
   )
 
-  const [scheduleOpen,  setScheduleOpen]  = useState(false)
-  const [serviceType,   setServiceType]   = useState(SERVICE_TYPES[0])
-  const [preferredDate, setPreferredDate] = useState('')
-  const [preferredTime, setPreferredTime] = useState(TIME_OPTIONS[0])
-  const [schedNotes,    setSchedNotes]    = useState('')
+  const [scheduleOpen, setScheduleOpen] = useState(false)
+  const [serviceType,  setServiceType]  = useState(SERVICE_TYPES[0])
+  const [serviceDate,  setServiceDate]  = useState('')
+  const [techName,     setTechName]     = useState('')
+  const [serviceCost,  setServiceCost]  = useState('')
+  const [schedNotes,   setSchedNotes]   = useState('')
+  const [submitting,   setSubmitting]   = useState(false)
 
   const [toast, setToast] = useState('')
 
@@ -174,18 +335,68 @@ function CustomerCard({
     setTimeout(() => setToast(''), 3000)
   }
 
-  const handleSendFollowUp = () => {
-    setFollowUpOpen(false)
-    showToast(`Follow-up sent to ${customer.name}`)
+  useEffect(() => {
+    if (!clientToken) { setHistLoading(false); return }
+    fetch(`/api/client/${clientToken}/customers/${customer.id}/history`)
+      .then((r) => r.json())
+      .then((data: { history?: HistoryEntry[] }) => setHistory(data.history ?? []))
+      .catch(() => {})
+      .finally(() => setHistLoading(false))
+  }, [clientToken, customer.id])
+
+  const handleNoteBlur = async () => {
+    if (note === (customer.notes ?? '')) return
+    try {
+      await fetch(`/api/client/${clientToken}/customers/${customer.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: note }),
+      })
+      onNoteChange(customer.id, note)
+    } catch {
+      // silently ignore — note will re-sync on next render
+    }
   }
 
-  const handleBookAppointment = () => {
-    if (!preferredDate) return
-    setScheduleOpen(false)
-    showToast(`Appointment scheduled for ${customer.name} on ${new Date(preferredDate + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at ${preferredTime}`)
-    setPreferredDate('')
-    setSchedNotes('')
+  const handleScheduleSubmit = async () => {
+    if (!serviceDate || !serviceCost || submitting) return
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/client/${clientToken}/customers/${customer.id}/history`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service_date: serviceDate,
+          service_type: serviceType,
+          technician: techName || undefined,
+          cost: parseFloat(serviceCost),
+          notes: schedNotes || undefined,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json() as { entry: HistoryEntry }
+        setHistory((prev) => [data.entry, ...prev])
+        setScheduleOpen(false)
+        setServiceDate('')
+        setTechName('')
+        setServiceCost('')
+        setSchedNotes('')
+        onRefresh()
+        showToast(`Service recorded for ${customer.name}`)
+      }
+    } finally {
+      setSubmitting(false)
+    }
   }
+
+  const installYear   = customer.install_year
+  const currentYear   = new Date().getFullYear()
+  const age           = installYear ? currentYear - installYear : null
+  const ageWarning    = age !== null && age >= 10
+  const warrantyExp   = age !== null && age > 10
+  const underWarranty = age !== null && age < 5
+
+  const canBook = serviceDate.length > 0 && serviceCost.length > 0 && !submitting
 
   return (
     <>
@@ -200,6 +411,7 @@ function CustomerCard({
         </div>
       )}
 
+      {/* Follow-up modal — UI only */}
       {followUpOpen && (
         <div
           style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}
@@ -241,7 +453,7 @@ function CustomerCard({
                   value={emailSubject}
                   onChange={(e) => setEmailSubject(e.target.value)}
                   placeholder="Subject"
-                  style={{ padding: '9px 12px', fontSize: 13, color: '#111827', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 8, outline: 'none', fontFamily: 'inherit' }}
+                  style={{ padding: '9px 12px', fontSize: 13, color: '#111827', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 8, outline: 'none', fontFamily: 'inherit', width: '100%', boxSizing: 'border-box' }}
                 />
                 <textarea
                   value={emailBody}
@@ -260,7 +472,7 @@ function CustomerCard({
                 Cancel
               </button>
               <button
-                onClick={handleSendFollowUp}
+                onClick={() => { setFollowUpOpen(false); showToast(`Follow-up sent to ${customer.name}`) }}
                 style={{ padding: '9px 18px', fontSize: 13, fontWeight: 600, backgroundColor: '#00C27C', color: '#ffffff', border: 'none', borderRadius: 8, cursor: 'pointer' }}
               >
                 Send
@@ -270,6 +482,7 @@ function CustomerCard({
         </div>
       )}
 
+      {/* Schedule Service modal */}
       {scheduleOpen && (
         <div
           style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}
@@ -282,15 +495,6 @@ function CustomerCard({
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
-                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Customer</label>
-                <input
-                  value={customer.name}
-                  readOnly
-                  style={{ width: '100%', padding: '9px 12px', fontSize: 13, color: '#6b7280', backgroundColor: '#f9fafb', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 8, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }}
-                />
-              </div>
-
-              <div>
                 <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Service Type</label>
                 <select
                   value={serviceType}
@@ -301,26 +505,37 @@ function CustomerCard({
                 </select>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div>
-                  <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Preferred Date</label>
-                  <input
-                    type="date"
-                    value={preferredDate}
-                    onChange={(e) => setPreferredDate(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', fontSize: 13, color: '#111827', backgroundColor: '#ffffff', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 8, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Preferred Time</label>
-                  <select
-                    value={preferredTime}
-                    onChange={(e) => setPreferredTime(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', fontSize: 13, color: '#111827', backgroundColor: '#ffffff', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 8, outline: 'none', fontFamily: 'inherit', cursor: 'pointer' }}
-                  >
-                    {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
+              <div>
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Date</label>
+                <input
+                  type="date"
+                  value={serviceDate}
+                  onChange={(e) => setServiceDate(e.target.value)}
+                  style={{ width: '100%', padding: '9px 12px', fontSize: 13, color: '#111827', backgroundColor: '#ffffff', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 8, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Technician</label>
+                <input
+                  value={techName}
+                  onChange={(e) => setTechName(e.target.value)}
+                  placeholder="Technician name"
+                  style={{ width: '100%', padding: '9px 12px', fontSize: 13, color: '#111827', backgroundColor: '#ffffff', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 8, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Cost ($)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={serviceCost}
+                  onChange={(e) => setServiceCost(e.target.value)}
+                  placeholder="0.00"
+                  style={{ width: '100%', padding: '9px 12px', fontSize: 13, color: '#111827', backgroundColor: '#ffffff', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 8, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                />
               </div>
 
               <div>
@@ -343,94 +558,106 @@ function CustomerCard({
                 Cancel
               </button>
               <button
-                onClick={handleBookAppointment}
-                disabled={!preferredDate}
-                style={{ padding: '9px 18px', fontSize: 13, fontWeight: 600, backgroundColor: preferredDate ? '#00C27C' : '#d1d5db', color: '#ffffff', border: 'none', borderRadius: 8, cursor: preferredDate ? 'pointer' : 'default' }}
+                onClick={handleScheduleSubmit}
+                disabled={!canBook}
+                style={{ padding: '9px 18px', fontSize: 13, fontWeight: 600, backgroundColor: canBook ? '#00C27C' : '#d1d5db', color: '#ffffff', border: 'none', borderRadius: 8, cursor: canBook ? 'pointer' : 'default' }}
               >
-                Book Appointment
+                {submitting ? 'Saving...' : 'Save Service'}
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Card body */}
       <div style={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 12, padding: 20, backgroundColor: '#ffffff', margin: '8px 0' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span style={{ fontSize: 16, fontWeight: 700, color: '#111827' }}>{customer.name}</span>
-            <span style={{ fontSize: 13, color: '#6b7280' }}>LTV: ${customer.lifetimeValue.toLocaleString()}</span>
+            <span style={{ fontSize: 13, color: '#6b7280' }}>LTV: ${(customer.lifetime_value ?? 0).toLocaleString()}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {customer.maintenancePlan && (
+            {customer.maintenance_plan && (
               <span style={{ fontSize: 11, fontWeight: 600, color: '#00C27C', backgroundColor: 'rgba(0,194,124,0.1)', borderRadius: 20, padding: '3px 10px', whiteSpace: 'nowrap' }}>
                 On Maintenance Plan
               </span>
             )}
-            <span style={STATUS_STYLE[customer.status]}>{customer.status}</span>
+            <span style={STATUS_STYLE[customer.service_status] ?? STATUS_STYLE['Up to Date']}>
+              {customer.service_status}
+            </span>
           </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginBottom: 16 }}>
 
+          {/* Contact */}
           <div>
             <p style={COL_LABEL}>Contact</p>
-            <div style={{ fontSize: 13, color: '#374151', marginBottom: 4 }}>{customer.phone}</div>
-            <div style={{ fontSize: 13, color: '#374151', marginBottom: 4 }}>{customer.email}</div>
-            <div style={{ fontSize: 13, color: '#374151' }}>{customer.address}</div>
+            {customer.phone   && <div style={{ fontSize: 13, color: '#374151', marginBottom: 4 }}>{customer.phone}</div>}
+            {customer.email   && <div style={{ fontSize: 13, color: '#374151', marginBottom: 4 }}>{customer.email}</div>}
+            {customer.address && <div style={{ fontSize: 13, color: '#374151' }}>{customer.address}</div>}
+            {!customer.phone && !customer.email && !customer.address && (
+              <div style={{ fontSize: 13, color: '#9ca3af' }}>No contact info</div>
+            )}
           </div>
 
+          {/* Equipment */}
           <div>
             <p style={COL_LABEL}>Equipment</p>
-            <div style={{ fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 4 }}>{customer.systemType}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-              <span style={{ fontSize: 13, color: ageWarning ? '#F59E0B' : '#374151', fontWeight: ageWarning ? 600 : 400 }}>
-                {customer.installYear} &middot; {age} years old
-              </span>
-              {ageWarning && (
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2.5">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                  <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
-                </svg>
-              )}
-            </div>
+            {customer.equipment_type && (
+              <div style={{ fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 4 }}>{customer.equipment_type}</div>
+            )}
+            {installYear && age !== null && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                <span style={{ fontSize: 13, color: ageWarning ? '#F59E0B' : '#374151', fontWeight: ageWarning ? 600 : 400 }}>
+                  {installYear} &middot; {age} {age === 1 ? 'year' : 'years'} old
+                </span>
+                {ageWarning && (
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2.5">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                )}
+              </div>
+            )}
             {ageWarning && <div style={{ fontSize: 12, color: '#F59E0B', marginBottom: 4 }}>Recommend replacement consult</div>}
-            <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 4 }}>SN: {customer.serialNumber}</div>
+            {customer.serial_number && <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 4 }}>SN: {customer.serial_number}</div>}
             {warrantyExp && (
               <span style={{ fontSize: 11, fontWeight: 600, color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)', borderRadius: 4, padding: '2px 8px' }}>Warranty Expired</span>
             )}
             {underWarranty && !warrantyExp && (
               <span style={{ fontSize: 11, fontWeight: 600, color: '#00C27C', backgroundColor: 'rgba(0,194,124,0.08)', borderRadius: 4, padding: '2px 8px' }}>Under Warranty</span>
             )}
-
-            {customer.maintenancePlan && (
-              <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-                <p style={COL_LABEL}>Maintenance Plan</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#111827' }}>{customer.maintenancePlan.name}</span>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: '#00C27C', backgroundColor: 'rgba(0,194,124,0.1)', borderRadius: 4, padding: '1px 7px' }}>Active</span>
-                </div>
-                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 3 }}>{customer.maintenancePlan.includes}</div>
-                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 3 }}>Renews: {customer.maintenancePlan.renewalDate}</div>
-                <div style={{ fontSize: 12, color: '#6b7280' }}>${customer.maintenancePlan.monthlyRate}/mo</div>
-              </div>
-            )}
           </div>
 
+          {/* Service History */}
           <div>
             <p style={COL_LABEL}>Service History</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {history.map((h, i) => (
-                <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: i === 0 ? '#00C27C' : '#d1d5db', marginTop: 4, flexShrink: 0 }} />
-                  <div>
-                    <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 1 }}>{h.date}</div>
-                    <div style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{h.type}</div>
-                    <div style={{ fontSize: 12, color: '#6b7280' }}>Tech: {h.tech} &middot; {h.cost}</div>
+            {histLoading ? (
+              <div style={{ fontSize: 12, color: '#9ca3af' }}>Loading...</div>
+            ) : history.length === 0 ? (
+              <div style={{ fontSize: 12, color: '#9ca3af' }}>No service history yet</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {history.slice(0, 4).map((h, i) => (
+                  <div key={h.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: i === 0 ? '#00C27C' : '#d1d5db', marginTop: 4, flexShrink: 0 }} />
+                    <div>
+                      <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 1 }}>{fmtDate(h.service_date)}</div>
+                      <div style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{h.service_type}</div>
+                      {(h.technician || h.cost) && (
+                        <div style={{ fontSize: 12, color: '#6b7280' }}>
+                          {h.technician ? `Tech: ${h.technician}` : ''}
+                          {h.technician && h.cost ? ' \u00b7 ' : ''}
+                          {h.cost ? `$${Number(h.cost).toLocaleString()}` : ''}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -438,7 +665,8 @@ function CustomerCard({
           <p style={COL_LABEL}>Notes</p>
           <textarea
             value={note}
-            onChange={(e) => onNoteChange(e.target.value)}
+            onChange={(e) => setNote(e.target.value)}
+            onBlur={handleNoteBlur}
             placeholder="Add notes..."
             rows={2}
             style={{
@@ -449,11 +677,11 @@ function CustomerCard({
             }}
           />
 
-          {customer.status === 'Overdue' && (
+          {customer.service_status === 'Overdue' && customer.last_service_date && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
               <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#00C27C', flexShrink: 0 }} />
               <span style={{ fontSize: 11, color: '#00C27C' }}>
-                Automated follow-up SMS scheduled for {addDays(customer.lastService, 3)}
+                Automated follow-up SMS scheduled for {addDays(customer.last_service_date, 3)}
               </span>
             </div>
           )}
@@ -480,38 +708,89 @@ function CustomerCard({
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function CRM({ sessionId: _sessionId, businessName }: CRMProps) {
-  const [search, setSearch]         = useState('')
-  const [expandedId, setExpandedId] = useState<number | null>(null)
-  const [notes, setNotes]           = useState<Record<number, string>>(
-    Object.fromEntries(CUSTOMERS.map((c) => [c.id, c.notes]))
-  )
+export default function CRM({ clientToken, businessName }: CRMProps) {
+  const [customers, setCustomers]     = useState<Customer[]>([])
+  const [loading, setLoading]         = useState(true)
+  const [error, setError]             = useState<string | null>(null)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [search, setSearch]           = useState('')
+  const [expandedId, setExpandedId]   = useState<string | null>(null)
+
+  const fetchCustomers = useCallback(async () => {
+    if (!clientToken) { setLoading(false); return }
+    try {
+      const res = await fetch(`/api/client/${clientToken}/customers`)
+      const data = await res.json() as { customers?: Customer[]; error?: string }
+      if (res.ok) {
+        setCustomers(data.customers ?? [])
+      } else {
+        setError(data.error ?? 'Failed to load customers')
+      }
+    } catch {
+      setError('Failed to load customers')
+    } finally {
+      setLoading(false)
+    }
+  }, [clientToken])
+
+  useEffect(() => { void fetchCustomers() }, [fetchCustomers])
+
+  const stats = [
+    { label: 'Total Customers',     value: customers.length,                                                          color: '#111827' },
+    { label: 'On Maintenance Plan', value: customers.filter((c) => c.maintenance_plan === true).length,               color: '#00C27C' },
+    { label: 'Due for Service',     value: customers.filter((c) => c.service_status === 'Due for Service').length,    color: '#F59E0B' },
+    { label: 'Overdue',             value: customers.filter((c) => c.service_status === 'Overdue').length,            color: '#ef4444' },
+  ]
+
+  const sortedCustomers = [...customers].sort((a, b) => {
+    const lastA = a.name.split(' ').pop()!.toLowerCase()
+    const lastB = b.name.split(' ').pop()!.toLowerCase()
+    return lastA !== lastB ? lastA.localeCompare(lastB) : a.name.localeCompare(b.name)
+  })
 
   const isSearching = search.trim().length > 0
 
   const filteredFlat = isSearching
-    ? SORTED_CUSTOMERS.filter((c) => {
+    ? sortedCustomers.filter((c) => {
         const q = search.toLowerCase()
-        return c.name.toLowerCase().includes(q) || c.address.toLowerCase().includes(q) || c.phone.includes(search)
+        return (
+          c.name.toLowerCase().includes(q) ||
+          (c.address ?? '').toLowerCase().includes(q) ||
+          (c.phone ?? '').includes(search)
+        )
       })
     : []
 
-  const grouped = groupByLetter(SORTED_CUSTOMERS)
+  const grouped = groupByLetter(sortedCustomers)
   const letters = Object.keys(grouped).sort()
 
-  const updateNote = (id: number, val: string) =>
-    setNotes((prev) => ({ ...prev, [id]: val }))
+  const handleNoteChange = (id: string, note: string) => {
+    setCustomers((prev) => prev.map((c) => (c.id === id ? { ...c, notes: note } : c)))
+  }
+
+  const handleCustomerAdded = (customer: Customer) => {
+    setCustomers((prev) => [...prev, customer])
+    setShowAddModal(false)
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div>
-        <p style={LABEL_STYLE}>Customer Relationship Management</p>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#111827', margin: 0 }}>Customers</h1>
-        <p style={{ fontSize: 14, color: '#6b7280', marginTop: 4 }}>{businessName}</p>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+        <div>
+          <p style={LABEL_STYLE}>Customer Relationship Management</p>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: '#111827', margin: 0 }}>Customers</h1>
+          <p style={{ fontSize: 14, color: '#6b7280', marginTop: 4 }}>{businessName}</p>
+        </div>
+        <button
+          onClick={() => setShowAddModal(true)}
+          style={{ padding: '10px 20px', fontSize: 13, fontWeight: 600, backgroundColor: 'transparent', color: '#00C27C', border: '1.5px solid #00C27C', borderRadius: 8, cursor: 'pointer', whiteSpace: 'nowrap' }}
+        >
+          Add Customer
+        </button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-        {STATS.map((s) => (
+        {stats.map((s) => (
           <div key={s.label} style={OUTER_CARD}>
             <div style={{ fontSize: 26, fontWeight: 700, color: s.color, lineHeight: 1.2 }}>{s.value}</div>
             <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>{s.label}</div>
@@ -531,7 +810,15 @@ export default function CRM({ sessionId: _sessionId, businessName }: CRMProps) {
         }}
       />
 
-      {isSearching ? (
+      {loading ? (
+        <div style={{ ...OUTER_CARD, textAlign: 'center', padding: '40px 20px', color: '#9ca3af', fontSize: 14 }}>
+          Loading customers...
+        </div>
+      ) : error ? (
+        <div style={{ ...OUTER_CARD, textAlign: 'center', padding: '40px 20px', color: '#ef4444', fontSize: 14 }}>
+          {error}
+        </div>
+      ) : isSearching ? (
         <div>
           {filteredFlat.length === 0 ? (
             <div style={{ ...OUTER_CARD, textAlign: 'center', padding: '40px 20px', color: '#9ca3af', fontSize: 14 }}>
@@ -539,13 +826,20 @@ export default function CRM({ sessionId: _sessionId, businessName }: CRMProps) {
             </div>
           ) : (
             filteredFlat.map((c) => (
-              <CustomerCard key={c.id} customer={c} note={notes[c.id]} onNoteChange={(v) => updateNote(c.id, v)} businessName={businessName} />
+              <CustomerCard
+                key={c.id}
+                customer={c}
+                clientToken={clientToken}
+                businessName={businessName}
+                onNoteChange={handleNoteChange}
+                onRefresh={fetchCustomers}
+              />
             ))
           )}
         </div>
       ) : letters.length === 0 ? (
         <div style={{ ...OUTER_CARD, textAlign: 'center', padding: '40px 20px', color: '#9ca3af', fontSize: 14 }}>
-          No customers yet. Import your customer list to get started.
+          No customers yet. Add your first customer or wait for a booking to come in.
         </div>
       ) : (
         <div style={{ ...OUTER_CARD, padding: 0, overflow: 'hidden' }}>
@@ -578,9 +872,11 @@ export default function CRM({ sessionId: _sessionId, businessName }: CRMProps) {
                         }}
                       >
                         <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: '#111827' }}>{c.name}</span>
-                        <span style={STATUS_STYLE[c.status]}>{c.status}</span>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"
-                          style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.18s', flexShrink: 0, marginLeft: 8 }}>
+                        <span style={STATUS_STYLE[c.service_status] ?? STATUS_STYLE['Up to Date']}>{c.service_status}</span>
+                        <svg
+                          width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"
+                          style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.18s', flexShrink: 0, marginLeft: 8 }}
+                        >
                           <polyline points="6 9 12 15 18 9" />
                         </svg>
                       </button>
@@ -589,9 +885,10 @@ export default function CRM({ sessionId: _sessionId, businessName }: CRMProps) {
                         <div style={{ padding: '0 16px 16px', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
                           <CustomerCard
                             customer={c}
-                            note={notes[c.id]}
-                            onNoteChange={(v) => updateNote(c.id, v)}
+                            clientToken={clientToken}
                             businessName={businessName}
+                            onNoteChange={handleNoteChange}
+                            onRefresh={fetchCustomers}
                           />
                         </div>
                       )}
@@ -602,6 +899,14 @@ export default function CRM({ sessionId: _sessionId, businessName }: CRMProps) {
             )
           })}
         </div>
+      )}
+
+      {showAddModal && (
+        <AddCustomerModal
+          clientToken={clientToken}
+          onClose={() => setShowAddModal(false)}
+          onAdded={handleCustomerAdded}
+        />
       )}
     </div>
   )
