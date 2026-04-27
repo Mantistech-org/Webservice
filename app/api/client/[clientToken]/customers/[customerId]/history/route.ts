@@ -123,7 +123,7 @@ export async function POST(
     }
 
     const inserted = await query(
-      `INSERT INTO client_service_history (customer_id, project_id, service_date, service_type, technician, cost, notes)
+      `INSERT INTO public.client_service_history (customer_id, project_id, service_date, service_type, technician, cost, notes)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
       [
@@ -139,7 +139,7 @@ export async function POST(
 
     const [agg] = await query<{ total: string; latest: string | null }>(
       `SELECT COALESCE(SUM(cost), 0) AS total, MAX(service_date)::text AS latest
-       FROM client_service_history WHERE customer_id = $1`,
+       FROM public.client_service_history WHERE customer_id = $1`,
       [customerId]
     )
 

@@ -71,7 +71,7 @@ export async function GET(
     }
 
     const history = await query(
-      `SELECT * FROM client_service_history WHERE customer_id = $1 ORDER BY service_date DESC`,
+      `SELECT * FROM public.client_service_history WHERE customer_id = $1 ORDER BY service_date DESC`,
       [customerId]
     )
 
@@ -114,7 +114,7 @@ export async function PATCH(
 
     const allowed = [
       'name', 'phone', 'email', 'address', 'equipment_type',
-      'install_year', 'serial_number', 'last_service_date', 'notes', 'source',
+      'install_year', 'last_service_date', 'notes', 'source',
     ]
 
     const setClauses: string[] = []
