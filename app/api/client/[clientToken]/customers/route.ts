@@ -26,7 +26,7 @@ async function resolveProjectId(clientToken: string): Promise<string | null> {
   if (pgEnabled) {
     await query(
       `INSERT INTO public.projects (id, admin_token, client_token, data, created_at, updated_at)
-       VALUES ($1::uuid, $2, $3, $4::jsonb, NOW(), NOW())
+       VALUES ($1, $2, $3, $4::jsonb, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
       [TEMPLATE_PROJECT_ID, 'template-admin', 'template-preview', JSON.stringify(TEMPLATE_PROJECT)]
     )
@@ -138,7 +138,7 @@ export async function GET(
          COALESCE(SUM(h.cost), 0) AS lifetime_value
        FROM customers c
        LEFT JOIN client_service_history h ON h.customer_id = c.id
-       WHERE c.project_id = $1::uuid AND c.deleted_at IS NULL
+       WHERE c.project_id = $1 AND c.deleted_at IS NULL
        GROUP BY c.id
        ORDER BY c.name ASC`,
       [projectId]
