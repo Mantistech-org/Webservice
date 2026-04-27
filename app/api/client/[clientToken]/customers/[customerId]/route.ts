@@ -63,7 +63,7 @@ export async function GET(
 
   try {
     const customers = await query(
-      `SELECT * FROM customers WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL`,
+      `SELECT * FROM public.client_customers WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL`,
       [customerId, projectId]
     )
     if (!customers[0]) {
@@ -105,7 +105,7 @@ export async function PATCH(
 
   try {
     const customers = await query(
-      `SELECT * FROM customers WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL`,
+      `SELECT * FROM public.client_customers WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL`,
       [customerId, projectId]
     )
     if (!customers[0]) {
@@ -141,7 +141,7 @@ export async function PATCH(
     setClauses.push(`updated_at = NOW()`)
 
     const updated = await query(
-      `UPDATE customers SET ${setClauses.join(', ')} WHERE id = $${idx} RETURNING *`,
+      `UPDATE public.client_customers SET ${setClauses.join(', ')} WHERE id = $${idx} RETURNING *`,
       [...values, customerId]
     )
 
@@ -168,10 +168,10 @@ export async function DELETE(
   }
 
   try {
-    await query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ`)
+    await query(`ALTER TABLE public.client_customers ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ`)
 
     const result = await query(
-      `UPDATE customers SET deleted_at = NOW() WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL RETURNING id`,
+      `UPDATE public.client_customers SET deleted_at = NOW() WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL RETURNING id`,
       [customerId, projectId]
     )
 

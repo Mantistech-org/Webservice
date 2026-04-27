@@ -63,7 +63,7 @@ export async function GET(
 
   try {
     const customers = await query(
-      `SELECT id FROM customers WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL`,
+      `SELECT id FROM public.client_customers WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL`,
       [customerId, projectId]
     )
     if (!customers[0]) {
@@ -115,7 +115,7 @@ export async function POST(
 
   try {
     const customers = await query(
-      `SELECT id FROM customers WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL`,
+      `SELECT id FROM public.client_customers WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL`,
       [customerId, projectId]
     )
     if (!customers[0]) {
@@ -147,7 +147,7 @@ export async function POST(
     const newServiceStatus = calcServiceStatus(newLastServiceDate)
 
     await query(
-      `UPDATE customers
+      `UPDATE public.client_customers
        SET lifetime_value = $1, last_service_date = $2, service_status = $3, updated_at = NOW()
        WHERE id = $4`,
       [parseFloat(agg.total), newLastServiceDate ?? null, newServiceStatus, customerId]
