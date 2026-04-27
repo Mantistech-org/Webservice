@@ -26,7 +26,7 @@ async function resolveProjectId(clientToken: string): Promise<string | null> {
   if (pgEnabled) {
     await query(
       `INSERT INTO public.projects (id, admin_token, client_token, data, created_at, updated_at)
-       VALUES ($1, $2, $3, $4::jsonb, NOW(), NOW())
+       VALUES ($1::uuid, $2, $3, $4::jsonb, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
       [TEMPLATE_PROJECT_ID, 'template-admin', 'template-preview', JSON.stringify(TEMPLATE_PROJECT)]
     )
@@ -63,7 +63,7 @@ export async function GET(
 
   try {
     const customers = await query(
-      `SELECT id FROM customers WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL`,
+      `SELECT id FROM customers WHERE id = $1 AND project_id = $2::uuid AND deleted_at IS NULL`,
       [customerId, projectId]
     )
     if (!customers[0]) {
@@ -115,7 +115,7 @@ export async function POST(
 
   try {
     const customers = await query(
-      `SELECT id FROM customers WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL`,
+      `SELECT id FROM customers WHERE id = $1 AND project_id = $2::uuid AND deleted_at IS NULL`,
       [customerId, projectId]
     )
     if (!customers[0]) {
