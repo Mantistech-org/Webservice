@@ -297,12 +297,14 @@ function CustomerCard({
   businessName,
   onNoteChange,
   onRefresh,
+  onDelete,
 }: {
   customer: Customer
   clientToken: string
   businessName: string
   onNoteChange: (id: string, note: string) => void
   onRefresh: () => void
+  onDelete: (id: string) => void
 }) {
   const firstName = customer.name.split(' ')[0]
 
@@ -328,7 +330,23 @@ function CustomerCard({
   const [schedNotes,   setSchedNotes]   = useState('')
   const [submitting,   setSubmitting]   = useState(false)
 
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting,       setDeleting]       = useState(false)
+
   const [toast, setToast] = useState('')
+
+  const handleDelete = async () => {
+    if (!confirmDelete) { setConfirmDelete(true); return }
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/client/${clientToken}/customers/${customer.id}`, { method: 'DELETE' })
+      if (res.ok) onDelete(customer.id)
+    } catch {
+      // silent
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   const showToast = (msg: string) => {
     setToast(msg)
@@ -686,19 +704,36 @@ function CustomerCard({
             </div>
           )}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
             <button
-              onClick={() => setFollowUpOpen(true)}
-              style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, border: '1.5px solid #00C27C', borderRadius: 7, backgroundColor: 'transparent', color: '#00C27C', cursor: 'pointer' }}
+              onClick={handleDelete}
+              disabled={deleting}
+              style={{
+                border: confirmDelete ? 'none' : '1px solid #ef4444',
+                color: confirmDelete ? '#ffffff' : '#ef4444',
+                backgroundColor: confirmDelete ? '#ef4444' : 'transparent',
+                borderRadius: 6,
+                padding: '8px 16px',
+                fontSize: 13,
+                cursor: 'pointer',
+              }}
             >
-              Send Follow-up
+              {deleting ? 'Deleting...' : confirmDelete ? 'Confirm Delete' : 'Delete Customer'}
             </button>
-            <button
-              onClick={() => setScheduleOpen(true)}
-              style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, border: 'none', borderRadius: 7, backgroundColor: '#00C27C', color: '#ffffff', cursor: 'pointer' }}
-            >
-              Schedule Service
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => setFollowUpOpen(true)}
+                style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, border: '1.5px solid #00C27C', borderRadius: 7, backgroundColor: 'transparent', color: '#00C27C', cursor: 'pointer' }}
+              >
+                Send Follow-up
+              </button>
+              <button
+                onClick={() => setScheduleOpen(true)}
+                style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, border: 'none', borderRadius: 7, backgroundColor: '#00C27C', color: '#ffffff', cursor: 'pointer' }}
+              >
+                Schedule Service
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -773,6 +808,10 @@ export default function CRM({ clientToken, businessName }: CRMProps) {
     setShowAddModal(false)
   }
 
+  const handleCustomerDeleted = (id: string) => {
+    setCustomers((prev) => prev.filter((c) => c.id !== id))
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
@@ -833,6 +872,7 @@ export default function CRM({ clientToken, businessName }: CRMProps) {
                 businessName={businessName}
                 onNoteChange={handleNoteChange}
                 onRefresh={fetchCustomers}
+                onDelete={handleCustomerDeleted}
               />
             ))
           )}
@@ -889,6 +929,7 @@ export default function CRM({ clientToken, businessName }: CRMProps) {
                             businessName={businessName}
                             onNoteChange={handleNoteChange}
                             onRefresh={fetchCustomers}
+                            onDelete={handleCustomerDeleted}
                           />
                         </div>
                       )}
