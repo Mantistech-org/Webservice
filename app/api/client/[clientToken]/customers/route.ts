@@ -98,6 +98,7 @@ export async function GET(
   { params }: { params: Promise<{ clientToken: string }> }
 ) {
   const { clientToken } = await params
+  console.log('[customers] clientToken:', clientToken)
 
   const projectId = await resolveProjectId(clientToken)
   if (!projectId) {
@@ -151,6 +152,7 @@ export async function GET(
     })
   } catch (err) {
     console.error('[customers] GET failed:', err)
+    console.error('[customers] full error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -160,6 +162,7 @@ export async function POST(
   { params }: { params: Promise<{ clientToken: string }> }
 ) {
   const { clientToken } = await params
+  console.log('[customers] clientToken:', clientToken)
 
   const projectId = await resolveProjectId(clientToken)
   if (!projectId) {
@@ -234,6 +237,7 @@ export async function POST(
     return NextResponse.json({ customer: created[0] }, { status: 201 })
   } catch (err) {
     console.error('[customers] POST failed:', err)
+    console.error('[customers] full error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
