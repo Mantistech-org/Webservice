@@ -159,6 +159,22 @@ export async function POST(req: Request) {
       )
     )
 
+    // Enroll all existing demo leads that match the campaign audience
+    const audienceFilter = audience === 'engaged' ? 'WHERE engaged = true' : ''
+
+    const existingLeads = await query<{ email: string; business_name: string }>(
+      `SELECT email, business_name FROM public.demo_leads ${audienceFilter}`
+    )
+
+    for (const lead of existingLeads) {
+      await query(
+        `INSERT INTO public.campaign_enrollments (campaign_id, lead_email, lead_name, current_step, completed)
+         VALUES ($1, $2, $3, 0, false)
+         ON CONFLICT DO NOTHING`,
+        [campaign.id, lead.email, lead.business_name ?? null]
+      )
+    }
+
     return NextResponse.json({ success: true, campaignId: campaign.id })
   } catch (err) {
     console.error('[admin/automated-emails] POST error:', err)
