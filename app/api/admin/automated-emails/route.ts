@@ -2,6 +2,53 @@ import { NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/auth'
 import { query, pgEnabled } from '@/lib/pg'
 
+// ── Schema init ───────────────────────────────────────────────────────────────
+
+let schemaReady = false
+
+async function ensureSchema() {
+  if (schemaReady) return
+  await query(`
+    CREATE TABLE IF NOT EXISTS public.email_campaigns (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      name text NOT NULL,
+      audience text NOT NULL,
+      status text NOT NULL DEFAULT 'active',
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `)
+  await query(`
+    CREATE TABLE IF NOT EXISTS public.campaign_emails (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      campaign_id uuid NOT NULL REFERENCES public.email_campaigns(id) ON DELETE CASCADE,
+      step_number int NOT NULL,
+      days_after_enrollment int NOT NULL DEFAULT 0,
+      subject text NOT NULL,
+      body text NOT NULL
+    )
+  `)
+  await query(`
+    CREATE TABLE IF NOT EXISTS public.campaign_enrollments (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      campaign_id uuid NOT NULL REFERENCES public.email_campaigns(id) ON DELETE CASCADE,
+      lead_email text NOT NULL,
+      lead_name text,
+      enrolled_at timestamptz NOT NULL DEFAULT now(),
+      current_step int NOT NULL DEFAULT 0,
+      completed boolean NOT NULL DEFAULT false
+    )
+  `)
+  await query(`
+    CREATE TABLE IF NOT EXISTS public.campaign_sends (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      enrollment_id uuid NOT NULL REFERENCES public.campaign_enrollments(id) ON DELETE CASCADE,
+      step_number int NOT NULL,
+      sent_at timestamptz NOT NULL DEFAULT now()
+    )
+  `)
+  schemaReady = true
+}
+
 // GET — all campaigns with their emails and enrollment/send counts
 export async function GET() {
   if (!(await isAdminAuthenticated())) {
@@ -13,6 +60,8 @@ export async function GET() {
   }
 
   try {
+    await ensureSchema()
+
     const campaigns = await query<{
       id: string
       name: string
@@ -91,6 +140,8 @@ export async function POST(req: Request) {
   }
 
   try {
+    await ensureSchema()
+
     const [campaign] = await query<{ id: string }>(
       `INSERT INTO public.email_campaigns (name, audience)
        VALUES ($1, $2)
@@ -111,6 +162,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, campaignId: campaign.id })
   } catch (err) {
     console.error('[admin/automated-emails] POST error:', err)
+    console.error('[automated-emails] POST error details:', JSON.stringify(err))
     return NextResponse.json({ error: 'Failed to create campaign.' }, { status: 500 })
   }
 }
