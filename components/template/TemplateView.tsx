@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import TopBar from '@/components/demo/TopBar'
+import TopBar from '@/components/template/TopBar'
 import Sidebar from '@/components/template/Sidebar'
 import type { DemoView } from '@/components/demo/Sidebar'
 import DashboardHome from '@/components/template/pages/DashboardHome'
