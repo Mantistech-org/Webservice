@@ -398,7 +398,7 @@ export default function TemplateView({ hideBanner, skipGate }: { hideBanner?: bo
       )
       case 'weather':     return <WeatherActivation sessionId={sessionId} businessName={businessName} />
       case 'bookings':    return <CalendarPage />
-      case 'review':      return <ReviewManagement sessionId={sessionId} />
+      case 'review':      return <ReviewManagement clientToken={clientToken} />
       case 'seo':         return <SEOOptimization sessionId={sessionId} />
       case 'sms':         return <SMSTextMarketing sessionId={sessionId} />
       case 'email':       return <EmailMarketing sessionId={sessionId} contacts={[]} onAddContacts={() => {}} />
