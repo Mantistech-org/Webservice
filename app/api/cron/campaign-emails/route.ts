@@ -1,3 +1,4 @@
+// cron route v2
 import { NextResponse } from 'next/server'
 import { query, pgEnabled } from '@/lib/pg'
 import { sendCampaignStepEmail } from '@/lib/resend'
