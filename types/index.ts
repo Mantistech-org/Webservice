@@ -138,6 +138,7 @@ export const PLANS = {
       'Connected to every platform tool from day one',
       'Unlimited content updates',
       'Invoicing System',
+      'Proposal Generator',
     ],
   },
 } as const
