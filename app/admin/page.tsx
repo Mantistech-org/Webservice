@@ -87,6 +87,7 @@ export default function AdminPage() {
   const [addForm, setAddForm] = useState<AddClientForm>(DEFAULT_ADD_FORM)
   const [addingClient, setAddingClient] = useState(false)
   const [addError, setAddError] = useState('')
+  const [confirmDeleteIds, setConfirmDeleteIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetch('/api/admin/projects')
@@ -167,6 +168,16 @@ export default function AdminPage() {
       setMfaErrorType('send_error')
     }
     setResending(false)
+  }
+
+  const handleDeleteLead = async (id: string) => {
+    if (!confirmDeleteIds.has(id)) {
+      setConfirmDeleteIds(prev => new Set(prev).add(id))
+      return
+    }
+    await fetch(`/api/admin/demo-leads?id=${id}`, { method: 'DELETE' })
+    setDemoLeads(prev => prev.filter(l => l.id !== id))
+    setConfirmDeleteIds(prev => { const next = new Set(prev); next.delete(id); return next })
   }
 
   const handleAddClient = async (e: React.FormEvent) => {
@@ -473,7 +484,7 @@ export default function AdminPage() {
                     <table className="w-full border-collapse">
                       <thead>
                         <tr className="border-b border-border">
-                          {['Email', 'Business Name', 'Date', 'Actions Taken'].map((h) => (
+                          {['Email', 'Business Name', 'Date', 'Actions Taken', ''].map((h) => (
                             <th key={h} className="px-5 py-3 text-left font-mono text-xs text-muted tracking-widest uppercase">
                               {h}
                             </th>
@@ -502,6 +513,14 @@ export default function AdminPage() {
                                 )}
                               </div>
                             </td>
+                            <td className="px-5 py-4">
+                              <button
+                                onClick={() => handleDeleteLead(lead.id)}
+                                style={{ border: '1px solid #ef4444', color: '#ef4444', background: 'transparent', borderRadius: 4, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}
+                              >
+                                {confirmDeleteIds.has(lead.id) ? 'Confirm' : 'Delete'}
+                              </button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -515,7 +534,7 @@ export default function AdminPage() {
                   <table className="w-full border-collapse">
                     <thead>
                       <tr className="border-b border-border">
-                        {['Email', 'Business Name', 'Business Type', 'Date'].map((h) => (
+                        {['Email', 'Business Name', 'Business Type', 'Date', ''].map((h) => (
                           <th key={h} className="px-5 py-3 text-left font-mono text-xs text-muted tracking-widest uppercase">
                             {h}
                           </th>
@@ -541,6 +560,14 @@ export default function AdminPage() {
                             {new Date(lead.created_at).toLocaleDateString('en-US', {
                               month: 'short', day: 'numeric', year: 'numeric',
                             })}
+                          </td>
+                          <td className="px-5 py-4">
+                            <button
+                              onClick={() => handleDeleteLead(lead.id)}
+                              style={{ border: '1px solid #ef4444', color: '#ef4444', background: 'transparent', borderRadius: 4, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}
+                            >
+                              {confirmDeleteIds.has(lead.id) ? 'Confirm' : 'Delete'}
+                            </button>
                           </td>
                         </tr>
                       ))}
