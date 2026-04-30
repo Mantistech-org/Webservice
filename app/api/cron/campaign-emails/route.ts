@@ -4,6 +4,7 @@ import { query, pgEnabled } from '@/lib/pg'
 import { sendCampaignStepEmail } from '@/lib/resend'
 
 export async function GET(req: Request) {
+  console.log('[cron/campaign-emails] route hit')
   const authHeader = req.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
 
