@@ -805,6 +805,27 @@ export async function sendNewBookingNotificationEmail(params: {
   await Promise.all(targets.map(to => send({ from: FROM, to, subject, html }).catch(err => console.error('[resend] Booking notification to', to, 'failed:', err))))
 }
 
+// ── 21. Campaign step email (automated email campaign to demo leads) ──────────
+export async function sendCampaignStepEmail(params: {
+  to: string
+  subject: string
+  body: string
+  businessName: string
+}) {
+  const { to, subject, body, businessName } = params
+  const personalizedBody = body.replace(/\[Business Name\]/g, businessName || 'your business')
+  await send({
+    from: FROM,
+    to,
+    subject,
+    html: emailLayout(`
+      <p style="font-size:15px;line-height:1.6;color:#333;">${personalizedBody.replace(/\n/g, '<br>')}</p>
+      <div class="divider"></div>
+      <p class="muted">Mantis Tech &mdash; (501) 669-0488 &mdash; mantistech.org</p>
+    `),
+  })
+}
+
 // ── 20. Admin password reset ─────────────────────────────────────────────────
 export async function sendAdminPasswordResetEmail(params: {
   token: string
