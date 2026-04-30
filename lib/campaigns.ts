@@ -9,8 +9,8 @@ export async function enrollLeadInCampaigns(
   email: string,
   businessName: string | null | undefined,
   audience: 'all' | 'engaged'
-): Promise<void> {
-  if (!pgEnabled) return
+): Promise<string[]> {
+  if (!pgEnabled) return []
 
   const campaigns = await query<{ id: string }>(
     `SELECT id FROM public.email_campaigns
@@ -18,7 +18,7 @@ export async function enrollLeadInCampaigns(
     [audience]
   )
 
-  if (campaigns.length === 0) return
+  if (campaigns.length === 0) return []
 
   // Avoid duplicate enrollments
   const existing = await query<{ campaign_id: string }>(
@@ -28,7 +28,7 @@ export async function enrollLeadInCampaigns(
   const enrolledIds = new Set(existing.map((r) => r.campaign_id))
   const toEnroll = campaigns.filter((c) => !enrolledIds.has(c.id))
 
-  if (toEnroll.length === 0) return
+  if (toEnroll.length === 0) return []
 
   await Promise.all(
     toEnroll.map((c) =>
@@ -39,4 +39,6 @@ export async function enrollLeadInCampaigns(
       )
     )
   )
+
+  return toEnroll.map((c) => c.id)
 }
