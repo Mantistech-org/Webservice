@@ -806,23 +806,35 @@ export async function sendNewBookingNotificationEmail(params: {
 }
 
 // ── 21. Campaign step email (automated email campaign to demo leads) ──────────
-export async function sendCampaignStepEmail(params: {
+export async function sendCampaignStepEmail({
+  to,
+  subject,
+  body,
+  businessName,
+}: {
   to: string
   subject: string
   body: string
   businessName: string
 }) {
-  const { to, subject, body, businessName } = params
-  const personalizedBody = body.replace(/\[Business Name\]/g, businessName || 'your business')
+  const personalizedBody = body
+    .replace(/\[Business Name\]/g, businessName || 'your business')
+    .replace(/\[business name\]/g, businessName || 'your business')
+
+  const htmlBody = personalizedBody
+    .split('\n')
+    .map(line => line.trim() === '' ? '<br>' : `<p style="margin:0 0 12px 0;font-size:15px;line-height:1.6;color:#222;font-family:Georgia,serif;">${line}</p>`)
+    .join('')
+
   await send({
     from: FROM,
     to,
     subject,
-    html: emailLayout(`
-      <p style="font-size:15px;line-height:1.6;color:#333;">${personalizedBody.replace(/\n/g, '<br>')}</p>
-      <div class="divider"></div>
-      <p class="muted">Mantis Tech &mdash; (501) 669-0488 &mdash; mantistech.org</p>
-    `),
+    html: `
+      <div style="max-width:600px;margin:0 auto;padding:40px 20px;font-family:Georgia,serif;">
+        ${htmlBody}
+      </div>
+    `,
   })
 }
 

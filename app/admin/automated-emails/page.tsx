@@ -119,6 +119,20 @@ function emptyStep(stepNumber: number): EmailStep {
   return { step_number: stepNumber, days_after_enrollment: 0, subject: '', body: '' }
 }
 
+const PREVIEW_BUSINESS = 'Riverside Heating and Cooling'
+
+function renderPreviewHtml(body: string): string {
+  const personalized = body
+    .replace(/\[Business Name\]/g, PREVIEW_BUSINESS)
+    .replace(/\[business name\]/g, PREVIEW_BUSINESS)
+  return personalized
+    .split('\n')
+    .map(line => line.trim() === ''
+      ? '<br>'
+      : `<p style="margin:0 0 12px 0;font-size:15px;line-height:1.6;color:#222;font-family:Georgia,serif;">${line}</p>`)
+    .join('')
+}
+
 function BuilderTab({ onCreated, router }: { onCreated: () => void; router: ReturnType<typeof useRouter> }) {
   const [name, setName] = useState('')
   const [audience, setAudience] = useState<'all' | 'engaged'>('all')
@@ -126,6 +140,7 @@ function BuilderTab({ onCreated, router }: { onCreated: () => void; router: Retu
   const [creating, setCreating] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [previewOpen, setPreviewOpen] = useState<Set<number>>(new Set())
 
   const updateStep = (index: number, field: keyof EmailStep, value: string | number) => {
     setSteps((prev) => prev.map((s, i) => i === index ? { ...s, [field]: value } : s))
@@ -199,14 +214,26 @@ function BuilderTab({ onCreated, router }: { onCreated: () => void; router: Retu
               <span className="font-mono text-xs text-muted tracking-widest uppercase">
                 Email {step.step_number}
               </span>
-              {i > 0 && (
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => removeStep(i)}
-                  className="font-mono text-xs text-red-600 dark:text-red-400 hover:opacity-70 transition-opacity">
-                  Remove
+                  onClick={() => setPreviewOpen((prev) => {
+                    const next = new Set(prev)
+                    if (next.has(i)) next.delete(i); else next.add(i)
+                    return next
+                  })}
+                  className="font-mono text-xs text-muted hover:text-primary border border-border rounded px-3 py-1 transition-colors">
+                  {previewOpen.has(i) ? 'Hide Preview' : 'Preview'}
                 </button>
-              )}
+                {i > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => removeStep(i)}
+                    className="font-mono text-xs text-red-600 dark:text-red-400 hover:opacity-70 transition-opacity">
+                    Remove
+                  </button>
+                )}
+              </div>
             </div>
             <div>
               <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">
@@ -237,6 +264,22 @@ function BuilderTab({ onCreated, router }: { onCreated: () => void; router: Retu
                 className="form-input w-full resize-y"
                 placeholder="Write your email body here..." />
             </div>
+            {previewOpen.has(i) && (
+              <div style={{
+                backgroundColor: '#f9f9f9',
+                border: '1px solid rgba(0,0,0,0.08)',
+                borderRadius: 6,
+                padding: '24px',
+                marginTop: 12,
+              }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#111827', marginBottom: 16, fontFamily: 'monospace' }}>
+                  {step.subject || '(no subject)'}
+                </p>
+                <div
+                  dangerouslySetInnerHTML={{ __html: renderPreviewHtml(step.body) || '<p style="margin:0;font-size:15px;color:#999;font-family:Georgia,serif;">(no body)</p>' }}
+                />
+              </div>
+            )}
           </div>
         ))}
 
