@@ -827,7 +827,7 @@ export async function sendCampaignStepEmail({
     .join('')
 
   await send({
-    from: FROM,
+    from: 'Mantis Tech <support@mantistech.org>',
     to,
     subject,
     html: `
