@@ -18,6 +18,7 @@ import SMSTextMarketing from '@/components/template/tabs/SMSTextMarketing'
 import WeatherActivation from '@/components/template/tabs/WeatherActivation'
 import EmailMarketing from '@/components/demo/tabs/EmailMarketing'
 import CRM from '@/components/template/tabs/CRM'
+import Proposals from '@/components/template/tabs/Proposals'
 import Integrations from '@/components/template/tabs/Integrations'
 
 // ── Shared style constants ────────────────────────────────────────────────────
@@ -405,6 +406,7 @@ export default function TemplateView({ hideBanner, skipGate }: { hideBanner?: bo
       case 'gbp':         return <GBPPage businessName={businessName} />
       case 'missed-call': return <MissedCallPage businessName={businessName} />
       case 'crm':         return <CRM clientToken={clientToken} businessName={businessName} />
+      case 'proposals':   return <Proposals clientToken={clientToken} />
       case 'performance': return <PerformancePage />
       case 'integrations': return <Integrations />
       case 'settings':

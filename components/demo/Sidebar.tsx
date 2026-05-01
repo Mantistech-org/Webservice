@@ -15,6 +15,7 @@ export type DemoView =
   | 'gbp'
   | 'missed-call'
   | 'crm'
+  | 'proposals'
   | 'performance'
   | 'integrations'
   | 'settings'
