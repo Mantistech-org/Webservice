@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { query, pgEnabled } from '@/lib/pg'
 import { enrollLeadInCampaigns } from '@/lib/campaigns'
 import { sendCampaignStepEmail } from '@/lib/resend'
+import { isAdminAuthenticated } from '@/lib/auth'
 
 // Run this once in your Supabase SQL editor to create the table:
 //
@@ -76,6 +77,42 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error('[demo/lead] unexpected error:', err)
   }
+
+  return NextResponse.json({ success: true })
+}
+
+export async function DELETE(req: NextRequest) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const { searchParams } = new URL(req.url)
+  const id = searchParams.get('id')
+  if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+
+  // Get the email before deleting
+  const lead = await query<{ email: string }>(
+    `SELECT email FROM public.demo_leads WHERE id = $1`,
+    [id]
+  )
+
+  if (lead[0]?.email) {
+    // Delete campaign sends for this lead's enrollments
+    await query(
+      `DELETE FROM public.campaign_sends
+       WHERE enrollment_id IN (
+         SELECT id FROM public.campaign_enrollments WHERE lead_email = $1
+       )`,
+      [lead[0].email]
+    )
+    // Delete campaign enrollments
+    await query(
+      `DELETE FROM public.campaign_enrollments WHERE lead_email = $1`,
+      [lead[0].email]
+    )
+  }
+
+  // Delete the lead
+  await query(`DELETE FROM public.demo_leads WHERE id = $1`, [id])
 
   return NextResponse.json({ success: true })
 }
