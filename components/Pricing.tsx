@@ -10,6 +10,7 @@ const PLAN_ONLY_FEATURES = [
   'Google Business Profile Management',
   'Monthly Performance Report',
   'AI Content Assistant',
+  'Proposal Generator',
 ]
 
 const PLAN_PLUS_FEATURES = [
@@ -22,7 +23,6 @@ const PLAN_PLUS_FEATURES = [
   'Connected to every platform tool from day one',
   'Unlimited content updates',
   'Invoicing System',
-  'Proposal Generator',
 ]
 
 function CheckIcon() {
