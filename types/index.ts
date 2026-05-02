@@ -120,7 +120,6 @@ export const PLANS = {
       'Missed Call Auto-Reply',
       'Google Business Profile Management',
       'Monthly Performance Report',
-      'AI Content Assistant',
       'Proposal Generator',
     ],
   },
