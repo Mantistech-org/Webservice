@@ -109,6 +109,15 @@ function ProposalsIcon() {
     </svg>
   )
 }
+function InvoicesIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="2" y="3" width="20" height="14" rx="2"/>
+      <line x1="8" y1="21" x2="16" y2="21"/>
+      <line x1="12" y1="17" x2="12" y2="21"/>
+    </svg>
+  )
+}
 function IntegrationsIcon() {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -131,6 +140,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'weather',     label: 'Weather Activation', icon: <CloudIcon />, featured: true },
   { id: 'crm',         label: 'CRM',                icon: <UsersIcon /> },
   { id: 'proposals',   label: 'Proposals',          icon: <ProposalsIcon /> },
+  { id: 'invoices',    label: 'Invoices',           icon: <InvoicesIcon /> },
   { id: 'bookings',    label: 'Bookings',           icon: <CalendarIcon /> },
   { id: 'review',      label: 'Reviews',            icon: <StarIcon /> },
   { id: 'seo',         label: 'SEO',                icon: <SearchIcon /> },

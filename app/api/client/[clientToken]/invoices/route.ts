@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProjectByClientToken } from '@/lib/db'
 import { query, pgEnabled } from '@/lib/pg'
+import { getStripe } from '@/lib/stripe'
 
 // ── Template-preview fallback ─────────────────────────────────────────────────
 
@@ -40,50 +41,6 @@ let schemaReady = false
 
 async function ensureSchema() {
   if (schemaReady) return
-  await query(`
-    CREATE TABLE IF NOT EXISTS public.client_proposals (
-      id               TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
-      project_id       TEXT NOT NULL,
-      proposal_token   TEXT NOT NULL DEFAULT gen_random_uuid()::text,
-      customer_name    TEXT NOT NULL,
-      customer_email   TEXT,
-      customer_phone   TEXT,
-      service_address  TEXT,
-      service_type     TEXT,
-      complaint        TEXT,
-      findings         TEXT,
-      recommended_work TEXT,
-      parts_cost       NUMERIC NOT NULL DEFAULT 0,
-      labor_hours      NUMERIC NOT NULL DEFAULT 0,
-      labor_rate       NUMERIC NOT NULL DEFAULT 95,
-      notes            TEXT,
-      valid_until      DATE,
-      generated_content JSONB,
-      status           TEXT NOT NULL DEFAULT 'draft',
-      last_sent_at     TIMESTAMPTZ,
-      created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `)
-  await query(
-    `CREATE INDEX IF NOT EXISTS idx_client_proposals_project_id ON public.client_proposals (project_id)`
-  )
-  await query(
-    `CREATE UNIQUE INDEX IF NOT EXISTS idx_client_proposals_token ON public.client_proposals (proposal_token)`
-  )
-  await query(`
-    CREATE TABLE IF NOT EXISTS public.client_pricebook (
-      id         TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
-      project_id TEXT NOT NULL,
-      item_name  TEXT NOT NULL,
-      unit_price NUMERIC NOT NULL DEFAULT 0,
-      category   TEXT NOT NULL DEFAULT 'Other',
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `)
-  await query(
-    `CREATE INDEX IF NOT EXISTS idx_client_pricebook_project_id ON public.client_pricebook (project_id)`
-  )
   await query(`
     CREATE TABLE IF NOT EXISTS public.client_invoices (
       id                      TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
@@ -127,19 +84,19 @@ export async function GET(
   const { clientToken } = await params
   const projectId = await resolveProjectId(clientToken)
   if (!projectId) return NextResponse.json({ error: 'Project not found' }, { status: 404 })
-  if (!pgEnabled) return NextResponse.json({ proposals: [] })
+  if (!pgEnabled) return NextResponse.json({ invoices: [] })
 
   try {
     await ensureSchema()
     const rows = await query(
-      `SELECT * FROM public.client_proposals
+      `SELECT * FROM public.client_invoices
        WHERE project_id = $1
        ORDER BY created_at DESC`,
       [projectId]
     )
-    return NextResponse.json({ proposals: rows })
+    return NextResponse.json({ invoices: rows })
   } catch (err) {
-    console.error('[proposals] GET failed:', err)
+    console.error('[invoices] GET failed:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -155,21 +112,18 @@ export async function POST(
 
   const body = await req.json()
   const {
+    proposal_id,
     customer_name,
     customer_email,
     customer_phone,
     service_address,
-    service_type,
-    complaint,
-    findings,
-    recommended_work,
-    parts_cost,
-    labor_hours,
-    labor_rate,
+    line_items,
+    subtotal,
+    tax_rate,
+    tax_amount,
+    total,
+    due_date,
     notes,
-    valid_until,
-    generated_content,
-    status,
   } = body
 
   if (!customer_name) {
@@ -178,39 +132,62 @@ export async function POST(
 
   try {
     await ensureSchema()
-    const rows = await query<{ id: string }>(
-      `INSERT INTO public.client_proposals
-         (project_id, customer_name, customer_email, customer_phone, service_address,
-          service_type, complaint, findings, recommended_work,
-          parts_cost, labor_hours, labor_rate, notes, valid_until, generated_content, status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::jsonb,$16)
-       RETURNING id`,
+
+    const rows = await query<{ id: string; invoice_token: string }>(
+      `INSERT INTO public.client_invoices
+         (project_id, proposal_id, customer_name, customer_email, customer_phone,
+          service_address, line_items, subtotal, tax_rate, tax_amount, total, due_date, notes)
+       VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11,$12,$13)
+       RETURNING id, invoice_token`,
       [
         projectId,
+        proposal_id ?? null,
         customer_name,
         customer_email ?? null,
         customer_phone ?? null,
         service_address ?? null,
-        service_type ?? null,
-        complaint ?? null,
-        findings ?? null,
-        recommended_work ?? null,
-        parts_cost ?? 0,
-        labor_hours ?? 0,
-        labor_rate ?? 95,
+        JSON.stringify(line_items ?? []),
+        subtotal ?? 0,
+        tax_rate ?? 0,
+        tax_amount ?? 0,
+        total ?? 0,
+        due_date ?? null,
         notes ?? null,
-        valid_until ?? null,
-        generated_content ? JSON.stringify(generated_content) : null,
-        status ?? 'draft',
       ]
     )
+
+    const invoiceId = rows[0].id
+    const invoiceToken = rows[0].invoice_token
+
+    // Create Stripe payment link if email provided and total > 0
+    if (customer_email && total > 0) {
+      try {
+        const s = await getStripe()
+        const price = await s.prices.create({
+          currency: 'usd',
+          unit_amount: Math.round(total * 100),
+          product_data: { name: `Invoice - ${customer_name}` },
+        })
+        const paymentLink = await s.paymentLinks.create({
+          line_items: [{ price: price.id, quantity: 1 }],
+          metadata: { invoice_id: invoiceId, client_token: clientToken },
+        })
+        await query(
+          `UPDATE public.client_invoices SET stripe_payment_link = $1, updated_at = NOW() WHERE id = $2`,
+          [paymentLink.url, invoiceId]
+        )
+      } catch (err) {
+        console.error('[invoices] Stripe payment link creation failed:', err)
+      }
+    }
+
     const created = await query(
-      `SELECT * FROM public.client_proposals WHERE id = $1`,
-      [rows[0].id]
+      `SELECT * FROM public.client_invoices WHERE id = $1`,
+      [invoiceId]
     )
-    return NextResponse.json({ proposal: created[0] }, { status: 201 })
+    return NextResponse.json({ invoice: created[0], invoice_token: invoiceToken }, { status: 201 })
   } catch (err) {
-    console.error('[proposals] POST failed:', err)
+    console.error('[invoices] POST failed:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

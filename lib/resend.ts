@@ -838,6 +838,36 @@ export async function sendCampaignStepEmail({
   })
 }
 
+// ── 22. Invoice email (sent to customer when invoice status → 'sent') ────────
+export async function sendInvoiceEmail({
+  to, customerName, businessName, total, dueDate, paymentLink, invoiceUrl,
+}: {
+  to: string
+  customerName: string
+  businessName: string
+  total: number
+  dueDate: string
+  paymentLink: string
+  invoiceUrl: string
+}) {
+  await send({
+    from: `${businessName} <support@mantistech.org>`,
+    to,
+    subject: `Invoice from ${businessName} — $${total.toFixed(2)} due ${dueDate}`,
+    html: emailLayout(`
+      <h1>Invoice from ${businessName}</h1>
+      <p>Hi ${customerName},</p>
+      <p>Please find your invoice for <strong>$${total.toFixed(2)}</strong> due on <strong>${dueDate}</strong>. Use the button below to pay securely online.</p>
+      <div class="btn-wrap">
+        <a href="${paymentLink}" class="btn" style="background-color:#00C27C;">Pay Now — $${total.toFixed(2)}</a>
+      </div>
+      <div class="divider"></div>
+      <p class="muted">You can also view your full invoice at: <a href="${invoiceUrl}" style="color:#888;">${invoiceUrl}</a></p>
+      <p class="muted">If you have any questions, please reply to this email.</p>
+    `),
+  })
+}
+
 // ── 20. Admin password reset ─────────────────────────────────────────────────
 export async function sendAdminPasswordResetEmail(params: {
   token: string

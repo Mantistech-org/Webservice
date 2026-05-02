@@ -19,6 +19,7 @@ import WeatherActivation from '@/components/template/tabs/WeatherActivation'
 import EmailMarketing from '@/components/demo/tabs/EmailMarketing'
 import CRM from '@/components/template/tabs/CRM'
 import Proposals from '@/components/template/tabs/Proposals'
+import Invoices from '@/components/template/tabs/Invoices'
 import Integrations from '@/components/template/tabs/Integrations'
 
 // ── Shared style constants ────────────────────────────────────────────────────
@@ -407,6 +408,7 @@ export default function TemplateView({ hideBanner, skipGate }: { hideBanner?: bo
       case 'missed-call': return <MissedCallPage businessName={businessName} />
       case 'crm':         return <CRM clientToken={clientToken} businessName={businessName} />
       case 'proposals':   return <Proposals clientToken={clientToken} />
+      case 'invoices':    return <Invoices clientToken={clientToken} />
       case 'performance': return <PerformancePage />
       case 'integrations': return <Integrations />
       case 'settings':

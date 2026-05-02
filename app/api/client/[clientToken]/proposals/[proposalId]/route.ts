@@ -83,6 +83,48 @@ export async function PATCH(
       values
     )
     if (!rows[0]) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+    // Auto-create draft invoice when proposal is accepted
+    if (body.status === 'accepted' && rows[0].generated_content) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const content = rows[0].generated_content as any
+        const lineItems = [
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ...(content.parts_list || []).map((p: any) => ({
+            description: p.item,
+            quantity: 1,
+            unit_price: p.cost,
+            total: p.cost,
+          })),
+          {
+            description: `Labor - ${content.labor_hours} hours`,
+            quantity: content.labor_hours,
+            unit_price: content.labor_rate,
+            total: content.labor_total,
+          },
+        ]
+        await query(
+          `INSERT INTO public.client_invoices
+           (project_id, proposal_id, customer_name, customer_email, service_address,
+            line_items, subtotal, total, due_date, status)
+           VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, NOW() + INTERVAL '30 days', 'draft')`,
+          [
+            projectId,
+            proposalId,
+            rows[0].customer_name,
+            rows[0].customer_email,
+            rows[0].service_address,
+            JSON.stringify(lineItems),
+            content.grand_total,
+            content.grand_total,
+          ]
+        )
+      } catch (err) {
+        console.error('[proposals/id] auto-invoice creation failed:', err)
+      }
+    }
+
     return NextResponse.json({ proposal: rows[0] })
   } catch (err) {
     console.error('[proposals/id] PATCH failed:', err)
