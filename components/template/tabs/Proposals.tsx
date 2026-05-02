@@ -433,16 +433,16 @@ function CreateProposal({ clientToken, onCreated }: { clientToken: string; onCre
   }
 
   return (
-    <div style={{ maxWidth: 700 }}>
+    <div>
       <form onSubmit={handleGenerate}>
-        <div style={{ ...CARD, marginBottom: 16 }}>
-          <p style={{ ...LABEL_STYLE, marginBottom: 16 }}>Customer Information</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div>
-              <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Customer Name <span style={{ color: '#ef4444' }}>*</span></label>
-              <input required value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Full name" style={INPUT_STYLE} />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+          <div style={CARD}>
+            <p style={{ ...LABEL_STYLE, marginBottom: 16 }}>Customer Information</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Customer Name <span style={{ color: '#ef4444' }}>*</span></label>
+                <input required value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Full name" style={INPUT_STYLE} />
+              </div>
               <div>
                 <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Customer Email</label>
                 <input type="email" value={customerEmail} onChange={e => setCustomerEmail(e.target.value)} placeholder="name@email.com" style={INPUT_STYLE} />
@@ -451,56 +451,56 @@ function CreateProposal({ clientToken, onCreated }: { clientToken: string; onCre
                 <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Customer Phone</label>
                 <input type="tel" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder="(555) 000-0000" style={INPUT_STYLE} />
               </div>
-            </div>
-            <div>
-              <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Service Address</label>
-              <input value={serviceAddress} onChange={e => setServiceAddress(e.target.value)} placeholder="123 Main St, City, OH" style={INPUT_STYLE} />
+              <div>
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Service Address</label>
+                <input value={serviceAddress} onChange={e => setServiceAddress(e.target.value)} placeholder="123 Main St, City, OH" style={INPUT_STYLE} />
+              </div>
+              <div>
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Service Type</label>
+                <select value={serviceType} onChange={e => setServiceType(e.target.value)} style={{ ...INPUT_STYLE, cursor: 'pointer' }}>
+                  {SERVICE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Valid Until</label>
+                <input type="date" value={validUntil} onChange={e => setValidUntil(e.target.value)} style={INPUT_STYLE} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                <div>
+                  <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Parts Cost ($)</label>
+                  <input type="number" min="0" step="0.01" value={partsCost} onChange={e => setPartsCost(e.target.value)} placeholder="0.00" style={INPUT_STYLE} />
+                </div>
+                <div>
+                  <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Labor Hours</label>
+                  <input type="number" min="0" step="0.5" value={laborHours} onChange={e => setLaborHours(e.target.value)} placeholder="0" style={INPUT_STYLE} />
+                </div>
+                <div>
+                  <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Rate ($/hr)</label>
+                  <input type="number" min="0" step="1" value={laborRate} onChange={e => setLaborRate(e.target.value)} placeholder="95" style={INPUT_STYLE} />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div style={{ ...CARD, marginBottom: 16 }}>
-          <p style={{ ...LABEL_STYLE, marginBottom: 16 }}>Job Details</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div>
-              <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Service Type</label>
-              <select value={serviceType} onChange={e => setServiceType(e.target.value)} style={{ ...INPUT_STYLE, cursor: 'pointer' }}>
-                {SERVICE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>What is the customer complaining about?</label>
-              <textarea value={complaint} onChange={e => setComplaint(e.target.value)} placeholder="e.g. AC not cooling, blowing warm air" rows={3} style={{ ...INPUT_STYLE, resize: 'vertical' }} />
-            </div>
-            <div>
-              <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>What did you find on inspection?</label>
-              <textarea value={findings} onChange={e => setFindings(e.target.value)} placeholder="e.g. Refrigerant leak at evaporator coil, capacitor weak" rows={3} style={{ ...INPUT_STYLE, resize: 'vertical' }} />
-            </div>
-            <div>
-              <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>What work needs to be done?</label>
-              <textarea value={recommendedWork} onChange={e => setRecommendedWork(e.target.value)} placeholder="e.g. Replace capacitor, recharge refrigerant, check for further leaks" rows={3} style={{ ...INPUT_STYLE, resize: 'vertical' }} />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+          <div style={CARD}>
+            <p style={{ ...LABEL_STYLE, marginBottom: 16 }}>Job Details</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div>
-                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Estimated Parts Cost ($)</label>
-                <input type="number" min="0" step="0.01" value={partsCost} onChange={e => setPartsCost(e.target.value)} placeholder="0.00" style={INPUT_STYLE} />
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>What is the customer complaining about?</label>
+                <textarea value={complaint} onChange={e => setComplaint(e.target.value)} placeholder="e.g. AC not cooling, blowing warm air" rows={4} style={{ ...INPUT_STYLE, resize: 'vertical' }} />
               </div>
               <div>
-                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Estimated Labor Hours</label>
-                <input type="number" min="0" step="0.5" value={laborHours} onChange={e => setLaborHours(e.target.value)} placeholder="0" style={INPUT_STYLE} />
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>What did you find on inspection?</label>
+                <textarea value={findings} onChange={e => setFindings(e.target.value)} placeholder="e.g. Refrigerant leak at evaporator coil, capacitor weak" rows={4} style={{ ...INPUT_STYLE, resize: 'vertical' }} />
               </div>
               <div>
-                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Labor Rate ($/hr)</label>
-                <input type="number" min="0" step="1" value={laborRate} onChange={e => setLaborRate(e.target.value)} placeholder="95" style={INPUT_STYLE} />
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>What work needs to be done?</label>
+                <textarea value={recommendedWork} onChange={e => setRecommendedWork(e.target.value)} placeholder="e.g. Replace capacitor, recharge refrigerant, check for further leaks" rows={4} style={{ ...INPUT_STYLE, resize: 'vertical' }} />
               </div>
-            </div>
-            <div>
-              <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Notes or Warranty Terms</label>
-              <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Optional notes, warranty information, etc." rows={2} style={{ ...INPUT_STYLE, resize: 'vertical' }} />
-            </div>
-            <div>
-              <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Valid Until</label>
-              <input type="date" value={validUntil} onChange={e => setValidUntil(e.target.value)} style={{ ...INPUT_STYLE, width: 'auto' }} />
+              <div>
+                <label style={{ ...COL_LABEL, display: 'block', marginBottom: 6 }}>Notes or Warranty Terms</label>
+                <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Optional notes, warranty information, etc." rows={3} style={{ ...INPUT_STYLE, resize: 'vertical' }} />
+              </div>
             </div>
           </div>
         </div>
@@ -603,7 +603,7 @@ function Pricebook({ clientToken }: { clientToken: string }) {
   }
 
   return (
-    <div style={{ maxWidth: 700 }}>
+    <div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
         <button
           onClick={() => setAddingItem(v => !v)}
