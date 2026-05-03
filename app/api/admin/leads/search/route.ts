@@ -15,6 +15,25 @@ interface PlacesResult {
   already_saved: boolean
 }
 
+const CATEGORY_TYPE_MAP: Record<string, string[]> = {
+  'hvac': ['hvac_contractor'],
+  'plumber': ['plumber'],
+  'electrician': ['electrician'],
+  'restaurant': ['restaurant'],
+  'roofing': ['roofing_contractor'],
+  'landscaping': ['landscaping'],
+  'general contractor': ['general_contractor'],
+  'auto repair': ['auto_repair'],
+  'dentist': ['dentist'],
+  'doctor': ['doctor'],
+  'gym': ['gym'],
+  'hotel': ['lodging'],
+  'lawyer': ['lawyer'],
+  'real estate': ['real_estate_agency'],
+  'insurance': ['insurance_agency'],
+  'accounting': ['accounting'],
+}
+
 async function geocode(location: string, apiKey: string): Promise<{ lat: number; lng: number } | null> {
   try {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${apiKey}`
@@ -61,10 +80,16 @@ export async function POST(req: NextRequest) {
 
   // Build the text query — include "United States" for national searches
   const locationPart = location.trim()
-  const textQuery = [keyword, searchQuery, locationPart || 'United States'].filter(Boolean).join(' ')
+  const normalizedQuery = searchQuery.toLowerCase().trim()
+  const matchedTypes = CATEGORY_TYPE_MAP[normalizedQuery]
+
+  const textQuery = matchedTypes
+    ? locationPart || 'United States'
+    : `${keyword ? keyword + ' ' : ''}${searchQuery} ${locationPart || 'United States'}`.trim()
 
   // Base Places API request body
   const placesBodyBase: Record<string, unknown> = { textQuery }
+  if (matchedTypes) placesBodyBase.includedTypes = matchedTypes
   if (minRating) placesBodyBase.minRating = Number(minRating)
 
   // Add location bias only when a specific location was provided
@@ -89,6 +114,7 @@ export async function POST(req: NextRequest) {
     const reqBody: Record<string, unknown> = {
       ...placesBodyBase,
       maxResultCount: 20,
+      pageSize: 20,
     }
     if (nextPageToken) reqBody.pageToken = nextPageToken
 
