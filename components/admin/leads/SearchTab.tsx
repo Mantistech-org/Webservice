@@ -26,7 +26,7 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
     query: '',
     location: '',
     keyword: '',
-    radius: '25000',
+    radius: 'none',
     minRating: '',
     maxRating: '',
     hasWebsite: 'any',
@@ -60,9 +60,9 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: form.query,
-          location: form.location,
+          location: form.radius === 'none' ? '' : form.location,
           keyword: form.keyword,
-          radius: Number(form.radius),
+          ...(form.radius !== 'none' && { radius: Number(form.radius) }),
           minRating: form.minRating ? Number(form.minRating) : undefined,
           maxRating: form.maxRating ? Number(form.maxRating) : undefined,
           hasWebsite: form.hasWebsite,
@@ -162,11 +162,13 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
             </div>
             <div>
               <label className={LABEL_CLS}>
-                Location <span className="text-muted font-normal normal-case tracking-normal">(optional — leave blank for national)</span>
+                Location{form.radius !== 'none' && <span className="text-red-500"> *</span>}
+                {form.radius === 'none' && <span className="text-muted font-normal normal-case tracking-normal"> (optional)</span>}
               </label>
               <input
                 type="text"
-                placeholder="e.g. Austin, TX or Chicago"
+                required={form.radius !== 'none'}
+                placeholder={form.radius === 'none' ? 'Optional' : 'e.g. Austin, TX or Chicago'}
                 value={form.location}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
                 className={FIELD_CLS}
@@ -189,11 +191,12 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
                 onChange={(e) => setForm({ ...form, radius: e.target.value })}
                 className={FIELD_CLS}
               >
-                <option value="5000">5 km</option>
-                <option value="10000">10 km</option>
-                <option value="25000">25 km</option>
-                <option value="50000">50 km</option>
-                <option value="100000">100 km</option>
+                <option value="none">No Radius</option>
+                <option value="1609">1 mile</option>
+                <option value="8047">5 miles</option>
+                <option value="16093">10 miles</option>
+                <option value="40234">25 miles</option>
+                <option value="80467">50 miles</option>
               </select>
             </div>
             <div>
