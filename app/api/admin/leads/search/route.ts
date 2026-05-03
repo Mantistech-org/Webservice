@@ -15,24 +15,6 @@ interface PlacesResult {
   already_saved: boolean
 }
 
-const CATEGORY_TYPE_MAP: Record<string, string[]> = {
-  'hvac': ['hvac_contractor'],
-  'plumber': ['plumber'],
-  'electrician': ['electrician'],
-  'restaurant': ['restaurant'],
-  'roofing': ['roofing_contractor'],
-  'landscaping': ['landscaping'],
-  'general contractor': ['general_contractor'],
-  'auto repair': ['auto_repair'],
-  'dentist': ['dentist'],
-  'doctor': ['doctor'],
-  'gym': ['gym'],
-  'hotel': ['lodging'],
-  'lawyer': ['lawyer'],
-  'real estate': ['real_estate_agency'],
-  'insurance': ['insurance_agency'],
-  'accounting': ['accounting'],
-}
 
 async function geocode(location: string, apiKey: string): Promise<{ lat: number; lng: number } | null> {
   try {
@@ -78,18 +60,15 @@ export async function POST(req: NextRequest) {
 
   const clampedMax = Math.min(Math.max(1, Number(maxResults)), 200)
 
-  // Build the text query — include "United States" for national searches
+  // Build the text query — always include business type explicitly for broad results
   const locationPart = location.trim()
-  const normalizedQuery = searchQuery.toLowerCase().trim()
-  const matchedTypes = CATEGORY_TYPE_MAP[normalizedQuery]
-
-  const textQuery = matchedTypes
-    ? locationPart || 'United States'
-    : `${keyword ? keyword + ' ' : ''}${searchQuery} ${locationPart || 'United States'}`.trim()
+  const baseQuery = keyword ? `${keyword} ${searchQuery}` : searchQuery
+  const textQuery = locationPart
+    ? `${baseQuery} in ${locationPart}`
+    : `${baseQuery} in United States`
 
   // Base Places API request body
-  const placesBodyBase: Record<string, unknown> = { textQuery }
-  if (matchedTypes) placesBodyBase.includedTypes = matchedTypes
+  const placesBodyBase: Record<string, unknown> = { textQuery, languageCode: 'en', regionCode: 'US' }
   if (minRating) placesBodyBase.minRating = Number(minRating)
 
   // Add location bias only when a specific location was provided
