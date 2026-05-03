@@ -97,17 +97,7 @@ export async function POST(req: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': apiKey,
-        'X-Goog-FieldMask': [
-          'places.id',
-          'places.displayName',
-          'places.formattedAddress',
-          'places.nationalPhoneNumber',
-          'places.websiteUri',
-          'places.rating',
-          'places.userRatingCount',
-          'places.businessStatus',
-          'nextPageToken',
-        ].join(','),
+        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.rating,places.userRatingCount,places.businessStatus,places.types,places.id',
       },
       body: JSON.stringify(reqBody),
     })
