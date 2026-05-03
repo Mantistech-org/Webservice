@@ -1,133 +1,109 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/auth'
-import { query, transaction, pgEnabled } from '@/lib/pg'
+import { query, pgEnabled } from '@/lib/pg'
 
-export interface Campaign {
-  id: string
-  name: string
-  template_id: string | null
-  status: 'draft' | 'scheduled' | 'sending' | 'completed' | 'paused'
-  send_mode: 'immediate' | 'scheduled' | 'drip'
-  scheduled_at: string | null
-  daily_limit: number | null
-  weekly_limit: number | null
-  sent_count: number
-  total_leads: number
-  created_at: string
-  updated_at: string
-  // joined
-  template_name?: string
-  open_count?: number
-  bounce_count?: number
+async function ensureSchema() {
+  await query(`
+    CREATE TABLE IF NOT EXISTS public.lead_campaigns (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      name text NOT NULL,
+      description text,
+      audience text NOT NULL DEFAULT 'all',
+      selected_lead_ids jsonb DEFAULT '[]',
+      status text NOT NULL DEFAULT 'draft',
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `)
+  await query(`
+    CREATE TABLE IF NOT EXISTS public.lead_campaign_emails (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      campaign_id uuid NOT NULL REFERENCES public.lead_campaigns(id) ON DELETE CASCADE,
+      step_number int NOT NULL,
+      subject text NOT NULL,
+      body text NOT NULL,
+      delay_days int NOT NULL DEFAULT 0
+    )
+  `)
+  await query(`
+    CREATE TABLE IF NOT EXISTS public.lead_campaign_sends (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      campaign_id uuid NOT NULL REFERENCES public.lead_campaigns(id) ON DELETE CASCADE,
+      lead_id text NOT NULL,
+      lead_email text NOT NULL,
+      step_number int NOT NULL,
+      sent_at timestamptz NOT NULL DEFAULT now()
+    )
+  `)
 }
 
-// GET /api/admin/leads/campaigns
 export async function GET() {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-
   if (!pgEnabled) {
     return NextResponse.json({ campaigns: [] })
   }
 
-  try {
-    const campaigns = await query<Campaign>(`
-      SELECT
-        c.*,
-        t.name AS template_name,
-        COUNT(cl.id) FILTER (WHERE cl.status = 'opened')  AS open_count,
-        COUNT(cl.id) FILTER (WHERE cl.status = 'bounced') AS bounce_count
-      FROM public.email_campaigns c
-      LEFT JOIN public.email_templates t ON t.id = c.template_id
-      LEFT JOIN public.campaign_leads cl ON cl.campaign_id = c.id
-      GROUP BY c.id, t.name
-      ORDER BY c.created_at DESC
-    `)
-    return NextResponse.json({ campaigns })
-  } catch (err) {
-    console.error('[campaigns] GET failed:', err)
-    return NextResponse.json({ error: 'Failed to load campaigns.' }, { status: 500 })
-  }
+  await ensureSchema()
+
+  const campaigns = await query(`
+    SELECT
+      c.id, c.name, c.description, c.audience, c.selected_lead_ids, c.status, c.created_at,
+      (SELECT COUNT(*) FROM public.lead_campaign_emails WHERE campaign_id = c.id)::int AS email_steps,
+      (SELECT COUNT(*) FROM public.lead_campaign_sends WHERE campaign_id = c.id AND step_number = 1)::int AS leads_reached,
+      (SELECT COUNT(*) FROM public.lead_campaign_sends WHERE campaign_id = c.id)::int AS total_sends
+    FROM public.lead_campaigns c
+    ORDER BY c.created_at DESC
+  `)
+
+  return NextResponse.json({ campaigns })
 }
 
-// POST /api/admin/leads/campaigns — create a new campaign
 export async function POST(req: NextRequest) {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-
   if (!pgEnabled) {
     return NextResponse.json({ error: 'Database not configured.' }, { status: 503 })
   }
 
+  await ensureSchema()
+
   const body = await req.json()
-  const {
-    name,
-    template_id,
-    lead_ids,
-    send_mode = 'immediate',
-    scheduled_at,
-    daily_limit,
-    weekly_limit,
-  } = body as {
+  const { name, description, audience, selected_lead_ids, emails } = body as {
     name: string
-    template_id: string
-    lead_ids: string[]
-    send_mode: 'immediate' | 'scheduled' | 'drip'
-    scheduled_at?: string
-    daily_limit?: number
-    weekly_limit?: number
+    description?: string
+    audience: 'all' | 'selected'
+    selected_lead_ids?: string[]
+    emails: Array<{ step_number: number; subject: string; body: string; delay_days: number }>
   }
 
-  if (!name?.trim()) return NextResponse.json({ error: 'name is required.' }, { status: 400 })
-  if (!template_id) return NextResponse.json({ error: 'template_id is required.' }, { status: 400 })
-  if (!Array.isArray(lead_ids) || lead_ids.length === 0) {
-    return NextResponse.json({ error: 'At least one lead is required.' }, { status: 400 })
+  if (!name?.trim()) {
+    return NextResponse.json({ error: 'Campaign name is required.' }, { status: 400 })
+  }
+  if (!Array.isArray(emails) || emails.length === 0) {
+    return NextResponse.json({ error: 'At least one email step is required.' }, { status: 400 })
   }
 
-  // Filter out leads that have already been emailed
-  const alreadyEmailed = await query<{ id: string }>(
-    `SELECT id FROM public.outreach_leads WHERE id = ANY($1::uuid[]) AND status = 'emailed'`,
-    [lead_ids]
+  const campaignRows = await query(
+    `INSERT INTO public.lead_campaigns (name, description, audience, selected_lead_ids)
+     VALUES ($1, $2, $3, $4) RETURNING id`,
+    [
+      name.trim(),
+      description?.trim() || null,
+      audience ?? 'all',
+      JSON.stringify(selected_lead_ids ?? []),
+    ]
   )
-  const emailedSet = new Set(alreadyEmailed.map((r) => r.id))
-  const freshLeadIds = lead_ids.filter((id) => !emailedSet.has(id))
+  const campaignId = (campaignRows as Array<{ id: string }>)[0].id
 
-  if (freshLeadIds.length === 0) {
-    return NextResponse.json({ error: 'All selected leads have already been emailed.' }, { status: 400 })
+  for (const step of emails) {
+    await query(
+      `INSERT INTO public.lead_campaign_emails (campaign_id, step_number, subject, body, delay_days)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [campaignId, step.step_number, step.subject.trim(), step.body.trim(), step.delay_days ?? 0]
+    )
   }
 
-  let campaignId: string | null = null
-
-  await transaction(async (client) => {
-    const campaignRows = await client.query(
-      `INSERT INTO public.email_campaigns
-         (name, template_id, status, send_mode, scheduled_at, daily_limit, weekly_limit, total_leads)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING id`,
-      [
-        name.trim(),
-        template_id,
-        send_mode === 'scheduled' ? 'scheduled' : 'draft',
-        send_mode,
-        scheduled_at ?? null,
-        daily_limit ?? null,
-        weekly_limit ?? null,
-        freshLeadIds.length,
-      ]
-    )
-    campaignId = campaignRows.rows[0].id
-
-    for (const leadId of freshLeadIds) {
-      await client.query(
-        `INSERT INTO public.campaign_leads (campaign_id, lead_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-        [campaignId, leadId]
-      )
-    }
-  })
-
-  const skipped = emailedSet.size
-
-  return NextResponse.json({ campaign_id: campaignId, total_leads: freshLeadIds.length, skipped }, { status: 201 })
+  return NextResponse.json({ success: true, campaign_id: campaignId }, { status: 201 })
 }

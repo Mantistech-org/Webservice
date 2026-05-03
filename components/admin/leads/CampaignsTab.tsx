@@ -1,115 +1,149 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type { OutreachLead } from '@/types/leads'
+
+interface EmailStep {
+  step_number: number
+  subject: string
+  body: string
+  delay_days: number
+}
 
 interface Campaign {
   id: string
   name: string
-  template_id: string | null
-  template_name: string | null
+  description: string | null
+  audience: 'all' | 'selected'
+  selected_lead_ids: string[]
   status: string
-  send_mode: string
-  scheduled_at: string | null
-  daily_limit: number | null
-  weekly_limit: number | null
-  sent_count: number
-  total_leads: number
-  open_count: number
-  bounce_count: number
   created_at: string
+  email_steps: number
+  leads_reached: number
+  total_sends: number
 }
 
-interface EmailTemplate {
-  id: string
-  name: string
+interface CampaignDetail {
+  campaign: Campaign
+  email_steps: EmailStep[]
+  sends: Array<{ id: string; lead_id: string; lead_email: string; step_number: number; sent_at: string; business_name: string | null }>
 }
 
 interface CampaignsTabProps {
   savedLeads: OutreachLead[]
 }
 
-const STATUS_BADGE: Record<string, string> = {
+const STATUS_COLOR: Record<string, string> = {
   draft:     'text-muted border-border',
-  scheduled: 'text-yellow-700 dark:text-yellow-400 border-yellow-700/30 dark:border-yellow-400/30',
-  sending:   'text-blue-700 dark:text-blue-400 border-blue-700/30 dark:border-blue-400/30',
+  sending:   'text-yellow-700 dark:text-yellow-400 border-yellow-700/30 dark:border-yellow-400/30',
   paused:    'text-muted border-border',
   completed: 'text-emerald-700 dark:text-accent border-emerald-700/30 dark:border-accent/30',
 }
 
-function pct(num: number, denom: number) {
-  if (denom === 0) return '—'
-  return `${Math.round((num / denom) * 100)}%`
-}
+const BLANK_STEP = (): EmailStep => ({ step_number: 1, subject: '', body: '', delay_days: 0 })
 
 export default function CampaignsTab({ savedLeads }: CampaignsTabProps) {
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
-  const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [loading, setLoading] = useState(true)
-  const [showCreator, setShowCreator] = useState(false)
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
-  const [campaignLeads, setCampaignLeads] = useState<unknown[]>([])
-  const [sending, setSending] = useState(false)
+  const [showCreate, setShowCreate] = useState(false)
+  const [detail, setDetail] = useState<CampaignDetail | null>(null)
+  const [sending, setSending] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
 
-  // Creator form state
-  const [form, setForm] = useState({
-    name: '',
-    template_id: '',
-    send_mode: 'immediate' as 'immediate' | 'scheduled' | 'drip',
-    scheduled_at: '',
-    daily_limit: '',
-    weekly_limit: '',
-  })
+  // Create form
+  const [formName, setFormName] = useState('')
+  const [formDesc, setFormDesc] = useState('')
+  const [formAudience, setFormAudience] = useState<'all' | 'selected'>('all')
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set())
-  const [leadCategoryFilter, setLeadCategoryFilter] = useState('all')
+  const [emailSteps, setEmailSteps] = useState<EmailStep[]>([BLANK_STEP()])
   const [creating, setCreating] = useState(false)
+  const [leadFilter, setLeadFilter] = useState('all')
 
-  useEffect(() => {
-    fetchCampaigns()
-    fetchTemplates()
-  }, [])
-
-  const fetchCampaigns = async () => {
+  const fetchCampaigns = useCallback(async () => {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/leads/campaigns')
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Failed to load campaigns.')
-      setCampaigns(data.campaigns ?? [])
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed.')
+      if (res.ok) setCampaigns(data.campaigns ?? [])
+      else setError(data.error ?? 'Failed to load campaigns.')
+    } catch {
+      setError('Failed to load campaigns.')
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const fetchTemplates = async () => {
-    const res = await fetch('/api/admin/leads/templates')
-    const data = await res.json()
-    if (res.ok) setTemplates(data.templates ?? [])
-  }
+  useEffect(() => { fetchCampaigns() }, [fetchCampaigns])
 
-  const openCampaign = async (campaign: Campaign) => {
-    setSelectedCampaign(campaign)
-    setShowCreator(false)
+  const openDetail = async (campaign: Campaign) => {
+    setDetail(null)
+    setShowCreate(false)
     try {
       const res = await fetch(`/api/admin/leads/campaigns/${campaign.id}`)
       const data = await res.json()
-      if (res.ok) setCampaignLeads(data.leads ?? [])
+      if (res.ok) setDetail(data)
     } catch {
       // non-fatal
     }
   }
 
+  const handleSend = async (campaignId: string, stepNumber = 1) => {
+    setSending(campaignId)
+    setError('')
+    setSuccessMsg('')
+    try {
+      const res = await fetch(`/api/admin/leads/campaigns/${campaignId}/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ step_number: stepNumber }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Send failed.')
+      setSuccessMsg(`Step ${stepNumber} sent to ${data.sent} lead${data.sent !== 1 ? 's' : ''}${data.skipped > 0 ? ` (${data.skipped} already sent)` : ''}.`)
+      fetchCampaigns()
+      if (detail) openDetail(detail.campaign)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Send failed.')
+    } finally {
+      setSending(null)
+    }
+  }
+
+  const handleDelete = async (campaignId: string) => {
+    if (!confirm('Delete this campaign? This cannot be undone.')) return
+    setDeleting(campaignId)
+    setError('')
+    try {
+      await fetch(`/api/admin/leads/campaigns/${campaignId}`, { method: 'DELETE' })
+      if (detail?.campaign.id === campaignId) setDetail(null)
+      fetchCampaigns()
+    } catch {
+      setError('Delete failed.')
+    } finally {
+      setDeleting(null)
+    }
+  }
+
+  const handlePause = async (campaign: Campaign) => {
+    const newStatus = campaign.status === 'paused' ? 'sending' : 'paused'
+    await fetch(`/api/admin/leads/campaigns/${campaign.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    })
+    fetchCampaigns()
+  }
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.name.trim() || !form.template_id) {
-      setError('Name and template are required.')
+    if (!formName.trim()) { setError('Campaign name is required.'); return }
+    if (emailSteps.some((s) => !s.subject.trim() || !s.body.trim())) {
+      setError('All email steps require a subject and body.')
       return
     }
-    if (selectedLeadIds.size === 0) {
+    if (formAudience === 'selected' && selectedLeadIds.size === 0) {
       setError('Select at least one lead.')
       return
     }
@@ -122,37 +156,19 @@ export default function CampaignsTab({ savedLeads }: CampaignsTabProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: form.name,
-          template_id: form.template_id,
-          lead_ids: Array.from(selectedLeadIds),
-          send_mode: form.send_mode,
-          scheduled_at: form.scheduled_at || undefined,
-          daily_limit: form.daily_limit ? Number(form.daily_limit) : undefined,
-          weekly_limit: form.weekly_limit ? Number(form.weekly_limit) : undefined,
+          name: formName,
+          description: formDesc || undefined,
+          audience: formAudience,
+          selected_lead_ids: formAudience === 'selected' ? Array.from(selectedLeadIds) : [],
+          emails: emailSteps.map((s, i) => ({ ...s, step_number: i + 1 })),
         }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Failed to create campaign.')
-
-      setSuccessMsg(`Campaign created with ${data.total_leads} lead${data.total_leads !== 1 ? 's' : ''}${data.skipped > 0 ? ` (${data.skipped} already emailed, skipped)` : ''}.`)
-      setShowCreator(false)
-      setForm({ name: '', template_id: '', send_mode: 'immediate', scheduled_at: '', daily_limit: '', weekly_limit: '' })
-      setSelectedLeadIds(new Set())
+      setSuccessMsg('Campaign created.')
+      setShowCreate(false)
+      resetForm()
       fetchCampaigns()
-
-      // Auto-send if immediate
-      if (form.send_mode === 'immediate' && data.campaign_id) {
-        const sendRes = await fetch(`/api/admin/leads/campaigns/${data.campaign_id}/send`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({}),
-        })
-        const sendData = await sendRes.json()
-        if (sendRes.ok) {
-          setSuccessMsg(`Campaign created and sent. ${sendData.sent} email${sendData.sent !== 1 ? 's' : ''} delivered.`)
-          fetchCampaigns()
-        }
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Create failed.')
     } finally {
@@ -160,29 +176,32 @@ export default function CampaignsTab({ savedLeads }: CampaignsTabProps) {
     }
   }
 
-  const handleSend = async (campaignId: string) => {
-    setSending(true)
-    setError('')
-    setSuccessMsg('')
-    try {
-      const res = await fetch(`/api/admin/leads/campaigns/${campaignId}/send`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Send failed.')
-      setSuccessMsg(data.message ?? `${data.sent} email${data.sent !== 1 ? 's' : ''} sent.`)
-      fetchCampaigns()
-      if (selectedCampaign) openCampaign(selectedCampaign)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Send failed.')
-    } finally {
-      setSending(false)
-    }
+  const resetForm = () => {
+    setFormName('')
+    setFormDesc('')
+    setFormAudience('all')
+    setSelectedLeadIds(new Set())
+    setEmailSteps([BLANK_STEP()])
+    setLeadFilter('all')
   }
 
-  const toggleLeadSelect = (id: string) => {
+  const addStep = () => {
+    setEmailSteps((prev) => [...prev, { ...BLANK_STEP(), step_number: prev.length + 1 }])
+  }
+
+  const removeStep = (i: number) => {
+    setEmailSteps((prev) => prev.filter((_, idx) => idx !== i))
+  }
+
+  const updateStep = (i: number, field: keyof EmailStep, value: string | number) => {
+    setEmailSteps((prev) => prev.map((s, idx) => idx === i ? { ...s, [field]: value } : s))
+  }
+
+  const leadsWithEmail = savedLeads.filter((l) => !!l.email && l.deleted_at === null)
+  const leadCategories = ['all', ...Array.from(new Set(leadsWithEmail.map((l) => l.category).filter(Boolean))).sort()] as string[]
+  const filteredLeads = leadFilter === 'all' ? leadsWithEmail : leadsWithEmail.filter((l) => l.category === leadFilter)
+
+  const toggleLead = (id: string) => {
     setSelectedLeadIds((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
@@ -191,44 +210,8 @@ export default function CampaignsTab({ savedLeads }: CampaignsTabProps) {
     })
   }
 
-  const freshLeads = savedLeads.filter((l) => l.status !== 'emailed' && !!l.email)
-  const hiddenNoEmail = savedLeads.filter((l) => l.status !== 'emailed' && !l.email).length
-  const leadCategories = ['all', ...Array.from(new Set(freshLeads.map((l) => l.category).filter(Boolean))).sort()] as string[]
-  const filteredLeads = leadCategoryFilter === 'all'
-    ? freshLeads
-    : freshLeads.filter((l) => l.category === leadCategoryFilter)
-
   return (
     <div className="space-y-6">
-      {/* Stats summary */}
-      {campaigns.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[
-            { label: 'Total Leads', value: campaigns.reduce((s, c) => s + c.total_leads, 0) },
-            { label: 'Total Sent', value: campaigns.reduce((s, c) => s + c.sent_count, 0) },
-            {
-              label: 'Open Rate',
-              value: pct(
-                campaigns.reduce((s, c) => s + (c.open_count ?? 0), 0),
-                campaigns.reduce((s, c) => s + c.sent_count, 0)
-              ),
-            },
-            {
-              label: 'Bounce Rate',
-              value: pct(
-                campaigns.reduce((s, c) => s + (c.bounce_count ?? 0), 0),
-                campaigns.reduce((s, c) => s + c.sent_count, 0)
-              ),
-            },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-card border border-border rounded p-4">
-              <div className="font-mono text-xs text-muted tracking-widest uppercase mb-1">{stat.label}</div>
-              <div className="font-heading text-3xl text-primary">{stat.value}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="font-heading text-xl text-primary">Campaigns</h2>
@@ -237,25 +220,27 @@ export default function CampaignsTab({ savedLeads }: CampaignsTabProps) {
             <span className="font-mono text-xs text-emerald-700 dark:text-accent">{successMsg}</span>
           )}
           <button
-            onClick={() => { setShowCreator(!showCreator); setSelectedCampaign(null); setError(''); setSuccessMsg('') }}
+            onClick={() => { setShowCreate(!showCreate); setDetail(null); setError(''); setSuccessMsg('') }}
             className="font-mono text-xs px-4 py-2 rounded bg-accent text-black hover:opacity-90 transition-opacity"
           >
-            {showCreator ? 'Cancel' : 'New Campaign'}
+            {showCreate ? 'Cancel' : 'New Campaign'}
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-700/5 dark:bg-red-400/5 border border-red-700/20 dark:border-red-400/20 rounded font-mono text-xs text-red-700 dark:text-red-400">
+        <div className="p-3 border border-red-700/20 dark:border-red-400/20 rounded font-mono text-xs text-red-700 dark:text-red-400">
           {error}
         </div>
       )}
 
-      {/* Campaign creator */}
-      {showCreator && (
+      {/* Create panel */}
+      {showCreate && (
         <div className="bg-card border border-border rounded p-6">
           <h3 className="font-heading text-lg text-primary mb-5">Create Campaign</h3>
           <form onSubmit={handleCreate} className="space-y-5">
+
+            {/* Name + Description */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-1.5">
@@ -264,172 +249,193 @@ export default function CampaignsTab({ savedLeads }: CampaignsTabProps) {
                 <input
                   type="text"
                   required
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="e.g. March Plumbers Outreach"
-                  className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                  placeholder="e.g. May Plumbers Outreach"
+                  className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent"
                 />
               </div>
               <div>
                 <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-1.5">
-                  Email Template <span className="text-red-500">*</span>
+                  Description
                 </label>
-                <select
-                  required
-                  value={form.template_id}
-                  onChange={(e) => setForm({ ...form, template_id: e.target.value })}
-                  className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
-                >
-                  <option value="">Select a template...</option>
-                  {templates.map((t) => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
-                </select>
+                <input
+                  type="text"
+                  value={formDesc}
+                  onChange={(e) => setFormDesc(e.target.value)}
+                  placeholder="Optional note about this campaign"
+                  className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent"
+                />
               </div>
-              <div>
-                <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-1.5">
-                  Send Mode
-                </label>
-                <select
-                  value={form.send_mode}
-                  onChange={(e) => setForm({ ...form, send_mode: e.target.value as 'immediate' | 'scheduled' | 'drip' })}
-                  className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
-                >
-                  <option value="immediate">Immediate — send all now</option>
-                  <option value="scheduled">Scheduled — send at a specific time</option>
-                  <option value="drip">Drip — send within daily/weekly limits</option>
-                </select>
-              </div>
-              {form.send_mode === 'scheduled' && (
-                <div>
-                  <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-1.5">
-                    Scheduled Date &amp; Time
-                  </label>
+            </div>
+
+            {/* Audience */}
+            <div>
+              <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-2">
+                Audience
+              </label>
+              <div className="flex items-center gap-6 mb-3">
+                <label className="flex items-center gap-2 font-mono text-sm text-primary cursor-pointer">
                   <input
-                    type="datetime-local"
-                    value={form.scheduled_at}
-                    onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })}
-                    className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
+                    type="radio"
+                    name="audience"
+                    value="all"
+                    checked={formAudience === 'all'}
+                    onChange={() => setFormAudience('all')}
+                    className="accent-emerald-600"
                   />
+                  All leads with an email address
+                </label>
+                <label className="flex items-center gap-2 font-mono text-sm text-primary cursor-pointer">
+                  <input
+                    type="radio"
+                    name="audience"
+                    value="selected"
+                    checked={formAudience === 'selected'}
+                    onChange={() => setFormAudience('selected')}
+                    className="accent-emerald-600"
+                  />
+                  Selected leads only
+                </label>
+              </div>
+
+              {formAudience === 'selected' && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-xs text-muted">{selectedLeadIds.size} selected</span>
+                    <div className="flex items-center gap-3">
+                      {leadCategories.length > 1 && (
+                        <select
+                          value={leadFilter}
+                          onChange={(e) => setLeadFilter(e.target.value)}
+                          className="bg-bg border border-border text-primary rounded px-2 py-1 font-mono text-xs focus:outline-none focus:border-accent"
+                        >
+                          {leadCategories.map((c) => (
+                            <option key={c} value={c}>{c === 'all' ? 'All categories' : c}</option>
+                          ))}
+                        </select>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const ids = filteredLeads.map((l) => l.id)
+                          const allSel = ids.every((id) => selectedLeadIds.has(id))
+                          setSelectedLeadIds((prev) => {
+                            const next = new Set(prev)
+                            if (allSel) ids.forEach((id) => next.delete(id))
+                            else ids.forEach((id) => next.add(id))
+                            return next
+                          })
+                        }}
+                        className="font-mono text-xs text-muted hover:text-primary transition-colors"
+                      >
+                        {filteredLeads.length > 0 && filteredLeads.every((l) => selectedLeadIds.has(l.id))
+                          ? 'Deselect visible'
+                          : 'Select visible'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {filteredLeads.length === 0 ? (
+                    <p className="font-mono text-xs text-muted p-3 border border-dashed border-border rounded">
+                      No leads with an email address saved yet.
+                    </p>
+                  ) : (
+                    <div className="border border-border rounded overflow-hidden max-h-52 overflow-y-auto">
+                      {filteredLeads.map((lead) => (
+                        <label
+                          key={lead.id}
+                          className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer border-b border-border last:border-0 transition-colors ${
+                            selectedLeadIds.has(lead.id) ? 'bg-accent/5' : 'hover:bg-bg'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedLeadIds.has(lead.id)}
+                            onChange={() => toggleLead(lead.id)}
+                            className="accent-emerald-600 shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <div className="font-mono text-xs text-primary truncate">{lead.business_name}</div>
+                            <div className="font-mono text-[11px] text-muted truncate">{lead.email}</div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-              {form.send_mode === 'drip' && (
-                <>
-                  <div>
-                    <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-1.5">
-                      Daily Send Limit
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      placeholder="e.g. 5"
-                      value={form.daily_limit}
-                      onChange={(e) => setForm({ ...form, daily_limit: e.target.value })}
-                      className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-mono text-xs text-muted tracking-widest uppercase mb-1.5">
-                      Weekly Send Limit
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      placeholder="e.g. 20"
-                      value={form.weekly_limit}
-                      onChange={(e) => setForm({ ...form, weekly_limit: e.target.value })}
-                      className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent transition-colors"
-                    />
-                  </div>
-                </>
               )}
             </div>
 
-            {/* Lead selector */}
+            {/* Email sequence */}
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-3">
                 <label className="font-mono text-xs text-muted tracking-widest uppercase">
-                  Select Leads ({selectedLeadIds.size} selected)
+                  Email Sequence ({emailSteps.length} step{emailSteps.length !== 1 ? 's' : ''})
                 </label>
-                <div className="flex items-center gap-3">
-                  {leadCategories.length > 1 && (
-                    <select
-                      value={leadCategoryFilter}
-                      onChange={(e) => setLeadCategoryFilter(e.target.value)}
-                      className="bg-bg border border-border text-primary rounded px-2 py-1 font-mono text-xs focus:outline-none focus:border-accent transition-colors"
-                    >
-                      {leadCategories.map((c) => (
-                        <option key={c} value={c}>{c === 'all' ? 'All categories' : c}</option>
-                      ))}
-                    </select>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const visibleIds = filteredLeads.map((l) => l.id)
-                      const allSelected = visibleIds.every((id) => selectedLeadIds.has(id))
-                      setSelectedLeadIds((prev) => {
-                        const next = new Set(prev)
-                        if (allSelected) visibleIds.forEach((id) => next.delete(id))
-                        else visibleIds.forEach((id) => next.add(id))
-                        return next
-                      })
-                    }}
-                    className="font-mono text-xs text-muted hover:text-primary transition-colors"
-                  >
-                    {filteredLeads.every((l) => selectedLeadIds.has(l.id)) && filteredLeads.length > 0
-                      ? 'Deselect visible'
-                      : 'Select visible'}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={addStep}
+                  className="font-mono text-xs text-muted hover:text-primary transition-colors"
+                >
+                  + Add Step
+                </button>
               </div>
-              {freshLeads.length === 0 ? (
-                <p className="font-mono text-xs text-muted p-3 border border-dashed border-border rounded">
-                  No leads with an email address are available.
-                  {hiddenNoEmail > 0 && ` ${hiddenNoEmail} lead${hiddenNoEmail !== 1 ? 's are' : ' is'} hidden because no email is on file.`}
-                  {hiddenNoEmail === 0 && ' Save leads from the Search tab first.'}
-                </p>
-              ) : filteredLeads.length === 0 ? (
-                <p className="font-mono text-xs text-muted p-3 border border-dashed border-border rounded">
-                  No leads with an email address in this category.
-                </p>
-              ) : (
-                <div className="border border-border rounded overflow-hidden max-h-64 overflow-y-auto">
-                  {filteredLeads.map((lead) => (
-                    <label
-                      key={lead.id}
-                      className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer border-b border-border last:border-0 transition-colors ${
-                        selectedLeadIds.has(lead.id) ? 'bg-accent/5' : 'hover:bg-bg'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedLeadIds.has(lead.id)}
-                        onChange={() => toggleLeadSelect(lead.id)}
-                        className="accent-emerald-600 shrink-0"
-                      />
-                      <div className="min-w-0 flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-xs text-primary truncate">{lead.business_name}</span>
-                        {lead.category && (
-                          <span className="border border-border rounded px-1.5 py-0.5 text-[10px] text-muted font-mono shrink-0">
-                            {lead.category}
+              <div className="space-y-4">
+                {emailSteps.map((step, i) => (
+                  <div key={i} className="border border-border rounded p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs text-muted uppercase tracking-wider">
+                        Step {i + 1}
+                        {i > 0 && (
+                          <span className="ml-2 normal-case">
+                            — send{' '}
+                            <input
+                              type="number"
+                              min="0"
+                              value={step.delay_days}
+                              onChange={(e) => updateStep(i, 'delay_days', Number(e.target.value))}
+                              className="w-12 bg-bg border border-border text-primary rounded px-1.5 py-0.5 font-mono text-xs focus:outline-none focus:border-accent text-center"
+                            />
+                            {' '}day{step.delay_days !== 1 ? 's' : ''} after previous
                           </span>
                         )}
-                        <span className="font-mono text-[11px] text-muted truncate w-full">
-                          {lead.email ? lead.email : <span className="italic">No email</span>}
-                          {lead.address && ` — ${lead.address}`}
-                        </span>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              )}
-              {freshLeads.length > 0 && (
-                <p className="font-mono text-[11px] text-muted mt-1.5">
-                  Leads already emailed are excluded.
-                  {hiddenNoEmail > 0 && ` ${hiddenNoEmail} lead${hiddenNoEmail !== 1 ? 's are' : ' is'} hidden because no email is on file.`}
-                </p>
-              )}
+                      </span>
+                      {emailSteps.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeStep(i)}
+                          className="font-mono text-xs text-muted hover:text-red-500 transition-colors"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block font-mono text-[10px] text-muted uppercase tracking-wider mb-1">Subject</label>
+                      <input
+                        type="text"
+                        required
+                        value={step.subject}
+                        onChange={(e) => updateStep(i, 'subject', e.target.value)}
+                        placeholder="Email subject line"
+                        className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-mono text-[10px] text-muted uppercase tracking-wider mb-1">Body</label>
+                      <textarea
+                        required
+                        rows={4}
+                        value={step.body}
+                        onChange={(e) => updateStep(i, 'body', e.target.value)}
+                        placeholder="Write your email body here. Each line becomes a paragraph."
+                        className="w-full bg-bg border border-border text-primary rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-accent resize-y"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <button
@@ -437,7 +443,7 @@ export default function CampaignsTab({ savedLeads }: CampaignsTabProps) {
               disabled={creating}
               className="font-mono text-xs px-6 py-2.5 rounded bg-accent text-black hover:opacity-90 transition-opacity disabled:opacity-50 tracking-wider"
             >
-              {creating ? 'Creating...' : form.send_mode === 'immediate' ? 'Create & Send' : 'Create Campaign'}
+              {creating ? 'Creating...' : 'Create Campaign'}
             </button>
           </form>
         </div>
@@ -445,140 +451,152 @@ export default function CampaignsTab({ savedLeads }: CampaignsTabProps) {
 
       {/* Campaign list */}
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-16 bg-card border border-border rounded animate-pulse" />
+        <div className="space-y-3">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="h-24 bg-card border border-border rounded animate-pulse" />
           ))}
         </div>
       ) : campaigns.length === 0 ? (
         <div className="text-center py-16 font-mono text-sm text-muted">
-          No campaigns yet.
+          No campaigns yet. Create one to start sending outreach emails.
         </div>
       ) : (
-        <div className="bg-card border border-border rounded overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs font-mono">
-              <thead>
-                <tr className="border-b border-border bg-bg">
-                  <th className="px-4 py-3 text-left text-muted tracking-widest uppercase">Name</th>
-                  <th className="px-4 py-3 text-left text-muted tracking-widest uppercase">Template</th>
-                  <th className="px-4 py-3 text-left text-muted tracking-widest uppercase">Mode</th>
-                  <th className="px-4 py-3 text-left text-muted tracking-widest uppercase">Status</th>
-                  <th className="px-4 py-3 text-right text-muted tracking-widest uppercase">Leads</th>
-                  <th className="px-4 py-3 text-right text-muted tracking-widest uppercase">Sent</th>
-                  <th className="px-4 py-3 text-right text-muted tracking-widest uppercase">Opens</th>
-                  <th className="px-4 py-3 text-right text-muted tracking-widest uppercase">Bounces</th>
-                  <th className="px-4 py-3 text-left text-muted tracking-widest uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {campaigns.map((c) => (
-                  <tr key={c.id} className="border-b border-border last:border-0 hover:bg-bg transition-colors">
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => openCampaign(c)}
-                        className="text-primary font-medium hover:underline text-left"
-                      >
-                        {c.name}
-                      </button>
-                      {c.scheduled_at && c.send_mode === 'scheduled' && (
-                        <div className="text-muted text-[11px] mt-0.5">
-                          {new Date(c.scheduled_at).toLocaleString()}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-muted">{c.template_name ?? '—'}</td>
-                    <td className="px-4 py-3 text-muted">{c.send_mode}</td>
-                    <td className="px-4 py-3">
-                      <span className={`border rounded px-2 py-0.5 ${STATUS_BADGE[c.status] ?? 'text-muted border-border'}`}>
-                        {c.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right text-muted">{c.total_leads}</td>
-                    <td className="px-4 py-3 text-right text-muted">{c.sent_count}</td>
-                    <td className="px-4 py-3 text-right text-muted">{c.open_count ?? 0}</td>
-                    <td className="px-4 py-3 text-right text-muted">{c.bounce_count ?? 0}</td>
-                    <td className="px-4 py-3">
-                      {c.status !== 'completed' && c.send_mode !== 'immediate' && (
-                        <button
-                          onClick={() => handleSend(c.id)}
-                          disabled={sending}
-                          className="text-emerald-700 dark:text-accent hover:underline disabled:opacity-50"
-                        >
-                          {sending ? 'Sending...' : 'Send now'}
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="space-y-3">
+          {campaigns.map((c) => (
+            <div key={c.id} className="bg-card border border-border rounded p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-heading text-base text-primary">{c.name}</span>
+                    <span className={`border rounded px-2 py-0.5 text-[11px] font-mono ${STATUS_COLOR[c.status] ?? 'text-muted border-border'}`}>
+                      {c.status}
+                    </span>
+                  </div>
+                  {c.description && (
+                    <p className="font-mono text-xs text-muted mt-0.5">{c.description}</p>
+                  )}
+                  <div className="flex items-center gap-4 mt-2 font-mono text-[11px] text-muted">
+                    <span>{c.email_steps} email step{c.email_steps !== 1 ? 's' : ''}</span>
+                    <span>
+                      {c.audience === 'all'
+                        ? 'All leads'
+                        : `${Array.isArray(c.selected_lead_ids) ? c.selected_lead_ids.length : 0} selected leads`}
+                    </span>
+                    <span>{c.leads_reached} lead{c.leads_reached !== 1 ? 's' : ''} reached</span>
+                    <span>{new Date(c.created_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                  {c.status !== 'completed' && (
+                    <button
+                      onClick={() => handleSend(c.id, 1)}
+                      disabled={sending === c.id}
+                      className="font-mono text-xs px-3 py-1.5 rounded bg-accent text-black hover:opacity-90 transition-opacity disabled:opacity-50"
+                    >
+                      {sending === c.id ? 'Sending...' : 'Send Step 1'}
+                    </button>
+                  )}
+                  {(c.status === 'sending' || c.status === 'paused') && (
+                    <button
+                      onClick={() => handlePause(c)}
+                      className="font-mono text-xs px-3 py-1.5 rounded border border-border text-muted hover:text-primary transition-colors"
+                    >
+                      {c.status === 'paused' ? 'Resume' : 'Pause'}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => openDetail(c)}
+                    className="font-mono text-xs px-3 py-1.5 rounded border border-border text-muted hover:text-primary transition-colors"
+                  >
+                    View Results
+                  </button>
+                  <button
+                    onClick={() => handleDelete(c.id)}
+                    disabled={deleting === c.id}
+                    className="font-mono text-xs px-3 py-1.5 rounded border border-red-700/20 dark:border-red-400/20 text-red-700 dark:text-red-400 hover:opacity-80 transition-opacity disabled:opacity-50"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Campaign detail drawer */}
-      {selectedCampaign && (
+      {/* Campaign detail */}
+      {detail && (
         <div className="bg-card border border-border rounded p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-heading text-lg text-primary">{selectedCampaign.name}</h3>
+            <h3 className="font-heading text-lg text-primary">{detail.campaign.name}</h3>
             <button
-              onClick={() => setSelectedCampaign(null)}
+              onClick={() => setDetail(null)}
               className="font-mono text-xs text-muted hover:text-primary transition-colors"
             >
               Close
             </button>
           </div>
-          <div className="grid grid-cols-3 gap-4 text-xs font-mono">
-            <div>
-              <span className="text-muted">Template:</span>{' '}
-              <span className="text-primary">{selectedCampaign.template_name ?? '—'}</span>
+
+          {/* Email steps */}
+          {detail.email_steps.length > 0 && (
+            <div className="space-y-3">
+              <p className="font-mono text-xs text-muted uppercase tracking-wider">Email Steps</p>
+              {detail.email_steps.map((s) => (
+                <div key={s.step_number} className="border border-border rounded p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-xs text-muted uppercase">
+                      Step {s.step_number}
+                      {s.delay_days > 0 && ` — ${s.delay_days}d delay`}
+                    </span>
+                    {detail.campaign.status !== 'completed' && (
+                      <button
+                        onClick={() => handleSend(detail.campaign.id, s.step_number)}
+                        disabled={sending === detail.campaign.id}
+                        className="font-mono text-[11px] px-2.5 py-1 rounded bg-accent text-black hover:opacity-90 disabled:opacity-50"
+                      >
+                        {sending === detail.campaign.id ? 'Sending...' : `Send Step ${s.step_number}`}
+                      </button>
+                    )}
+                  </div>
+                  <p className="font-mono text-xs text-primary font-medium">{s.subject}</p>
+                  <p className="font-mono text-[11px] text-muted mt-1 whitespace-pre-wrap">{s.body}</p>
+                </div>
+              ))}
             </div>
+          )}
+
+          {/* Sends log */}
+          {detail.sends.length > 0 ? (
             <div>
-              <span className="text-muted">Mode:</span>{' '}
-              <span className="text-primary">{selectedCampaign.send_mode}</span>
-            </div>
-            <div>
-              <span className="text-muted">Status:</span>{' '}
-              <span className="text-primary">{selectedCampaign.status}</span>
-            </div>
-          </div>
-          {campaignLeads.length > 0 && (
-            <div className="border border-border rounded overflow-hidden">
-              <table className="w-full text-xs font-mono">
-                <thead>
-                  <tr className="border-b border-border bg-bg">
-                    <th className="px-4 py-2 text-left text-muted tracking-widest uppercase">Business</th>
-                    <th className="px-4 py-2 text-left text-muted tracking-widest uppercase">Email</th>
-                    <th className="px-4 py-2 text-left text-muted tracking-widest uppercase">Status</th>
-                    <th className="px-4 py-2 text-left text-muted tracking-widest uppercase">Sent At</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(campaignLeads as Array<{
-                    campaign_lead_id?: string
-                    id?: string
-                    business_name: string
-                    email: string | null
-                    status: string
-                    sent_at: string | null
-                  }>).map((cl) => (
-                    <tr key={cl.campaign_lead_id ?? cl.id} className="border-b border-border last:border-0">
-                      <td className="px-4 py-2.5 text-primary">{cl.business_name}</td>
-                      <td className="px-4 py-2.5 text-muted">{cl.email ?? '—'}</td>
-                      <td className="px-4 py-2.5">
-                        <span className={`border rounded px-2 py-0.5 text-[11px] ${STATUS_BADGE[cl.status] ?? 'text-muted border-border'}`}>
-                          {cl.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2.5 text-muted">
-                        {cl.sent_at ? new Date(cl.sent_at).toLocaleString() : '—'}
-                      </td>
+              <p className="font-mono text-xs text-muted uppercase tracking-wider mb-2">
+                Send Log ({detail.sends.length})
+              </p>
+              <div className="border border-border rounded overflow-hidden max-h-72 overflow-y-auto">
+                <table className="w-full text-xs font-mono">
+                  <thead>
+                    <tr className="border-b border-border bg-bg">
+                      <th className="px-4 py-2 text-left text-muted">Business</th>
+                      <th className="px-4 py-2 text-left text-muted">Email</th>
+                      <th className="px-4 py-2 text-left text-muted">Step</th>
+                      <th className="px-4 py-2 text-left text-muted">Sent At</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {detail.sends.map((s) => (
+                      <tr key={s.id} className="border-b border-border last:border-0">
+                        <td className="px-4 py-2.5 text-primary">{s.business_name ?? '—'}</td>
+                        <td className="px-4 py-2.5 text-muted">{s.lead_email}</td>
+                        <td className="px-4 py-2.5 text-muted">{s.step_number}</td>
+                        <td className="px-4 py-2.5 text-muted">{new Date(s.sent_at).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
+          ) : (
+            <p className="font-mono text-xs text-muted">No emails sent yet for this campaign.</p>
           )}
         </div>
       )}
