@@ -18,6 +18,7 @@ import WeatherActivation from './tabs/WeatherActivation'
 import EmailMarketing from './tabs/EmailMarketing'
 import CRM from './tabs/CRM'
 import DemoProposals from './tabs/Proposals'
+import DemoInvoices from './tabs/Invoices'
 
 // ── Shared style constants ────────────────────────────────────────────────────
 
@@ -409,6 +410,7 @@ export default function DemoView({ hideBanner, skipGate }: { hideBanner?: boolea
       case 'missed-call': return <MissedCallPage businessName={businessName} />
       case 'crm':         return <CRM sessionId={sessionId} businessName={businessName} />
       case 'proposals':   return <DemoProposals sessionId={sessionId} businessName={businessName} />
+      case 'invoices':    return <DemoInvoices sessionId={sessionId} businessName={businessName} />
       case 'performance': return <PerformancePage />
       case 'settings':
       case 'billing':     return <BillingPage />
