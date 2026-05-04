@@ -14,6 +14,7 @@ interface PlacesResult {
   rating_count: number
   already_saved: boolean
 }
+
 const QUERY_EXPANSIONS: Record<string, string> = {
   'hvac': 'HVAC heating and cooling contractor',
   'plumber': 'plumbing contractor',
@@ -22,6 +23,21 @@ const QUERY_EXPANSIONS: Record<string, string> = {
   'landscaping': 'landscaping and lawn care',
   'restaurant': 'restaurant',
 }
+
+const STATE_CITIES: Record<string, string[]> = {
+  'georgia': ['Atlanta GA', 'Savannah GA', 'Augusta GA', 'Columbus GA', 'Macon GA', 'Athens GA', 'Warner Robins GA', 'Albany GA', 'Roswell GA', 'Sandy Springs GA'],
+  'arkansas': ['Little Rock AR', 'Fort Smith AR', 'Fayetteville AR', 'Springdale AR', 'Jonesboro AR', 'Conway AR', 'Rogers AR', 'Pine Bluff AR', 'Bentonville AR', 'Hot Springs AR'],
+  'texas': ['Houston TX', 'Dallas TX', 'San Antonio TX', 'Austin TX', 'Fort Worth TX', 'El Paso TX', 'Arlington TX', 'Corpus Christi TX', 'Plano TX', 'Laredo TX'],
+  'florida': ['Jacksonville FL', 'Miami FL', 'Tampa FL', 'Orlando FL', 'St Petersburg FL', 'Hialeah FL', 'Tallahassee FL', 'Fort Lauderdale FL', 'Port St Lucie FL', 'Cape Coral FL'],
+  'tennessee': ['Memphis TN', 'Nashville TN', 'Knoxville TN', 'Chattanooga TN', 'Clarksville TN', 'Murfreesboro TN', 'Franklin TN', 'Jackson TN', 'Johnson City TN', 'Bartlett TN'],
+  'alabama': ['Birmingham AL', 'Montgomery AL', 'Huntsville AL', 'Mobile AL', 'Tuscaloosa AL', 'Hoover AL', 'Dothan AL', 'Auburn AL', 'Decatur AL', 'Madison AL'],
+  'mississippi': ['Jackson MS', 'Gulfport MS', 'Southaven MS', 'Hattiesburg MS', 'Biloxi MS', 'Meridian MS', 'Tupelo MS', 'Olive Branch MS', 'Greenville MS', 'Horn Lake MS'],
+  'louisiana': ['New Orleans LA', 'Baton Rouge LA', 'Shreveport LA', 'Metairie LA', 'Lafayette LA', 'Lake Charles LA', 'Kenner LA', 'Bossier City LA', 'Monroe LA', 'Alexandria LA'],
+  'north carolina': ['Charlotte NC', 'Raleigh NC', 'Greensboro NC', 'Durham NC', 'Winston-Salem NC', 'Fayetteville NC', 'Cary NC', 'Wilmington NC', 'High Point NC', 'Concord NC'],
+  'south carolina': ['Columbia SC', 'Charleston SC', 'North Charleston SC', 'Mount Pleasant SC', 'Rock Hill SC', 'Greenville SC', 'Summerville SC', 'Goose Creek SC', 'Hilton Head SC', 'Myrtle Beach SC'],
+}
+
+const FIELD_MASK = 'places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.rating,places.userRatingCount,places.businessStatus,places.types,places.id'
 
 async function geocode(location: string, apiKey: string): Promise<{ lat: number; lng: number } | null> {
   try {
@@ -35,6 +51,53 @@ async function geocode(location: string, apiKey: string): Promise<{ lat: number;
     // fall through to null
   }
   return null
+}
+
+async function fetchCityResults(
+  expandedQuery: string,
+  cityLocation: string,
+  radius: number,
+  minRating: unknown,
+  apiKey: string
+): Promise<Record<string, unknown>[]> {
+  const textQuery = `${expandedQuery} ${cityLocation}`
+  const reqBody: Record<string, unknown> = {
+    textQuery,
+    languageCode: 'en',
+    regionCode: 'US',
+    maxResultCount: 20,
+  }
+  if (minRating) reqBody.minRating = Number(minRating)
+
+  const coords = await geocode(cityLocation, apiKey)
+  if (coords) {
+    reqBody.locationBias = {
+      circle: {
+        center: { latitude: coords.lat, longitude: coords.lng },
+        radius: Number(radius),
+      },
+    }
+  }
+
+  const placesRes = await fetch('https://places.googleapis.com/v1/places:searchText', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Goog-Api-Key': apiKey,
+      'X-Goog-FieldMask': FIELD_MASK,
+    },
+    body: JSON.stringify(reqBody),
+  })
+
+  if (!placesRes.ok) {
+    const errorText = await placesRes.text()
+    console.error('[leads/search] Places API error for', cityLocation, ':', placesRes.status, errorText)
+    return []
+  }
+
+  const placesData = await placesRes.json()
+  console.log('[leads/search] Places API response count for', cityLocation, ':', placesData.places?.length ?? 0)
+  return placesData.places ?? []
 }
 
 export async function POST(req: NextRequest) {
@@ -66,62 +129,92 @@ export async function POST(req: NextRequest) {
   }
 
   const clampedMax = Math.min(Math.max(1, Number(maxResults)), 200)
-
-  // Build the text query — expand common categories and include location
   const locationPart = location.trim()
-  const expandedQuery = QUERY_EXPANSIONS[searchQuery.toLowerCase().trim()] || searchQuery
-  const textQuery = locationPart
-    ? `${expandedQuery} ${locationPart}`
-    : expandedQuery
+  const expandedQuery = QUERY_EXPANSIONS[searchQuery.toLowerCase().trim()] || (keyword ? `${keyword} ${searchQuery}` : searchQuery)
 
-  // Base Places API request body
-  const placesBodyBase: Record<string, unknown> = { textQuery, languageCode: 'en', regionCode: 'US', maxResultCount: 20 }
-  if (minRating) placesBodyBase.minRating = Number(minRating)
+  let allRaw: Record<string, unknown>[] = []
+  let searchedLocations: string[] = []
 
-  // Add location bias only when a specific location was provided
-  if (locationPart) {
-    const coords = await geocode(locationPart, apiKey)
-    if (coords) {
-      placesBodyBase.locationBias = {
-        circle: {
-          center: { latitude: coords.lat, longitude: coords.lng },
-          radius: Number(radius),
-        },
+  const normalizedLocation = locationPart.toLowerCase().trim()
+  const stateCities = STATE_CITIES[normalizedLocation]
+
+  if (stateCities) {
+    // State search — query each city sequentially, stop when we have enough
+    for (let i = 0; i < stateCities.length; i++) {
+      if (allRaw.length >= clampedMax) break
+      const city = stateCities[i]
+      const cityRaw = await fetchCityResults(expandedQuery, city, Number(radius), minRating, apiKey)
+      allRaw = [...allRaw, ...cityRaw]
+      searchedLocations.push(city)
+      if (i < stateCities.length - 1 && allRaw.length < clampedMax) {
+        await new Promise((resolve) => setTimeout(resolve, 500))
       }
     }
-  }
 
-  // Paginate the Places API to collect up to clampedMax raw results
-  const pagesNeeded = Math.ceil(clampedMax / 20)
-  let allRaw: Record<string, unknown>[] = []
-  let nextPageToken: string | undefined
-
-  for (let page = 0; page < pagesNeeded; page++) {
-    const reqBody: Record<string, unknown> = { ...placesBodyBase }
-    if (nextPageToken) reqBody.pageToken = nextPageToken
-
-    const placesRes = await fetch('https://places.googleapis.com/v1/places:searchText', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': apiKey,
-        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.rating,places.userRatingCount,places.businessStatus,places.types,places.id',
-      },
-      body: JSON.stringify(reqBody),
+    // Deduplicate by phone number
+    const seenPhones = new Set<string>()
+    allRaw = allRaw.filter((p) => {
+      const phone = (p.nationalPhoneNumber as string) ?? ''
+      if (!phone) return true
+      if (seenPhones.has(phone)) return false
+      seenPhones.add(phone)
+      return true
     })
+  } else {
+    // Single city or national search — paginate up to clampedMax
+    const textQuery = locationPart ? `${expandedQuery} ${locationPart}` : expandedQuery
+    const placesBodyBase: Record<string, unknown> = {
+      textQuery,
+      languageCode: 'en',
+      regionCode: 'US',
+      maxResultCount: 20,
+    }
+    if (minRating) placesBodyBase.minRating = Number(minRating)
 
-    if (!placesRes.ok) {
-      const errorText = await placesRes.text()
-      console.error('[leads/search] Places API error:', placesRes.status, errorText)
-      return NextResponse.json({ results: [], error: errorText }, { status: 200 })
+    if (locationPart) {
+      const coords = await geocode(locationPart, apiKey)
+      if (coords) {
+        placesBodyBase.locationBias = {
+          circle: {
+            center: { latitude: coords.lat, longitude: coords.lng },
+            radius: Number(radius),
+          },
+        }
+      }
     }
 
-    const placesData = await placesRes.json()
-    console.log('[leads/search] Places API response count:', placesData.places?.length ?? 0)
-    allRaw = [...allRaw, ...(placesData.places ?? [])]
-    nextPageToken = placesData.nextPageToken ?? undefined
+    const pagesNeeded = Math.ceil(clampedMax / 20)
+    let nextPageToken: string | undefined
 
-    if (!nextPageToken) break
+    for (let page = 0; page < pagesNeeded; page++) {
+      const reqBody: Record<string, unknown> = { ...placesBodyBase }
+      if (nextPageToken) reqBody.pageToken = nextPageToken
+
+      const placesRes = await fetch('https://places.googleapis.com/v1/places:searchText', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask': FIELD_MASK,
+        },
+        body: JSON.stringify(reqBody),
+      })
+
+      if (!placesRes.ok) {
+        const errorText = await placesRes.text()
+        console.error('[leads/search] Places API error:', placesRes.status, errorText)
+        return NextResponse.json({ results: [], total: 0, error: errorText }, { status: 200 })
+      }
+
+      const placesData = await placesRes.json()
+      console.log('[leads/search] Places API response count:', placesData.places?.length ?? 0)
+      allRaw = [...allRaw, ...(placesData.places ?? [])]
+      nextPageToken = placesData.nextPageToken ?? undefined
+
+      if (!nextPageToken) break
+    }
+
+    searchedLocations = [locationPart || 'United States']
   }
 
   // Map to our shape
@@ -191,7 +284,9 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     results,
+    total: results.length,
     location_searched: locationPart || 'United States',
+    searched_locations: searchedLocations,
     category: searchQuery,
   })
 }
