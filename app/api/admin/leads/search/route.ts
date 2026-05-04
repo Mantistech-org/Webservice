@@ -75,7 +75,7 @@ async function dynamicGridSearch(
         maxResultCount: 20,
         languageCode: 'en',
         regionCode: 'US',
-        locationRestriction: {
+        locationBias: {
           circle: {
             center: { latitude: pointLat, longitude: pointLng },
             radius: radiusMeters,
