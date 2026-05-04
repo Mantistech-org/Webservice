@@ -72,6 +72,7 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
         }),
       })
       const data = await res.json()
+      console.log('[SearchTab] API response:', data)
       if (!res.ok) throw new Error(data.error ?? 'Search failed.')
       setResults(data.results ?? [])
       setSearchedMeta({ location: data.location_searched, category: data.category })
