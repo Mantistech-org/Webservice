@@ -23,6 +23,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true })
     }
 
+    if (!email || !email.includes('@') || !email.includes('.') || email.split('@')[1]?.split('.').pop()!.length < 2) {
+      return NextResponse.json({ success: true }) // silently skip invalid emails
+    }
+
     if (pgEnabled) {
       await query(
         `INSERT INTO public.demo_leads (email, business_name, business_type, session_id)

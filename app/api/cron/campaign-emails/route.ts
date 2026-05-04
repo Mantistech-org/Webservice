@@ -3,6 +3,18 @@ import { NextResponse } from 'next/server'
 import { query, pgEnabled } from '@/lib/pg'
 import { sendCampaignStepEmail } from '@/lib/resend'
 
+function isValidEmail(email: string): boolean {
+  if (!email) return false
+  if (email.length < 5) return false
+  if (!email.includes('@')) return false
+  const parts = email.split('@')
+  if (parts.length !== 2) return false
+  const domain = parts[1]
+  if (!domain.includes('.')) return false
+  if (domain.split('.').pop()!.length < 2) return false
+  return true
+}
+
 export async function GET(req: Request) {
   console.log('[cron/campaign-emails] route hit')
   const authHeader = req.headers.get('authorization')
@@ -17,6 +29,14 @@ export async function GET(req: Request) {
   }
 
   try {
+    // Clean up invalid emails on first run
+    await query(`
+      DELETE FROM public.demo_leads
+      WHERE email NOT LIKE '%@%.%'
+      OR length(email) < 5
+      OR email = 'd@d'
+    `).catch(() => {})
+
     // Fetch all active campaigns and their email steps
     const campaigns = await query<{ id: string; name: string; status: string }>(`
       SELECT id, name, status FROM public.email_campaigns WHERE status = 'active'
@@ -94,8 +114,7 @@ export async function GET(req: Request) {
         if (now < dueAt) continue
         if (sentSet.has(`${enrollment.id}:${step.step_number}`)) continue
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailRegex.test(enrollment.lead_email)) {
+        if (!isValidEmail(enrollment.lead_email)) {
           console.log(`[cron-runner] skipping invalid email: ${enrollment.lead_email}`)
           continue
         }
