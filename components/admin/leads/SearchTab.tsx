@@ -26,7 +26,7 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
     query: '',
     location: '',
     keyword: '',
-    radius: 'none',
+    radius: '40234',
     minRating: '',
     maxRating: '',
     hasWebsite: 'any',
@@ -60,7 +60,7 @@ export default function SearchTab({ onLeadsSaved }: SearchTabProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: form.query,
-          location: form.radius === 'none' ? '' : form.location,
+          location: form.location,
           keyword: form.keyword,
           ...(form.radius !== 'none' && { radius: Number(form.radius) }),
           minRating: form.minRating ? Number(form.minRating) : undefined,
