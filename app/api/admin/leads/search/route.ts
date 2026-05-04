@@ -14,7 +14,14 @@ interface PlacesResult {
   rating_count: number
   already_saved: boolean
 }
-
+const QUERY_EXPANSIONS: Record<string, string> = {
+  'hvac': 'HVAC heating and cooling contractor',
+  'plumber': 'plumbing contractor',
+  'electrician': 'electrical contractor',
+  'roofer': 'roofing contractor',
+  'landscaping': 'landscaping and lawn care',
+  'restaurant': 'restaurant',
+}
 
 async function geocode(location: string, apiKey: string): Promise<{ lat: number; lng: number } | null> {
   try {
@@ -60,15 +67,15 @@ export async function POST(req: NextRequest) {
 
   const clampedMax = Math.min(Math.max(1, Number(maxResults)), 200)
 
-  // Build the text query — always include business type explicitly for broad results
+  // Build the text query — expand common categories and include location
   const locationPart = location.trim()
-  const baseQuery = keyword ? `${keyword} ${searchQuery}` : searchQuery
+  const expandedQuery = QUERY_EXPANSIONS[searchQuery.toLowerCase().trim()] || searchQuery
   const textQuery = locationPart
-    ? `${baseQuery} in ${locationPart}`
-    : `${baseQuery} in United States`
+    ? `${expandedQuery} ${locationPart}`
+    : expandedQuery
 
   // Base Places API request body
-  const placesBodyBase: Record<string, unknown> = { textQuery, languageCode: 'en', regionCode: 'US' }
+  const placesBodyBase: Record<string, unknown> = { textQuery, languageCode: 'en', regionCode: 'US', maxResultCount: 20 }
   if (minRating) placesBodyBase.minRating = Number(minRating)
 
   // Add location bias only when a specific location was provided
@@ -90,11 +97,7 @@ export async function POST(req: NextRequest) {
   let nextPageToken: string | undefined
 
   for (let page = 0; page < pagesNeeded; page++) {
-    const reqBody: Record<string, unknown> = {
-      ...placesBodyBase,
-      maxResultCount: 20,
-      pageSize: 20,
-    }
+    const reqBody: Record<string, unknown> = { ...placesBodyBase }
     if (nextPageToken) reqBody.pageToken = nextPageToken
 
     const placesRes = await fetch('https://places.googleapis.com/v1/places:searchText', {
@@ -108,15 +111,13 @@ export async function POST(req: NextRequest) {
     })
 
     if (!placesRes.ok) {
-      const errText = await placesRes.text()
-      // On the first page, surface the error; on subsequent pages just stop
-      if (page === 0) {
-        return NextResponse.json({ error: `Google Places API error: ${errText}` }, { status: 502 })
-      }
-      break
+      const errorText = await placesRes.text()
+      console.error('[leads/search] Places API error:', placesRes.status, errorText)
+      return NextResponse.json({ results: [], error: errorText }, { status: 200 })
     }
 
     const placesData = await placesRes.json()
+    console.log('[leads/search] Places API response count:', placesData.places?.length ?? 0)
     allRaw = [...allRaw, ...(placesData.places ?? [])]
     nextPageToken = placesData.nextPageToken ?? undefined
 
