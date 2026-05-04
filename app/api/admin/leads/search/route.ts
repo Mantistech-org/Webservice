@@ -49,8 +49,8 @@ async function dynamicGridSearch(
   apiKey: string
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any[]> {
-  const gridSize = 3 // 3x3 = 9 search points
-  const radiusMeters = 8000 // 8km radius per point
+  const gridSize = 4 // 4x4 = 16 search points
+  const radiusMeters = 5000 // 5km radius per point
   const step = (radiusMeters * 2) / 111000 / gridSize
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,7 +69,7 @@ async function dynamicGridSearch(
         maxResultCount: 20,
         languageCode: 'en',
         regionCode: 'US',
-        locationBias: {
+        locationRestriction: {
           circle: {
             center: { latitude: pointLat, longitude: pointLng },
             radius: radiusMeters,
