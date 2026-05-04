@@ -94,6 +94,12 @@ export async function GET(req: Request) {
         if (now < dueAt) continue
         if (sentSet.has(`${enrollment.id}:${step.step_number}`)) continue
 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(enrollment.lead_email)) {
+          console.log(`[cron-runner] skipping invalid email: ${enrollment.lead_email}`)
+          continue
+        }
+
         try {
           await sendCampaignStepEmail({
             to: enrollment.lead_email,
