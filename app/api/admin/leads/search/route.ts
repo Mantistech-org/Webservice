@@ -57,12 +57,18 @@ async function dynamicGridSearch(
   const allPlaces: any[] = []
   const seenIds = new Set<string>()
 
+  console.log('[leads/search] dynamicGridSearch start:', { searchQuery, lat, lng, maxResults, gridSize, radiusMeters, step })
+
   for (let row = 0; row < gridSize; row++) {
     for (let col = 0; col < gridSize; col++) {
       if (allPlaces.length >= maxResults) break
 
       const pointLat = lat - ((gridSize - 1) / 2 * step) + (row * step)
       const pointLng = lng - ((gridSize - 1) / 2 * step) + (col * step)
+
+      if (row === 0 && col === 0) {
+        console.log('[leads/search] grid point 0,0:', { pointLat, pointLng })
+      }
 
       const body = {
         textQuery: searchQuery,
@@ -88,6 +94,15 @@ async function dynamicGridSearch(
       })
 
       const data = await res.json()
+
+      if (row === 0 && col === 0) {
+        console.log('[leads/search] Places API response for point 0,0:', data.places?.length ?? 0, 'results')
+        console.log('[leads/search] first result:', JSON.stringify(data.places?.[0], null, 2))
+        console.log('[leads/search] error if any:', data.error ?? null)
+      } else {
+        console.log(`[leads/search] point ${row},${col}: ${data.places?.length ?? 0} results${data.error ? ' error:' + JSON.stringify(data.error) : ''}`)
+      }
+
       for (const place of data.places || []) {
         if (!seenIds.has(place.id)) {
           seenIds.add(place.id)
@@ -132,6 +147,7 @@ export async function POST(req: NextRequest) {
 
   const clampedMax = Math.min(Math.max(1, Number(maxResults)), 200)
   const locationPart = location.trim()
+  console.log('[leads/search] location input:', locationPart || '(none)')
   const expandedQuery = QUERY_EXPANSIONS[searchQuery.toLowerCase().trim()] || (keyword ? `${keyword} ${searchQuery}` : searchQuery)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -139,6 +155,7 @@ export async function POST(req: NextRequest) {
 
   if (locationPart) {
     const coords = await geocode(locationPart, apiKey)
+    console.log('[leads/search] geocode result:', coords ?? 'null — geocode failed')
     if (coords) {
       places = await dynamicGridSearch(expandedQuery, coords.lat, coords.lng, clampedMax, apiKey)
       console.log(`[leads/search] grid search: ${places.length} results for "${expandedQuery}" near ${locationPart}`)
