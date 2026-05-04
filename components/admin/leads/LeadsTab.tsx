@@ -43,6 +43,10 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
   const [error, setError] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [findingEmail, setFindingEmail] = useState<Set<string>>(new Set())
+  const [emailNotFound, setEmailNotFound] = useState<Set<string>>(new Set())
+  const [findingAllEmails, setFindingAllEmails] = useState(false)
+  const [findAllProgress, setFindAllProgress] = useState<{ done: number; total: number } | null>(null)
 
   const fetchLeads = useCallback(async () => {
     setLoading(true)
@@ -162,6 +166,67 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
     URL.revokeObjectURL(url)
   }
 
+  const findEmail = async (lead: OutreachLead) => {
+    if (!lead.website) return
+    setFindingEmail((prev) => new Set([...prev, lead.id]))
+    try {
+      const res = await fetch('/api/admin/leads/find-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          website: lead.website,
+          businessName: lead.business_name,
+          city: lead.location_searched ?? '',
+        }),
+      })
+      const data = await res.json()
+      if (data.found && data.email) {
+        const patchRes = await fetch(`/api/admin/leads/${lead.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: data.email }),
+        })
+        const patchData = await patchRes.json()
+        if (patchRes.ok) {
+          setLeads((prev) => prev.map((l) => (l.id === lead.id ? patchData.lead : l)))
+        }
+      } else {
+        setEmailNotFound((prev) => new Set([...prev, lead.id]))
+        setTimeout(() => {
+          setEmailNotFound((prev) => {
+            const next = new Set(prev)
+            next.delete(lead.id)
+            return next
+          })
+        }, 3000)
+      }
+    } catch {
+      // non-fatal
+    } finally {
+      setFindingEmail((prev) => {
+        const next = new Set(prev)
+        next.delete(lead.id)
+        return next
+      })
+    }
+  }
+
+  const findAllEmails = async () => {
+    const targets = leads.filter((l) => !!l.website && !l.email)
+    if (targets.length === 0) return
+    setFindingAllEmails(true)
+    setFindAllProgress({ done: 0, total: targets.length })
+    for (let i = 0; i < targets.length; i++) {
+      await findEmail(targets[i])
+      setFindAllProgress({ done: i + 1, total: targets.length })
+      if (i < targets.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }
+    }
+    setFindingAllEmails(false)
+    setFindAllProgress(null)
+  }
+
   const categories = ['all', ...Array.from(new Set(leads.map((l) => l.category).filter(Boolean))).sort()] as string[]
 
   const visibleLeads = leads.filter((l) => {
@@ -234,6 +299,20 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
           >
             Export Selected ({selectedIds.size})
           </button>
+        )}
+        {viewMode === 'active' && (
+          findingAllEmails ? (
+            <span className="font-mono text-xs text-muted">
+              Finding emails... {findAllProgress?.done ?? 0}/{findAllProgress?.total ?? 0} complete
+            </span>
+          ) : (
+            <button
+              onClick={findAllEmails}
+              className="font-mono text-xs px-3 py-1.5 border border-border rounded text-muted hover:text-primary transition-colors"
+            >
+              Find All Emails
+            </button>
+          )
         )}
       </div>
 
@@ -315,8 +394,21 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
                           placeholder="email@example.com"
                           className="bg-bg border border-border text-primary rounded px-2 py-1 font-mono text-xs focus:outline-none focus:border-accent w-44"
                         />
+                      ) : lead.email ? (
+                        <span className="text-muted">{lead.email}</span>
+                      ) : findingEmail.has(lead.id) ? (
+                        <span className="text-muted italic">Searching...</span>
+                      ) : emailNotFound.has(lead.id) ? (
+                        <span className="text-muted italic">Not found</span>
+                      ) : lead.website ? (
+                        <button
+                          onClick={() => findEmail(lead)}
+                          className="font-mono text-xs text-muted hover:text-primary transition-colors underline underline-offset-2"
+                        >
+                          Find Email
+                        </button>
                       ) : (
-                        <span className="text-muted">{lead.email || '—'}</span>
+                        <span className="text-muted">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
