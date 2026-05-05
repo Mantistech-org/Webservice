@@ -47,6 +47,13 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
   const [emailNotFound, setEmailNotFound] = useState<Set<string>>(new Set())
   const [findingAllEmails, setFindingAllEmails] = useState(false)
   const [findAllProgress, setFindAllProgress] = useState<{ done: number; total: number } | null>(null)
+  const [campaigns, setCampaigns] = useState<Array<{ id: string; name: string; leads_reached: number }>>([])
+  const [campaignsLoading, setCampaignsLoading] = useState(false)
+  const [addToCampaignLead, setAddToCampaignLead] = useState<OutreachLead | null>(null)
+  const [showBulkCampaignModal, setShowBulkCampaignModal] = useState(false)
+  const [selectedCampaignId, setSelectedCampaignId] = useState('')
+  const [addingToCampaign, setAddingToCampaign] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
 
   const fetchLeads = useCallback(async () => {
     setLoading(true)
@@ -227,6 +234,42 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
     setFindAllProgress(null)
   }
 
+  const fetchCampaigns = async () => {
+    setCampaignsLoading(true)
+    try {
+      const res = await fetch('/api/admin/leads/campaigns')
+      const data = await res.json()
+      setCampaigns(data.campaigns ?? [])
+    } catch {
+      // non-fatal
+    } finally {
+      setCampaignsLoading(false)
+    }
+  }
+
+  const addLeadsToCampaign = async (campaignId: string, campaignName: string, leadIds: string[]) => {
+    setAddingToCampaign(true)
+    try {
+      const res = await fetch(`/api/admin/leads/campaigns/${campaignId}/add-leads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead_ids: leadIds }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setToast(`${data.added} lead${data.added !== 1 ? 's' : ''} added to ${campaignName}.`)
+        setTimeout(() => setToast(null), 4000)
+      }
+    } catch {
+      // non-fatal
+    } finally {
+      setAddingToCampaign(false)
+      setAddToCampaignLead(null)
+      setShowBulkCampaignModal(false)
+      setSelectedCampaignId('')
+    }
+  }
+
   const categories = ['all', ...Array.from(new Set(leads.map((l) => l.category).filter(Boolean))).sort()] as string[]
 
   const visibleLeads = leads.filter((l) => {
@@ -298,6 +341,14 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
             className="font-mono text-xs px-3 py-1.5 border border-border rounded text-primary hover:border-accent transition-colors"
           >
             Export Selected ({selectedIds.size})
+          </button>
+        )}
+        {someVisibleSelected && (
+          <button
+            onClick={() => { fetchCampaigns(); setShowBulkCampaignModal(true) }}
+            className="font-mono text-xs px-3 py-1.5 border border-border rounded text-muted hover:text-primary transition-colors"
+          >
+            Add to Campaign ({selectedIds.size})
           </button>
         )}
         {viewMode === 'active' && (
@@ -487,6 +538,12 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
                             Edit
                           </button>
                           <button
+                            onClick={() => { fetchCampaigns(); setAddToCampaignLead(lead) }}
+                            className="text-muted hover:text-primary transition-colors"
+                          >
+                            Campaign
+                          </button>
+                          <button
                             onClick={() => handleDeleteClick(lead.id)}
                             className={`transition-colors ${
                               confirmDeleteId === lead.id
@@ -504,6 +561,111 @@ export default function LeadsTab({ refreshSignal, onLeadsChange }: LeadsTabProps
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Per-lead campaign modal */}
+      {addToCampaignLead && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto py-12 px-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setAddToCampaignLead(null) }}
+        >
+          <div className="bg-surface border border-border rounded-xl p-6 w-full max-w-md shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-heading text-lg text-primary">Add to Campaign</h2>
+              <button onClick={() => setAddToCampaignLead(null)} className="text-muted hover:text-primary text-2xl leading-none">&times;</button>
+            </div>
+            <p className="font-mono text-xs text-muted mb-4">{addToCampaignLead.business_name}</p>
+            {campaignsLoading ? (
+              <p className="font-mono text-xs text-muted">Loading campaigns...</p>
+            ) : campaigns.length === 0 ? (
+              <p className="font-mono text-xs text-muted">No campaigns found. Create one in the Campaigns tab.</p>
+            ) : (
+              <div className="space-y-2">
+                {campaigns.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => addLeadsToCampaign(c.id, c.name, [addToCampaignLead.id])}
+                    disabled={addingToCampaign}
+                    className="w-full text-left px-4 py-3 border border-border rounded-lg hover:border-accent transition-colors disabled:opacity-50"
+                  >
+                    <div className="font-mono text-sm text-primary">{c.name}</div>
+                    <div className="font-mono text-xs text-muted mt-0.5">{c.leads_reached} lead{c.leads_reached !== 1 ? 's' : ''} enrolled</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Bulk campaign modal */}
+      {showBulkCampaignModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto py-12 px-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowBulkCampaignModal(false) }}
+        >
+          <div className="bg-surface border border-border rounded-xl p-6 w-full max-w-md shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-heading text-lg text-primary">Add to Campaign</h2>
+              <button onClick={() => setShowBulkCampaignModal(false)} className="text-muted hover:text-primary text-2xl leading-none">&times;</button>
+            </div>
+            <p className="font-mono text-xs text-muted mb-4">{selectedIds.size} lead{selectedIds.size !== 1 ? 's' : ''} selected</p>
+            {campaignsLoading ? (
+              <p className="font-mono text-xs text-muted">Loading campaigns...</p>
+            ) : campaigns.length === 0 ? (
+              <p className="font-mono text-xs text-muted">No campaigns found. Create one in the Campaigns tab.</p>
+            ) : (
+              <>
+                <div className="space-y-2 mb-5">
+                  {campaigns.map((c) => (
+                    <label
+                      key={c.id}
+                      className="flex items-center gap-3 px-4 py-3 border border-border rounded-lg cursor-pointer hover:border-accent transition-colors"
+                    >
+                      <input
+                        type="radio"
+                        name="bulk-campaign"
+                        value={c.id}
+                        checked={selectedCampaignId === c.id}
+                        onChange={() => setSelectedCampaignId(c.id)}
+                        className="accent-emerald-600"
+                      />
+                      <div>
+                        <div className="font-mono text-sm text-primary">{c.name}</div>
+                        <div className="font-mono text-xs text-muted mt-0.5">{c.leads_reached} lead{c.leads_reached !== 1 ? 's' : ''} enrolled</div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setShowBulkCampaignModal(false)}
+                    className="font-mono text-xs px-4 py-2 border border-border rounded-lg text-muted hover:text-primary transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      const c = campaigns.find((x) => x.id === selectedCampaignId)
+                      if (c) addLeadsToCampaign(c.id, c.name, Array.from(selectedIds))
+                    }}
+                    disabled={!selectedCampaignId || addingToCampaign}
+                    className="font-mono text-xs px-4 py-2 bg-accent text-black rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {addingToCampaign ? 'Adding...' : 'Add to Campaign'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 px-5 py-3 bg-surface border border-border rounded-lg shadow-xl font-mono text-sm text-primary">
+          {toast}
         </div>
       )}
     </div>
